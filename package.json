@@ -16,17 +16,23 @@
   },
   "prettier": "@shopify/prettier-config",
   "dependencies": {
+    "@radix-ui/react-dropdown-menu": "^2.1.1",
     "@remix-run/react": "^2.9.2",
     "@remix-run/server-runtime": "^2.9.2",
     "@shopify/cli": "3.60.0",
     "@shopify/cli-hydrogen": "^8.1.1",
     "@shopify/hydrogen": "2024.4.5",
     "@shopify/remix-oxygen": "^2.0.4",
+    "class-variance-authority": "^0.7.0",
+    "clsx": "^2.1.1",
     "graphql": "^16.6.0",
     "graphql-tag": "^2.12.6",
     "isbot": "^3.8.0",
+    "lucide-react": "^0.397.0",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "tailwind-merge": "^2.3.0",
+    "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
     "@graphql-codegen/cli": "5.0.2",
