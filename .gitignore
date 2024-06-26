@@ -6,3 +6,4 @@ node_modules
 /.mf
 .env
 .shopify
+.DS_STORE
