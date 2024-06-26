@@ -14,23 +14,35 @@ export default {
       error: '#F44250',
       warning: '#FECC1B',
 
-      // Default theme
-      link: '#000000',
-      text: '#434343',
-      border: '#80808026',
-      field: '#0000000D',
-      button: '#F5F5EF',
-      card: '#EAEAE4',
-      background: '#E3E2DD',
-
-      // Dark theme
-      'link-dark': '#FFFFFF',
-      'text-dark': '#DADADA',
-      'border-dark': '#808080',
-      'field-dark': '#00000033',
-      'button-dark': '#59585C',
-      'card-dark': '#343436',
-      'background-dark': '#242426',
+      // Neutrals
+      link: {
+        light: '#000000',
+        dark: '#FFFFFF'
+      },
+      text: {
+        light: '#434343',
+        dark: '#DADADA'
+      },
+      border: {
+        light: '#80808026',
+        dark: '#808080'
+      },
+      field: {
+        light: '#0000000D',
+        dark: '#00000033'
+      },
+      button: {
+        light: '#F5F5EF',
+        dark: '#59585C'
+      },
+      card: {
+        light: '#EAEAE4',
+        dark: '#343436'
+      },
+      background: {
+        light: '#E3E2DD',
+        dark: '#242426'
+      },
     },
     extend: {},
   },
