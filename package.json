@@ -11,7 +11,8 @@
     "lint": "eslint --no-error-on-unmatched-pattern --ext .js,.ts,.jsx,.tsx .",
     "typecheck": "tsc --noEmit",
     "codegen": "shopify hydrogen codegen",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "remix:dev": "remix vite:dev"
   },
   "prettier": "@shopify/prettier-config",
   "dependencies": {
