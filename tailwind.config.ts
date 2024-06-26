@@ -2,6 +2,18 @@
 export default {
   content: ['./app/**/*.{js,jsx,ts,tsx}'],
   theme: {
+    fontFamily: {
+      sans: [
+        'Inter',
+        'ui-sans-serif',
+        'system-ui',
+        'sans-serif',
+        '"Apple Color Emoji"',
+        '"Segoe UI Emoji"',
+        '"Segoe UI Symbol"',
+        '"Noto Color Emoji"',
+      ],
+    },
     colors: {
       cyan: {brand: '#3DEFE9'},
       blue: {brand: '#3992FF'},
