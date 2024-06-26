@@ -3,45 +3,30 @@ export default {
   content: ['./app/**/*.{js,jsx,ts,tsx}'],
   theme: {
     colors: {
-      cyan: '#3DEFE9',
-      blue: '#3992FF',
-      green: '#6BD968',
-      yellow: '#FECC1B',
-      magenta: '#D83BD2',
-      red: '#F44250',
-      'shop-pay': '#5A31F4',
-      success: '#3992FF',
-      error: '#F44250',
-      warning: '#FECC1B',
+      cyan: {brand: '#3DEFE9'},
+      blue: {brand: '#3992FF'},
+      green: {brand: '#6BD968'},
+      yellow: {brand: '#FECC1B'},
+      magenta: {brand: '#D83BD2'},
+      red: {brand: '#F44250'},
+      'shop-pay': {brand: '#5A31F4'},
+      success: {brand: '#3992FF'},
+      error: {brand: '#F44250'},
+      warning: {brand: '#FECC1B'},
 
-      // Neutrals
-      link: {
-        light: '#000000',
-        dark: '#FFFFFF'
-      },
-      text: {
-        light: '#434343',
-        dark: '#DADADA'
-      },
-      border: {
-        light: '#80808026',
-        dark: '#808080'
-      },
-      field: {
-        light: '#0000000D',
-        dark: '#00000033'
-      },
-      button: {
-        light: '#F5F5EF',
-        dark: '#59585C'
-      },
-      card: {
-        light: '#EAEAE4',
-        dark: '#343436'
-      },
-      background: {
-        light: '#E3E2DD',
-        dark: '#242426'
+      white: '#FFFFFF',
+      black: '#000000',
+
+      neutral: {
+        50: '#F5F5EF',
+        100: '#EAEAE4',
+        200: '#E3E2DD',
+        300: '#DADADA',
+        400: '#808080',
+        500: '#59585C',
+        600: '#434343',
+        700: '#343436',
+        800: '#242426',
       },
     },
     extend: {},
