@@ -12,8 +12,8 @@ import type {
   ProductVariantsQuery,
   ProductVariantFragment,
 } from 'storefrontapi.generated';
+import {Image} from '~/components/Image';
 import {
-  Image,
   Money,
   VariantSelector,
   type VariantOption,

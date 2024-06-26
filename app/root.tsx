@@ -41,6 +41,10 @@ export const shouldRevalidate: ShouldRevalidateFunction = ({
 };
 
 export function links() {
+  const preloadedFonts = [
+    'inter-roman-latin-var.woff2',
+    'inter-italic-latin-var.woff2',
+  ];
   return [
     {rel: 'stylesheet', href: resetStyles},
     {rel: 'stylesheet', href: appStyles},
@@ -53,6 +57,13 @@ export function links() {
       href: 'https://shop.app',
     },
     {rel: 'icon', type: 'image/svg+xml', href: favicon},
+    ...preloadedFonts.map((font) => ({
+      rel: 'preload',
+      as: 'font',
+      href: `/app/assets/font/${font}`,
+      crossOrigin: 'anonymous',
+    })),
+    {rel: 'preload', as: 'image', href: '/app/assets/imageBg.jpg'},
   ];
 }
 

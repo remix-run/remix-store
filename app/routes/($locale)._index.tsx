@@ -1,7 +1,8 @@
 import {defer, type LoaderFunctionArgs} from '@shopify/remix-oxygen';
 import {Await, useLoaderData, Link, type MetaFunction} from '@remix-run/react';
 import {Suspense} from 'react';
-import {Image, Money} from '@shopify/hydrogen';
+import {Money} from '@shopify/hydrogen';
+import {Image} from '~/components/Image';
 import type {
   FeaturedCollectionFragment,
   RecommendedProductsQuery,
@@ -110,6 +111,7 @@ function RecommendedProducts({
                         data={product.images.nodes[0]}
                         aspectRatio="1/1"
                         sizes="(min-width: 45em) 20vw, 50vw"
+                        gradient="blue"
                       />
                       <h4>{product.title}</h4>
                       <small>
