@@ -242,13 +242,7 @@ const FALLBACK_HEADER_MENU = {
   ],
 };
 
-function activeLinkStyle({
-  isActive,
-  isPending,
-}: {
-  isActive: boolean;
-  isPending: boolean;
-}) {
+function activeLinkStyle({isActive}: {isActive: boolean}) {
   return {
     fontWeight: isActive ? 'bold' : undefined,
     pointerEvents: isActive ? 'none' : undefined,
