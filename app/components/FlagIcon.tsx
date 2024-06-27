@@ -1,5 +1,6 @@
 import {twMerge} from 'tailwind-merge';
-import {CountryCode, flagIcons} from './icons/flags';
+import {flagIcons} from './icons/flags';
+import type {CountryCode} from './icons/flags';
 
 export type FlagIconProps = React.SVGProps<SVGElement> & {code: CountryCode};
 export default function FlagIcon({code, className}: FlagIconProps) {
