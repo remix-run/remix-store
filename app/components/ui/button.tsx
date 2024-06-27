@@ -42,12 +42,13 @@ export function Button({asChild, size, variant, ...props}: ButtonProps) {
         'cursor-pointer',
         textStyles,
         size === 'sm' ? smTextStyles : size === 'lg' ? lgTextStyles : '',
-        // buttonStyles,
-        variant === 'secondary'
-          ? secondaryStyles
-          : variant === 'primary'
-          ? primaryStyles
-          : '',
+
+        'active:translate-y-1',
+        {
+          [secondaryStyles]: variant === 'secondary',
+          [primaryStyles]: variant === 'primary',
+        },
+
         sizeStyles[size],
         // wellStyles,
         props.className,
