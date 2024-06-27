@@ -1,3 +1,15 @@
+const MERCHANISE_PRODUCT_FRAGMENT = `#graphql
+  fragment MerchadiseProduct on Product {
+    handle
+    title
+    id
+    vendor
+    gradientColors: metafield(key: "images_gradient_background", namespace: "custom") {
+      value
+    }
+  }
+` as const;
+
 // NOTE: https://shopify.dev/docs/api/storefront/latest/queries/cart
 export const CART_QUERY_FRAGMENT = `#graphql
   fragment Money on MoneyV2 {
@@ -43,10 +55,7 @@ export const CART_QUERY_FRAGMENT = `#graphql
 
         }
         product {
-          handle
-          title
-          id
-          vendor
+          ...MerchadiseProduct
         }
         selectedOptions {
           name
@@ -101,6 +110,7 @@ export const CART_QUERY_FRAGMENT = `#graphql
       applicable
     }
   }
+  ${MERCHANISE_PRODUCT_FRAGMENT}
 ` as const;
 
 const MENU_FRAGMENT = `#graphql

@@ -12,8 +12,8 @@ import type {
   ProductVariantsQuery,
   ProductVariantFragment,
 } from 'storefrontapi.generated';
+import {Image, type ImageGradientColors} from '~/components/Image';
 import {
-  Image,
   Money,
   VariantSelector,
   type VariantOption,
@@ -27,6 +27,7 @@ import {
 import type {SelectedOption} from '@shopify/hydrogen/storefront-api-types';
 import {getVariantUrl} from '~/lib/variants';
 import {useAside} from '~/components/Aside';
+import {parseGradientColors} from '~/lib/metafields';
 
 export const meta: MetaFunction<typeof loader> = ({data}) => {
   return [{title: `Hydrogen | ${data?.product.title ?? ''}`}];
@@ -146,7 +147,11 @@ export default function Product() {
   const {selectedVariant} = product;
   return (
     <div className="product">
-      <ProductImage image={selectedVariant?.image} />
+      <ProductImages
+        images={product?.images.nodes || []}
+        gradientColors={product.gradientColors}
+      />
+      {/* <ProductImage image={selectedVariant?.image} /> */}
       <ProductMain
         selectedVariant={selectedVariant}
         product={product}
@@ -171,17 +176,46 @@ export default function Product() {
   );
 }
 
-function ProductImage({image}: {image: ProductVariantFragment['image']}) {
+function ProductImages({
+  images,
+  gradientColors,
+}: {
+  images: Array<ProductVariantFragment['image']>;
+  gradientColors: ProductFragment['gradientColors'];
+}) {
+  const gradients = parseGradientColors(gradientColors);
+  return (
+    <div className="product-images">
+      {images.map((image) => {
+        if (!image) return null;
+        const gradient = gradients.shift() ?? 'random';
+        return (
+          <ProductImage key={image.id} image={image} gradient={gradient} />
+        );
+      })}
+    </div>
+  );
+}
+
+function ProductImage({
+  image,
+  gradient,
+}: {
+  image: ProductVariantFragment['image'];
+  gradient?: ImageGradientColors;
+}) {
   if (!image) {
-    return <div className="product-image" />;
+    return null;
   }
   return (
-    <div className="product-image">
+    <div className="product-image mb-3">
       <Image
         alt={image.altText || 'Product Image'}
         aspectRatio="1/1"
         data={image}
         key={image.id}
+        gradient={gradient}
+        gradientFade={true}
         sizes="(min-width: 45em) 50vw, 100vw"
       />
     </div>
@@ -376,6 +410,16 @@ function AddToCartButton({
   );
 }
 
+const PRODUCT_IMAGE_FRAGMENT = `#graphql
+  fragment ProductImage on Image {
+    id
+    altText
+    url
+    width
+    height
+  }
+` as const;
+
 const PRODUCT_VARIANT_FRAGMENT = `#graphql
   fragment ProductVariant on ProductVariant {
     availableForSale
@@ -385,12 +429,7 @@ const PRODUCT_VARIANT_FRAGMENT = `#graphql
     }
     id
     image {
-      __typename
-      id
-      url
-      altText
-      width
-      height
+      ...ProductImage
     }
     price {
       amount
@@ -411,6 +450,7 @@ const PRODUCT_VARIANT_FRAGMENT = `#graphql
       currencyCode
     }
   }
+  ${PRODUCT_IMAGE_FRAGMENT}
 ` as const;
 
 const PRODUCT_FRAGMENT = `#graphql
@@ -433,9 +473,17 @@ const PRODUCT_FRAGMENT = `#graphql
         ...ProductVariant
       }
     }
+    images(first: 5) {
+      nodes {
+        ...ProductImage
+      }
+    }
     seo {
       description
       title
+    }
+    gradientColors: metafield(key: "images_gradient_background", namespace: "custom") {
+      value
     }
   }
   ${PRODUCT_VARIANT_FRAGMENT}
@@ -467,7 +515,6 @@ const PRODUCT_VARIANTS_FRAGMENT = `#graphql
 ` as const;
 
 const VARIANTS_QUERY = `#graphql
-  ${PRODUCT_VARIANTS_FRAGMENT}
   query ProductVariants(
     $country: CountryCode
     $language: LanguageCode
@@ -477,4 +524,5 @@ const VARIANTS_QUERY = `#graphql
       ...ProductVariants
     }
   }
+  ${PRODUCT_VARIANTS_FRAGMENT}
 ` as const;
