@@ -8,7 +8,6 @@ import type {
   RecommendedProductsQuery,
 } from 'storefrontapi.generated';
 import {parseGradientColors} from '~/lib/metafields';
-import {HeroImage} from '../components/HeroImage';
 
 export const meta: MetaFunction = () => {
   return [{title: 'Hydrogen | Home'}];
@@ -29,13 +28,13 @@ export async function loader(args: LoaderFunctionArgs) {
  * needed to render the page. If it's unavailable, the whole page should 400 or 500 error.
  */
 async function loadCriticalData({context}: LoaderFunctionArgs) {
-  const [{collections}] = await Promise.all([
+  const [collection] = await Promise.all([
     context.storefront.query(FEATURED_COLLECTION_QUERY),
     // Add other queries here, so that they are loaded in parallel
   ]);
 
   return {
-    featuredCollection: collections.nodes[0],
+    featuredCollection: collection.collectionByHandle,
   };
 }
 
@@ -62,7 +61,7 @@ export default function Homepage() {
   const data = useLoaderData<typeof loader>();
   return (
     <div className="home">
-      <HeroImage />
+      {/* <HeroImage /> */}
       <FeaturedCollection collection={data.featuredCollection} />
       <RecommendedProducts products={data.recommendedProducts} />
     </div>
@@ -72,7 +71,7 @@ export default function Homepage() {
 function FeaturedCollection({
   collection,
 }: {
-  collection: FeaturedCollectionFragment;
+  collection: FeaturedCollectionFragment | undefined | null;
 }) {
   if (!collection) return null;
   const image = collection?.image;
@@ -86,7 +85,6 @@ function FeaturedCollection({
           <Image data={image} sizes="100vw" />
         </div>
       )}
-      <h1>{collection.title}</h1>
     </Link>
   );
 }
@@ -140,23 +138,22 @@ function RecommendedProducts({
 
 const FEATURED_COLLECTION_QUERY = `#graphql
   fragment FeaturedCollection on Collection {
-    id
-    title
-    image {
       id
-      url
-      altText
-      width
-      height
+      title
+      image {
+        id
+        url
+        altText
+        width
+        height
+      }
+      handle
     }
-    handle
-  }
+
   query FeaturedCollection($country: CountryCode, $language: LanguageCode)
     @inContext(country: $country, language: $language) {
-    collections(first: 1, sortKey: UPDATED_AT, reverse: true) {
-      nodes {
-        ...FeaturedCollection
-      }
+    collectionByHandle(handle: "featured") {
+      ...FeaturedCollection
     }
   }
 ` as const;
