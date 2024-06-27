@@ -135,7 +135,7 @@ function loadDeferredData({context}: LoaderFunctionArgs) {
   // defer the footer query (below the fold)
   const footer = storefront
     .query(FOOTER_QUERY, {
-      cache: storefront.CacheNone(),
+      cache: storefront.CacheLong(),
       variables: {
         //footerMenuHandle: 'the-remix-shop', // Adjust to your footer menu handle
       },
