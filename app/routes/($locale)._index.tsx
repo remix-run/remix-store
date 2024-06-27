@@ -93,27 +93,6 @@ function RecommendedProducts({
 }) {
   return (
     <div className="recommended-products">
-      <div className="flex flex-col gap-3 p-3 bg-neutral-200 dark:bg-neutral-800 rounded">
-        <div className="flex flex-row gap-3">
-          <Button size="sm" variant="secondary">
-            Shop
-          </Button>
-          <Button size="icon" variant="secondary">
-            <Icon name="info" className="text-inherit" />
-          </Button>
-        </div>
-        <div>
-          <Button size="lg" variant="secondary">
-            Add to cart
-          </Button>
-        </div>
-        <div>
-          <Button size="lg" variant="primary">
-            Continue checkout
-          </Button>
-        </div>
-      </div>
-
       <h2>Recommended Products</h2>
       <Suspense fallback={<div>Loading...</div>}>
         <Await resolve={products}>
