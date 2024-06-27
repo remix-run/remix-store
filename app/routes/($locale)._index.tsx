@@ -113,11 +113,11 @@ function RecommendedProducts({
                         to={`/products/${product.handle}`}
                       >
                         <Image
-                          data={product.images.nodes[0]}
                           aspectRatio="1/1"
-                          sizes="(min-width: 45em) 20vw, 50vw"
+                          data={product.images.nodes[0]}
                           gradient={gradients[0]}
-                          gradientFade={true}
+                          gradientHover={true}
+                          sizes="(min-width: 45em) 20vw, 50vw"
                         />
                         <h4>{product.title}</h4>
                         <small>
