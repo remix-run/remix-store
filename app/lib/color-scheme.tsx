@@ -38,7 +38,7 @@ export function ColorSchemeScript() {
       `,
   );
 
-  // Set
+  // Set the theme value on the document
   useLayoutEffect(() => {
     switch (colorScheme) {
       case 'light':
