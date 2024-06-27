@@ -1,4 +1,4 @@
-import {twMerge} from 'tailwind-merge';
+import {cn} from '~/lib';
 
 export type IconName =
   | 'bag'
@@ -22,7 +22,11 @@ export type IconProps = Omit<React.SVGProps<SVGElement>, 'ref'> & {
 };
 export default function Icon({name, className, ...props}: IconProps) {
   return (
-    <svg className={twMerge('size-6 text-black', className)} aria-hidden>
+    <svg
+      className={cn('size-6 text-black dark:text-white', className)}
+      aria-hidden
+      {...props}
+    >
       <use href={`/sprite.svg#${name}`} />
     </svg>
   );
