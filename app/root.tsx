@@ -173,6 +173,7 @@ function Layout({children}: {children?: React.ReactNode}) {
         <Links />
       </head>
       <body>
+        <h1>Hi</h1>
         {data ? (
           <Analytics.Provider
             cart={data.cart}
