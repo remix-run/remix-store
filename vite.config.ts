@@ -18,7 +18,7 @@ export default defineConfig({
       },
     }),
     tsconfigPaths(),
-    createSvgSpritePlugin({logging: true}),
+    createSvgSpritePlugin(),
   ],
   build: {
     // Allow a strict Content-Security-Policy

@@ -18,6 +18,9 @@ import styles from './tailwind.css?url';
 import appStyles from '~/styles/app.css?url';
 import {PageLayout} from '~/components/PageLayout';
 import {FOOTER_QUERY, HEADER_QUERY} from '~/lib/fragments';
+import {parseColorScheme} from './lib/color-scheme.server';
+import clsx from 'clsx';
+import {ColorSchemeScript, useColorScheme} from './lib/color-scheme';
 
 export type RootLoader = typeof loader;
 
@@ -105,21 +108,23 @@ export async function loader(args: LoaderFunctionArgs) {
  * Load data necessary for rendering content above the fold. This is the critical data
  * needed to render the page. If it's unavailable, the whole page should 400 or 500 error.
  */
-async function loadCriticalData({context}: LoaderFunctionArgs) {
+async function loadCriticalData({context, request}: LoaderFunctionArgs) {
   const {storefront} = context;
 
-  const [header] = await Promise.all([
+  const [header, colorScheme] = await Promise.all([
     storefront.query(HEADER_QUERY, {
       cache: storefront.CacheLong(),
       variables: {
         headerMenuHandle: 'main-menu', // Adjust to your header menu handle
       },
     }),
+    parseColorScheme(request),
     // Add other queries here, so that they are loaded in parallel
   ]);
 
   return {
     header,
+    colorScheme,
   };
 }
 
@@ -154,12 +159,18 @@ function loadDeferredData({context}: LoaderFunctionArgs) {
 function Layout({children}: {children?: React.ReactNode}) {
   const nonce = useNonce();
   const data = useRouteLoaderData<RootLoader>('root');
+  const colorScheme = useColorScheme();
 
   return (
-    <html lang="en">
+    <html
+      lang="en"
+      className={clsx({dark: colorScheme === 'dark'})}
+      suppressHydrationWarning
+    >
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <ColorSchemeScript nonce={nonce} />
         <Meta />
         <Links />
       </head>
