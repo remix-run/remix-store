@@ -20,6 +20,8 @@ export default defineConfig({
     }),
     tsconfigPaths(),
     createSvgSpritePlugin(),
+    // Temporarily fix the sprite file name hash issue. We should add a
+    // option to the createSvgSpritePlugin to define an output folder.
     removeHashFromSprite(),
   ],
   build: {
