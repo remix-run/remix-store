@@ -24,7 +24,7 @@ function syncColorScheme(media: MediaQueryList | MediaQueryListEvent) {
   }
 }
 
-function ColorSchemeScriptImpl() {
+export function ColorSchemeScript() {
   const colorScheme = useColorScheme();
   // This script automatically adds the dark class to the document element if
   // colorScheme is "system" and prefers-color-scheme: dark is true.
@@ -67,12 +67,4 @@ function ColorSchemeScriptImpl() {
   });
 
   return <script dangerouslySetInnerHTML={{__html: script}} />;
-}
-
-export function ColorSchemeScript({
-  forceConsistentTheme,
-}: {
-  forceConsistentTheme?: boolean;
-}) {
-  return forceConsistentTheme ? null : <ColorSchemeScriptImpl />;
 }
