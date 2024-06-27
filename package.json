@@ -35,6 +35,7 @@
   },
   "devDependencies": {
     "@graphql-codegen/cli": "5.0.2",
+    "@mcansh/vite-svg-sprite-plugin": "^0.4.2",
     "@remix-run/dev": "^2.9.2",
     "@remix-run/eslint-config": "^2.9.2",
     "@shopify/hydrogen-codegen": "^0.3.1",
