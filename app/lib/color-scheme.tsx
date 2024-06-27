@@ -58,7 +58,6 @@ export function ColorSchemeScript() {
   }, [colorScheme]);
 
   // always sync the color scheme if "system" is used
-  // this accounts for the docs pages adding some classnames to documentElement in root
   useLayoutEffect(() => {
     if (colorScheme === 'system') {
       const media = window.matchMedia('(prefers-color-scheme: dark)');
