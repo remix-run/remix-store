@@ -28,19 +28,19 @@ type IconName =
   | 'trash'
   | 'x';
 const icons: Record<IconName, string> = {
-  bag: bag,
-  check: check,
-  chevronDown: chevronDown,
-  chevronUp: chevronUp,
-  filter: filter,
-  globe: globe,
-  info: info,
-  minus: minus,
-  moon: moon,
-  plus: plus,
-  tag: tag,
-  trash: trash,
-  x: x,
+  bag,
+  check,
+  chevronDown,
+  chevronUp,
+  filter,
+  globe,
+  info,
+  minus,
+  moon,
+  plus,
+  tag,
+  trash,
+  x,
 };
 
 type Props = React.SVGProps<SVGElement> & {name: IconName};
