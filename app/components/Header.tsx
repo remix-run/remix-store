@@ -4,6 +4,7 @@ import {type CartViewPayload, useAnalytics} from '@shopify/hydrogen';
 import type {HeaderQuery, CartApiQueryFragment} from 'storefrontapi.generated';
 import {useAside} from '~/components/Aside';
 import {ThemeToggle} from './ThemeToggle';
+import {cn} from '~/lib';
 
 interface HeaderProps {
   header: HeaderQuery;
@@ -22,7 +23,13 @@ export function Header({
 }: HeaderProps) {
   const {shop, menu} = header;
   return (
-    <header className="header">
+    <header
+      className={cn(
+        'header',
+        'bg-neutral-800 dark:bg-neutral-200',
+        'text-white dark:text-black',
+      )}
+    >
       <NavLink prefetch="intent" to="/" style={activeLinkStyle} end>
         <strong>{shop.name}</strong>
       </NavLink>
