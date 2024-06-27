@@ -61,7 +61,7 @@ export function Image(props: ImageProps) {
   }
 
   return (
-    <div className="relative overflow-hidden aspect-ratio rounded-lg">
+    <div className="relative overflow-hidden aspect-ratio rounded-lg isolate">
       <div
         className="absolute top-0 left-0 w-full h-full z-0"
         style={{
