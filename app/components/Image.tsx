@@ -1,4 +1,5 @@
 import {Image as HydrogenImage} from '@shopify/hydrogen';
+import clx from 'clsx';
 
 type HydrogenImageProps = Parameters<typeof HydrogenImage>[0];
 
@@ -17,13 +18,20 @@ export type ImageProps = HydrogenImageProps & {
   gradient?: ImageGradientColors;
   /** If true, the gradient will fade out to white or dark at the bottom based on color-scheme*/
   gradientFade?: boolean;
+  /** If true, the gradient will fade in on hover */
+  gradientHover?: boolean;
 };
 
 /**
  * Image component with multiple gradient backgrounds options
  */
 export function Image(props: ImageProps) {
-  const {gradient = null, gradientFade = false, ...rest} = props;
+  const {
+    gradient = null,
+    gradientFade = false,
+    gradientHover = false,
+    ...rest
+  } = props;
   if (!gradient) return <HydrogenImage {...rest} />;
 
   const gradients = {
@@ -62,13 +70,19 @@ export function Image(props: ImageProps) {
 
   return (
     <div className="relative overflow-hidden aspect-ratio rounded-lg isolate">
+      {/* Color gradient layer */}
       <div
-        className="absolute top-0 left-0 w-full h-full z-0"
+        className={clx(
+          'absolute top-0 left-0 w-full h-full z-0',
+          gradientHover &&
+            'opacity-0 transition-opacity duration-300 hover:opacity-100',
+        )}
         style={{
           zIndex: -2,
           backgroundImage: activeGradient,
         }}
       />
+
       {gradientFade && (
         <div
           className="absolute top-0 left-0 w-full h-full z-0"
@@ -78,7 +92,7 @@ export function Image(props: ImageProps) {
           }}
         />
       )}
-      <HydrogenImage {...rest} />
+      <HydrogenImage {...rest} className="pointer-events-none" />
     </div>
   );
 }
