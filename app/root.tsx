@@ -136,9 +136,6 @@ function loadDeferredData({context}: LoaderFunctionArgs) {
   const footer = storefront
     .query(FOOTER_QUERY, {
       cache: storefront.CacheLong(),
-      variables: {
-        //footerMenuHandle: 'the-remix-shop', // Adjust to your footer menu handle
-      },
     })
     .catch((error) => {
       // Log query errors, but don't throw them so the page can still render

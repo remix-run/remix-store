@@ -17,7 +17,7 @@ export function Footer({
     <Suspense>
       <Await resolve={footerPromise}>
         {(footer) => (
-          <footer className="footer inline-flex justify-center gap-10 bg-neutral-800 border-t-[1px] border-border-400opacity20 w-full">
+          <footer className="footer inline-flex justify-center gap-10 bg-neutral-800 border-t-[1px] border-neutral-400 border-opacity-20 w-full">
             {footer?.col1 && header.shop.primaryDomain?.url && (
               <FooterMenu
                 menu={footer.col1}
@@ -167,7 +167,7 @@ function CopyrightContent() {
   return (
     <div className="flex justify-center bg-neutral-800 text-neutral-400 text-xs pb-6 antialiased">
       <div className="mx-6">The Remix Store was built with Hydrogen</div>
-      <div className="mx-6">© 2024 Shopify, Inc.</div>
+      <div className="mx-6">© {new Date().getFullYear()} Shopify, Inc.</div>
       <div className="mx-6">
         Hydrogen is an MIT Licensed Open Source project
       </div>
