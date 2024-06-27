@@ -11,6 +11,7 @@ import {
   isRouteErrorResponse,
   type ShouldRevalidateFunction,
 } from '@remix-run/react';
+import spriteUrl from 'virtual:@mcansh/vite-svg-sprite-plugin';
 import styles from './tailwind.css?url';
 import appStyles from '~/styles/app.css?url';
 import {PageLayout} from '~/components/PageLayout';
@@ -59,12 +60,13 @@ export function links() {
   return [
     ...preconnects.map((preconnect) => ({rel: 'preconnect', ...preconnect})),
     ...styleSheets.map((href) => ({rel: 'stylesheet', href})),
-    {rel: 'icon', href: '/favicon-32.png', sizes: '32x32'},
-    {rel: 'icon', href: '/favicon-128.png', sizes: '128x128'},
-    {rel: 'icon', href: '/favicon-180.png', sizes: '180x180'},
-    {rel: 'icon', href: '/favicon-192.png', sizes: '192x192'},
-    {rel: 'apple-touch-icon', href: '/favicon-180.png', sizes: '180x180'},
-    {rel: 'preload', as: 'image', href: `/sprite.svg`, type: 'image/svg+xml'},
+    {rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg'},
+    {
+      rel: 'preload',
+      as: 'image',
+      href: spriteUrl,
+      type: 'image/svg+xml',
+    },
   ];
 }
 
