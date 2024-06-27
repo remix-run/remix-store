@@ -95,13 +95,15 @@ function RecommendedProducts({
     <div className="recommended-products">
       <div className="flex flex-col gap-3 p-3 bg-neutral-800 rounded">
         <div className="flex flex-row gap-3">
-          <Button>Inline Button</Button>
-          <Button>
+          <Button size="sm">Shop</Button>
+          <Button size="icon">
             <Icon name="info" className="text-inherit" />
           </Button>
         </div>
         <div className="flex flex-row">
-          <Button className="w-full">Full Width Button</Button>
+          <Button size="lg" className="w-full">
+            Add to cart
+          </Button>
         </div>
       </div>
 
