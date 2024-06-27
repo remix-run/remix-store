@@ -11,7 +11,6 @@ import {
   isRouteErrorResponse,
   type ShouldRevalidateFunction,
 } from '@remix-run/react';
-import resetStyles from '~/styles/reset.css?url';
 import styles from './tailwind.css?url';
 import appStyles from '~/styles/app.css?url';
 import {PageLayout} from '~/components/PageLayout';
@@ -52,7 +51,6 @@ export function links() {
   ];
 
   const styleSheets = [
-    resetStyles,
     appStyles,
     styles,
     'https://fonts.googleapis.com/css2?family=Inter:wght@300..800&display=swap',
@@ -61,7 +59,11 @@ export function links() {
   return [
     ...preconnects.map((preconnect) => ({rel: 'preconnect', ...preconnect})),
     ...styleSheets.map((href) => ({rel: 'stylesheet', href})),
-    {rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg'},
+    {rel: 'icon', href: '/favicon-32.png', sizes: '32x32'},
+    {rel: 'icon', href: '/favicon-128.png', sizes: '128x128'},
+    {rel: 'icon', href: '/favicon-180.png', sizes: '180x180'},
+    {rel: 'icon', href: '/favicon-192.png', sizes: '192x192'},
+    {rel: 'apple-touch-icon', href: '/favicon-180.png', sizes: '180x180'},
     {rel: 'preload', as: 'image', href: `/sprite.svg`, type: 'image/svg+xml'},
   ];
 }
