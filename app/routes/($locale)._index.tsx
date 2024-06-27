@@ -60,11 +60,10 @@ function loadDeferredData({context}: LoaderFunctionArgs) {
 export default function Homepage() {
   const data = useLoaderData<typeof loader>();
   return (
-    <div className="home">
-      {/* <HeroImage /> */}
+    <>
       <FeaturedCollection collection={data.featuredCollection} />
       <RecommendedProducts products={data.recommendedProducts} />
-    </div>
+    </>
   );
 }
 
@@ -77,14 +76,10 @@ function FeaturedCollection({
   const image = collection?.image;
   return (
     <Link
-      className="featured-collection"
+      className="block mb-8 relative px-16"
       to={`/collections/${collection.handle}`}
     >
-      {image && (
-        <div className="featured-collection-image">
-          <Image data={image} sizes="100vw" />
-        </div>
-      )}
+      {image && <Image data={image} sizes="100vw" />}
     </Link>
   );
 }
