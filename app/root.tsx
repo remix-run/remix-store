@@ -48,7 +48,6 @@ export function links() {
     {href: 'https://fonts.googleapis.com'},
     {href: 'https://fonts.gstatic.com', crossOrigin: 'true'},
     {href: 'https://cdn.shopify.com'},
-    {href: styles, rel: 'stylesheet'},
     {href: 'https://shop.app'},
   ];
 
