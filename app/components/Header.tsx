@@ -3,6 +3,7 @@ import {Await, NavLink} from '@remix-run/react';
 import {type CartViewPayload, useAnalytics} from '@shopify/hydrogen';
 import type {HeaderQuery, CartApiQueryFragment} from 'storefrontapi.generated';
 import {useAside} from '~/components/Aside';
+import {ThemeToggle} from './ThemeToggle';
 
 interface HeaderProps {
   header: HeaderQuery;
@@ -93,6 +94,7 @@ export function HeaderMenu({
           </NavLink>
         );
       })}
+      <ThemeToggle />
     </nav>
   );
 }
