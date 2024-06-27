@@ -2,6 +2,7 @@ import {useState} from 'react';
 import {useNavigation, useRouteLoaderData} from '@remix-run/react';
 import type {loader as rootLoader} from '~/root';
 import {useLayoutEffect} from '~/ui/primitives/utils';
+import {useNonce} from '@shopify/hydrogen';
 
 export type ColorScheme = 'dark' | 'light' | 'system';
 
@@ -24,7 +25,7 @@ function syncColorScheme(media: MediaQueryList | MediaQueryListEvent) {
   }
 }
 
-export function ColorSchemeScript() {
+export function ColorSchemeScript({nonce}: {nonce?: string}) {
   const colorScheme = useColorScheme();
   // This script automatically adds the dark class to the document element if
   // colorScheme is "system" and prefers-color-scheme: dark is true.
@@ -65,5 +66,11 @@ export function ColorSchemeScript() {
     }
   });
 
-  return <script dangerouslySetInnerHTML={{__html: script}} />;
+  return (
+    <script
+      nonce={nonce}
+      suppressHydrationWarning
+      dangerouslySetInnerHTML={{__html: script}}
+    />
+  );
 }

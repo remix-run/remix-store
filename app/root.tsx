@@ -160,11 +160,15 @@ function Layout({children}: {children?: React.ReactNode}) {
   const colorScheme = useColorScheme();
 
   return (
-    <html lang="en" className={clsx({dark: colorScheme === 'dark'})}>
+    <html
+      lang="en"
+      className={clsx({dark: colorScheme === 'dark'})}
+      suppressHydrationWarning
+    >
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width,initial-scale=1" />
-        <ColorSchemeScript />
+        <ColorSchemeScript nonce={nonce} />
         <Meta />
         <Links />
       </head>
