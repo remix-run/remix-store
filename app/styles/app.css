@@ -147,15 +147,6 @@ button.reset:hover:not(:has(> *)) {
 * components/Header
 * --------------------------------------------------
 */
-/* .header {
-  align-items: center;
-  display: flex;
-  height: var(--header-height);
-  padding: 0 1rem;
-  position: sticky;
-  top: 0;
-  z-index: 1;
-} */
 
 .header-menu-mobile {
   display: flex;

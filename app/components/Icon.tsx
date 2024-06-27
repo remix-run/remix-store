@@ -1,10 +1,11 @@
 import {twMerge} from 'tailwind-merge';
 
-type IconName =
+export type IconName =
   | 'bag'
   | 'check'
   | 'chevron-down'
   | 'chevron-up'
+  | 'computer'
   | 'filter'
   | 'globe'
   | 'info'

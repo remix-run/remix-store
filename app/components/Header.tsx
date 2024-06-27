@@ -135,7 +135,6 @@ export function HeaderMenu({
       </nav>
       <nav
         className={cn({
-          [className]: true,
           'flex gap-4': true,
           'flex-col': viewport === 'mobile',
           'hidden sm:flex flex-row ': viewport === 'desktop',

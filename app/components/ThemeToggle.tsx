@@ -8,7 +8,13 @@ import {
   DropdownMenuTrigger,
 } from '~/components/ui/dropdown-menu';
 import {Form, useLocation} from '@remix-run/react';
-import Icon from './Icon';
+import Icon, {IconName} from './Icon';
+
+const themeIconMap = {
+  light: 'sun',
+  dark: 'moon',
+  system: 'computer',
+} as const;
 
 export function ThemeToggle() {
   const theme = useColorScheme();
@@ -18,10 +24,7 @@ export function ThemeToggle() {
     <>
       <DropdownMenu>
         <DropdownMenuTrigger>
-          <Icon
-            name={theme === 'dark' ? 'sun' : 'moon'}
-            aria-label="Change theme"
-          />
+          <Icon name={themeIconMap[theme]} aria-label="Change theme" />
         </DropdownMenuTrigger>
         <DropdownMenuContent>
           <Form
@@ -36,37 +39,30 @@ export function ThemeToggle() {
               name="returnTo"
               value={location.pathname + location.search}
             />
-
-            <DropdownMenuItem asChild>
-              <button
-                value="light"
-                name="colorScheme"
-                disabled={theme === 'light'}
-              >
-                Light
-              </button>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <button
-                value="dark"
-                name="colorScheme"
-                disabled={theme === 'dark'}
-              >
-                Dark
-              </button>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <button
-                value="system"
-                name="colorScheme"
-                disabled={theme === 'system'}
-              >
-                System
-              </button>
-            </DropdownMenuItem>
+            <DropdownButton theme="light" />
+            <DropdownButton theme="dark" />
+            <DropdownButton theme="system" />
           </Form>
         </DropdownMenuContent>
       </DropdownMenu>
     </>
+  );
+}
+
+function DropdownButton({theme}: {theme: 'light' | 'dark' | 'system'}) {
+  const currentTheme = useColorScheme();
+  const icon = themeIconMap[theme];
+  return (
+    <DropdownMenuItem asChild>
+      <button
+        className="capitalize gap-2"
+        value={theme}
+        name="colorScheme"
+        aria-current={theme === currentTheme}
+      >
+        <Icon name={icon} />
+        {theme}
+      </button>
+    </DropdownMenuItem>
   );
 }

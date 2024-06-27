@@ -9,6 +9,8 @@ a {
   @apply text-black dark:text-white;
 }
 
-html {
+html,
+body,
+main {
   @apply bg-neutral-200 dark:bg-neutral-800;
 }
