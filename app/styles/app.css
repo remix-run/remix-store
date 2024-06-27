@@ -169,6 +169,7 @@ button.reset:hover:not(:has(> *)) {
 * --------------------------------------------------
 */
 .footer {
+  @apply bg-neutral-800;
   background: var(--color-dark);
   margin-top: auto;
 }
