@@ -11,6 +11,9 @@
   <symbol id="chevron-up" fill="none" viewBox="0 0 24 24">
     <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 14.583 12 10l5 4.583" />
   </symbol>
+    <svg id='computer' fill="none" viewBox="0 0 24 24" >
+    <path  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12.0004 16.7996V19.1996M8.40039 20.3996H15.6004M4.80039 16.7996H19.2004C20.5259 16.7996 21.6004 15.7251 21.6004 14.3996V5.99961C21.6004 4.67413 20.5259 3.59961 19.2004 3.59961H4.80039C3.47491 3.59961 2.40039 4.67413 2.40039 5.99961V14.3996C2.40039 15.7251 3.47491 16.7996 4.80039 16.7996Z"/>
+  </svg>
   <symbol id="filter" fill="none" viewBox="0 0 24 24">
     <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.4 4.8H12M2.4 12H12m0 0v2.4m0-2.4V9.6m-9.6 9.6h4.8m4.8 0h9.6M16.8 12h4.8m-4.8-7.2h4.8m-4.8 0v2.4m0-2.4V2.4m-9 19.2v-4.8" />
   </symbol>
@@ -29,6 +32,9 @@
   <symbol id="plus" fill="none" viewBox="0 0 24 24">
     <path stroke="currentColor" stroke-linecap="round" stroke-width="2" d="M12 6.5v12m6-6H6" />
   </symbol>
+    <symbol id='sun' fill="none" viewBox="0 0 26 26" >
+    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M13.0003 2.73677V1.97656M13.0003 24.0227V23.2624M23.2632 12.9996H24.0234M1.97729 12.9996H2.73751M20.2579 5.74278L20.7955 5.20523M5.20516 20.794L5.74271 20.2565M20.2579 20.2564L20.7955 20.794M5.20516 5.20517L5.74271 5.74272M19.0672 12.958C19.0672 16.3169 16.3443 19.0397 12.9855 19.0397C9.62667 19.0397 6.90381 16.3169 6.90381 12.958C6.90381 9.59922 9.62667 6.87635 12.9855 6.87635C16.3443 6.87635 19.0672 9.59922 19.0672 12.958Z" />
+  </symbol>
   <symbol id="tag" fill="none" viewBox="0 0 24 24">
     <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16.354 7.653h-.006m3.175-4.801-5.8-.446a1.77 1.77 0 0 0-1.386.512l-9.42 9.42c-.69.69-.69 1.808 0 2.498l6.247 6.247c.69.69 1.809.69 2.499 0l9.42-9.42c.364-.365.551-.87.512-1.385l-.446-5.8a1.77 1.77 0 0 0-1.626-1.626" />
   </symbol>
@@ -37,8 +43,5 @@
   </symbol>
   <symbol id="x" fill="none" viewBox="0 0 24 24">
     <path stroke="currentColor" stroke-linecap="round" stroke-width="2" d="M18 6 6 18m12 0L6 6" />
-  </symbol>
-  <symbol id='sun' fill="none" viewBox="0 0 26 26" >
-    <path stroke="currentColor" d="M13.0003 2.73677V1.97656M13.0003 24.0227V23.2624M23.2632 12.9996H24.0234M1.97729 12.9996H2.73751M20.2579 5.74278L20.7955 5.20523M5.20516 20.794L5.74271 20.2565M20.2579 20.2564L20.7955 20.794M5.20516 5.20517L5.74271 5.74272M19.0672 12.958C19.0672 16.3169 16.3443 19.0397 12.9855 19.0397C9.62667 19.0397 6.90381 16.3169 6.90381 12.958C6.90381 9.59922 9.62667 6.87635 12.9855 6.87635C16.3443 6.87635 19.0672 9.59922 19.0672 12.958Z" stroke-width="2" stroke-linecap="round"/>
   </symbol>
 </svg>
