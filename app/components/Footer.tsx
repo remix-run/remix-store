@@ -1,5 +1,5 @@
 import {Suspense} from 'react';
-import {Await, NavLink} from '@remix-run/react';
+import {Await, Link} from '@remix-run/react';
 import type {FooterQuery, HeaderQuery} from 'storefrontapi.generated';
 
 interface FooterProps {
@@ -17,7 +17,7 @@ export function Footer({
     <Suspense>
       <Await resolve={footerPromise}>
         {(footer) => (
-          <footer className="inline-flex justify-center gap-10 bg-neutral-800 border-t-[1px] border-neutral-400 border-opacity-20 w-full">
+          <footer className="inline-flex justify-center gap-10 bg-white dark:bg-neutral-800 border-t-[1px] border-neutral-400 border-opacity-20 w-full">
             {footer?.col1 && header.shop.primaryDomain?.url && (
               <FooterMenu
                 menu={footer.col1}
@@ -68,7 +68,7 @@ function FooterMenu({
       className="flex-col p-10 justify-start items-start gap-y-2"
       role="navigation"
     >
-      <h2 className="text-white justify-start py-1 text-xs font-bold">
+      <h2 className="dark-text-white justify-start py-1 text-xs font-bold">
         {menu?.title}
       </h2>
       {(menu || FALLBACK_FOOTER_MENU).items.map((item) => {
@@ -92,16 +92,14 @@ function FooterMenu({
             {item.title}
           </a>
         ) : (
-          <NavLink
-            end
+          <Link
             key={item.id}
             prefetch="intent"
-            style={activeLinkStyle}
             to={url}
-            className="flex items-center py-1 gap-1 items-start text-xs font-thin"
+            className="flex py-1 gap-1 items-start text-xs font-thin"
           >
             {item.title}
-          </NavLink>
+          </Link>
         );
       })}
     </nav>
@@ -150,22 +148,9 @@ const FALLBACK_FOOTER_MENU = {
   ],
 };
 
-function activeLinkStyle({
-  isActive,
-  isPending,
-}: {
-  isActive: boolean;
-  isPending: boolean;
-}) {
-  return {
-    fontWeight: isActive ? 'bold' : undefined,
-    color: isPending ? 'grey' : 'white',
-  };
-}
-
 function CopyrightContent() {
   return (
-    <div className="flex justify-center bg-neutral-800 text-neutral-400 text-xs pb-6">
+    <div className="flex justify-center bg-white dark:bg-neutral-800 text-neutral-400 text-xs pb-6">
       <div className="mx-6">The Remix Store was built with Hydrogen</div>
       <div className="mx-6">© {new Date().getFullYear()} Shopify, Inc.</div>
       <div className="mx-6">
