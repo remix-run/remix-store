@@ -166,7 +166,7 @@ function Layout({children}: {children?: React.ReactNode}) {
         <Meta />
         <Links />
       </head>
-      <body className="font-sans">
+      <body className="font-sans antialiased">
         {data ? (
           <Analytics.Provider
             cart={data.cart}
