@@ -9,6 +9,7 @@ import {cn} from '~/lib';
 
 import Icon from './Icon';
 import {TitleLogo} from './TitleLogo';
+import {Button} from './ui/button';
 
 interface HeaderProps {
   header: HeaderQuery;
@@ -106,6 +107,7 @@ export function HeaderMenu({
               ? new URL(item.url).pathname
               : item.url;
 
+          let size;
           let contents;
           if (item.title === 'Info') {
             contents = (
@@ -115,21 +117,24 @@ export function HeaderMenu({
                 className="text-inherit"
               />
             );
+            size = 'icon' as const;
           } else {
+            size = 'sm' as const;
             contents = item.title;
           }
           return (
-            <NavLink
-              className="cursor-pointer text-black dark:text-white uppercase"
-              end
-              key={item.id}
-              onClick={closeAside}
-              prefetch="intent"
-              style={activeLinkStyle}
-              to={url}
-            >
-              {contents}
-            </NavLink>
+            <Button key={item.id} asChild size={size}>
+              <NavLink
+                className="cursor-pointer uppercase"
+                end
+                onClick={closeAside}
+                prefetch="intent"
+                style={activeLinkStyle}
+                to={url}
+              >
+                {contents}
+              </NavLink>
+            </Button>
           );
         })}
         <ThemeToggle />
@@ -144,7 +149,9 @@ function HeaderCtas({
 }: Pick<HeaderProps, 'isLoggedIn' | 'cart'>) {
   return (
     <div className="flex items-center gap-4 ml-auto" role="navigation">
-      <Icon name="globe" aria-label="currency" />
+      <Button size="icon">
+        <Icon name="globe" aria-label="currency" />
+      </Button>
       <CartToggle cart={cart} />
     </div>
   );
@@ -164,24 +171,26 @@ function CartBadge({count}: {count: number}) {
   const {publish, shop, cart, prevCart} = useAnalytics();
 
   return (
-    <a
-      href="/cart"
-      className={cn('flex px-4 py-[14px]', {
-        'bg-success-brand': count > 0,
-      })}
-      onClick={(e) => {
-        e.preventDefault();
-        open('cart');
-        publish('cart_viewed', {
-          cart,
-          prevCart,
-          shop,
-          url: window.location.href || '',
-        } as CartViewPayload);
-      }}
-    >
-      <Icon name="bag" aria-label="cart" /> {count}
-    </a>
+    <Button asChild>
+      <a
+        href="/cart"
+        className={cn('flex gap-2', {
+          'bg-success-brand': count > 0,
+        })}
+        onClick={(e) => {
+          e.preventDefault();
+          open('cart');
+          publish('cart_viewed', {
+            cart,
+            prevCart,
+            shop,
+            url: window.location.href || '',
+          } as CartViewPayload);
+        }}
+      >
+        <Icon name="bag" aria-label="cart" /> {count}
+      </a>
+    </Button>
   );
 }
 

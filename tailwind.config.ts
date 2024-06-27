@@ -1,5 +1,6 @@
 import type {Config} from 'tailwindcss';
 import defaultTheme from 'tailwindcss/defaultTheme';
+import plugin from 'tailwindcss/plugin';
 
 const config = {
   darkMode: ['class'],
@@ -9,6 +10,13 @@ const config = {
     fontFamily: {
       body: ['"Inter"', ...defaultTheme.fontFamily.sans],
       heading: ['Founders Grotesk', ...defaultTheme.fontFamily.sans],
+    },
+    screens: {
+      sm: '640px',
+      md: '768px',
+      lg: '1024px',
+      xl: '1440px',
+      '2xl': '1980px',
     },
     colors: {
       gray: '#343436',
@@ -62,9 +70,31 @@ const config = {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
       },
+      boxShadow: {
+        'yamaha-grey':
+          '0px 2px 2px 0px rgba(255, 255, 255, 0.10) inset, 0px 4px 20px 8px rgba(248, 248, 248, 0.10) inset, 0px 6px 2px 0px rgba(0, 0, 0, 0.10), 0px 4px 0px 0px var(--Button, #59585C)',
+        'yamaha-grey-light':
+          '0px 2px 2px 0px rgba(255, 255, 255, 0.10) inset, 0px 4px 20px 8px rgba(248, 248, 248, 0.10) inset, 0px 6px 2px 0px rgba(0, 0, 0, 0.10), 0px 4px 0px 0px var(--Button, #F5F5EF)',
+        'yamaha-blue':
+          '0px 2px 1px 0px rgba(255, 255, 255, 0.10) inset, 0px 4px 20px 8px rgba(248, 248, 248, 0.10) inset, 0px 6px 2px 0px rgba(0, 0, 0, 0.15), 0px 4px 0px 0px var(--Success, #3992FF)',
+      },
     },
   },
-  plugins: [require('tailwindcss-animate')],
+  plugins: [
+    require('tailwindcss-animate'),
+    plugin(function ({addUtilities, theme}) {
+      addUtilities({
+        '.card-shadow-light': {
+          boxShadow:
+            '0px 2px 2px 0px rgba(255, 255, 255, 0.10) inset, 0px 4px 20px 8px rgba(248, 248, 248, 0.10) inset, 0px 6px 2px 0px rgba(0, 0, 0, 0.10), 0px 4px 0px 0px #F5F5EF',
+        },
+        '.card-shadow-dark': {
+          boxShadow:
+            '0px 2px 2px 0px rgba(255, 255, 255, 0.10) inset, 0px 4px 20px 8px rgba(248, 248, 248, 0.10) inset, 0px 6px 2px 0px rgba(0, 0, 0, 0.10), 0px 4px 0px 0px #59585C;',
+        },
+      });
+    }),
+  ],
 } satisfies Config;
 
 export default config;

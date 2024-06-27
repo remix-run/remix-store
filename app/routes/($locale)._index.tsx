@@ -1,13 +1,12 @@
 import {defer, type LoaderFunctionArgs} from '@shopify/remix-oxygen';
 import {Await, useLoaderData, Link, type MetaFunction} from '@remix-run/react';
 import {Suspense} from 'react';
-import {Money} from '@shopify/hydrogen';
-import {Image} from '~/components/Image';
+import {Image, Money} from '@shopify/hydrogen';
+import {CollectionGrid, CollectionItem} from '~/components/CollectionGrid';
 import type {
   FeaturedCollectionFragment,
   RecommendedProductsQuery,
 } from 'storefrontapi.generated';
-import {parseGradientColors} from '~/lib/metafields';
 
 export const meta: MetaFunction = () => {
   return [{title: 'Hydrogen | Home'}];
@@ -90,40 +89,10 @@ function RecommendedProducts({
   products: Promise<RecommendedProductsQuery | null>;
 }) {
   return (
-    <div className="recommended-products">
-      <h2>Recommended Products</h2>
+    <div>
       <Suspense fallback={<div>Loading...</div>}>
         <Await resolve={products}>
-          {(response) => (
-            <div className="recommended-products-grid">
-              {response
-                ? response.products.nodes.map((product) => {
-                    const gradients = parseGradientColors(
-                      product.gradientColors,
-                    );
-                    return (
-                      <Link
-                        key={product.id}
-                        className="recommended-product"
-                        to={`/products/${product.handle}`}
-                      >
-                        <Image
-                          aspectRatio="1/1"
-                          data={product.images.nodes[0]}
-                          gradient={gradients[0]}
-                          gradientHover={true}
-                          sizes="(min-width: 45em) 20vw, 50vw"
-                        />
-                        <h4>{product.title}</h4>
-                        <small>
-                          <Money data={product.priceRange.minVariantPrice} />
-                        </small>
-                      </Link>
-                    );
-                  })
-                : null}
-            </div>
-          )}
+          {(response) => <CollectionGrid products={response?.products} />}
         </Await>
       </Suspense>
       <br />

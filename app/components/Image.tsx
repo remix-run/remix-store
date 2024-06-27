@@ -79,7 +79,7 @@ export function Image(props: ImageProps) {
         className={clx(
           'absolute top-0 left-0 w-full h-full z-0',
           gradientHover &&
-            'opacity-0 transition-opacity duration-300 hover:opacity-100',
+            'opacity-0 transition-opacity duration-300 hover:opacity-100 cursor-pointer',
         )}
         style={{
           zIndex: -2,
@@ -96,6 +96,7 @@ export function Image(props: ImageProps) {
           }}
         />
       )}
+
       <HydrogenImage
         {...rest}
         className="pointer-events-none min-h-full min-w-full"

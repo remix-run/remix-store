@@ -46,7 +46,7 @@ export const shouldRevalidate: ShouldRevalidateFunction = ({
 export function links() {
   const preconnects = [
     {href: 'https://fonts.googleapis.com'},
-    {href: 'https://fonts.gstatic.com', crossorigin: true},
+    {href: 'https://fonts.gstatic.com', crossOrigin: 'true'},
     {href: 'https://cdn.shopify.com'},
     {href: 'https://shop.app'},
   ];
@@ -62,12 +62,17 @@ export function links() {
   return [
     ...preconnects.map((preconnect) => ({rel: 'preconnect', ...preconnect})),
     ...styleSheets.map((href) => ({rel: 'stylesheet', href})),
+
     ...localFonts.map((href) => ({
       rel: 'preload',
       as: 'font',
       href: `/font/${href}`,
     })),
-    {rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg'},
+    {rel: 'icon', href: '/favicon-32.png', sizes: '32x32'},
+    {rel: 'icon', href: '/favicon-128.png', sizes: '128x128'},
+    {rel: 'icon', href: '/favicon-180.png', sizes: '180x180'},
+    {rel: 'icon', href: '/favicon-192.png', sizes: '192x192'},
+    {rel: 'apple-touch-icon', href: '/favicon-180.png', sizes: '180x180'},
     {
       rel: 'preload',
       as: 'image',
@@ -139,14 +144,10 @@ async function loadCriticalData({context, request}: LoaderFunctionArgs) {
  */
 function loadDeferredData({context}: LoaderFunctionArgs) {
   const {storefront, customerAccount, cart} = context;
-
   // defer the footer query (below the fold)
   const footer = storefront
     .query(FOOTER_QUERY, {
       cache: storefront.CacheLong(),
-      variables: {
-        footerMenuHandle: 'footer', // Adjust to your footer menu handle
-      },
     })
     .catch((error) => {
       // Log query errors, but don't throw them so the page can still render
@@ -178,7 +179,7 @@ function Layout({children}: {children?: React.ReactNode}) {
         <Meta />
         <Links />
       </head>
-      <body className="font-sans">
+      <body className="font-sans antialiased">
         {data ? (
           <Analytics.Provider
             cart={data.cart}

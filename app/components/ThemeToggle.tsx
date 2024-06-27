@@ -3,12 +3,11 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '~/components/ui/dropdown-menu';
 import {Form, useLocation} from '@remix-run/react';
-import Icon, {IconName} from './Icon';
+import Icon from './Icon';
+import {Button} from './ui/button';
 
 const themeIconMap = {
   light: 'sun',
@@ -23,8 +22,10 @@ export function ThemeToggle() {
   return (
     <>
       <DropdownMenu>
-        <DropdownMenuTrigger>
-          <Icon name={themeIconMap[theme]} aria-label="Change theme" />
+        <DropdownMenuTrigger asChild>
+          <Button size="icon">
+            <Icon name={themeIconMap[theme]} aria-label="Change theme" />
+          </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent>
           <Form
@@ -55,7 +56,7 @@ function DropdownButton({theme}: {theme: 'light' | 'dark' | 'system'}) {
   return (
     <DropdownMenuItem asChild>
       <button
-        className="capitalize gap-2"
+        className="capitalize gap-2 cursor-pointer dark:hover:opacity-65"
         value={theme}
         name="colorScheme"
         aria-current={theme === currentTheme}

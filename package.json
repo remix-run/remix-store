@@ -16,6 +16,7 @@
   "prettier": "@shopify/prettier-config",
   "dependencies": {
     "@radix-ui/react-dropdown-menu": "^2.1.1",
+    "@radix-ui/react-slot": "^1.1.0",
     "@remix-run/react": "2.10.0",
     "@remix-run/server-runtime": "2.10.0",
     "@shopify/cli": "^3.63.1",
