@@ -17,7 +17,7 @@ export function Footer({
     <Suspense>
       <Await resolve={footerPromise}>
         {(footer) => (
-          <footer className="footer inline-flex justify-center gap-10 bg-neutral-800 border-t-[1px] border-border-400opacity20">
+          <footer className="footer inline-flex justify-center gap-10 bg-neutral-800 border-t-[1px] border-border-400opacity20 w-full">
             {footer?.col1 && header.shop.primaryDomain?.url && (
               <FooterMenu
                 menu={footer.col1}
