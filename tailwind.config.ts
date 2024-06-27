@@ -1,4 +1,5 @@
 import type {Config} from 'tailwindcss';
+import defaultTheme from 'tailwindcss/defaultTheme';
 
 const config = {
   darkMode: ['class'],
@@ -6,16 +7,8 @@ const config = {
   prefix: '',
   theme: {
     fontFamily: {
-      sans: [
-        'Inter',
-        'ui-sans-serif',
-        'system-ui',
-        'sans-serif',
-        '"Apple Color Emoji"',
-        '"Segoe UI Emoji"',
-        '"Segoe UI Symbol"',
-        '"Noto Color Emoji"',
-      ],
+      sans: ['"Inter"', ...defaultTheme.fontFamily.sans],
+      serif: ['"Inter"', ...defaultTheme.fontFamily.serif],
     },
     colors: {
       cyan: {brand: '#3DEFE9'},

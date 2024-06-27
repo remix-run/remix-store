@@ -12,6 +12,8 @@ export default async function handleRequest(
   context: AppLoadContext,
 ) {
   const {nonce, header, NonceProvider} = createContentSecurityPolicy({
+    fontSrc: ['https://fonts.googleapis.com', 'https://fonts.gstatic.com/'],
+    styleSrc: ['https://fonts.googleapis.com'],
     shop: {
       checkoutDomain: context.env.PUBLIC_CHECKOUT_DOMAIN,
       storeDomain: context.env.PUBLIC_STORE_DOMAIN,

@@ -46,30 +46,30 @@ export const shouldRevalidate: ShouldRevalidateFunction = ({
 };
 
 export function links() {
-  const preloadedFonts = [
-    'inter-roman-latin-var.woff2',
-    'inter-italic-latin-var.woff2',
+  const preconnects = [
+    {href: 'https://fonts.googleapis.com'},
+    {href: 'https://fonts.gstatic.com', crossorigin: true},
+    {href: 'https://cdn.shopify.com'},
+    {href: 'https://shop.app'},
   ];
+
+  const styleSheets = [
+    resetStyles,
+    appStyles,
+    styles,
+    'https://fonts.googleapis.com/css2?family=Inter:wght@300..800&display=swap',
+  ];
+
   return [
-    {rel: 'stylesheet', href: resetStyles},
-    {rel: 'stylesheet', href: appStyles},
-    {rel: 'stylesheet', href: styles},
+    ...preconnects.map((preconnect) => ({rel: 'preconnect', ...preconnect})),
+    ...styleSheets.map((href) => ({rel: 'stylesheet', href})),
+    {rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg'},
     {
-      rel: 'preconnect',
-      href: 'https://cdn.shopify.com',
-    },
-    {
-      rel: 'preconnect',
-      href: 'https://shop.app',
-    },
-    {rel: 'icon', type: 'image/svg+xml', href: favicon},
-    ...preloadedFonts.map((font) => ({
       rel: 'preload',
-      as: 'font',
-      href: `/font/${font}`,
-      crossOrigin: 'anonymous',
-    })),
-    {rel: 'preload', as: 'image', href: spriteUrl, type: 'image/svg+xml'},
+      as: 'image',
+      href: `../assets/sprite.svg`,
+      type: 'image/svg+xml',
+    },
   ];
 }
 
@@ -174,7 +174,7 @@ function Layout({children}: {children?: React.ReactNode}) {
         <Meta />
         <Links />
       </head>
-      <body>
+      <body className="font-sans">
         {data ? (
           <Analytics.Provider
             cart={data.cart}
