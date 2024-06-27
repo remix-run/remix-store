@@ -11,6 +11,7 @@ import {
   isRouteErrorResponse,
   type ShouldRevalidateFunction,
 } from '@remix-run/react';
+import spriteUrl from 'virtual:@mcansh/vite-svg-sprite-plugin';
 import favicon from '~/assets/favicon.svg';
 import resetStyles from '~/styles/reset.css?url';
 import styles from './tailwind.css?url';
@@ -65,6 +66,7 @@ export function links() {
       href: `/app/assets/font/${font}`,
       crossOrigin: 'anonymous',
     })),
+    {rel: 'preload', as: 'image', href: spriteUrl, type: 'image/svg+xml'},
   ];
 }
 
