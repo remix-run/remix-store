@@ -59,8 +59,12 @@ const config = {
         'accordion-up': 'accordion-up 0.2s ease-out',
       },
       boxShadow: {
-        'yamaha-button':
+        'yamaha-grey':
           '0px 2px 2px 0px rgba(255, 255, 255, 0.10) inset, 0px 4px 20px 8px rgba(248, 248, 248, 0.10) inset, 0px 6px 2px 0px rgba(0, 0, 0, 0.10), 0px 4px 0px 0px var(--Button, #59585C)',
+        'yamaha-grey-light':
+          '0px 2px 2px 0px rgba(255, 255, 255, 0.10) inset, 0px 4px 20px 8px rgba(248, 248, 248, 0.10) inset, 0px 6px 2px 0px rgba(0, 0, 0, 0.10), 0px 4px 0px 0px var(--Button, #F5F5EF)',
+        'yamaha-blue':
+          '0px 2px 1px 0px rgba(255, 255, 255, 0.10) inset, 0px 4px 20px 8px rgba(248, 248, 248, 0.10) inset, 0px 6px 2px 0px rgba(0, 0, 0, 0.15), 0px 4px 0px 0px var(--Success, #3992FF)',
       },
     },
   },
