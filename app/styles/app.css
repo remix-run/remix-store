@@ -147,7 +147,7 @@ button.reset:hover:not(:has(> *)) {
 * components/Header
 * --------------------------------------------------
 */
-.header {
+/* .header {
   align-items: center;
   display: flex;
   height: var(--header-height);
@@ -155,13 +155,7 @@ button.reset:hover:not(:has(> *)) {
   position: sticky;
   top: 0;
   z-index: 1;
-}
-
-.header-menu-mobile-toggle {
-  @media (min-width: 48em) {
-    display: none;
-  }
-}
+} */
 
 .header-menu-mobile {
   display: flex;
@@ -175,19 +169,7 @@ button.reset:hover:not(:has(> *)) {
   @media (min-width: 45em) {
     display: flex;
     grid-gap: 1rem;
-    margin-left: 3rem;
   }
-}
-
-.header-menu-item {
-  cursor: pointer;
-}
-
-.header-ctas {
-  align-items: center;
-  display: flex;
-  grid-gap: 1rem;
-  margin-left: auto;
 }
 
 /*
