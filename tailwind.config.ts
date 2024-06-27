@@ -1,5 +1,6 @@
 import type {Config} from 'tailwindcss';
 import defaultTheme from 'tailwindcss/defaultTheme';
+import plugin from 'tailwindcss/plugin';
 
 const config = {
   darkMode: ['class'],
@@ -10,6 +11,13 @@ const config = {
     fontFamily: {
       sans: ['"Inter"', ...defaultTheme.fontFamily.sans],
       serif: ['"Inter"', ...defaultTheme.fontFamily.serif],
+    },
+    screens: {
+      sm: '640px',
+      md: '768px',
+      lg: '1024px',
+      xl: '1440px',
+      '2xl': '1980px',
     },
     colors: {
       cyan: {brand: '#3DEFE9'},
@@ -68,7 +76,21 @@ const config = {
       },
     },
   },
-  plugins: [require('tailwindcss-animate')],
+  plugins: [
+    require('tailwindcss-animate'),
+    plugin(function ({addUtilities, theme}) {
+      addUtilities({
+        '.card-shadow-light': {
+          boxShadow:
+            '0px 2px 2px 0px rgba(255, 255, 255, 0.10) inset, 0px 4px 20px 8px rgba(248, 248, 248, 0.10) inset, 0px 6px 2px 0px rgba(0, 0, 0, 0.10), 0px 4px 0px 0px #F5F5EF',
+        },
+        '.card-shadow-dark': {
+          boxShadow:
+            '0px 2px 2px 0px rgba(255, 255, 255, 0.10) inset, 0px 4px 20px 8px rgba(248, 248, 248, 0.10) inset, 0px 6px 2px 0px rgba(0, 0, 0, 0.10), 0px 4px 0px 0px #59585C;',
+        },
+      });
+    }),
+  ],
 } satisfies Config;
 
 export default config;

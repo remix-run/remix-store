@@ -209,15 +209,17 @@ function ProductImage({
   }
   return (
     <div className="product-image mb-3">
-      <Image
-        alt={image.altText || 'Product Image'}
-        aspectRatio="1/1"
-        data={image}
-        key={image.id}
-        gradient={gradient}
-        gradientFade={true}
-        sizes="(min-width: 45em) 50vw, 100vw"
-      />
+      <div className="relative overflow-hidden aspect-ratio rounded-lg isolate">
+        <Image
+          alt={image.altText || 'Product Image'}
+          aspectRatio="1/1"
+          data={image}
+          key={image.id}
+          gradient={gradient}
+          gradientFade={true}
+          sizes="(min-width: 45em) 50vw, 100vw"
+        />
+      </div>
     </div>
   );
 }
