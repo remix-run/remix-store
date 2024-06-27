@@ -17,10 +17,31 @@ export function Footer({
     <Suspense>
       <Await resolve={footerPromise}>
         {(footer) => (
-          <footer className="footer">
-            {footer?.menu && header.shop.primaryDomain?.url && (
+          <footer className="footer inline-flex justify-center gap-10 bg-neutral-800 border-t-[1px] border-border-400opacity20">
+            {footer?.col1 && header.shop.primaryDomain?.url && (
               <FooterMenu
-                menu={footer.menu}
+                menu={footer.col1}
+                primaryDomainUrl={header.shop.primaryDomain.url}
+                publicStoreDomain={publicStoreDomain}
+              />
+            )}
+            {footer?.col2 && header.shop.primaryDomain?.url && (
+              <FooterMenu
+                menu={footer.col2}
+                primaryDomainUrl={header.shop.primaryDomain.url}
+                publicStoreDomain={publicStoreDomain}
+              />
+            )}
+            {footer?.col3 && header.shop.primaryDomain?.url && (
+              <FooterMenu
+                menu={footer.col3}
+                primaryDomainUrl={header.shop.primaryDomain.url}
+                publicStoreDomain={publicStoreDomain}
+              />
+            )}
+            {footer?.col4 && header.shop.primaryDomain?.url && (
+              <FooterMenu
+                menu={footer.col4}
                 primaryDomainUrl={header.shop.primaryDomain.url}
                 publicStoreDomain={publicStoreDomain}
               />
@@ -28,6 +49,7 @@ export function Footer({
           </footer>
         )}
       </Await>
+      <CopyrightContent />
     </Suspense>
   );
 }
@@ -37,12 +59,18 @@ function FooterMenu({
   primaryDomainUrl,
   publicStoreDomain,
 }: {
-  menu: FooterQuery['menu'];
+  menu: FooterQuery['col1'];
   primaryDomainUrl: FooterProps['header']['shop']['primaryDomain']['url'];
   publicStoreDomain: string;
 }) {
   return (
-    <nav className="footer-menu" role="navigation">
+    <nav
+      className="footer-menu flex-col p-10 justify-start items-start gap-y-2 antialiased"
+      role="navigation"
+    >
+      <h2 className="text-white justify-start py-1 text-xs font-bold">
+        {menu?.title}
+      </h2>
       {(menu || FALLBACK_FOOTER_MENU).items.map((item) => {
         if (!item.url) return null;
         // if the url is internal, we strip the domain
@@ -54,7 +82,13 @@ function FooterMenu({
             : item.url;
         const isExternal = !url.startsWith('/');
         return isExternal ? (
-          <a href={url} key={item.id} rel="noopener noreferrer" target="_blank">
+          <a
+            href={url}
+            key={item.id}
+            rel="noopener noreferrer"
+            target="_blank"
+            className="py-0 text-xs font-thin"
+          >
             {item.title}
           </a>
         ) : (
@@ -64,6 +98,7 @@ function FooterMenu({
             prefetch="intent"
             style={activeLinkStyle}
             to={url}
+            className="flex-col items-start text-xs font-thin"
           >
             {item.title}
           </NavLink>
@@ -126,4 +161,16 @@ function activeLinkStyle({
     fontWeight: isActive ? 'bold' : undefined,
     color: isPending ? 'grey' : 'white',
   };
+}
+
+function CopyrightContent() {
+  return (
+    <div className="flex justify-center bg-neutral-800 text-neutral-400 text-xs pb-6 antialiased">
+      <div className="mx-6">The Remix Store was built with Hydrogen</div>
+      <div className="mx-6">© 2024 Shopify, Inc.</div>
+      <div className="mx-6">
+        Hydrogen is an MIT Licensed Open Source project
+      </div>
+    </div>
+  );
 }

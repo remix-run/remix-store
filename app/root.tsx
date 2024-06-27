@@ -132,13 +132,12 @@ async function loadCriticalData({context, request}: LoaderFunctionArgs) {
  */
 function loadDeferredData({context}: LoaderFunctionArgs) {
   const {storefront, customerAccount, cart} = context;
-
   // defer the footer query (below the fold)
   const footer = storefront
     .query(FOOTER_QUERY, {
-      cache: storefront.CacheLong(),
+      cache: storefront.CacheNone(),
       variables: {
-        footerMenuHandle: 'footer', // Adjust to your footer menu handle
+        //footerMenuHandle: 'the-remix-shop', // Adjust to your footer menu handle
       },
     })
     .catch((error) => {

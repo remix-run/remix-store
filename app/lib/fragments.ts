@@ -133,6 +133,7 @@ const MENU_FRAGMENT = `#graphql
   }
   fragment Menu on Menu {
     id
+    title
     items {
       ...ParentMenuItem
     }
@@ -173,10 +174,18 @@ export const HEADER_QUERY = `#graphql
 export const FOOTER_QUERY = `#graphql
   query Footer(
     $country: CountryCode
-    $footerMenuHandle: String!
     $language: LanguageCode
   ) @inContext(language: $language, country: $country) {
-    menu(handle: $footerMenuHandle) {
+    col1: menu(handle: "the-remix-shop") {
+      ...Menu
+    }
+    col2: menu(handle: "remix-community") {
+      ...Menu
+    }
+    col3: menu(handle: "remix-resources") {
+      ...Menu
+    }
+    col4: menu(handle: "hydrogen-resources") {
       ...Menu
     }
   }
