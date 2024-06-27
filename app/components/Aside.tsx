@@ -1,4 +1,5 @@
 import {createContext, type ReactNode, useContext, useState} from 'react';
+import clsx from 'clsx';
 
 type AsideType = 'search' | 'cart' | 'mobile' | 'closed';
 type AsideContextValue = {
@@ -27,27 +28,48 @@ export function Aside({
   heading: React.ReactNode;
 }) {
   const {type: activeType, close} = useAside();
-  const expanded = type === activeType;
+  const isOpen = type === activeType;
 
   return (
     <div
+      className={clsx(
+        `overlay fixed inset-0 pointer-none`,
+        isOpen && 'expanded',
+      )}
       aria-modal
-      className={`overlay ${expanded ? 'expanded' : ''}`}
       role="dialog"
     >
       <button className="close-outside" onClick={close} />
-      <aside>
-        <header>
-          <h3>{heading}</h3>
+      <aside
+        className={clsx(
+          isOpen ? 'right-0' : 'right-[-586px]',
+          'bg-white dark:bg-black w-[586px] fixed top-0 h-dvh transition-transform duration-300 ease-in-out',
+        )}
+      >
+        <header
+          className={clsx(
+            'justify-between items-center flex px-8 h-[110px] dark:bg-gray',
+          )}
+        >
+          <h3 className={clsx('m-0')}>{heading}</h3>
           <button className="close reset" onClick={close}>
             &times;
           </button>
         </header>
-        <main>{children}</main>
+        <main className={clsx('m-8')}>{children}</main>
       </aside>
     </div>
   );
 }
+
+/**
+  align-items: center;
+  border-bottom: 1px solid var(--color-dark);
+  display: flex;
+  height: var(--header-height);
+  justify-content: space-between;
+  padding: 0 20px;
+*/
 
 const AsideContext = createContext<AsideContextValue | null>(null);
 

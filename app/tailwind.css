@@ -11,6 +11,14 @@ a {
 
 html,
 body {
-  @apply bg-neutral-200 dark:bg-neutral-800;
+  @apply bg-white dark:bg-black font-body;
   @apply text-black dark:text-white;
+}
+
+h1,h2,h3 {
+  @apply text-5xl font-bold font-heading text-black dark:text-white tracking-tightest;
+}
+
+p, b, strong, span, li, em {
+  @apply text-black dark:text-white text-base;
 }

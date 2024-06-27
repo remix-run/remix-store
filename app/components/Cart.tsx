@@ -10,6 +10,7 @@ import type {CartApiQueryFragment} from 'storefrontapi.generated';
 import {useVariantUrl} from '~/lib/variants';
 import {Image} from '~/components/Image';
 import {parseGradientColors} from '~/lib/metafields';
+import clsx from 'clsx';
 
 type CartLine = OptimisticCart<CartApiQueryFragment>['lines']['nodes'][0];
 
@@ -25,10 +26,12 @@ export function CartMain({layout, cart: originalCart}: CartMainProps) {
   const withDiscount =
     cart &&
     Boolean(cart?.discountCodes?.filter((code) => code.applicable)?.length);
+
+  // TODO: cart main vs sidecart in tailwind
   const className = `cart-main ${withDiscount ? 'with-discount' : ''}`;
 
   return (
-    <div className={className}>
+    <div className={clsx(className)}>
       <CartEmpty hidden={linesCount} layout={layout} />
       <CartDetails cart={cart} layout={layout} />
     </div>
@@ -46,6 +49,9 @@ function CartDetails({
 
   return (
     <div className="cart-details">
+      <p>
+        There are <strong>{cart.totalQuantity}</strong> items in this cart
+      </p>
       <CartLines lines={cart?.lines?.nodes} layout={layout} />
       {cartHasItems && (
         <CartSummary cost={cart.cost} layout={layout}>
@@ -67,7 +73,7 @@ function CartLines({
   if (!lines) return null;
 
   return (
-    <div aria-labelledby="cart-lines">
+    <div aria-labelledby="cart-lines" className={clsx('')}>
       <ul>
         {lines.map((line) => (
           <CartLineItem key={line.id} line={line} layout={layout} />
@@ -90,21 +96,26 @@ function CartLineItem({
   const gradients = parseGradientColors(product.gradientColors);
 
   return (
-    <li key={id} className="cart-line">
+    <li
+      key={id}
+      className={clsx('cart-line', 'flex first:pt-8 py-4 last:pb-8')}
+    >
       {image && (
-        <Image
-          alt={title}
-          aspectRatio="1/1"
-          data={image}
-          height={100}
-          loading="lazy"
-          width={100}
-          gradient={gradients[0]}
-          gradientFade
-        />
+        <div className="w-[148px] h-[148px]">
+          <Image
+            alt={title}
+            aspectRatio="1/1"
+            data={image}
+            height={100}
+            loading="lazy"
+            width={100}
+            gradient={gradients[0]}
+            gradientFade
+          />
+        </div>
       )}
 
-      <div>
+      <div className={clsx('ml-6 flex flex-col')}>
         <Link
           prefetch="intent"
           to={lineItemUrl}
@@ -121,13 +132,17 @@ function CartLineItem({
         </Link>
         <CartLinePrice line={line} as="span" />
         <ul>
-          {selectedOptions.map((option) => (
-            <li key={option.name}>
-              <small>
-                {option.name}: {option.value}
-              </small>
-            </li>
-          ))}
+          {selectedOptions.map((option) => {
+            const isDefaultVariant = option.value === 'Default Title';
+            if (isDefaultVariant) return null;
+            return (
+              <li key={option.name}>
+                <small>
+                  {option.name}: {option.value}
+                </small>
+              </li>
+            );
+          })}
         </ul>
         <CartLineQuantity line={line} />
       </div>
@@ -161,9 +176,14 @@ export function CartSummary({
     layout === 'page' ? 'cart-summary-page' : 'cart-summary-aside';
 
   return (
-    <div aria-labelledby="cart-summary" className={className}>
-      <h4>Totals</h4>
-      <dl className="cart-subtotal">
+    <div
+      aria-labelledby="cart-summary"
+      className={clsx(
+        className,
+        'absolute left-0 bottom-0 bg-lightGray dark:bg-gray p-8 w-[586px]',
+      )}
+    >
+      <dl className={clsx('flex justify-between w-full')}>
         <dt>Subtotal</dt>
         <dd>
           {cost?.subtotalAmount?.amount ? (
@@ -302,7 +322,7 @@ function CartDiscounts({
       ?.map(({code}) => code) || [];
 
   return (
-    <div>
+    <div className={clsx('py-8')}>
       {/* Have existing discount, display it with a remove option */}
       <dl hidden={!codes.length}>
         <div>
@@ -319,10 +339,13 @@ function CartDiscounts({
 
       {/* Show an input to apply a discount */}
       <UpdateDiscountForm discountCodes={codes}>
-        <div>
-          <input type="text" name="discountCode" placeholder="Discount code" />
-          &nbsp;
-          <button type="submit">Apply</button>
+        <div className={clsx('w-100 flex justify-between')}>
+          <input
+            type="text"
+            name="discountCode"
+            placeholder="Enter promo code"
+          />
+          <button type="submit">APPLY CODE</button>
         </div>
       </UpdateDiscountForm>
     </div>

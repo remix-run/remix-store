@@ -69,7 +69,11 @@ export function Image(props: ImageProps) {
   }
 
   return (
-    <div className="relative overflow-hidden aspect-ratio rounded-lg isolate">
+    <div
+      className={clx(
+        'relative overflow-hidden rounded-lg isolate min-w-full min-h-full',
+      )}
+    >
       {/* Color gradient layer */}
       <div
         className={clx(
@@ -92,7 +96,10 @@ export function Image(props: ImageProps) {
           }}
         />
       )}
-      <HydrogenImage {...rest} className="pointer-events-none" />
+      <HydrogenImage
+        {...rest}
+        className="pointer-events-none min-h-full min-w-full"
+      />
     </div>
   );
 }

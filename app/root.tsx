@@ -18,7 +18,7 @@ import {PageLayout} from '~/components/PageLayout';
 import {FOOTER_QUERY, HEADER_QUERY} from '~/lib/fragments';
 import {parseColorScheme} from './lib/color-scheme.server';
 import clsx from 'clsx';
-import {ColorSchemeScript, useColorScheme} from './lib/color-scheme';
+import {ColorSchemeScript, useColorScheme} from '~/lib/color-scheme';
 
 export type RootLoader = typeof loader;
 
@@ -54,11 +54,19 @@ export function links() {
   const styleSheets = [
     appStyles, // TODO: remove when finished with tailwind
     'https://fonts.googleapis.com/css2?family=Inter:wght@300..800&display=swap',
+    'https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&display=swap',
   ];
+
+  const localFonts = ['FoundersGrotesk-Bold.woff2'];
 
   return [
     ...preconnects.map((preconnect) => ({rel: 'preconnect', ...preconnect})),
     ...styleSheets.map((href) => ({rel: 'stylesheet', href})),
+    ...localFonts.map((href) => ({
+      rel: 'preload',
+      as: 'font',
+      href: `/font/${href}`,
+    })),
     {rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg'},
     {
       rel: 'preload',
