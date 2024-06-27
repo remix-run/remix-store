@@ -66,23 +66,57 @@ interface ButtonProps
   asChild?: boolean;
 }
 
+// color: var(--Text, #DADADA);
+// font-family: Inter;
+// font-size: 16px;
+// font-style: normal;
+// font-weight: 700;
+// line-height: normal;
+// letter-spacing: 0.64px;
+
+// border-radius: 12px;
+// background: var(--Button, #59585C);
+// box-shadow:
+//   0px 2px 2px 0px rgba(255, 255, 255, 0.10) inset,
+//   0px 4px 20px 8px rgba(248, 248, 248, 0.10) inset,
+//   0px 6px 2px 0px rgba(0, 0, 0, 0.10),
+//   0px 4px 0px 0px var(--Button, #59585C);
+
+/// WELL
+
+// border-radius: 14px;
+// background: var(--Button-Well-or-Form-Field, rgba(0, 0, 0, 0.20));
+
 export function Button({asChild, ...props}: ButtonProps) {
   const Comp = asChild ? Slot : 'button';
+
+  const textStyles = 'text-neutral-600 dark:text-neutral-300 leading-6';
+  const buttonStyles =
+    'rounded-[12px] py-3 bg-neutral-50 dark:bg-neutral-500 bg-opacity-5 dark:bg-opacity-100';
+  const textButtonStyles = 'px-4';
+  const iconButtonStyles = 'px-[14px]';
+  const borderStyles = 'shadow-yamaha-button';
+  const wellStyles = 'rounded-[14px] bg-cyan-brand bg-opacity-5 dark:bg-opacity-20';
+
   return (
-    <Comp
-      {...props}
-      className={cn(
-        props.className,
-        'rounded-[14px] shadow-inner',
+    // <div className='overflow-hidden relative px-[4px] py-[3px]'>
+      <Comp
+        {...props}
+        className={cn(
+          textStyles,
+          buttonStyles,
+          textButtonStyles,
+          borderStyles,
+          // wellStyles,
+          // 'shadow-inner',
 
-        'py-3 px-4',
-        'text-neutral-600 dark:text-neutral-300',
-        'bg-neutral-50 dark:bg-neutral-500',
-        'bg-opacity-5 dark:bg-opacity-100',
+          // 'hover:bg-white dark:hover:bg-white dark:hover:bg-opacity-20',
+          // 'border-[4px] border-opacity-5 border-black',
 
-        'hover:bg-white dark:hover:bg-white dark:hover:bg-opacity-20',
-        'border-[4px] border-opacity-5 border-black',
-      )}
-    />
+          props.className,
+        )}
+      />
+    //   <div className={cn(wellStyles, '-z-10 absolute left-0 right-0 top-0 bottom-0')} />
+    // </div>
   );
 }

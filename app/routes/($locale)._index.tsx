@@ -8,6 +8,7 @@ import type {
   RecommendedProductsQuery,
 } from 'storefrontapi.generated';
 import {parseGradientColors} from '~/lib/metafields';
+import { Button } from '~/components/ui/button';
 
 export const meta: MetaFunction = () => {
   return [{title: 'Hydrogen | Home'}];
@@ -91,6 +92,7 @@ function RecommendedProducts({
 }) {
   return (
     <div className="recommended-products">
+      <Button>Test Button</Button>
       <h2>Recommended Products</h2>
       <Suspense fallback={<div>Loading...</div>}>
         <Await resolve={products}>
