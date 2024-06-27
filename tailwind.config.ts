@@ -35,6 +35,9 @@ const config = {
         700: '#343436',
         800: '#242426',
       },
+      border: {
+        '400opacity20': 'rgba(128, 128, 128, 0.2)',
+      },
     },
     container: {
       center: true,
