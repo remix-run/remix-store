@@ -43,8 +43,8 @@ const icons: Record<IconName, string> = {
   x,
 };
 
-type Props = React.SVGProps<SVGElement> & {name: IconName};
-export default function Icon({name, className}: Props) {
+export type IconProps = React.SVGProps<SVGElement> & {name: IconName};
+export default function Icon({name, className}: IconProps) {
   return (
     <svg className={twMerge('size-6 text-black', className)} aria-hidden>
       <use href={icons[name]} />
