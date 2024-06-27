@@ -125,7 +125,7 @@ export function HeaderMenu({
           return (
             <Button key={item.id} asChild size={size}>
               <NavLink
-                className="cursor-pointer text-black dark:text-white uppercase"
+                className="cursor-pointer uppercase"
                 end
                 onClick={closeAside}
                 prefetch="intent"
@@ -149,7 +149,7 @@ function HeaderCtas({
 }: Pick<HeaderProps, 'isLoggedIn' | 'cart'>) {
   return (
     <div className="flex items-center gap-4 ml-auto" role="navigation">
-      <Button>
+      <Button size="icon">
         <Icon name="globe" aria-label="currency" />
       </Button>
       <CartToggle cart={cart} />
