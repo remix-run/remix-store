@@ -8,6 +8,7 @@ import {
   DropdownMenuTrigger,
 } from '~/components/ui/dropdown-menu';
 import {Form, useLocation} from '@remix-run/react';
+import Icon from './Icon';
 
 export function ThemeToggle() {
   const theme = useColorScheme();
@@ -16,7 +17,12 @@ export function ThemeToggle() {
   return (
     <>
       <DropdownMenu>
-        <DropdownMenuTrigger>Theme {theme}</DropdownMenuTrigger>
+        <DropdownMenuTrigger>
+          <Icon
+            name={theme === 'dark' ? 'sun' : 'moon'}
+            aria-label="Change theme"
+          />
+        </DropdownMenuTrigger>
         <DropdownMenuContent>
           <Form
             preventScrollReset
