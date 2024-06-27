@@ -8,7 +8,8 @@ import type {
   RecommendedProductsQuery,
 } from 'storefrontapi.generated';
 import {parseGradientColors} from '~/lib/metafields';
-import { Button } from '~/components/ui/button';
+import {Button} from '~/components/ui/button';
+import Icon from '~/components/Icon';
 
 export const meta: MetaFunction = () => {
   return [{title: 'Hydrogen | Home'}];
@@ -92,7 +93,18 @@ function RecommendedProducts({
 }) {
   return (
     <div className="recommended-products">
-      <Button>Test Button</Button>
+      <div className="flex flex-col gap-3 p-3 bg-neutral-800 rounded">
+        <div className="flex flex-row gap-3">
+          <Button>Inline Button</Button>
+          <Button>
+            <Icon name="info" className="text-inherit" />
+          </Button>
+        </div>
+        <div className="flex flex-row">
+          <Button className="w-full">Full Width Button</Button>
+        </div>
+      </div>
+
       <h2>Recommended Products</h2>
       <Suspense fallback={<div>Loading...</div>}>
         <Await resolve={products}>
