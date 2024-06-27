@@ -28,13 +28,13 @@ export async function loader(args: LoaderFunctionArgs) {
  * needed to render the page. If it's unavailable, the whole page should 400 or 500 error.
  */
 async function loadCriticalData({context}: LoaderFunctionArgs) {
-  const [{collections}] = await Promise.all([
+  const [collection] = await Promise.all([
     context.storefront.query(FEATURED_COLLECTION_QUERY),
     // Add other queries here, so that they are loaded in parallel
   ]);
 
   return {
-    featuredCollection: collections.nodes[0],
+    featuredCollection: collection.collectionByHandle,
   };
 }
 
@@ -60,31 +60,26 @@ function loadDeferredData({context}: LoaderFunctionArgs) {
 export default function Homepage() {
   const data = useLoaderData<typeof loader>();
   return (
-    <div className="home">
+    <>
       <FeaturedCollection collection={data.featuredCollection} />
       <RecommendedProducts products={data.recommendedProducts} />
-    </div>
+    </>
   );
 }
 
 function FeaturedCollection({
   collection,
 }: {
-  collection: FeaturedCollectionFragment;
+  collection: FeaturedCollectionFragment | undefined | null;
 }) {
   if (!collection) return null;
   const image = collection?.image;
   return (
     <Link
-      className="featured-collection"
+      className="block mb-8 relative px-16"
       to={`/collections/${collection.handle}`}
     >
-      {image && (
-        <div className="featured-collection-image">
-          <Image data={image} sizes="100vw" />
-        </div>
-      )}
-      <h1>{collection.title}</h1>
+      {image && <Image data={image} sizes="100vw" />}
     </Link>
   );
 }
@@ -113,11 +108,11 @@ function RecommendedProducts({
                         to={`/products/${product.handle}`}
                       >
                         <Image
-                          data={product.images.nodes[0]}
                           aspectRatio="1/1"
-                          sizes="(min-width: 45em) 20vw, 50vw"
+                          data={product.images.nodes[0]}
                           gradient={gradients[0]}
-                          gradientFade={true}
+                          gradientHover={true}
+                          sizes="(min-width: 45em) 20vw, 50vw"
                         />
                         <h4>{product.title}</h4>
                         <small>
@@ -138,23 +133,22 @@ function RecommendedProducts({
 
 const FEATURED_COLLECTION_QUERY = `#graphql
   fragment FeaturedCollection on Collection {
-    id
-    title
-    image {
       id
-      url
-      altText
-      width
-      height
+      title
+      image {
+        id
+        url
+        altText
+        width
+        height
+      }
+      handle
     }
-    handle
-  }
+
   query FeaturedCollection($country: CountryCode, $language: LanguageCode)
     @inContext(country: $country, language: $language) {
-    collections(first: 1, sortKey: UPDATED_AT, reverse: true) {
-      nodes {
-        ...FeaturedCollection
-      }
+    collectionByHandle(handle: "featured") {
+      ...FeaturedCollection
     }
   }
 ` as const;

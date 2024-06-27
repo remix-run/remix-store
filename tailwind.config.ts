@@ -4,6 +4,7 @@ import defaultTheme from 'tailwindcss/defaultTheme';
 const config = {
   darkMode: ['class'],
   content: ['./app/**/*.{js,jsx,ts,tsx}'],
+  // mode: 'jit',
   prefix: '',
   theme: {
     fontFamily: {

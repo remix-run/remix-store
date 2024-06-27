@@ -12,7 +12,7 @@ import {
   type ShouldRevalidateFunction,
 } from '@remix-run/react';
 import spriteUrl from 'virtual:@mcansh/vite-svg-sprite-plugin';
-import styles from './tailwind.css?url';
+import './tailwind.css';
 import appStyles from '~/styles/app.css?url';
 import {PageLayout} from '~/components/PageLayout';
 import {FOOTER_QUERY, HEADER_QUERY} from '~/lib/fragments';
@@ -52,8 +52,7 @@ export function links() {
   ];
 
   const styleSheets = [
-    appStyles,
-    styles,
+    appStyles, // TODO: remove when finished with tailwind
     'https://fonts.googleapis.com/css2?family=Inter:wght@300..800&display=swap',
   ];
 

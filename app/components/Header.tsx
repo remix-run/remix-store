@@ -30,8 +30,7 @@ export function Header({
     <header
       className={cn(
         'sticky flex justify-between items-center',
-        'py-7 px-9',
-        'sticky',
+        'pt-7 pb-5 px-9',
         'bg-neutral-200 dark:bg-neutral-800',
         'text-black dark:text-white',
       )}
@@ -39,14 +38,14 @@ export function Header({
       <HeaderMenu
         menu={menu}
         viewport="desktop"
-        primaryDomainUrl={header.shop.primaryDomain.url}
+        primaryDomainUrl={shop.primaryDomain.url}
         publicStoreDomain={publicStoreDomain}
       />
       <NavLink
         prefetch="intent"
         to="/"
         style={activeLinkStyle}
-        className={cn('flex-grow', 'text-center')}
+        className="flex-grow text-center"
         end
       >
         <TitleLogo />
@@ -77,7 +76,6 @@ export function HeaderMenu({
   return (
     <>
       <HeaderMenuMobileToggle />
-
       <nav
         className={cn({
           'flex gap-4': true,
@@ -145,7 +143,7 @@ function HeaderCtas({
   cart,
 }: Pick<HeaderProps, 'isLoggedIn' | 'cart'>) {
   return (
-    <div className={cn('flex items-center gap-4 ml-auto')} role="navigation">
+    <div className="flex items-center gap-4 ml-auto" role="navigation">
       <Icon name="globe" aria-label="currency" />
       <CartToggle cart={cart} />
     </div>
