@@ -12,6 +12,7 @@
 * components/Aside
 * --------------------------------------------------
 */
+/* TODO: add actual icon */
 aside header .close {
   font-weight: bold;
   opacity: 0.8;
@@ -20,14 +21,8 @@ aside header .close {
   width: 20px;
 }
 
-aside header .close:hover {
-  opacity: 1;
-}
-
 .overlay {
-  /* pointer-events: none; */
   transition: opacity 400ms ease-in-out;
-  transition: opacity 400ms;
   visibility: hidden;
   z-index: 10;
 }
@@ -40,7 +35,7 @@ aside header .close:hover {
   left: 0;
   position: absolute;
   top: 0;
-  width: calc(100% - var(--aside-width));
+  width: calc(100% - 586px);
 }
 
 .overlay .cancel {

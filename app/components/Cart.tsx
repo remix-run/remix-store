@@ -55,6 +55,7 @@ function CartDetails({
       <CartLines lines={cart?.lines?.nodes} layout={layout} />
       {cartHasItems && (
         <CartSummary cost={cart.cost} layout={layout}>
+          <CartSubTotal subtotalAmount={cart.cost.subtotalAmount} />
           <CartDiscounts discountCodes={cart.discountCodes} />
           <CartCheckoutActions checkoutUrl={cart.checkoutUrl} />
         </CartSummary>
@@ -163,6 +164,28 @@ function CartCheckoutActions({checkoutUrl}: {checkoutUrl: string}) {
   );
 }
 
+function CartSubTotal({
+  subtotalAmount,
+}: {
+  subtotalAmount: CartApiQueryFragment['cost']['subtotalAmount'];
+}) {
+  return (
+    <dl className={clsx('flex justify-between w-full')}>
+      <dt className="text-xl">Subtotal</dt>
+      <dd>
+        {subtotalAmount?.amount ? (
+          <p className="inline-flex">
+            <span className="mr-3">{subtotalAmount.currencyCode}</span>
+            <Money as="strong" data={subtotalAmount} />
+          </p>
+        ) : (
+          '-'
+        )}
+      </dd>
+    </dl>
+  );
+}
+
 export function CartSummary({
   cost,
   layout,
@@ -183,16 +206,6 @@ export function CartSummary({
         'absolute left-0 bottom-0 bg-lightGray dark:bg-gray p-8 w-[586px]',
       )}
     >
-      <dl className={clsx('flex justify-between w-full')}>
-        <dt>Subtotal</dt>
-        <dd>
-          {cost?.subtotalAmount?.amount ? (
-            <Money data={cost?.subtotalAmount} />
-          ) : (
-            '-'
-          )}
-        </dd>
-      </dl>
       {children}
     </div>
   );
@@ -298,7 +311,7 @@ export function CartEmpty({
       </p>
       <br />
       <Link
-        to="/collections"
+        to="/collections/all"
         onClick={() => {
           if (layout === 'aside') {
             window.location.href = '/collections';
