@@ -17,7 +17,7 @@ export function Footer({
     <Suspense>
       <Await resolve={footerPromise}>
         {(footer) => (
-          <footer className="footer inline-flex justify-center gap-10 bg-neutral-800 border-t-[1px] border-neutral-400 border-opacity-20 w-full">
+          <footer className="inline-flex justify-center gap-10 bg-neutral-800 border-t-[1px] border-neutral-400 border-opacity-20 w-full">
             {footer?.col1 && header.shop.primaryDomain?.url && (
               <FooterMenu
                 menu={footer.col1}
@@ -65,7 +65,7 @@ function FooterMenu({
 }) {
   return (
     <nav
-      className="footer-menu flex-col p-10 justify-start items-start gap-y-2 antialiased"
+      className="flex-col p-10 justify-start items-start gap-y-2"
       role="navigation"
     >
       <h2 className="text-white justify-start py-1 text-xs font-bold">
@@ -87,7 +87,7 @@ function FooterMenu({
             key={item.id}
             rel="noopener noreferrer"
             target="_blank"
-            className="py-0 text-xs font-thin"
+            className="flex items-center py-1 gap-1 text-xs font-thin"
           >
             {item.title}
           </a>
@@ -98,7 +98,7 @@ function FooterMenu({
             prefetch="intent"
             style={activeLinkStyle}
             to={url}
-            className="flex-col items-start text-xs font-thin"
+            className="flex items-center py-1 gap-1 items-start text-xs font-thin"
           >
             {item.title}
           </NavLink>
@@ -165,7 +165,7 @@ function activeLinkStyle({
 
 function CopyrightContent() {
   return (
-    <div className="flex justify-center bg-neutral-800 text-neutral-400 text-xs pb-6 antialiased">
+    <div className="flex justify-center bg-neutral-800 text-neutral-400 text-xs pb-6">
       <div className="mx-6">The Remix Store was built with Hydrogen</div>
       <div className="mx-6">© {new Date().getFullYear()} Shopify, Inc.</div>
       <div className="mx-6">
