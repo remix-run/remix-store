@@ -7,7 +7,6 @@ import type {
   FeaturedCollectionFragment,
   RecommendedProductsQuery,
 } from 'storefrontapi.generated';
-import Icon from '~/components/Icon';
 
 export const meta: MetaFunction = () => {
   return [{title: 'Hydrogen | Home'}];
