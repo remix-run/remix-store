@@ -7,6 +7,7 @@ import type {
   FeaturedCollectionFragment,
   RecommendedProductsQuery,
 } from 'storefrontapi.generated';
+import {parseGradientColors} from '~/lib/metafields';
 
 export const meta: MetaFunction = () => {
   return [{title: 'Hydrogen | Home'}];
@@ -101,24 +102,30 @@ function RecommendedProducts({
           {(response) => (
             <div className="recommended-products-grid">
               {response
-                ? response.products.nodes.map((product) => (
-                    <Link
-                      key={product.id}
-                      className="recommended-product"
-                      to={`/products/${product.handle}`}
-                    >
-                      <Image
-                        data={product.images.nodes[0]}
-                        aspectRatio="1/1"
-                        sizes="(min-width: 45em) 20vw, 50vw"
-                        gradient="blue"
-                      />
-                      <h4>{product.title}</h4>
-                      <small>
-                        <Money data={product.priceRange.minVariantPrice} />
-                      </small>
-                    </Link>
-                  ))
+                ? response.products.nodes.map((product) => {
+                    const gradients = parseGradientColors(
+                      product.gradientColors,
+                    );
+                    return (
+                      <Link
+                        key={product.id}
+                        className="recommended-product"
+                        to={`/products/${product.handle}`}
+                      >
+                        <Image
+                          data={product.images.nodes[0]}
+                          aspectRatio="1/1"
+                          sizes="(min-width: 45em) 20vw, 50vw"
+                          gradient={gradients[0]}
+                          gradientFade={true}
+                        />
+                        <h4>{product.title}</h4>
+                        <small>
+                          <Money data={product.priceRange.minVariantPrice} />
+                        </small>
+                      </Link>
+                    );
+                  })
                 : null}
             </div>
           )}
@@ -171,6 +178,9 @@ const RECOMMENDED_PRODUCTS_QUERY = `#graphql
         width
         height
       }
+    }
+    gradientColors: metafield(key: "images_gradient_background", namespace: "custom") {
+      value
     }
   }
   query RecommendedProducts ($country: CountryCode, $language: LanguageCode)

@@ -1,6 +1,5 @@
 import {
   CartForm,
-  Image,
   Money,
   useOptimisticCart,
   type OptimisticCart,
@@ -9,6 +8,8 @@ import type {CartLineUpdateInput} from '@shopify/hydrogen/storefront-api-types';
 import {Link} from '@remix-run/react';
 import type {CartApiQueryFragment} from 'storefrontapi.generated';
 import {useVariantUrl} from '~/lib/variants';
+import {Image} from '~/components/Image';
+import {parseGradientColors} from '~/lib/metafields';
 
 type CartLine = OptimisticCart<CartApiQueryFragment>['lines']['nodes'][0];
 
@@ -86,6 +87,7 @@ function CartLineItem({
   const {id, merchandise} = line;
   const {product, title, image, selectedOptions} = merchandise;
   const lineItemUrl = useVariantUrl(product.handle, selectedOptions);
+  const gradients = parseGradientColors(product.gradientColors);
 
   return (
     <li key={id} className="cart-line">
@@ -97,6 +99,8 @@ function CartLineItem({
           height={100}
           loading="lazy"
           width={100}
+          gradient={gradients[0]}
+          gradientFade
         />
       )}
 
