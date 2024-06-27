@@ -19,7 +19,7 @@ import {PageLayout} from '~/components/PageLayout';
 import {FOOTER_QUERY, HEADER_QUERY} from '~/lib/fragments';
 import {parseColorScheme} from './lib/color-scheme.server';
 import clsx from 'clsx';
-import {useColorScheme} from './lib/color-scheme';
+import {ColorSchemeScript, useColorScheme} from './lib/color-scheme';
 
 export type RootLoader = typeof loader;
 
@@ -160,14 +160,11 @@ function Layout({children}: {children?: React.ReactNode}) {
   const colorScheme = useColorScheme();
 
   return (
-    <html
-      lang="en"
-      className={clsx(colorScheme)}
-      //data-theme={forceDark ? 'dark' : colorScheme}
-    >
+    <html lang="en" className={clsx({dark: colorScheme === 'dark'})}>
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <ColorSchemeScript />
         <Meta />
         <Links />
       </head>

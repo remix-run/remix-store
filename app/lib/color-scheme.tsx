@@ -31,6 +31,7 @@ function ColorSchemeScriptImpl() {
   const [script] = useState(
     () => `
         let colorScheme = ${JSON.stringify(colorScheme)};
+        console.log('Running teh thing', colorScheme);
         if (colorScheme === "system") {
           let media = window.matchMedia("(prefers-color-scheme: dark)")
           if (media.matches) document.documentElement.classList.add("dark");
