@@ -313,7 +313,7 @@ export function CartEmpty({
         to="/collections/all"
         onClick={() => {
           if (layout === 'aside') {
-            window.location.href = '/collections';
+            window.location.href = '/collections/all';
           }
         }}
       >
