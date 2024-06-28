@@ -156,9 +156,9 @@ function CartCheckoutActions({checkoutUrl}: {checkoutUrl: string}) {
   if (!checkoutUrl) return null;
 
   return (
-    <div>
-      <a href={checkoutUrl} target="_self">
-        <p>Continue to Checkout &rarr;</p>
+    <div className="pt-8 flex">
+      <a className="m-0 p-0 block" href={checkoutUrl} target="_self">
+        <p>Continue to checkout</p>
       </a>
       <br />
     </div>
@@ -332,7 +332,7 @@ function CartDiscounts({
       ?.map(({code}) => code) || [];
 
   return (
-    <div className={clsx('py-8')}>
+    <div className={clsx('pt-8')}>
       {/* Have existing discount, display it with a remove option */}
       <dl hidden={!codes.length}>
         <div>

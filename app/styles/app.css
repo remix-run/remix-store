@@ -106,26 +106,11 @@ button.reset:hover:not(:has(> *)) {
   width: auto;
 }
 
-.cart-main.with-discount {
-  max-height: calc(100vh - var(--cart-aside-summary-height-with-discount));
-}
-
 .cart-summary-page {
   position: relative;
 }
 
 .cart-line-quantity {
-  display: flex;
-}
-
-.cart-discount {
-  align-items: center;
-  display: flex;
-  margin-top: 0.25rem;
-}
-
-.cart-subtotal {
-  align-items: center;
   display: flex;
 }
 /*
