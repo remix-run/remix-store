@@ -24,7 +24,7 @@ export function CollectionItem({product}: CollectionItemProps) {
     >
       <div
         className={clsx(
-          'rounded-2xl bg-neutral-100 dark:bg-neutral-800 card-shadow-light dark:card-shadow-dark relative overflow-hidden aspect-ratio isolate max-w-[445px] max-h-[445px]',
+          'rounded-2xl bg-white dark:bg-black card-shadow-light dark:card-shadow-dark relative overflow-hidden aspect-ratio isolate max-w-[445px] max-h-[445px]',
         )}
       >
         <Image

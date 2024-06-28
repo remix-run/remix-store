@@ -55,7 +55,7 @@ function CartDetails({
       </p>
       <CartLines lines={cart?.lines?.nodes} layout={layout} />
       {cartHasItems && (
-        <CartSummary cost={cart.cost} layout={layout}>
+        <CartSummary layout={layout}>
           <CartSubTotal subtotalAmount={cart.cost.subtotalAmount} />
           <CartDiscounts discountCodes={cart.discountCodes} />
           <CartCheckoutActions checkoutUrl={cart.checkoutUrl} />
@@ -188,12 +188,10 @@ function CartSubTotal({
 }
 
 export function CartSummary({
-  cost,
   layout,
   children = null,
 }: {
   children?: React.ReactNode;
-  cost: CartApiQueryFragment['cost'];
   layout: CartMainProps['layout'];
 }) {
   const className =
@@ -359,10 +357,10 @@ function CartDiscounts({
             name="discountCode"
             placeholder="Enter promo code"
             className={clsx(
-              'bg-lightGray dark:bg-black p-4 w-full rounded-input',
+              'bg-lightGray dark:bg-black p-4 w-full rounded-l-input',
             )}
           />
-          <div className="bg-lightGray dark:bg-black">
+          <div className="bg-lightGray dark:bg-black rounded-r-input">
             <button type="submit" className="mr-4 w-[108px] h-[56px]">
               APPLY CODE
             </button>
