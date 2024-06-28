@@ -7,7 +7,7 @@ import {CartMain} from '~/components/Cart';
 import type {RootLoader} from '~/root';
 
 export const meta: MetaFunction = () => {
-  return [{title: `Hydrogen | Cart`}];
+  return [{title: `The Remix Store | Cart`}];
 };
 
 export async function action({request, context}: ActionFunctionArgs) {
