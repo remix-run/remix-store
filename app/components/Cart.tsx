@@ -46,6 +46,7 @@ function CartDetails({
   layout: 'page' | 'aside';
 }) {
   const cartHasItems = !!cart && cart.totalQuantity > 0;
+  if (!cartHasItems) return null;
 
   return (
     <div className="cart-details">
