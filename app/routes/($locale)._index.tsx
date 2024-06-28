@@ -3,7 +3,7 @@ import {defer} from '@shopify/remix-oxygen';
 import {Await, useLoaderData, Link, type MetaFunction} from '@remix-run/react';
 import {Suspense} from 'react';
 import {Image} from '@shopify/hydrogen';
-import {CollectionGrid, CollectionItem} from '~/components/CollectionGrid';
+import {CollectionGrid} from '~/components/CollectionGrid';
 import type {
   FeaturedCollectionFragment,
   RecommendedProductsQuery,
@@ -115,7 +115,9 @@ function RecommendedProducts({
     <div>
       <Suspense fallback={<div>Loading...</div>}>
         <Await resolve={products}>
-          {(response) => <CollectionGrid products={response?.products} />}
+          {(response) => (
+            <CollectionGrid productNodes={response?.products.nodes} />
+          )}
         </Await>
       </Suspense>
       <br />
@@ -171,7 +173,7 @@ const RECOMMENDED_PRODUCTS_QUERY = `#graphql
   }
   query RecommendedProducts ($country: CountryCode, $language: LanguageCode)
     @inContext(country: $country, language: $language) {
-    products(first: 4, sortKey: UPDATED_AT, reverse: true) {
+    products(first: 6, sortKey: UPDATED_AT, reverse: true) {
       nodes {
         ...RecommendedProduct
       }
