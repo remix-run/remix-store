@@ -5,7 +5,7 @@ import {getPaginationVariables, Analytics} from '@shopify/hydrogen';
 import {SearchForm, SearchResults, NoSearchResults} from '~/components/Search';
 
 export const meta: MetaFunction = () => {
-  return [{title: `Hydrogen | Search`}];
+  return [{title: `The Remix Store | Search`}];
 };
 
 export async function loader({request, context}: LoaderFunctionArgs) {

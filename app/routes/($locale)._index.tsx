@@ -11,7 +11,7 @@ import type {
 import featuredFrame from '~/assets/featured-frame.svg?url';
 
 export const meta: MetaFunction = () => {
-  return [{title: 'Hydrogen | Home'}];
+  return [{title: 'The Remix Store | Home'}];
 };
 
 export const links: LinksFunction = () => {

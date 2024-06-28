@@ -30,7 +30,7 @@ import {useAside} from '~/components/Aside';
 import {parseGradientColors} from '~/lib/metafields';
 
 export const meta: MetaFunction<typeof loader> = ({data}) => {
-  return [{title: `Hydrogen | ${data?.product.title ?? ''}`}];
+  return [{title: `The Remix Store | ${data?.product.title ?? ''}`}];
 };
 
 export async function loader(args: LoaderFunctionArgs) {
