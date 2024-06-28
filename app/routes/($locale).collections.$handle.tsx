@@ -85,10 +85,7 @@ export default function Collection() {
             <PreviousLink>
               {isLoading ? 'Loading...' : <span>↑ Load previous</span>}
             </PreviousLink>
-            <CollectionGrid
-              products={nodes}
-              //className="grid-cols-[repeat(auto-fit,_minmax(355,_1fr))]"
-            />
+            <CollectionGrid products={nodes} />
             <br />
             <NextLink>
               {isLoading ? 'Loading...' : <span>Load more ↓</span>}
