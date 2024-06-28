@@ -358,7 +358,9 @@ function CartDiscounts({
             type="text"
             name="discountCode"
             placeholder="Enter promo code"
-            className={clsx('bg-lightGray dark:bg-black p-4 w-full')}
+            className={clsx(
+              'bg-lightGray dark:bg-black p-4 w-full rounded-input',
+            )}
           />
           <div className="bg-lightGray dark:bg-black">
             <button type="submit" className="mr-4 w-[108px] h-[56px]">

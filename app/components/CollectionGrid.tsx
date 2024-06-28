@@ -3,13 +3,14 @@ import {Money} from '@shopify/hydrogen';
 import type {RecommendedProductsQuery} from 'storefrontapi.generated';
 import {Image} from '~/components/Image';
 import {parseGradientColors} from '~/lib/metafields';
+import clsx from 'clsx';
+
 interface CollectionItemProps {
   product: RecommendedProductsQuery['products']['nodes'][0];
 }
 
 export function CollectionItem({product}: CollectionItemProps) {
   const {handle, title} = product;
-  const image = product?.images.nodes[0];
   const price = product?.priceRange.minVariantPrice;
   // temporary value, we need to add the logic to the product admin
   const isOnSale = false;
@@ -21,7 +22,11 @@ export function CollectionItem({product}: CollectionItemProps) {
       prefetch="intent"
       to={`/products/${handle}`}
     >
-      <div className="rounded-2xl bg-neutral-100 dark:bg-neutral-800 card-shadow-light dark:card-shadow-dark relative overflow-hidden aspect-ratio isolate py-6 max-w-[445px] max-h-[445px]">
+      <div
+        className={clsx(
+          'rounded-2xl bg-neutral-100 dark:bg-neutral-800 card-shadow-light dark:card-shadow-dark relative overflow-hidden aspect-ratio isolate max-w-[445px] max-h-[445px]',
+        )}
+      >
         <Image
           aspectRatio="1/1"
           data={product.images.nodes[0]}

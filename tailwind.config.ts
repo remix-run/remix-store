@@ -56,6 +56,9 @@ const config = {
       tightest: ' -1.92px',
     },
     extend: {
+      borderRadius: {
+        input: '14px',
+      },
       keyframes: {
         'accordion-down': {
           from: {height: '0'},
