@@ -57,12 +57,7 @@ interface ColllectionGridProps {
 
 export function CollectionGrid({products, className}: ColllectionGridProps) {
   if (!products) return null;
-  /**
-   * display: grid;
-  grid-gap: 1.5rem;
-  grid-template-columns: repeat(auto-fit, minmax(355, 1fr));
-  margin-bottom: 2rem;
-   */
+
   return (
     <div
       className={cn(
