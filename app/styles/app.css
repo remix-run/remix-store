@@ -49,7 +49,7 @@ aside header .close {
   opacity: 1;
   pointer-events: auto;
   visibility: visible;
-  background: rgba(0, 0, 0, 0.50);
+  background: rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(10px);
 }
 

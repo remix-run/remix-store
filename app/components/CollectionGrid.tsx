@@ -4,6 +4,7 @@ import type {RecommendedProductsQuery} from 'storefrontapi.generated';
 import {Image} from '~/components/Image';
 import {parseGradientColors} from '~/lib/metafields';
 import clsx from 'clsx';
+import {cn} from '~/lib';
 
 interface CollectionItemProps {
   product: RecommendedProductsQuery['products']['nodes'][0];
@@ -18,13 +19,13 @@ export function CollectionItem({product}: CollectionItemProps) {
 
   return (
     <Link
-      className="hover:no-underline"
+      className="hover:no-underline contents"
       prefetch="intent"
       to={`/products/${handle}`}
     >
       <div
         className={clsx(
-          'rounded-2xl bg-white dark:bg-black card-shadow-light dark:card-shadow-dark relative overflow-hidden aspect-ratio isolate max-w-[445px] max-h-[445px]',
+          'rounded-2xl bg-white dark:bg-black card-shadow-light dark:card-shadow-dark relative overflow-hidden aspect-square isolate w-full',
         )}
       >
         <Image
@@ -50,14 +51,26 @@ export function CollectionItem({product}: CollectionItemProps) {
 }
 
 interface ColllectionGridProps {
-  products?: RecommendedProductsQuery['products'];
+  className?: string;
+  products?: RecommendedProductsQuery['products']['nodes'];
 }
 
-export function CollectionGrid({products}: ColllectionGridProps) {
+export function CollectionGrid({products, className}: ColllectionGridProps) {
   if (!products) return null;
+  /**
+   * display: grid;
+  grid-gap: 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(355, 1fr));
+  margin-bottom: 2rem;
+   */
   return (
-    <div className="py-12 px-3 md:px-12 grid gap-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 bg-neutral-200 dark:bg-neutral-700 ">
-      {products.nodes.map((product) => (
+    <div
+      className={cn(
+        'py-12 px-3 md:px-12 grid gap-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 bg-neutral-200 dark:bg-neutral-700 ',
+        className,
+      )}
+    >
+      {products.map((product) => (
         <CollectionItem product={product} key={product.id} />
       ))}
     </div>

@@ -115,7 +115,7 @@ function RecommendedProducts({
     <div>
       <Suspense fallback={<div>Loading...</div>}>
         <Await resolve={products}>
-          {(response) => <CollectionGrid products={response?.products} />}
+          {(response) => <CollectionGrid products={response?.products.nodes} />}
         </Await>
       </Suspense>
       <br />
