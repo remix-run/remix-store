@@ -301,23 +301,21 @@ export function CartEmpty({
   hidden: boolean;
   layout?: CartMainProps['layout'];
 }) {
+  const ctaUrl = '/collections/all';
   return (
     <div hidden={hidden}>
       <br />
-      <p>
-        Looks like you haven&rsquo;t added anything yet, let&rsquo;s get you
-        started!
-      </p>
+      <p>There are no items in this cart.</p>
       <br />
       <Link
-        to="/collections/all"
+        to={ctaUrl}
         onClick={() => {
           if (layout === 'aside') {
-            window.location.href = '/collections/all';
+            window.location.href = ctaUrl;
           }
         }}
       >
-        Continue shopping →
+        What&apos;s new? →
       </Link>
     </div>
   );
@@ -350,23 +348,25 @@ function CartDiscounts({
       </dl>
 
       {/* Show an input to apply a discount */}
-      <UpdateDiscountForm discountCodes={codes}>
-        <div className={clsx('w-100 flex justify-between')}>
-          <input
-            type="text"
-            name="discountCode"
-            placeholder="Enter promo code"
-            className={clsx(
-              'bg-lightGray dark:bg-black p-4 w-full rounded-l-input',
-            )}
-          />
-          <div className="bg-lightGray dark:bg-black rounded-r-input">
-            <button type="submit" className="mr-4 w-[108px] h-[56px]">
-              APPLY CODE
-            </button>
+      {!codes && (
+        <UpdateDiscountForm discountCodes={codes}>
+          <div className={clsx('w-100 flex justify-between')}>
+            <input
+              type="text"
+              name="discountCode"
+              placeholder="Enter promo code"
+              className={clsx(
+                'bg-lightGray dark:bg-black p-4 w-full rounded-l-input',
+              )}
+            />
+            <div className="bg-lightGray dark:bg-black rounded-r-input">
+              <button type="submit" className="mr-4 w-[108px] h-[56px]">
+                APPLY CODE
+              </button>
+            </div>
           </div>
-        </div>
-      </UpdateDiscountForm>
+        </UpdateDiscountForm>
+      )}
     </div>
   );
 }
