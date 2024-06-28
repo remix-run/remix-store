@@ -20,10 +20,25 @@ body {
   @apply text-black dark:text-white;
 }
 
-h1,h2,h3 {
-  @apply text-5xl font-bold font-heading text-black dark:text-white tracking-tightest;
+h1,
+h2,
+h3 {
+  @apply text-5xl font-bold font-heading text-neutral-600 dark:text-white tracking-tightest;
 }
 
-p, b, strong, span, li, em {
+p,
+b,
+strong,
+span,
+li,
+em {
   @apply text-black dark:text-white text-base;
+}
+
+/*
+  TODO: this should probably be moved to a different file that handles
+  container overrides for data coming from Shopify CMS
+*/
+.policy-container h2 {
+  @apply text-2xl font-body font-bold;
 }
