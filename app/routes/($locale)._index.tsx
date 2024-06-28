@@ -3,7 +3,7 @@ import {defer} from '@shopify/remix-oxygen';
 import {Await, useLoaderData, Link, type MetaFunction} from '@remix-run/react';
 import {Suspense} from 'react';
 import {Image} from '@shopify/hydrogen';
-import {CollectionGrid, CollectionItem} from '~/components/CollectionGrid';
+import {CollectionGrid} from '~/components/CollectionGrid';
 import type {
   FeaturedCollectionFragment,
   RecommendedProductsQuery,
@@ -88,10 +88,10 @@ function FeaturedCollection({
   const image = collection?.image;
   return (
     <Link
-      className="block mb-8 relative px-16"
+      className="block pb-8 relative px-16 bg-neutral-200 dark:bg-neutral-800"
       to={`/collections/${collection.handle}`}
     >
-      <div className="max-w-7xl mx-auto relative">
+      <div className="max-w-7xl mx-auto relative ">
         <img className="aspect-[1290/426]" src={featuredFrame} alt="" />
         {image && (
           <Image
@@ -112,14 +112,13 @@ function RecommendedProducts({
   products: Promise<RecommendedProductsQuery | null>;
 }) {
   return (
-    <div>
+    <>
       <Suspense fallback={<div>Loading...</div>}>
         <Await resolve={products}>
           {(response) => <CollectionGrid products={response?.products.nodes} />}
         </Await>
       </Suspense>
-      <br />
-    </div>
+    </>
   );
 }
 
@@ -171,7 +170,7 @@ const RECOMMENDED_PRODUCTS_QUERY = `#graphql
   }
   query RecommendedProducts ($country: CountryCode, $language: LanguageCode)
     @inContext(country: $country, language: $language) {
-    products(first: 4, sortKey: UPDATED_AT, reverse: true) {
+    products(first: 6, sortKey: UPDATED_AT, reverse: true) {
       nodes {
         ...RecommendedProduct
       }

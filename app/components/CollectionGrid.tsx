@@ -8,9 +8,25 @@ import {cn} from '~/lib';
 
 interface CollectionItemProps {
   product: RecommendedProductsQuery['products']['nodes'][0];
+  index: number;
 }
 
-export function CollectionItem({product}: CollectionItemProps) {
+const getColStartClass = (index: number) => {
+  const colStartMap = [
+    '2xl:col-start-2',
+    '2xl:col-start-3',
+    '2xl:col-start-1',
+    '2xl:col-start-4',
+  ];
+  return colStartMap[index % colStartMap.length];
+};
+
+const getRowStartClass = (index: number) => {
+  const rowStart = Math.floor(index / 4) + 1;
+  return `2xl:row-start-${rowStart}`;
+};
+
+export function CollectionItem({product, index}: CollectionItemProps) {
   const {handle, title} = product;
   const price = product?.priceRange.minVariantPrice;
   // temporary value, we need to add the logic to the product admin
@@ -25,7 +41,9 @@ export function CollectionItem({product}: CollectionItemProps) {
     >
       <div
         className={clsx(
-          'rounded-2xl bg-white dark:bg-black card-shadow-light dark:card-shadow-dark relative overflow-hidden aspect-square isolate w-full',
+          'rounded-2xl bg-card-light dark:bg-card-dark card-shadow-light dark:card-shadow-dark relative overflow-hidden aspect-square isolate w-full',
+          getColStartClass(index),
+          getRowStartClass(index),
         )}
       >
         <Image
@@ -61,12 +79,12 @@ export function CollectionGrid({products, className}: ColllectionGridProps) {
   return (
     <div
       className={cn(
-        'py-12 px-3 md:px-12 grid gap-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 bg-neutral-200 dark:bg-neutral-700 ',
+        'py-12 px-3 md:px-12 grid gap-3 md:grid-cols-2 lg:grid-cols-collection-desktop-grid 2xl:grid-cols-collection-desktop-grid-max-4 2xl:place-content-center  bg-gridContainer-light dark:bg-gridContainer-dark',
         className,
       )}
     >
-      {products.map((product) => (
-        <CollectionItem product={product} key={product.id} />
+      {products.map((product, index) => (
+        <CollectionItem product={product} index={index} key={product.id} />
       ))}
     </div>
   );

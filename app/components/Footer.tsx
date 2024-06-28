@@ -17,7 +17,7 @@ export function Footer({
     <Suspense>
       <Await resolve={footerPromise}>
         {(footer) => (
-          <footer className="inline-flex justify-center gap-4 md:gap-20 lg:gap-28 xl:gap-32 border-t-[1px] border-neutral-400 border-opacity-20 w-full">
+          <footer className="inline-flex bg-lightGray dark:bg-black justify-center gap-4 md:gap-20 lg:gap-28 xl:gap-32 border-t-[1px] border-neutral-400 border-opacity-20 w-full">
             {footer?.col1 && header.shop.primaryDomain?.url && (
               <FooterMenu
                 menu={footer.col1}
@@ -150,7 +150,7 @@ const FALLBACK_FOOTER_MENU = {
 
 function CopyrightContent() {
   return (
-    <div className="flex justify-center text-neutral-400 text-xs pb-6">
+    <div className="flex justify-center text-neutral-400 text-xs pb-6 bg-lightGray dark:bg-black">
       <div className="mx-6">The Remix Store was built with Hydrogen</div>
       <div className="mx-6">© {new Date().getFullYear()} Shopify, Inc.</div>
       <div className="mx-6">

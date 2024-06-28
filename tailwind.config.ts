@@ -33,6 +33,14 @@ const config = {
       error: {brand: '#F44250'},
       warning: {brand: '#FECC1B'},
       white: '#DADADA',
+      gridContainer: {
+        light: '#D8D7D2',
+        dark: '#00000033',
+      },
+      card: {
+        light: '#EAEAE4',
+        dark: '#343436',
+      },
       neutral: {
         50: '#F5F5EF',
         100: '#EAEAE4',
@@ -72,6 +80,10 @@ const config = {
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
+      },
+      gridTemplateColumns: {
+        'collection-desktop-grid': 'repeat(auto-fit, minmax(0px, 445px))',
+        'collection-desktop-grid-max-4': 'repeat(4, minmax(0px, 445px))',
       },
       boxShadow: {
         'yamaha-grey':

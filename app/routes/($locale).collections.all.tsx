@@ -57,8 +57,7 @@ export default function Collection() {
   const {products} = useLoaderData<typeof loader>();
 
   return (
-    <div className="collection">
-      <h1>Products</h1>
+    <div>
       <Pagination connection={products}>
         {({nodes, isLoading, PreviousLink, NextLink}) => (
           <>
