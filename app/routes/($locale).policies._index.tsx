@@ -3,9 +3,7 @@ import {useLoaderData, Link} from '@remix-run/react';
 import {Image} from '~/components/Image';
 
 export async function loader({context}: LoaderFunctionArgs) {
-  const data = await context.storefront.query(POLICIES_QUERY, {
-    cache: context.storefront.CacheNone(),
-  });
+  const data = await context.storefront.query(POLICIES_QUERY);
 
   const {privacyPolicy} = data.shop;
 
@@ -30,6 +28,7 @@ export default function Policies() {
           height: 300,
           altText: '',
         }}
+        sizes="100vw"
       />
       <div className="p-12 rounded-3xl bg-neutral-100 dark:bg-gray mt-3">
         <h1>{privacyPolicy.title}</h1>
@@ -43,18 +42,13 @@ export default function Policies() {
 }
 
 const POLICIES_QUERY = `#graphql
-  fragment Policy on ShopPolicy {
-    body
-    handle
-    id
-    title
-    url
-  }
   query PrivacyPolicy ($country: CountryCode, $language: LanguageCode)
     @inContext(country: $country, language: $language) {
     shop {
       privacyPolicy {
-        ...Policy
+        id
+        title
+        body
       }
     }
   }

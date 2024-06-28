@@ -787,6 +787,27 @@ export type CatalogQuery = {
   };
 };
 
+export type PolicyItemFragment = Pick<
+  StorefrontAPI.ShopPolicy,
+  'id' | 'title' | 'body'
+>;
+
+export type HelpPoliciesQueryVariables = StorefrontAPI.Exact<{
+  country?: StorefrontAPI.InputMaybe<StorefrontAPI.CountryCode>;
+  language?: StorefrontAPI.InputMaybe<StorefrontAPI.LanguageCode>;
+}>;
+
+export type HelpPoliciesQuery = {
+  shop: {
+    shippingPolicy?: StorefrontAPI.Maybe<
+      Pick<StorefrontAPI.ShopPolicy, 'id' | 'title' | 'body'>
+    >;
+    refundPolicy?: StorefrontAPI.Maybe<
+      Pick<StorefrontAPI.ShopPolicy, 'id' | 'title' | 'body'>
+    >;
+  };
+};
+
 export type PageQueryVariables = StorefrontAPI.Exact<{
   language?: StorefrontAPI.InputMaybe<StorefrontAPI.LanguageCode>;
   country?: StorefrontAPI.InputMaybe<StorefrontAPI.CountryCode>;
@@ -803,11 +824,6 @@ export type PageQuery = {
   >;
 };
 
-export type PolicyFragment = Pick<
-  StorefrontAPI.ShopPolicy,
-  'body' | 'handle' | 'id' | 'title' | 'url'
->;
-
 export type PrivacyPolicyQueryVariables = StorefrontAPI.Exact<{
   country?: StorefrontAPI.InputMaybe<StorefrontAPI.CountryCode>;
   language?: StorefrontAPI.InputMaybe<StorefrontAPI.LanguageCode>;
@@ -816,7 +832,7 @@ export type PrivacyPolicyQueryVariables = StorefrontAPI.Exact<{
 export type PrivacyPolicyQuery = {
   shop: {
     privacyPolicy?: StorefrontAPI.Maybe<
-      Pick<StorefrontAPI.ShopPolicy, 'body' | 'handle' | 'id' | 'title' | 'url'>
+      Pick<StorefrontAPI.ShopPolicy, 'id' | 'title' | 'body'>
     >;
   };
 };
@@ -1117,11 +1133,15 @@ interface GeneratedQueryTypes {
     return: CatalogQuery;
     variables: CatalogQueryVariables;
   };
+  '#graphql\n  fragment PolicyItem on ShopPolicy {\n    id\n    title\n    body\n  }\n  query HelpPolicies ($country: CountryCode, $language: LanguageCode)\n    @inContext(country: $country, language: $language) {\n    shop {\n      shippingPolicy {\n        ...PolicyItem\n      }\n      refundPolicy {\n        ...PolicyItem\n      }\n    }\n  }\n': {
+    return: HelpPoliciesQuery;
+    variables: HelpPoliciesQueryVariables;
+  };
   '#graphql\n  query Page(\n    $language: LanguageCode,\n    $country: CountryCode,\n    $handle: String!\n  )\n  @inContext(language: $language, country: $country) {\n    page(handle: $handle) {\n      id\n      title\n      body\n      seo {\n        description\n        title\n      }\n    }\n  }\n': {
     return: PageQuery;
     variables: PageQueryVariables;
   };
-  '#graphql\n  fragment Policy on ShopPolicy {\n    body\n    handle\n    id\n    title\n    url\n  }\n  query PrivacyPolicy ($country: CountryCode, $language: LanguageCode)\n    @inContext(country: $country, language: $language) {\n    shop {\n      privacyPolicy {\n        ...Policy\n      }\n    }\n  }\n': {
+  '#graphql\n  query PrivacyPolicy ($country: CountryCode, $language: LanguageCode)\n    @inContext(country: $country, language: $language) {\n    shop {\n      privacyPolicy {\n        id\n        title\n        body\n      }\n    }\n  }\n': {
     return: PrivacyPolicyQuery;
     variables: PrivacyPolicyQueryVariables;
   };

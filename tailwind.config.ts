@@ -52,12 +52,12 @@ const config = {
         '2xl': '1400px',
       },
     },
-    letterSpacing: {
-      tightest: ' -1.92px',
-    },
     extend: {
       borderRadius: {
         input: '14px',
+      },
+      letterSpacing: {
+        tightest: ' -1.92px',
       },
       keyframes: {
         'accordion-down': {
