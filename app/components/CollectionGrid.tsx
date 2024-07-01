@@ -4,29 +4,12 @@ import type {RecommendedProductsQuery} from 'storefrontapi.generated';
 import {Image} from '~/components/Image';
 import {parseGradientColors} from '~/lib/metafields';
 import clsx from 'clsx';
-import {cn} from '~/lib';
 
 interface CollectionItemProps {
   product: RecommendedProductsQuery['products']['nodes'][0];
-  index: number;
 }
 
-const getColStartClass = (index: number) => {
-  const colStartMap = [
-    '2xl:col-start-2',
-    '2xl:col-start-3',
-    '2xl:col-start-1',
-    '2xl:col-start-4',
-  ];
-  return colStartMap[index % colStartMap.length];
-};
-
-const getRowStartClass = (index: number) => {
-  const rowStart = Math.floor(index / 4) + 1;
-  return `2xl:row-start-${rowStart}`;
-};
-
-export function CollectionItem({product, index}: CollectionItemProps) {
+export function CollectionItem({product}: CollectionItemProps) {
   const {handle, title} = product;
   const price = product?.priceRange.minVariantPrice;
   // temporary value, we need to add the logic to the product admin
@@ -41,9 +24,7 @@ export function CollectionItem({product, index}: CollectionItemProps) {
     >
       <div
         className={clsx(
-          'rounded-2xl bg-card-light dark:bg-card-dark card-shadow-light dark:card-shadow-dark relative overflow-hidden aspect-square isolate w-full',
-          getColStartClass(index),
-          getRowStartClass(index),
+          'rounded-2xl card-shadow-light dark:card-shadow-dark relative overflow-hidden aspect-square isolate w-full bg-neutral-100 dark:bg-neutral-700',
         )}
       >
         <Image
@@ -68,23 +49,21 @@ export function CollectionItem({product, index}: CollectionItemProps) {
   );
 }
 
-interface ColllectionGridProps {
-  className?: string;
+interface CollectionGridProps {
   products?: RecommendedProductsQuery['products']['nodes'];
 }
 
-export function CollectionGrid({products, className}: ColllectionGridProps) {
+export function CollectionGrid({products}: CollectionGridProps) {
   if (!products) return null;
 
   return (
     <div
-      className={cn(
-        'py-12 px-3 md:px-12 grid gap-3 md:grid-cols-2 lg:grid-cols-collection-desktop-grid 2xl:grid-cols-collection-desktop-grid-max-4 2xl:place-content-center  bg-gridContainer-light dark:bg-gridContainer-dark',
-        className,
-      )}
+      className={
+        'py-12 px-3 md:px-12 grid gap-3 grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 bg-black bg-opacity-5 dark:bg-opacity-20'
+      }
     >
-      {products.map((product, index) => (
-        <CollectionItem product={product} index={index} key={product.id} />
+      {products.map((product) => (
+        <CollectionItem product={product} key={product.id} />
       ))}
     </div>
   );
