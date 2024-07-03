@@ -34,7 +34,7 @@ const config = {
       success: {brand: '#3992FF'},
       error: {brand: '#F44250'},
       warning: {brand: '#FECC1B'},
-      white: '#DADADA',
+      white: '#FFFFFF',
       neutral: {
         50: '#F5F5EF',
         100: '#EAEAE4',
@@ -54,12 +54,12 @@ const config = {
         '2xl': '1400px',
       },
     },
-    letterSpacing: {
-      tightest: ' -1.92px',
-    },
     extend: {
       borderRadius: {
         input: '14px',
+      },
+      letterSpacing: {
+        tightest: ' -1.92px',
       },
       keyframes: {
         'accordion-down': {

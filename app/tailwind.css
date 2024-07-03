@@ -20,12 +20,13 @@ body {
   @apply text-black dark:text-white;
 }
 
-h1,h2,h3 {
-  @apply text-5xl font-bold font-heading text-black dark:text-white tracking-tightest;
+h1,
+h2,
+h3 {
+  @apply text-5xl font-bold font-heading text-neutral-600 dark:text-white tracking-tightest;
 }
 
 /* apply only to base elements without classes */
-/* p, b, strong, span, li, em { */
 p:not([class]),
 b:not([class]),
 strong:not([class]),
@@ -33,4 +34,12 @@ span:not([class]),
 li:not([class]),
 em:not([class]) {
   @apply text-black dark:text-white text-base font-body;
+}
+
+/*
+  TODO: this should probably be moved to a different file that handles
+  container overrides for data coming from Shopify CMS
+*/
+.policy-container h2 {
+  @apply text-2xl font-body font-bold;
 }

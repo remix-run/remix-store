@@ -28,9 +28,13 @@ import type {SelectedOption} from '@shopify/hydrogen/storefront-api-types';
 import {getVariantUrl} from '~/lib/variants';
 import {useAside} from '~/components/Aside';
 import {parseGradientColors} from '~/lib/metafields';
+import {
+  PRODUCT_DETAIL_FRAGMENT,
+  PRODUCT_VARIANT_FRAGMENT,
+} from '~/lib/fragments';
 
 export const meta: MetaFunction<typeof loader> = ({data}) => {
-  return [{title: `Hydrogen | ${data?.product.title ?? ''}`}];
+  return [{title: `The Remix Store | ${data?.product.title ?? ''}`}];
 };
 
 export async function loader(args: LoaderFunctionArgs) {
@@ -412,85 +416,6 @@ function AddToCartButton({
   );
 }
 
-const PRODUCT_IMAGE_FRAGMENT = `#graphql
-  fragment ProductImage on Image {
-    id
-    altText
-    url
-    width
-    height
-  }
-` as const;
-
-const PRODUCT_VARIANT_FRAGMENT = `#graphql
-  fragment ProductVariant on ProductVariant {
-    availableForSale
-    compareAtPrice {
-      amount
-      currencyCode
-    }
-    id
-    image {
-      ...ProductImage
-    }
-    price {
-      amount
-      currencyCode
-    }
-    product {
-      title
-      handle
-    }
-    selectedOptions {
-      name
-      value
-    }
-    sku
-    title
-    unitPrice {
-      amount
-      currencyCode
-    }
-  }
-  ${PRODUCT_IMAGE_FRAGMENT}
-` as const;
-
-const PRODUCT_FRAGMENT = `#graphql
-  fragment Product on Product {
-    id
-    title
-    vendor
-    handle
-    descriptionHtml
-    description
-    options {
-      name
-      values
-    }
-    selectedVariant: variantBySelectedOptions(selectedOptions: $selectedOptions, ignoreUnknownOptions: true, caseInsensitiveMatch: true) {
-      ...ProductVariant
-    }
-    variants(first: 1) {
-      nodes {
-        ...ProductVariant
-      }
-    }
-    images(first: 5) {
-      nodes {
-        ...ProductImage
-      }
-    }
-    seo {
-      description
-      title
-    }
-    gradientColors: metafield(key: "images_gradient_background", namespace: "custom") {
-      value
-    }
-  }
-  ${PRODUCT_VARIANT_FRAGMENT}
-` as const;
-
 const PRODUCT_QUERY = `#graphql
   query Product(
     $country: CountryCode
@@ -502,7 +427,7 @@ const PRODUCT_QUERY = `#graphql
       ...Product
     }
   }
-  ${PRODUCT_FRAGMENT}
+  ${PRODUCT_DETAIL_FRAGMENT}
 ` as const;
 
 const PRODUCT_VARIANTS_FRAGMENT = `#graphql

@@ -18,13 +18,13 @@ export function CollectionItem({product}: CollectionItemProps) {
 
   return (
     <Link
-      className="hover:no-underline"
+      className="hover:no-underline contents"
       prefetch="intent"
       to={`/products/${handle}`}
     >
       <div
         className={clsx(
-          'rounded-2xl bg-white dark:bg-black card-shadow-light dark:card-shadow-dark relative overflow-hidden aspect-ratio isolate max-w-[445px] max-h-[445px]',
+          'rounded-2xl card-shadow-light dark:card-shadow-dark relative overflow-hidden aspect-square isolate w-full bg-neutral-100 dark:bg-neutral-700',
         )}
       >
         <Image
@@ -39,7 +39,7 @@ export function CollectionItem({product}: CollectionItemProps) {
         ) : null}
 
         <div className="pl-6 gap-2 absolute bottom-5">
-          <h3 className="text-2xl font-bold">{title}</h3>
+          <h3 className="text-2xl tracking-tight font-bold">{title}</h3>
           <small>
             <Money data={price} />
           </small>
@@ -49,15 +49,20 @@ export function CollectionItem({product}: CollectionItemProps) {
   );
 }
 
-interface ColllectionGridProps {
-  products?: RecommendedProductsQuery['products'];
+interface CollectionGridProps {
+  products?: RecommendedProductsQuery['products']['nodes'];
 }
 
-export function CollectionGrid({products}: ColllectionGridProps) {
+export function CollectionGrid({products}: CollectionGridProps) {
   if (!products) return null;
+
   return (
-    <div className="py-12 px-3 md:px-12 grid gap-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 bg-neutral-200 dark:bg-neutral-700 ">
-      {products.nodes.map((product) => (
+    <div
+      className={
+        'py-12 px-3 md:px-12 grid gap-3 grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 bg-black bg-opacity-5 dark:bg-opacity-20'
+      }
+    >
+      {products.map((product) => (
         <CollectionItem product={product} key={product.id} />
       ))}
     </div>
