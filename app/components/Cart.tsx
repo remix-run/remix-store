@@ -351,23 +351,24 @@ function CartDiscounts({
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const codeEntered = Boolean(inputRef.current?.value);
-
   const codes: string[] =
     discountCodes
       ?.filter((discount) => discount.applicable)
       ?.map(({code}) => code) || [];
 
-  const codeApplied = codes.includes(inputRef.current?.value || '');
+  const codeApplied = Boolean(codes.length);
   const codeEnteredInvalid = codeEntered && !codeApplied;
 
   return (
     <div className={clsx(codeEnteredInvalid ? 'pt-8 pb-2' : 'py-8')}>
       {/* Have existing discount, display it with a remove option */}
-      <div hidden={!codeApplied} className="flex justify-between">
-        <p className="h-[56px] rounded-input w-full p-5 text-blue-brand lh-5 leading-5 bg-lightGray dark:bg-black">
-          Promo code applied
-        </p>
-      </div>
+      {Boolean(codes.length) && (
+        <div className="flex justify-between">
+          <p className="h-[56px] rounded-input w-full p-5 text-blue-brand lh-5 leading-5 bg-lightGray dark:bg-black">
+            Promo code applied
+          </p>
+        </div>
+      )}
 
       {/* Show an input to apply a discount */}
       {!codes.length && (
