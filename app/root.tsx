@@ -19,7 +19,7 @@ import {FOOTER_QUERY, HEADER_QUERY} from '~/lib/fragments';
 import {parseColorScheme} from './lib/color-scheme.server';
 import clsx from 'clsx';
 import {ColorSchemeScript, useColorScheme} from '~/lib/color-scheme';
-
+import {useAside} from '~/components/Aside';
 export type RootLoader = typeof loader;
 
 /**
@@ -165,6 +165,7 @@ function Layout({children}: {children?: React.ReactNode}) {
   const nonce = useNonce();
   const data = useRouteLoaderData<RootLoader>('root');
   const colorScheme = useColorScheme();
+  const {isOpen} = useAside();
 
   return (
     <html
@@ -179,7 +180,12 @@ function Layout({children}: {children?: React.ReactNode}) {
         <Meta />
         <Links />
       </head>
-      <body className="font-sans antialiased">
+      <body
+        className={clsx(
+          'font-sans antialiased overflow-x-hidden',
+          isOpen && 'overflow-hidden',
+        )}
+      >
         {data ? (
           <Analytics.Provider
             cart={data.cart}

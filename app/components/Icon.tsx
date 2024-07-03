@@ -20,6 +20,7 @@ export type IconName =
 export type IconProps = Omit<React.SVGProps<SVGElement>, 'ref'> & {
   name: IconName;
 };
+
 export default function Icon({name, className, ...props}: IconProps) {
   return (
     <svg

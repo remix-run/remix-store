@@ -10,6 +10,15 @@ export type MerchadiseProductFragment = Pick<
   gradientColors?: StorefrontAPI.Maybe<Pick<StorefrontAPI.Metafield, 'value'>>;
 };
 
+export type CartApiMutationFragment = Pick<
+  StorefrontAPI.Cart,
+  'updatedAt' | 'id' | 'checkoutUrl' | 'totalQuantity'
+> & {
+  discountCodes: Array<
+    Pick<StorefrontAPI.CartDiscountCode, 'code' | 'applicable'>
+  >;
+};
+
 export type MoneyFragment = Pick<
   StorefrontAPI.MoneyV2,
   'currencyCode' | 'amount'

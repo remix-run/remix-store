@@ -24,6 +24,13 @@ h1,h2,h3 {
   @apply text-5xl font-bold font-heading text-black dark:text-white tracking-tightest;
 }
 
-p, b, strong, span, li, em {
-  @apply text-black dark:text-white text-base;
+/* apply only to base elements without classes */
+/* p, b, strong, span, li, em { */
+p:not([class]),
+b:not([class]),
+strong:not([class]),
+span:not([class]),
+li:not([class]),
+em:not([class]) {
+  @apply text-black dark:text-white text-base font-body;
 }
