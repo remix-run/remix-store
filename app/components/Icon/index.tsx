@@ -1,6 +1,5 @@
 import {cn} from '~/lib';
 import type {IconName} from './types';
-import spriteHref from './sprite.svg?url';
 
 export type IconProps = Omit<React.SVGProps<SVGElement>, 'ref'> & {
   name: IconName;
@@ -15,7 +14,7 @@ export default function Icon({name, className, ...props}: IconProps) {
       }
       {...props}
     >
-      <use href={`${spriteHref}#${name}`} />
+      <use href={`/sprite.svg#${name}`} />
     </svg>
   );
 }

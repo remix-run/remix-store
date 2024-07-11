@@ -19,7 +19,6 @@ import clsx from 'clsx';
 import {ColorSchemeScript, useColorScheme} from '~/lib/color-scheme';
 import {useAside} from '~/components/Aside';
 
-import spriteHref from '~/components/Icon/sprite.svg?url';
 import './tailwind.css';
 
 export type RootLoader = typeof loader;
@@ -78,7 +77,7 @@ export function links() {
     {
       rel: 'preload',
       as: 'image',
-      href: spriteHref,
+      href: '/sprite.svg',
       type: 'image/svg+xml',
     },
   ];

@@ -5,7 +5,6 @@ export type IconName =
   | 'trash'
   | 'tag'
   | 'sun'
-  | 'sprite'
   | 'plus'
   | 'moon'
   | 'minus'
@@ -23,7 +22,6 @@ export const iconNames = [
   'trash',
   'tag',
   'sun',
-  'sprite',
   'plus',
   'moon',
   'minus',

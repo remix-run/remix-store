@@ -12,7 +12,7 @@ export default defineConfig({
     // Note: this only runs in development mode, which is a bummer: https://github.com/forge42dev/vite-plugin-icons-spritesheet/issues/11
     iconsSpritesheet({
       inputDir: 'app/assets/icons',
-      outputDir: 'app/components/Icon',
+      outputDir: 'public',
       typesOutputFile: 'app/components/Icon/types.ts',
       withTypes: true,
       iconNameTransformer: (name) =>
