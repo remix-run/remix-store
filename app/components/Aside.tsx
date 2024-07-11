@@ -1,11 +1,13 @@
 import {createContext, type ReactNode, useContext, useState} from 'react';
 import clsx from 'clsx';
+import Icon from '~/components/Icon';
 
 type AsideType = 'search' | 'cart' | 'mobile' | 'closed';
 type AsideContextValue = {
   type: AsideType;
   open: (mode: AsideType) => void;
   close: () => void;
+  isOpen: boolean;
 };
 
 /**
@@ -29,34 +31,46 @@ export function Aside({
 }) {
   const {type: activeType, close} = useAside();
   const isOpen = type === activeType;
+  const asideWidth = `w-[586px]`;
 
   return (
     <div
-      className={clsx(
-        `overlay fixed inset-0 pointer-none`,
-        isOpen && 'expanded',
-      )}
+      data-type={`aside-${type}`}
+      className={clsx()}
       aria-modal
       role="dialog"
     >
-      <button className="close-outside" onClick={close} />
+      <div
+        role="presentation"
+        onClick={close}
+        className={clsx(
+          `fixed pointer-none bg-black/[.5] z-0`,
+          isOpen && 'inset-0 backdrop-blur-md	pointer-events-auto z-10',
+        )}
+      />
       <aside
         className={clsx(
-          isOpen ? 'right-0' : 'right-[-586px]',
-          'bg-white dark:bg-black w-[586px] fixed top-0 h-dvh transition-transform duration-300 ease-in-out',
+          isOpen ? 'translate-x-0' : 'translate-x-full',
+          'bg-white dark:bg-black absolute top-0 right-0 h-dvh z-20 transition-transform duration-300 ease-in-out',
+          asideWidth,
         )}
       >
         <header
           className={clsx(
-            'justify-between items-center flex px-8 h-[110px] dark:bg-gray',
+            'top-0 sticky justify-between items-center flex px-8 h-[110px] dark:bg-gray',
           )}
         >
           <h3 className={clsx('m-0')}>{heading}</h3>
-          <button className="close reset" onClick={close}>
-            &times;
-          </button>
+          <Icon
+            name="x"
+            aria-label="Close"
+            className="cursor-pointer"
+            onClick={close}
+          />
         </header>
-        <main className={clsx('m-8')}>{children}</main>
+        <main className={clsx('flex h-[calc(100vh_-_110px)] w-full')}>
+          {children}
+        </main>
       </aside>
     </div>
   );
@@ -73,6 +87,7 @@ Aside.Provider = function AsideProvider({children}: {children: ReactNode}) {
         type,
         open: setType,
         close: () => setType('closed'),
+        isOpen: type !== 'closed',
       }}
     >
       {children}

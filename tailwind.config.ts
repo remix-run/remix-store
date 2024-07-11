@@ -21,9 +21,11 @@ const config = {
     colors: {
       gray: '#343436',
       lightGray: '#E3E2DD',
-      black: '#000000',
+      darkGray: '#D8D7D3',
+      black: '#242426',
+      darkBlack: '#1D1D1E',
       cyan: {brand: '#3DEFE9'},
-      blue: {brand: '#3992FF'},
+      blue: {brand: '#3988F8'},
       green: {brand: '#6BD968'},
       yellow: {brand: '#FECC1B'},
       magenta: {brand: '#D83BD2'},

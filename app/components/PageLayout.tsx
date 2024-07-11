@@ -32,7 +32,7 @@ export function PageLayout({
   publicStoreDomain,
 }: PageLayoutProps) {
   return (
-    <Aside.Provider>
+    <>
       <CartAside cart={cart} />
       <SearchAside />
       <MobileMenuAside header={header} publicStoreDomain={publicStoreDomain} />
@@ -50,7 +50,7 @@ export function PageLayout({
         header={header}
         publicStoreDomain={publicStoreDomain}
       />
-    </Aside.Provider>
+    </>
   );
 }
 

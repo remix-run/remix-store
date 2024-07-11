@@ -45,7 +45,9 @@ export async function action({request, context}: ActionFunctionArgs) {
       // Combine discount codes already applied on cart
       discountCodes.push(...inputs.discountCodes);
 
+      // check if discount code is valid (has appplicable)
       result = await cart.updateDiscountCodes(discountCodes);
+
       break;
     }
     case CartForm.ACTIONS.BuyerIdentityUpdate: {

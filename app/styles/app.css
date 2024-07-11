@@ -1,78 +1,3 @@
-:root {
-  --cart-aside-summary-height-with-discount: 340px;
-  --cart-aside-summary-height: 311px;
-  --grid-item-width: 355px;
-  --header-height: 64px;
-  --color-dark: #000;
-  --color-light: #fff;
-}
-
-/*
-* --------------------------------------------------
-* components/Aside
-* --------------------------------------------------
-*/
-/* TODO: add actual icon */
-aside header .close {
-  font-weight: bold;
-  opacity: 0.8;
-  text-decoration: none;
-  transition: all 200ms;
-  width: 20px;
-}
-
-.overlay {
-  transition: opacity 400ms ease-in-out;
-  visibility: hidden;
-  z-index: 10;
-}
-
-.overlay .close-outside {
-  background: transparent;
-  border: none;
-  color: transparent;
-  height: 100%;
-  left: 0;
-  position: absolute;
-  top: 0;
-  width: calc(100% - 586px);
-}
-
-.overlay .cancel {
-  cursor: default;
-  height: 100%;
-  position: absolute;
-  width: 100%;
-}
-
-.overlay.expanded {
-  opacity: 1;
-  pointer-events: auto;
-  visibility: visible;
-  background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(10px);
-}
-
-button.reset {
-  border: 0;
-  background: inherit;
-  font-size: inherit;
-}
-
-button.reset > * {
-  margin: 0;
-}
-
-button.reset:not(:has(> *)) {
-  height: 1.5rem;
-  line-height: 1.5rem;
-}
-
-button.reset:hover:not(:has(> *)) {
-  text-decoration: underline;
-  cursor: pointer;
-}
-
 /*
 * --------------------------------------------------
 * components/Header
@@ -94,25 +19,6 @@ button.reset:hover:not(:has(> *)) {
   }
 }
 
-/*
-* --------------------------------------------------
-* components/Cart
-* --------------------------------------------------
-*/
-.cart-main {
-  height: 100%;
-  max-height: calc(100vh - var(--cart-aside-summary-height));
-  overflow-y: auto;
-  width: auto;
-}
-
-.cart-summary-page {
-  position: relative;
-}
-
-.cart-line-quantity {
-  display: flex;
-}
 /*
 * --------------------------------------------------
 * components/Search

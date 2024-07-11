@@ -2,8 +2,8 @@ import {Slot} from '@radix-ui/react-slot';
 import {forwardRef} from 'react';
 import {cn} from '~/lib';
 
-type ButtonSize = 'icon' | 'sm' | 'lg';
-type ButtonVariant = 'primary' | 'secondary';
+type ButtonSize = 'icon' | 'sm' | 'lg' | 'fw';
+type ButtonVariant = 'primary' | 'secondary' | 'tertiary';
 interface ButtonProps
   extends React.DetailedHTMLProps<
     React.ButtonHTMLAttributes<HTMLButtonElement>,
@@ -24,6 +24,9 @@ export const Button = forwardRef(function Button(
     'text-neutral-600 dark:text-neutral-300 bg-neutral-50 dark:bg-neutral-500 dark:hover:bg-neutral-400 hover:bg-neutral-100 bg-opacity-5 dark:bg-opacity-100 shadow-yamaha-grey-light dark:shadow-yamaha-grey';
   const primaryStyles =
     'text-white bg-success-brand dark:bg-success-brand bg-opacity-100 shadow-yamaha-blue';
+  // blue boutton
+  const tertiaryStyles =
+    'text-white bg-blue-brand shadow-yamaha-blue capitalize';
   const smTextStyles = 'font-bold uppercase leading-6';
   const lgTextStyles = 'font-bold leading-[29px] text-2xl';
   const smButtonStyles = 'rounded-[12px] px-4 py-3';
@@ -31,6 +34,8 @@ export const Button = forwardRef(function Button(
   const lgButtonStyles = 'rounded-[16px] py-5 w-full';
   const lgWellStyles = 'rounded-[18px] pb-[7px]';
   const smWellStyles = 'rounded-[14px] pb-[7px]';
+  const fwButtonStyles = 'font-bold rounded-[12px] px-4 py-3 w-full';
+  const fwWellStyles = 'rounded-[14px] pb-[7px] w-full';
 
   return (
     <div
@@ -41,6 +46,7 @@ export const Button = forwardRef(function Button(
         {
           [lgWellStyles]: size === 'lg',
           [smWellStyles]: size === 'sm' || size === 'icon',
+          [fwWellStyles]: size === 'fw',
         },
       )}
     >
@@ -55,8 +61,10 @@ export const Button = forwardRef(function Button(
             [lgTextStyles]: size === 'lg',
             [smButtonStyles]: size === 'sm',
             [lgButtonStyles]: size === 'lg',
+            [fwButtonStyles]: size === 'fw',
             [secondaryStyles]: variant === 'secondary',
             [primaryStyles]: variant === 'primary',
+            [tertiaryStyles]: variant === 'tertiary',
           },
           props.className,
         )}

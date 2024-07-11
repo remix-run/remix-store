@@ -15,7 +15,7 @@ import {
   type AppLoadContext,
 } from '@shopify/remix-oxygen';
 import {AppSession} from '~/lib/session';
-import {CART_QUERY_FRAGMENT} from '~/lib/fragments';
+import {CART_QUERY_FRAGMENT, CART_MUTATE_FRAGMENT} from '~/lib/fragments';
 
 /**
  * Export a fetch handler in module format.
@@ -75,6 +75,7 @@ export default {
         getCartId: cartGetIdDefault(request.headers),
         setCartId: cartSetIdDefault(),
         cartQueryFragment: CART_QUERY_FRAGMENT,
+        cartMutateFragment: CART_MUTATE_FRAGMENT,
       });
 
       /**
