@@ -1,21 +1,6 @@
 import {cn} from '~/lib';
-
-export type IconName =
-  | 'bag'
-  | 'check'
-  | 'chevron-down'
-  | 'chevron-up'
-  | 'computer'
-  | 'filter'
-  | 'globe'
-  | 'info'
-  | 'minus'
-  | 'moon'
-  | 'plus'
-  | 'sun'
-  | 'tag'
-  | 'trash'
-  | 'x';
+import type {IconName} from './types';
+import spriteHref from './sprite.svg?url';
 
 export type IconProps = Omit<React.SVGProps<SVGElement>, 'ref'> & {
   name: IconName;
@@ -30,7 +15,7 @@ export default function Icon({name, className, ...props}: IconProps) {
       }
       {...props}
     >
-      <use href={`/sprite.svg#${name}`} />
+      <use href={`${spriteHref}#${name}`} />
     </svg>
   );
 }
