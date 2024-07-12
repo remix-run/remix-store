@@ -9,7 +9,6 @@ export default defineConfig({
   plugins: [
     hydrogen(),
     oxygen(),
-    // Note: this only runs in development mode, which is a bummer: https://github.com/forge42dev/vite-plugin-icons-spritesheet/issues/11
     iconsSpritesheet({
       inputDir: 'app/assets/icons',
       outputDir: 'public',
