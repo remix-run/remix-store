@@ -13,8 +13,8 @@
 
   html,
   body {
-    @apply bg-white dark:bg-black font-body;
-    @apply text-black dark:text-white;
+    @apply bg-white dark:bg-neutral-800 font-body;
+    @apply text-neutral-800 dark:text-white;
   }
 
   h1,
@@ -24,14 +24,14 @@
   }
 
   /* apply only to base elements without classes */
-  /* p:not([class]),
+  p:not([class]),
   b:not([class]),
   strong:not([class]),
   span:not([class]),
   li:not([class]),
   em:not([class]) {
-    @apply text-black dark:text-white text-base font-body;
-  } */
+    @apply text-neutral-800 dark:text-white text-base font-body;
+  }
 }
 
 /*

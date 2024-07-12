@@ -33,7 +33,7 @@ export function Header({
         'sticky flex justify-between items-center',
         'pt-7 pb-5 px-9',
         'bg-neutral-200 dark:bg-neutral-800',
-        'text-black dark:text-white',
+        'text-neutral-800 dark:text-white',
       )}
     >
       <HeaderMenu

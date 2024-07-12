@@ -31,7 +31,7 @@ export default function Policies() {
         sizes="100vw"
       />
       <div className="grid lg:grid-cols-2 mt-3 gap-3">
-        <div className="p-12 rounded-3xl bg-neutral-100 dark:bg-gray">
+        <div className="p-12 rounded-3xl bg-neutral-100 dark:bg-neutral-700">
           <h1>Info & Help</h1>
           <p className="pt-6">
             Remix is a full stack web framework that lets you focus on the user
@@ -40,7 +40,7 @@ export default function Policies() {
             your stuff.
           </p>
         </div>
-        <div className="p-12 rounded-3xl bg-neutral-100 dark:bg-gray">
+        <div className="p-12 rounded-3xl bg-neutral-100 dark:bg-neutral-700">
           <h2 className="font-body text-2xl tracking-normal">
             {shippingPolicy.title}
           </h2>

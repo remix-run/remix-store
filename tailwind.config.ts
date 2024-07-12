@@ -22,11 +22,6 @@ const config = {
       inherit: 'inherit',
       current: 'currentColor',
       transparent: 'transparent',
-      gray: '#343436',
-      lightGray: '#E3E2DD',
-      darkGray: '#D8D7D3',
-      black: '#242426',
-      darkBlack: '#1D1D1E',
       cyan: {brand: '#3DEFE9'},
       blue: {brand: '#3988F8'},
       green: {brand: '#6BD968'},
@@ -37,6 +32,7 @@ const config = {
       success: {brand: '#3992FF'},
       error: {brand: '#F44250'},
       warning: {brand: '#FECC1B'},
+      black: '#000000',
       white: '#FFFFFF',
       neutral: {
         50: '#F5F5EF',
@@ -48,6 +44,7 @@ const config = {
         600: '#434343',
         700: '#343436',
         800: '#242426',
+        900: '#1D1D1E',
       },
     },
     container: {

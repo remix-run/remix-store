@@ -11,7 +11,7 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   asChild?: boolean;
 }
 
-const button = cva(['block leading-6', 'active:translate-y-1'], {
+const button = cva(['block leading-6', 'active:translate-y-0.5'], {
   variants: {
     intent: {
       primary:
@@ -34,7 +34,7 @@ const button = cva(['block leading-6', 'active:translate-y-1'], {
 
 const well = cva(
   [
-    'overflow-hidden relative rounded-[14px] bg-black bg-opacity-5 dark:bg-opacity-15 px-[2px] pt-[2px] pb-[7px]',
+    'overflow-hidden relative rounded-[14px] bg-neutral-800 bg-opacity-5 dark:bg-opacity-15 px-[2px] pt-[2px] pb-[7px]',
   ],
   {
     variants: {
