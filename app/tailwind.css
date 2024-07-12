@@ -7,30 +7,16 @@
 }
 
 @layer base {
-  html {
-    @apply text-neutral-600 dark:text-neutral-300;
-  }
-
   html,
   body {
-    @apply bg-white dark:bg-neutral-800 font-body;
-    @apply text-neutral-800 dark:text-white;
+    @apply bg-neutral-200 dark:bg-neutral-800 font-body;
+    @apply text-neutral-800 dark:text-neutral-300;
   }
 
   h1,
   h2,
   h3 {
-    @apply text-5xl font-bold font-heading text-neutral-600 dark:text-white tracking-tightest;
-  }
-
-  /* apply only to base elements without classes */
-  p:not([class]),
-  b:not([class]),
-  strong:not([class]),
-  span:not([class]),
-  li:not([class]),
-  em:not([class]) {
-    @apply text-neutral-800 dark:text-white text-base font-body;
+    @apply text-5xl font-bold font-heading text-neutral-600 dark:text-neutral-300 tracking-tightest;
   }
 }
 

@@ -1,26 +1,5 @@
 /*
 * --------------------------------------------------
-* components/Header
-* --------------------------------------------------
-*/
-
-.header-menu-mobile {
-  display: flex;
-  flex-direction: column;
-  grid-gap: 1rem;
-}
-
-.header-menu-desktop {
-  display: none;
-  grid-gap: 1rem;
-  @media (min-width: 45em) {
-    display: flex;
-    grid-gap: 1rem;
-  }
-}
-
-/*
-* --------------------------------------------------
 * components/Search
 * --------------------------------------------------
 */
@@ -70,53 +49,6 @@
   flex: row;
   align-items: center;
   gap: 1rem;
-}
-
-/*
-* --------------------------------------------------
-* routes/__index
-* --------------------------------------------------
-*/
-
-/*
-* --------------------------------------------------
-* routes/collections._index.tsx
-* --------------------------------------------------
-*/
-.collections-grid {
-  display: grid;
-  grid-gap: 1.5rem;
-  grid-template-columns: repeat(auto-fit, minmax(var(--grid-item-width), 1fr));
-  margin-bottom: 2rem;
-}
-
-.collection-item img {
-  height: auto;
-}
-
-/*
-* --------------------------------------------------
-* routes/collections.$handle.tsx
-* --------------------------------------------------
-*/
-.collection-description {
-  margin-bottom: 1rem;
-  max-width: 95%;
-  @media (min-width: 45em) {
-    max-width: 600px;
-  }
-}
-
-.products-grid {
-  display: grid;
-  grid-gap: 1.5rem;
-  grid-template-columns: repeat(auto-fit, minmax(var(--grid-item-width), 1fr));
-  margin-bottom: 2rem;
-}
-
-.product-item img {
-  height: auto;
-  width: 100%;
 }
 
 /*

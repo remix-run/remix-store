@@ -59,7 +59,7 @@ export function CollectionGrid({products}: CollectionGridProps) {
   return (
     <div
       className={
-        'py-12 px-3 md:px-12 grid gap-3 grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 bg-neutral-800 bg-opacity-5 dark:bg-opacity-20'
+        'py-12 px-3 md:px-12 grid gap-3 grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 bg-black bg-opacity-5 dark:bg-opacity-20'
       }
     >
       {products.map((product) => (
