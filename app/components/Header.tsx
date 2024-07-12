@@ -171,12 +171,10 @@ function CartBadge({count}: {count: number}) {
   const {publish, shop, cart, prevCart} = useAnalytics();
 
   return (
-    <Button asChild>
+    <Button asChild intent={count > 0 ? 'primary' : 'secondary'}>
       <a
         href="/cart"
-        className={cn('flex gap-2', {
-          'bg-success-brand': count > 0,
-        })}
+        className={'flex gap-2'}
         onClick={(e) => {
           e.preventDefault();
           open('cart');
@@ -188,7 +186,7 @@ function CartBadge({count}: {count: number}) {
           } as CartViewPayload);
         }}
       >
-        <Icon name="bag" aria-label="cart" /> {count}
+        <Icon name="bag" className="text-inherit" aria-label="cart" /> {count}
       </a>
     </Button>
   );

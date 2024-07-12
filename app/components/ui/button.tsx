@@ -1,73 +1,64 @@
 import {Slot} from '@radix-ui/react-slot';
 import {forwardRef} from 'react';
 import {cn} from '~/lib';
+import {cva, type VariantProps} from 'class-variance-authority';
 
-type ButtonSize = 'icon' | 'sm' | 'lg' | 'fw';
-type ButtonVariant = 'primary' | 'secondary' | 'tertiary';
-interface ButtonProps
-  extends React.DetailedHTMLProps<
-    React.ButtonHTMLAttributes<HTMLButtonElement>,
-    HTMLButtonElement
-  > {
-  size?: ButtonSize;
-  variant?: ButtonVariant;
+type ButtonVariantProps = VariantProps<typeof button>;
+
+interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  intent?: NonNullable<ButtonVariantProps['intent']>;
+  size?: NonNullable<ButtonVariantProps['size']>;
   asChild?: boolean;
 }
 
+const button = cva(['block leading-6', 'active:translate-y-1'], {
+  variants: {
+    intent: {
+      primary:
+        'text-white bg-success-brand dark:bg-success-brand bg-opacity-100 shadow-yamaha-blue',
+      secondary:
+        'text-neutral-600 dark:text-neutral-300 bg-neutral-50 dark:bg-neutral-500 dark:hover:bg-neutral-400 hover:bg-neutral-100 bg-opacity-5 dark:bg-opacity-100 shadow-yamaha-grey-light dark:shadow-yamaha-grey',
+    },
+    size: {
+      icon: ['rounded-[12px] px-[14px] py-3'],
+      sm: ['font-bold uppercase leading-6', 'rounded-[12px] px-4 py-3'],
+      lg: ['font-bold leading-[29px] text-2xl', 'rounded-[16px] py-5 w-full'],
+      fw: ['font-bold rounded-[12px] px-4 py-3 w-full'],
+    },
+  },
+  defaultVariants: {
+    intent: 'secondary',
+    size: 'sm',
+  },
+});
+
+const well = cva(
+  [
+    'overflow-hidden relative rounded-[14px] bg-black bg-opacity-5 dark:bg-opacity-15 px-[2px] pt-[2px] pb-[7px]',
+  ],
+  {
+    variants: {
+      size: {
+        lg: 'rounded-[18px]',
+        sm: 'rounded-[14px]',
+        icon: 'rounded-[14px]',
+        fw: 'rounded-[14px] w-full',
+      },
+    },
+  },
+);
+
 export const Button = forwardRef(function Button(
-  {asChild, size = 'sm', variant = 'secondary', ...props}: ButtonProps,
+  {asChild, intent = 'secondary', size = 'sm', ...props}: ButtonProps,
   ref: React.Ref<HTMLDivElement>,
 ) {
   const Comp = asChild ? Slot : 'button';
 
-  const secondaryStyles =
-    'text-neutral-600 dark:text-neutral-300 bg-neutral-50 dark:bg-neutral-500 dark:hover:bg-neutral-400 hover:bg-neutral-100 bg-opacity-5 dark:bg-opacity-100 shadow-yamaha-grey-light dark:shadow-yamaha-grey';
-  const primaryStyles =
-    'text-white bg-success-brand dark:bg-success-brand bg-opacity-100 shadow-yamaha-blue';
-  // blue boutton
-  const tertiaryStyles =
-    'text-white bg-blue-brand shadow-yamaha-blue capitalize';
-  const smTextStyles = 'font-bold uppercase leading-6';
-  const lgTextStyles = 'font-bold leading-[29px] text-2xl';
-  const smButtonStyles = 'rounded-[12px] px-4 py-3';
-  const iconButtonStyles = 'rounded-[12px] px-[14px] py-3';
-  const lgButtonStyles = 'rounded-[16px] py-5 w-full';
-  const lgWellStyles = 'rounded-[18px] pb-[7px]';
-  const smWellStyles = 'rounded-[14px] pb-[7px]';
-  const fwButtonStyles = 'font-bold rounded-[12px] px-4 py-3 w-full';
-  const fwWellStyles = 'rounded-[14px] pb-[7px] w-full';
-
   return (
-    <div
-      ref={ref}
-      className={cn(
-        'h-fit',
-        'overflow-hidden relative rounded-[14px] bg-black bg-opacity-5 dark:bg-opacity-15 p-[2px]',
-        {
-          [lgWellStyles]: size === 'lg',
-          [smWellStyles]: size === 'sm' || size === 'icon',
-          [fwWellStyles]: size === 'fw',
-        },
-      )}
-    >
+    <div ref={ref} className={well({size})}>
       <Comp
         {...props}
-        className={cn(
-          'block leading-6',
-          'active:translate-y-1',
-          {
-            [iconButtonStyles]: size === 'icon',
-            [smTextStyles]: size === 'sm',
-            [lgTextStyles]: size === 'lg',
-            [smButtonStyles]: size === 'sm',
-            [lgButtonStyles]: size === 'lg',
-            [fwButtonStyles]: size === 'fw',
-            [secondaryStyles]: variant === 'secondary',
-            [primaryStyles]: variant === 'primary',
-            [tertiaryStyles]: variant === 'tertiary',
-          },
-          props.className,
-        )}
+        className={cn(button({intent, size}), props.className)}
       />
     </div>
   );

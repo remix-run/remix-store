@@ -19,6 +19,9 @@ const config = {
       '2xl': '1980px',
     },
     colors: {
+      inherit: 'inherit',
+      current: 'currentColor',
+      transparent: 'transparent',
       gray: '#343436',
       lightGray: '#E3E2DD',
       darkGray: '#D8D7D3',

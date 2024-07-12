@@ -2,38 +2,36 @@
 @tailwind components;
 @tailwind utilities;
 
-html {
-  @apply text-neutral-600 dark:text-neutral-300;
-}
-
 .dark {
   color-scheme: dark;
 }
 
-a {
-  @apply text-black dark:text-white;
-}
+@layer base {
+  html {
+    @apply text-neutral-600 dark:text-neutral-300;
+  }
 
-html,
-body {
-  @apply bg-white dark:bg-black font-body;
-  @apply text-black dark:text-white;
-}
+  html,
+  body {
+    @apply bg-white dark:bg-black font-body;
+    @apply text-black dark:text-white;
+  }
 
-h1,
-h2,
-h3 {
-  @apply text-5xl font-bold font-heading text-neutral-600 dark:text-white tracking-tightest;
-}
+  h1,
+  h2,
+  h3 {
+    @apply text-5xl font-bold font-heading text-neutral-600 dark:text-white tracking-tightest;
+  }
 
-/* apply only to base elements without classes */
-p:not([class]),
-b:not([class]),
-strong:not([class]),
-span:not([class]),
-li:not([class]),
-em:not([class]) {
-  @apply text-black dark:text-white text-base font-body;
+  /* apply only to base elements without classes */
+  /* p:not([class]),
+  b:not([class]),
+  strong:not([class]),
+  span:not([class]),
+  li:not([class]),
+  em:not([class]) {
+    @apply text-black dark:text-white text-base font-body;
+  } */
 }
 
 /*

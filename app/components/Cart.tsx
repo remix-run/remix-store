@@ -56,7 +56,7 @@ export function CartEmpty({
             window.location.href = ctaUrl;
           }}
         >
-          <Button variant="secondary" size="lg">
+          <Button intent="secondary" size="lg">
             <span>Back to shop</span>
           </Button>
         </Link>
@@ -453,7 +453,7 @@ function CheckoutButton({checkoutUrl}: {checkoutUrl?: string}) {
 
   return (
     <div className="flex">
-      <Button variant="tertiary" size="fw">
+      <Button intent="primary" size="fw">
         <a className="m-0 p-0 block" href={checkoutUrl} target="_self">
           <p>Continue to checkout</p>
         </a>
