@@ -9,8 +9,11 @@
 @layer base {
   html,
   body {
+    @apply font-body text-neutral-800 dark:text-neutral-300;
+  }
+
+  body {
     @apply bg-neutral-200 dark:bg-neutral-800 font-body;
-    @apply text-neutral-800 dark:text-neutral-300;
   }
 
   h1,
