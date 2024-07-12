@@ -1,6 +1,7 @@
 import {
   CartForm,
   Money,
+  type OptimisticCartLine,
   useOptimisticCart,
   type OptimisticCart,
 } from '@shopify/hydrogen';
@@ -15,7 +16,7 @@ import {Button} from '~/components/ui/button';
 import Icon from '~/components/Icon';
 import {useRef} from 'react';
 
-type CartLine = OptimisticCart<CartApiQueryFragment>['lines']['nodes'][0];
+type CartLine = OptimisticCartLine<CartApiQueryFragment['lines']['nodes'][0]>;
 
 type CartMainProps = {
   cart: CartApiQueryFragment | null;
@@ -56,7 +57,7 @@ export function CartEmpty({
             window.location.href = ctaUrl;
           }}
         >
-          <Button variant="secondary" size="lg">
+          <Button intent="secondary" size="lg">
             <span>Back to shop</span>
           </Button>
         </Link>
@@ -134,7 +135,6 @@ function CartLineItem({
   const {id, merchandise} = line;
   const {product, title, image, selectedOptions} = merchandise;
   const lineItemUrl = useVariantUrl(product.handle, selectedOptions);
-  // @ts-expect-error - OptimisticCart unfortunately doesn't persist the types  correctly
   const gradients = parseGradientColors(product.gradientColors);
 
   return (
@@ -169,7 +169,7 @@ function CartLineItem({
           }}
         >
           <p>
-            <strong className="tracking-tight text-xl text-black dark:text-white">
+            <strong className="tracking-tight text-xl text-neutral-800 dark:text-white">
               {product.title}
             </strong>
           </p>
@@ -238,7 +238,7 @@ export function CartSummary({
         className,
         // should be conditional wether user has already inputted a discount or not
         summaryHeight,
-        'absolute left-0 bottom-0 bg-lightGray dark:bg-gray',
+        'absolute left-0 bottom-0 bg-neutral-100 dark:bg-neutral-700',
         'p-8 w-full',
       )}
     >
@@ -274,7 +274,7 @@ function CartLineQuantity({line}: {line: CartLine}) {
   const nextQuantity = Number((quantity + 1).toFixed(0));
 
   return (
-    <div className="mt-3 p-[1px] flex bg-darkGray dark:bg-darkBlack rounded-input w-[194px]">
+    <div className="mt-3 p-[1px] flex bg-neutral-50 dark:bg-neutral-900 rounded-input w-[194px]">
       <div className="flex justify-between items-center px-5">
         <CartLineUpdateButton lines={[{id: lineId, quantity: prevQuantity}]}>
           <button
@@ -359,7 +359,7 @@ function CartDiscounts({
       {/* Have existing discount, display it with a remove option */}
       {Boolean(codes.length) && (
         <div className="flex justify-between">
-          <p className="h-[56px] rounded-input w-full p-5 text-blue-brand lh-5 leading-5 bg-lightGray dark:bg-black">
+          <p className="h-[56px] rounded-input w-full p-5 text-blue-brand lh-5 leading-5 bg-neutral-200 dark:bg-neutral-800">
             Promo code applied
           </p>
         </div>
@@ -370,7 +370,7 @@ function CartDiscounts({
         <UpdateDiscountForm discountCodes={codes}>
           <div
             className={clsx(
-              'flex justify-between bg-lightGray dark:bg-black pl-5 w-full rounded-input',
+              'flex justify-between bg-neutral-200 dark:bg-neutral-800 pl-5 w-full rounded-input',
             )}
           >
             <input
@@ -379,7 +379,7 @@ function CartDiscounts({
               name="discountCode"
               placeholder="Enter promo code"
               className={clsx(
-                'font-bold uppercase font-sm lh-5 leading-5 my-5 bg-lightGray dark:bg-black',
+                'font-bold uppercase font-sm lh-5 leading-5 my-5 bg-neutral-200 dark:bg-neutral-800',
                 'focus:outline-none focus:ring-0 focus:border-transparent',
                 'placeholder:normal-case placeholder:font-thin',
                 'w-full',
@@ -453,7 +453,7 @@ function CheckoutButton({checkoutUrl}: {checkoutUrl?: string}) {
 
   return (
     <div className="flex">
-      <Button variant="tertiary" size="fw">
+      <Button intent="primary" size="fw">
         <a className="m-0 p-0 block" href={checkoutUrl} target="_self">
           <p>Continue to checkout</p>
         </a>

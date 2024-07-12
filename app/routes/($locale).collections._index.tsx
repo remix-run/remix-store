@@ -66,7 +66,7 @@ export default function Collections() {
 
 function CollectionsGrid({collections}: {collections: CollectionFragment[]}) {
   return (
-    <div className="collections-grid">
+    <div>
       {collections.map((collection, index) => (
         <CollectionItem
           key={collection.id}
@@ -87,7 +87,6 @@ function CollectionItem({
 }) {
   return (
     <Link
-      className="collection-item"
       key={collection.id}
       to={`/collections/${collection.handle}`}
       prefetch="intent"

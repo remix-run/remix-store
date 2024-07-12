@@ -34,30 +34,25 @@ export function Aside({
   const asideWidth = `w-[586px]`;
 
   return (
-    <div
-      data-type={`aside-${type}`}
-      className={clsx()}
-      aria-modal
-      role="dialog"
-    >
+    <div data-type={`aside-${type}`} aria-modal role="dialog">
       <div
         role="presentation"
         onClick={close}
         className={clsx(
-          `fixed pointer-none bg-black/[.5] z-0`,
+          `fixed pointer-none bg-neutral-800 bg-opacity-50 z-0`,
           isOpen && 'inset-0 backdrop-blur-md	pointer-events-auto z-10',
         )}
       />
       <aside
         className={clsx(
           isOpen ? 'translate-x-0' : 'translate-x-full',
-          'bg-white dark:bg-black absolute top-0 right-0 h-dvh z-20 transition-transform duration-300 ease-in-out',
+          'bg-neutral-200 dark:bg-neutral-800 absolute top-0 right-0 h-dvh z-20 transition-transform duration-300 ease-in-out',
           asideWidth,
         )}
       >
         <header
           className={clsx(
-            'top-0 sticky justify-between items-center flex px-8 h-[110px] dark:bg-gray',
+            'top-0 sticky justify-between items-center flex px-8 h-[110px] bg-neutral-100 dark:bg-neutral-700',
           )}
         >
           <h3 className={clsx('m-0')}>{heading}</h3>

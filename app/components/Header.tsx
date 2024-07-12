@@ -33,7 +33,7 @@ export function Header({
         'sticky flex justify-between items-center',
         'pt-7 pb-5 px-9',
         'bg-neutral-200 dark:bg-neutral-800',
-        'text-black dark:text-white',
+        'text-neutral-800 dark:text-white',
       )}
     >
       <HeaderMenu
@@ -171,12 +171,10 @@ function CartBadge({count}: {count: number}) {
   const {publish, shop, cart, prevCart} = useAnalytics();
 
   return (
-    <Button asChild>
+    <Button asChild intent={count > 0 ? 'primary' : 'secondary'}>
       <a
         href="/cart"
-        className={cn('flex gap-2', {
-          'bg-success-brand': count > 0,
-        })}
+        className={'flex gap-2'}
         onClick={(e) => {
           e.preventDefault();
           open('cart');
@@ -188,7 +186,7 @@ function CartBadge({count}: {count: number}) {
           } as CartViewPayload);
         }}
       >
-        <Icon name="bag" aria-label="cart" /> {count}
+        <Icon name="bag" className="text-inherit" aria-label="cart" /> {count}
       </a>
     </Button>
   );

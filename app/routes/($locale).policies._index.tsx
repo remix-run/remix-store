@@ -30,7 +30,7 @@ export default function Policies() {
         }}
         sizes="100vw"
       />
-      <div className="p-12 rounded-3xl bg-neutral-100 dark:bg-gray mt-3">
+      <div className="p-12 rounded-3xl bg-neutral-100 dark:bg-neutral-700 mt-3">
         <h1>{privacyPolicy.title}</h1>
         <div
           className="flex flex-col gap-9 pt-9 policy-container"
