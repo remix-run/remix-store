@@ -3,7 +3,6 @@ on:
   push:
     branches:
       - main
-  pull_request:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -11,6 +10,7 @@ concurrency:
 
 jobs:
   format:
+    if: github.repository == 'remix-run/remix-website'
     name: 💅 Format
     runs-on: ubuntu-latest
 
