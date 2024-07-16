@@ -24,7 +24,7 @@ type PredicticeSearchResultItemImage =
   | PredictiveProductFragment['variants']['nodes'][0]['image'];
 
 type PredictiveSearchResultItemPrice =
-  | PredictiveProductFragment['variants']['nodes'][0]['price'];
+  PredictiveProductFragment['variants']['nodes'][0]['price'];
 
 export type NormalizedPredictiveSearchResultItem = {
   __typename: string | undefined;
