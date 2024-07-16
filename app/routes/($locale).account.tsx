@@ -1,38 +1,38 @@
-import {json, type LoaderFunctionArgs} from '@shopify/remix-oxygen';
-import {Form, NavLink, Outlet, useLoaderData} from '@remix-run/react';
-import {CUSTOMER_DETAILS_QUERY} from '~/graphql/customer-account/CustomerDetailsQuery';
+import { json, type LoaderFunctionArgs } from "@shopify/remix-oxygen";
+import { Form, NavLink, Outlet, useLoaderData } from "@remix-run/react";
+import { CUSTOMER_DETAILS_QUERY } from "~/graphql/customer-account/CustomerDetailsQuery";
 
 export function shouldRevalidate() {
   return true;
 }
 
-export async function loader({context}: LoaderFunctionArgs) {
-  const {data, errors} = await context.customerAccount.query(
+export async function loader({ context }: LoaderFunctionArgs) {
+  const { data, errors } = await context.customerAccount.query(
     CUSTOMER_DETAILS_QUERY,
   );
 
   if (errors?.length || !data?.customer) {
-    throw new Error('Customer not found');
+    throw new Error("Customer not found");
   }
 
   return json(
-    {customer: data.customer},
+    { customer: data.customer },
     {
       headers: {
-        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        "Cache-Control": "no-cache, no-store, must-revalidate",
       },
     },
   );
 }
 
 export default function AccountLayout() {
-  const {customer} = useLoaderData<typeof loader>();
+  const { customer } = useLoaderData<typeof loader>();
 
   const heading = customer
     ? customer.firstName
       ? `Welcome, ${customer.firstName}`
       : `Welcome to your account.`
-    : 'Account Details';
+    : "Account Details";
 
   return (
     <div className="account">
@@ -41,7 +41,7 @@ export default function AccountLayout() {
       <AccountMenu />
       <br />
       <br />
-      <Outlet context={{customer}} />
+      <Outlet context={{ customer }} />
     </div>
   );
 }
@@ -55,8 +55,8 @@ function AccountMenu() {
     isPending: boolean;
   }) {
     return {
-      fontWeight: isActive ? 'bold' : undefined,
-      color: isPending ? 'grey' : 'black',
+      fontWeight: isActive ? "bold" : undefined,
+      color: isPending ? "grey" : "black",
     };
   }
 

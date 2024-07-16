@@ -1,15 +1,18 @@
-import type {CSSProperties} from 'react';
-import {Suspense} from 'react';
-import {Await, NavLink} from '@remix-run/react';
-import {type CartViewPayload, useAnalytics} from '@shopify/hydrogen';
-import type {HeaderQuery, CartApiQueryFragment} from 'storefrontapi.generated';
-import {useAside} from '~/components/Aside';
-import {ThemeToggle} from './ThemeToggle';
-import {cn} from '~/lib';
+import type { CSSProperties } from "react";
+import { Suspense } from "react";
+import { Await, NavLink } from "@remix-run/react";
+import { type CartViewPayload, useAnalytics } from "@shopify/hydrogen";
+import type {
+  HeaderQuery,
+  CartApiQueryFragment,
+} from "storefrontapi.generated";
+import { useAside } from "~/components/Aside";
+import { ThemeToggle } from "./ThemeToggle";
+import { cn } from "~/lib";
 
-import Icon from './Icon';
-import {TitleLogo} from './TitleLogo';
-import {Button} from './ui/button';
+import Icon from "./Icon";
+import { TitleLogo } from "./TitleLogo";
+import { Button } from "./ui/button";
 
 interface HeaderProps {
   header: HeaderQuery;
@@ -18,7 +21,7 @@ interface HeaderProps {
   publicStoreDomain: string;
 }
 
-type Viewport = 'desktop' | 'mobile';
+type Viewport = "desktop" | "mobile";
 
 export function Header({
   header,
@@ -26,14 +29,14 @@ export function Header({
   cart,
   publicStoreDomain,
 }: HeaderProps) {
-  const {shop, menu} = header;
+  const { shop, menu } = header;
   return (
     <header
       className={cn(
-        'sticky flex justify-between items-center',
-        'pt-7 pb-5 px-9',
-        'bg-neutral-200 dark:bg-neutral-800',
-        'text-neutral-800 dark:text-white',
+        "sticky flex items-center justify-between",
+        "px-9 pb-5 pt-7",
+        "bg-neutral-200 dark:bg-neutral-800",
+        "text-neutral-800 dark:text-white",
       )}
     >
       <HeaderMenu
@@ -62,13 +65,13 @@ export function HeaderMenu({
   viewport,
   publicStoreDomain,
 }: {
-  menu: HeaderProps['header']['menu'];
-  primaryDomainUrl: HeaderProps['header']['shop']['primaryDomain']['url'];
+  menu: HeaderProps["header"]["menu"];
+  primaryDomainUrl: HeaderProps["header"]["shop"]["primaryDomain"]["url"];
   viewport: Viewport;
-  publicStoreDomain: HeaderProps['publicStoreDomain'];
+  publicStoreDomain: HeaderProps["publicStoreDomain"];
 }) {
   function closeAside(event: React.MouseEvent<HTMLAnchorElement>) {
-    if (viewport === 'mobile') {
+    if (viewport === "mobile") {
       event.preventDefault();
       window.location.href = event.currentTarget.href;
     }
@@ -79,13 +82,13 @@ export function HeaderMenu({
       <HeaderMenuMobileToggle />
       <nav
         className={cn({
-          'flex gap-4': true,
-          'flex-col': viewport === 'mobile',
-          'hidden sm:flex flex-row ': viewport === 'desktop',
+          "flex gap-4": true,
+          "flex-col": viewport === "mobile",
+          "hidden flex-row sm:flex": viewport === "desktop",
         })}
         role="navigation"
       >
-        {viewport === 'mobile' && (
+        {viewport === "mobile" && (
           <NavLink
             end
             onClick={closeAside}
@@ -101,7 +104,7 @@ export function HeaderMenu({
 
           // if the url is internal, we strip the domain
           const url =
-            item.url.includes('myshopify.com') ||
+            item.url.includes("myshopify.com") ||
             item.url.includes(publicStoreDomain) ||
             item.url.includes(primaryDomainUrl)
               ? new URL(item.url).pathname
@@ -109,7 +112,7 @@ export function HeaderMenu({
 
           let size;
           let contents;
-          if (item.title === 'Info') {
+          if (item.title === "Info") {
             contents = (
               <Icon
                 name="info"
@@ -117,9 +120,9 @@ export function HeaderMenu({
                 className="text-inherit"
               />
             );
-            size = 'icon' as const;
+            size = "icon" as const;
           } else {
-            size = 'sm' as const;
+            size = "sm" as const;
             contents = item.title;
           }
           return (
@@ -146,9 +149,9 @@ export function HeaderMenu({
 function HeaderCtas({
   isLoggedIn,
   cart,
-}: Pick<HeaderProps, 'isLoggedIn' | 'cart'>) {
+}: Pick<HeaderProps, "isLoggedIn" | "cart">) {
   return (
-    <div className="flex items-center gap-4 ml-auto" role="navigation">
+    <div className="ml-auto flex items-center gap-4" role="navigation">
       <Button size="icon">
         <Icon name="globe" aria-label="currency" />
       </Button>
@@ -158,31 +161,31 @@ function HeaderCtas({
 }
 
 function HeaderMenuMobileToggle() {
-  const {open} = useAside();
+  const { open } = useAside();
   return (
-    <button className="sm:hidden" onClick={() => open('mobile')}>
+    <button className="sm:hidden" onClick={() => open("mobile")}>
       <h3>☰</h3>
     </button>
   );
 }
 
-function CartBadge({count}: {count: number}) {
-  const {open} = useAside();
-  const {publish, shop, cart, prevCart} = useAnalytics();
+function CartBadge({ count }: { count: number }) {
+  const { open } = useAside();
+  const { publish, shop, cart, prevCart } = useAnalytics();
 
   return (
-    <Button asChild intent={count > 0 ? 'primary' : 'secondary'}>
+    <Button asChild intent={count > 0 ? "primary" : "secondary"}>
       <a
         href="/cart"
-        className={'flex gap-2'}
+        className={"flex gap-2"}
         onClick={(e) => {
           e.preventDefault();
-          open('cart');
-          publish('cart_viewed', {
+          open("cart");
+          publish("cart_viewed", {
             cart,
             prevCart,
             shop,
-            url: window.location.href || '',
+            url: window.location.href || "",
           } as CartViewPayload);
         }}
       >
@@ -192,7 +195,7 @@ function CartBadge({count}: {count: number}) {
   );
 }
 
-function CartToggle({cart}: Pick<HeaderProps, 'cart'>) {
+function CartToggle({ cart }: Pick<HeaderProps, "cart">) {
   return (
     <Suspense fallback={<CartBadge count={0} />}>
       <Await resolve={cart}>
@@ -206,50 +209,50 @@ function CartToggle({cart}: Pick<HeaderProps, 'cart'>) {
 }
 
 const FALLBACK_HEADER_MENU = {
-  id: 'gid://shopify/Menu/199655587896',
+  id: "gid://shopify/Menu/199655587896",
   items: [
     {
-      id: 'gid://shopify/MenuItem/461609500728',
+      id: "gid://shopify/MenuItem/461609500728",
       resourceId: null,
       tags: [],
-      title: 'Collections',
-      type: 'HTTP',
-      url: '/collections',
+      title: "Collections",
+      type: "HTTP",
+      url: "/collections",
       items: [],
     },
     {
-      id: 'gid://shopify/MenuItem/461609533496',
+      id: "gid://shopify/MenuItem/461609533496",
       resourceId: null,
       tags: [],
-      title: 'Blog',
-      type: 'HTTP',
-      url: '/blogs/journal',
+      title: "Blog",
+      type: "HTTP",
+      url: "/blogs/journal",
       items: [],
     },
     {
-      id: 'gid://shopify/MenuItem/461609566264',
+      id: "gid://shopify/MenuItem/461609566264",
       resourceId: null,
       tags: [],
-      title: 'Policies',
-      type: 'HTTP',
-      url: '/policies',
+      title: "Policies",
+      type: "HTTP",
+      url: "/policies",
       items: [],
     },
     {
-      id: 'gid://shopify/MenuItem/461609599032',
-      resourceId: 'gid://shopify/Page/92591030328',
+      id: "gid://shopify/MenuItem/461609599032",
+      resourceId: "gid://shopify/Page/92591030328",
       tags: [],
-      title: 'About',
-      type: 'PAGE',
-      url: '/pages/about',
+      title: "About",
+      type: "PAGE",
+      url: "/pages/about",
       items: [],
     },
   ],
 };
 
-function activeLinkStyle({isActive}: {isActive: boolean}) {
+function activeLinkStyle({ isActive }: { isActive: boolean }) {
   return {
-    fontWeight: isActive ? 'bold' : undefined,
-    pointerEvents: isActive ? 'none' : undefined,
+    fontWeight: isActive ? "bold" : undefined,
+    pointerEvents: isActive ? "none" : undefined,
   } satisfies CSSProperties;
 }

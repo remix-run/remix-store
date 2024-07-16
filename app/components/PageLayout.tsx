@@ -1,18 +1,18 @@
-import {Await} from '@remix-run/react';
-import {Suspense} from 'react';
+import { Await } from "@remix-run/react";
+import { Suspense } from "react";
 import type {
   CartApiQueryFragment,
   FooterQuery,
   HeaderQuery,
-} from 'storefrontapi.generated';
-import {Aside} from '~/components/Aside';
-import {Footer} from '~/components/Footer';
-import {Header, HeaderMenu} from '~/components/Header';
-import {CartMain} from '~/components/Cart';
+} from "storefrontapi.generated";
+import { Aside } from "~/components/Aside";
+import { Footer } from "~/components/Footer";
+import { Header, HeaderMenu } from "~/components/Header";
+import { CartMain } from "~/components/Cart";
 import {
   PredictiveSearchForm,
   PredictiveSearchResults,
-} from '~/components/Search';
+} from "~/components/Search";
 
 interface PageLayoutProps {
   cart: Promise<CartApiQueryFragment | null>;
@@ -54,7 +54,7 @@ export function PageLayout({
   );
 }
 
-function CartAside({cart}: {cart: PageLayoutProps['cart']}) {
+function CartAside({ cart }: { cart: PageLayoutProps["cart"] }) {
   return (
     <Aside type="cart" heading="Your Cart">
       <Suspense fallback={<p>Loading cart ...</p>}>
@@ -74,7 +74,7 @@ function SearchAside() {
       <div className="predictive-search">
         <br />
         <PredictiveSearchForm>
-          {({fetchResults, inputRef}) => (
+          {({ fetchResults, inputRef }) => (
             <div>
               <input
                 name="q"
@@ -107,8 +107,8 @@ function MobileMenuAside({
   header,
   publicStoreDomain,
 }: {
-  header: PageLayoutProps['header'];
-  publicStoreDomain: PageLayoutProps['publicStoreDomain'];
+  header: PageLayoutProps["header"];
+  publicStoreDomain: PageLayoutProps["publicStoreDomain"];
 }) {
   return (
     header.menu &&

@@ -6,7 +6,7 @@ export function TitleLogo() {
       height="20"
       viewBox="0 0 218 20"
       fill="none"
-      className="mx-auto text-neutral-700 dark:text-neutral-300 h-5"
+      className="mx-auto h-5 text-neutral-700 dark:text-neutral-300"
     >
       <path
         fillRule="evenodd"

@@ -1,26 +1,31 @@
-import type {LinksFunction, LoaderFunctionArgs} from '@shopify/remix-oxygen';
-import {defer} from '@shopify/remix-oxygen';
-import {Await, useLoaderData, Link, type MetaFunction} from '@remix-run/react';
-import {Suspense} from 'react';
-import {Image} from '@shopify/hydrogen';
-import {CollectionGrid} from '~/components/CollectionGrid';
+import type { LinksFunction, LoaderFunctionArgs } from "@shopify/remix-oxygen";
+import { defer } from "@shopify/remix-oxygen";
+import {
+  Await,
+  useLoaderData,
+  Link,
+  type MetaFunction,
+} from "@remix-run/react";
+import { Suspense } from "react";
+import { Image } from "@shopify/hydrogen";
+import { CollectionGrid } from "~/components/CollectionGrid";
 import type {
   FeaturedCollectionFragment,
   RecommendedProductsQuery,
-} from 'storefrontapi.generated';
-import featuredFrame from '~/assets/featured-frame.svg?url';
+} from "storefrontapi.generated";
+import featuredFrame from "~/assets/featured-frame.svg?url";
 
 export const meta: MetaFunction = () => {
-  return [{title: 'The Remix Store | Home'}];
+  return [{ title: "The Remix Store | Home" }];
 };
 
 export const links: LinksFunction = () => {
   return [
     {
-      rel: 'preload',
+      rel: "preload",
       href: featuredFrame,
-      as: 'image',
-      type: 'image/svg+xml',
+      as: "image",
+      type: "image/svg+xml",
     },
   ];
 };
@@ -32,14 +37,14 @@ export async function loader(args: LoaderFunctionArgs) {
   // Await the critical data required to render initial state of the page
   const criticalData = await loadCriticalData(args);
 
-  return defer({...deferredData, ...criticalData});
+  return defer({ ...deferredData, ...criticalData });
 }
 
 /**
  * Load data necessary for rendering content above the fold. This is the critical data
  * needed to render the page. If it's unavailable, the whole page should 400 or 500 error.
  */
-async function loadCriticalData({context}: LoaderFunctionArgs) {
+async function loadCriticalData({ context }: LoaderFunctionArgs) {
   const [collection] = await Promise.all([
     context.storefront.query(FEATURED_COLLECTION_QUERY),
     // Add other queries here, so that they are loaded in parallel
@@ -55,7 +60,7 @@ async function loadCriticalData({context}: LoaderFunctionArgs) {
  * fetched after the initial page load. If it's unavailable, the page should still 200.
  * Make sure to not throw any errors here, as it will cause the page to 500.
  */
-function loadDeferredData({context}: LoaderFunctionArgs) {
+function loadDeferredData({ context }: LoaderFunctionArgs) {
   const recommendedProducts = context.storefront
     .query(RECOMMENDED_PRODUCTS_QUERY)
     .catch((error) => {
@@ -88,10 +93,10 @@ function FeaturedCollection({
   const image = collection?.image;
   return (
     <Link
-      className="block pb-8 relative px-16 bg-neutral-200 dark:bg-neutral-800"
+      className="relative block bg-neutral-200 px-16 pb-8 dark:bg-neutral-800"
       to={`/collections/${collection.handle}`}
     >
-      <div className="max-w-7xl mx-auto relative ">
+      <div className="relative mx-auto max-w-7xl">
         <img className="aspect-[1290/426]" src={featuredFrame} alt="" />
         {image && (
           <Image

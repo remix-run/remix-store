@@ -1,8 +1,8 @@
-import {defer, type LoaderFunctionArgs} from '@shopify/remix-oxygen';
-import {useLoaderData, type MetaFunction} from '@remix-run/react';
+import { defer, type LoaderFunctionArgs } from "@shopify/remix-oxygen";
+import { useLoaderData, type MetaFunction } from "@remix-run/react";
 
-export const meta: MetaFunction<typeof loader> = ({data}) => {
-  return [{title: `The Remix Store | ${data?.page.title ?? ''}`}];
+export const meta: MetaFunction<typeof loader> = ({ data }) => {
+  return [{ title: `The Remix Store | ${data?.page.title ?? ""}` }];
 };
 
 export async function loader(args: LoaderFunctionArgs) {
@@ -12,19 +12,19 @@ export async function loader(args: LoaderFunctionArgs) {
   // Await the critical data required to render initial state of the page
   const criticalData = await loadCriticalData(args);
 
-  return defer({...deferredData, ...criticalData});
+  return defer({ ...deferredData, ...criticalData });
 }
 
 /**
  * Load data necessary for rendering content above the fold. This is the critical data
  * needed to render the page. If it's unavailable, the whole page should 400 or 500 error.
  */
-async function loadCriticalData({context, params}: LoaderFunctionArgs) {
+async function loadCriticalData({ context, params }: LoaderFunctionArgs) {
   if (!params.handle) {
-    throw new Error('Missing page handle');
+    throw new Error("Missing page handle");
   }
 
-  const [{page}] = await Promise.all([
+  const [{ page }] = await Promise.all([
     context.storefront.query(PAGE_QUERY, {
       variables: {
         handle: params.handle,
@@ -34,7 +34,7 @@ async function loadCriticalData({context, params}: LoaderFunctionArgs) {
   ]);
 
   if (!page) {
-    throw new Response('Not Found', {status: 404});
+    throw new Response("Not Found", { status: 404 });
   }
 
   return {
@@ -47,19 +47,19 @@ async function loadCriticalData({context, params}: LoaderFunctionArgs) {
  * fetched after the initial page load. If it's unavailable, the page should still 200.
  * Make sure to not throw any errors here, as it will cause the page to 500.
  */
-function loadDeferredData({context}: LoaderFunctionArgs) {
+function loadDeferredData({ context }: LoaderFunctionArgs) {
   return {};
 }
 
 export default function Page() {
-  const {page} = useLoaderData<typeof loader>();
+  const { page } = useLoaderData<typeof loader>();
 
   return (
     <div className="page">
       <header>
         <h1>{page.title}</h1>
       </header>
-      <main dangerouslySetInnerHTML={{__html: page.body}} />
+      <main dangerouslySetInnerHTML={{ __html: page.body }} />
     </div>
   );
 }

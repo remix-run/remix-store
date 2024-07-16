@@ -1,17 +1,17 @@
-import {Image as HydrogenImage} from '@shopify/hydrogen';
-import clx from 'clsx';
+import { Image as HydrogenImage } from "@shopify/hydrogen";
+import clx from "clsx";
 
 type HydrogenImageProps = Parameters<typeof HydrogenImage>[0];
 
 export type ImageGradientColors =
-  | 'green'
-  | 'darkBlue'
-  | 'orange'
-  | 'aqua'
-  | 'blue'
-  | 'pink'
-  | 'pinkPurple'
-  | 'random';
+  | "green"
+  | "darkBlue"
+  | "orange"
+  | "aqua"
+  | "blue"
+  | "pink"
+  | "pinkPurple"
+  | "random";
 
 export type ImageProps = HydrogenImageProps & {
   /** (optional) Gradient background color/pattern */
@@ -54,7 +54,7 @@ export function Image(props: ImageProps) {
   // https://doodad.dev/gradient-generator?share=linear-181-50-50-50-50-7_29-ffffff26_96-f7fafcff
   const fadeGradient = `linear-gradient(181deg, rgba(255, 255, 255, 0.15) 29%, rgba(254, 254, 254, 0.24) 36.44%, rgba(254, 254, 254, 0.34) 43.89%, rgba(253, 253, 253, 0.43) 51.33%, rgba(253, 252, 253, 0.53) 58.78%, rgba(252, 252, 253, 0.62) 66.22%, rgba(251, 251, 252, 0.72) 73.67%, rgba(250, 251, 252, 0.81) 81.11%, #f7fafc 96%)`;
 
-  const isRandom = gradient === 'random';
+  const isRandom = gradient === "random";
 
   let activeGradient;
 
@@ -71,15 +71,15 @@ export function Image(props: ImageProps) {
   return (
     <div
       className={clx(
-        'relative overflow-hidden rounded-lg isolate min-w-full min-h-full',
+        "relative isolate min-h-full min-w-full overflow-hidden rounded-lg",
       )}
     >
       {/* Color gradient layer */}
       <div
         className={clx(
-          'absolute top-0 left-0 w-full h-full z-0',
+          "absolute left-0 top-0 z-0 h-full w-full",
           gradientHover &&
-            'opacity-0 transition-opacity duration-300 hover:opacity-100 cursor-pointer',
+            "cursor-pointer opacity-0 transition-opacity duration-300 hover:opacity-100",
         )}
         style={{
           zIndex: -2,
@@ -89,7 +89,7 @@ export function Image(props: ImageProps) {
 
       {gradientFade && (
         <div
-          className="absolute top-0 left-0 w-full h-full z-0"
+          className="absolute left-0 top-0 z-0 h-full w-full"
           style={{
             zIndex: -1,
             backgroundImage: fadeGradient,

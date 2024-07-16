@@ -13,13 +13,13 @@
   }
 
   body {
-    @apply bg-neutral-200 dark:bg-neutral-800 font-body;
+    @apply bg-neutral-200 font-body dark:bg-neutral-800;
   }
 
   h1,
   h2,
   h3 {
-    @apply text-5xl font-bold font-heading text-neutral-600 dark:text-neutral-300 tracking-tightest;
+    @apply font-heading text-5xl font-bold tracking-tightest text-neutral-600 dark:text-neutral-300;
   }
 }
 
@@ -28,5 +28,5 @@
   container overrides for data coming from Shopify CMS
 */
 .policy-container h2 {
-  @apply text-2xl font-body font-bold;
+  @apply font-body text-2xl font-bold;
 }

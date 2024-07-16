@@ -4,32 +4,32 @@ import {
   type OptimisticCartLine,
   useOptimisticCart,
   type OptimisticCart,
-} from '@shopify/hydrogen';
-import type {CartLineUpdateInput} from '@shopify/hydrogen/storefront-api-types';
-import {Link, type FetcherWithComponents} from '@remix-run/react';
-import type {CartApiQueryFragment} from 'storefrontapi.generated';
-import {useVariantUrl} from '~/lib/variants';
-import {Image} from '~/components/Image';
-import {parseGradientColors} from '~/lib/metafields';
-import clsx from 'clsx';
-import {Button} from '~/components/ui/button';
-import Icon from '~/components/Icon';
-import {useRef} from 'react';
+} from "@shopify/hydrogen";
+import type { CartLineUpdateInput } from "@shopify/hydrogen/storefront-api-types";
+import { Link, type FetcherWithComponents } from "@remix-run/react";
+import type { CartApiQueryFragment } from "storefrontapi.generated";
+import { useVariantUrl } from "~/lib/variants";
+import { Image } from "~/components/Image";
+import { parseGradientColors } from "~/lib/metafields";
+import clsx from "clsx";
+import { Button } from "~/components/ui/button";
+import Icon from "~/components/Icon";
+import { useRef } from "react";
 
-type CartLine = OptimisticCartLine<CartApiQueryFragment['lines']['nodes'][0]>;
+type CartLine = OptimisticCartLine<CartApiQueryFragment["lines"]["nodes"][0]>;
 
 type CartMainProps = {
   cart: CartApiQueryFragment | null;
-  layout: 'page' | 'aside';
+  layout: "page" | "aside";
 };
 
-export function CartMain({layout, cart: originalCart}: CartMainProps) {
+export function CartMain({ layout, cart: originalCart }: CartMainProps) {
   const cart = useOptimisticCart(originalCart);
 
   const linesCount = Boolean(cart?.lines?.nodes?.length || 0);
 
   return (
-    <div className={clsx('w-full h-full')}>
+    <div className={clsx("h-full w-full")}>
       <CartEmpty hidden={linesCount} layout={layout} />
       <CartDetails hidden={!linesCount} cart={cart} layout={layout} />
     </div>
@@ -38,22 +38,22 @@ export function CartMain({layout, cart: originalCart}: CartMainProps) {
 
 export function CartEmpty({
   hidden = false,
-  layout = 'aside',
+  layout = "aside",
 }: {
   hidden: boolean;
-  layout?: CartMainProps['layout'];
+  layout?: CartMainProps["layout"];
 }) {
-  const ctaUrl = '/collections/all';
+  const ctaUrl = "/collections/all";
   return (
     <div
-      className={clsx('p-8 w-full flex-col h-full', hidden ? 'hidden' : 'flex')}
+      className={clsx("h-full w-full flex-col p-8", hidden ? "hidden" : "flex")}
     >
       <p>There are no items in this cart.</p>
       <div className="mt-auto">
         <Link
           to={ctaUrl}
           onClick={() => {
-            if (layout !== 'aside') return;
+            if (layout !== "aside") return;
             window.location.href = ctaUrl;
           }}
         >
@@ -72,14 +72,14 @@ function CartDetails({
   cart,
 }: {
   cart: OptimisticCart<CartApiQueryFragment | null>;
-  layout: 'page' | 'aside';
+  layout: "page" | "aside";
   hidden: boolean;
 }) {
   const cartHasItems = !!cart?.totalQuantity;
   if (!cartHasItems) return null;
 
   return (
-    <div className={clsx('h-full p-8 flex-col', hidden ? 'hidden' : 'flex')}>
+    <div className={clsx("h-full flex-col p-8", hidden ? "hidden" : "flex")}>
       <p className="mb-8">
         There are <strong>{cart.totalQuantity}</strong> items in this cart
       </p>
@@ -99,7 +99,7 @@ function CartLines({
   lines,
   layout,
 }: {
-  layout: CartMainProps['layout'];
+  layout: CartMainProps["layout"];
   lines: CartLine[];
 }) {
   if (!lines) return null;
@@ -114,7 +114,7 @@ function CartLines({
   return (
     <div
       aria-labelledby="cart-lines"
-      className={clsx('overflow-y-scroll', cartLinesHeight)}
+      className={clsx("overflow-y-scroll", cartLinesHeight)}
     >
       <ul>
         {lines.map((line) => (
@@ -129,21 +129,21 @@ function CartLineItem({
   layout,
   line,
 }: {
-  layout: CartMainProps['layout'];
+  layout: CartMainProps["layout"];
   line: CartLine;
 }) {
-  const {id, merchandise} = line;
-  const {product, title, image, selectedOptions} = merchandise;
+  const { id, merchandise } = line;
+  const { product, title, image, selectedOptions } = merchandise;
   const lineItemUrl = useVariantUrl(product.handle, selectedOptions);
   const gradients = parseGradientColors(product.gradientColors);
 
   return (
     <li
       key={id}
-      className={clsx('cart-line', 'flex first:pt-0 py-4 last:pb-8')}
+      className={clsx("cart-line", "flex py-4 first:pt-0 last:pb-8")}
     >
       {image && (
-        <div className="w-[148px] h-[148px]">
+        <div className="h-[148px] w-[148px]">
           <Image
             alt={title}
             aspectRatio="1/1"
@@ -157,19 +157,19 @@ function CartLineItem({
         </div>
       )}
 
-      <div className={clsx('ml-6 flex flex-col')}>
+      <div className={clsx("ml-6 flex flex-col")}>
         <Link
           prefetch="intent"
           to={lineItemUrl}
           onClick={() => {
-            if (layout === 'aside') {
+            if (layout === "aside") {
               // close the drawer
               window.location.href = lineItemUrl;
             }
           }}
         >
           <p>
-            <strong className="tracking-tight text-xl text-neutral-800 dark:text-white">
+            <strong className="text-xl tracking-tight text-neutral-800 dark:text-white">
               {product.title}
             </strong>
           </p>
@@ -177,7 +177,7 @@ function CartLineItem({
         <CartLinePrice line={line} as="span" />
         <ul>
           {selectedOptions.map((option) => {
-            const isDefaultVariant = option.value === 'Default Title';
+            const isDefaultVariant = option.value === "Default Title";
             if (isDefaultVariant) return null;
             return (
               <li key={option.name}>
@@ -197,10 +197,10 @@ function CartLineItem({
 function CartSubTotal({
   subtotalAmount,
 }: {
-  subtotalAmount?: Partial<CartApiQueryFragment['cost']['subtotalAmount']>;
+  subtotalAmount?: Partial<CartApiQueryFragment["cost"]["subtotalAmount"]>;
 }) {
   return (
-    <dl className={clsx('flex justify-between w-full')}>
+    <dl className={clsx("flex w-full justify-between")}>
       <dt className="text-xl">Subtotal</dt>
       <dd>
         {subtotalAmount?.amount ? (
@@ -209,7 +209,7 @@ function CartSubTotal({
             <Money as="strong" data={subtotalAmount} />
           </p>
         ) : (
-          '-'
+          "-"
         )}
       </dd>
     </dl>
@@ -222,11 +222,11 @@ export function CartSummary({
   className,
 }: {
   children?: React.ReactNode;
-  layout: CartMainProps['layout'];
+  layout: CartMainProps["layout"];
   className?: string;
 }) {
   const classes =
-    layout === 'page' ? 'cart-summary-page' : 'cart-summary-aside';
+    layout === "page" ? "cart-summary-page" : "cart-summary-aside";
 
   const summaryHeight = `h-[280px]`;
 
@@ -238,8 +238,8 @@ export function CartSummary({
         className,
         // should be conditional wether user has already inputted a discount or not
         summaryHeight,
-        'absolute left-0 bottom-0 bg-neutral-100 dark:bg-neutral-700',
-        'p-8 w-full',
+        "absolute bottom-0 left-0 bg-neutral-100 dark:bg-neutral-700",
+        "w-full p-8",
       )}
     >
       {children}
@@ -258,7 +258,7 @@ function CartLineRemoveButton({
     <div className="ml-auto">
       <CartForm
         action={CartForm.ACTIONS.LinesRemove}
-        inputs={{lineIds}}
+        inputs={{ lineIds }}
         route="/cart"
       >
         {children}
@@ -267,16 +267,16 @@ function CartLineRemoveButton({
   );
 }
 
-function CartLineQuantity({line}: {line: CartLine}) {
-  if (!line || typeof line?.quantity === 'undefined') return null;
-  const {id: lineId, quantity, isOptimistic} = line;
+function CartLineQuantity({ line }: { line: CartLine }) {
+  if (!line || typeof line?.quantity === "undefined") return null;
+  const { id: lineId, quantity, isOptimistic } = line;
   const prevQuantity = Number(Math.max(0, quantity - 1).toFixed(0));
   const nextQuantity = Number((quantity + 1).toFixed(0));
 
   return (
-    <div className="mt-3 p-[1px] flex bg-neutral-50 dark:bg-neutral-900 rounded-input w-[194px]">
-      <div className="flex justify-between items-center px-5">
-        <CartLineUpdateButton lines={[{id: lineId, quantity: prevQuantity}]}>
+    <div className="mt-3 flex w-[194px] rounded-input bg-neutral-50 p-[1px] dark:bg-neutral-900">
+      <div className="flex items-center justify-between px-5">
+        <CartLineUpdateButton lines={[{ id: lineId, quantity: prevQuantity }]}>
           <button
             disabled={!!isOptimistic}
             type="submit"
@@ -290,8 +290,8 @@ function CartLineQuantity({line}: {line: CartLine}) {
             />
           </button>
         </CartLineUpdateButton>
-        <div className="w-12 font-bold text-center">{quantity}</div>
-        <CartLineUpdateButton lines={[{id: lineId, quantity: nextQuantity}]}>
+        <div className="w-12 text-center font-bold">{quantity}</div>
+        <CartLineUpdateButton lines={[{ id: lineId, quantity: nextQuantity }]}>
           <button
             disabled={!!isOptimistic}
             type="submit"
@@ -313,23 +313,23 @@ function CartLineQuantity({line}: {line: CartLine}) {
 
 function CartLinePrice({
   line,
-  priceType = 'regular',
+  priceType = "regular",
   ...passthroughProps
 }: {
   line: CartLine;
-  priceType?: 'regular' | 'compareAt';
+  priceType?: "regular" | "compareAt";
   [key: string]: any;
 }) {
   if (!line?.cost?.amountPerQuantity || !line?.cost?.totalAmount)
-    return <div style={{visibility: 'hidden'}}>&nbsp;</div>;
+    return <div style={{ visibility: "hidden" }}>&nbsp;</div>;
 
   const moneyV2 =
-    priceType === 'regular'
+    priceType === "regular"
       ? line.cost.totalAmount
       : line.cost.compareAtAmountPerQuantity;
 
   if (moneyV2 == null) {
-    return <div style={{visibility: 'hidden'}}>&nbsp;</div>;
+    return <div style={{ visibility: "hidden" }}>&nbsp;</div>;
   }
 
   return (
@@ -342,24 +342,24 @@ function CartLinePrice({
 function CartDiscounts({
   discountCodes,
 }: {
-  discountCodes?: CartApiQueryFragment['discountCodes'];
+  discountCodes?: CartApiQueryFragment["discountCodes"];
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const codeEntered = Boolean(inputRef.current?.value);
   const codes: string[] =
     discountCodes
       ?.filter((discount) => discount.applicable)
-      ?.map(({code}) => code) || [];
+      ?.map(({ code }) => code) || [];
 
   const codeApplied = Boolean(codes.length);
   const codeEnteredInvalid = codeEntered && !codeApplied;
 
   return (
-    <div className={clsx(codeEnteredInvalid ? 'pt-8 pb-2' : 'py-8')}>
+    <div className={clsx(codeEnteredInvalid ? "pb-2 pt-8" : "py-8")}>
       {/* Have existing discount, display it with a remove option */}
       {Boolean(codes.length) && (
         <div className="flex justify-between">
-          <p className="h-[56px] rounded-input w-full p-5 text-blue-brand lh-5 leading-5 bg-neutral-200 dark:bg-neutral-800">
+          <p className="lh-5 h-[56px] w-full rounded-input bg-neutral-200 p-5 leading-5 text-blue-brand dark:bg-neutral-800">
             Promo code applied
           </p>
         </div>
@@ -370,7 +370,7 @@ function CartDiscounts({
         <UpdateDiscountForm discountCodes={codes}>
           <div
             className={clsx(
-              'flex justify-between bg-neutral-200 dark:bg-neutral-800 pl-5 w-full rounded-input',
+              "flex w-full justify-between rounded-input bg-neutral-200 pl-5 dark:bg-neutral-800",
             )}
           >
             <input
@@ -379,13 +379,13 @@ function CartDiscounts({
               name="discountCode"
               placeholder="Enter promo code"
               className={clsx(
-                'font-bold uppercase font-sm lh-5 leading-5 my-5 bg-neutral-200 dark:bg-neutral-800',
-                'focus:outline-none focus:ring-0 focus:border-transparent',
-                'placeholder:normal-case placeholder:font-thin',
-                'w-full',
+                "font-sm lh-5 my-5 bg-neutral-200 font-bold uppercase leading-5 dark:bg-neutral-800",
+                "focus:border-transparent focus:outline-none focus:ring-0",
+                "placeholder:font-thin placeholder:normal-case",
+                "w-full",
               )}
             />
-            <div className="mt-[1px] mr-[1px]">
+            <div className="mr-[1px] mt-[1px]">
               <Button type="submit" className="h-[56px] w-[140px]">
                 APPLY CODE
               </Button>
@@ -396,8 +396,8 @@ function CartDiscounts({
 
       <span
         className={clsx(
-          'text-error-brand text-xs mt-2',
-          codeEnteredInvalid ? 'visible' : 'hidden',
+          "mt-2 text-xs text-error-brand",
+          codeEnteredInvalid ? "visible" : "hidden",
         )}
       >
         The code you entered is invalid or has expired
@@ -421,7 +421,7 @@ function UpdateDiscountForm({
         discountCodes: discountCodes || [],
       }}
     >
-      {({data}: FetcherWithComponents<any>) => {
+      {({ data }: FetcherWithComponents<any>) => {
         return children;
       }}
     </CartForm>
@@ -436,11 +436,11 @@ function CartLineUpdateButton({
   lines: CartLineUpdateInput[];
 }) {
   return (
-    <div className="w-6 h-6">
+    <div className="h-6 w-6">
       <CartForm
         route="/cart"
         action={CartForm.ACTIONS.LinesUpdate}
-        inputs={{lines}}
+        inputs={{ lines }}
       >
         {children}
       </CartForm>
@@ -448,13 +448,13 @@ function CartLineUpdateButton({
   );
 }
 
-function CheckoutButton({checkoutUrl}: {checkoutUrl?: string}) {
+function CheckoutButton({ checkoutUrl }: { checkoutUrl?: string }) {
   if (!checkoutUrl) return null;
 
   return (
     <div className="flex">
       <Button intent="primary" size="fw">
-        <a className="m-0 p-0 block" href={checkoutUrl} target="_self">
+        <a className="m-0 block p-0" href={checkoutUrl} target="_self">
           <p>Continue to checkout</p>
         </a>
       </Button>

@@ -1,10 +1,10 @@
-import {json, type LoaderFunctionArgs} from '@shopify/remix-oxygen';
+import { json, type LoaderFunctionArgs } from "@shopify/remix-oxygen";
 import type {
   NormalizedPredictiveSearch,
   NormalizedPredictiveSearchResults,
-} from '~/components/Search';
-import {NO_PREDICTIVE_SEARCH_RESULTS} from '~/components/Search';
-import {applyTrackingParams} from '~/lib/search';
+} from "~/components/Search";
+import { NO_PREDICTIVE_SEARCH_RESULTS } from "~/components/Search";
+import { applyTrackingParams } from "~/lib/search";
 
 import type {
   PredictiveArticleFragment,
@@ -13,21 +13,21 @@ import type {
   PredictiveProductFragment,
   PredictiveQueryFragment,
   PredictiveSearchQuery,
-} from 'storefrontapi.generated';
+} from "storefrontapi.generated";
 
 type PredictiveSearchTypes =
-  | 'ARTICLE'
-  | 'COLLECTION'
-  | 'PAGE'
-  | 'PRODUCT'
-  | 'QUERY';
+  | "ARTICLE"
+  | "COLLECTION"
+  | "PAGE"
+  | "PRODUCT"
+  | "QUERY";
 
 const DEFAULT_SEARCH_TYPES: PredictiveSearchTypes[] = [
-  'ARTICLE',
-  'COLLECTION',
-  'PAGE',
-  'PRODUCT',
-  'QUERY',
+  "ARTICLE",
+  "COLLECTION",
+  "PAGE",
+  "PRODUCT",
+  "QUERY",
 ];
 
 export type PredictiveSearchAPILoader = typeof loader;
@@ -36,7 +36,7 @@ export type PredictiveSearchAPILoader = typeof loader;
  * Fetches the search results from the predictive search API
  * requested by the SearchForm component
  */
-export async function loader({request, params, context}: LoaderFunctionArgs) {
+export async function loader({ request, params, context }: LoaderFunctionArgs) {
   const search = await fetchPredictiveSearchResults({
     params,
     request,
@@ -44,7 +44,7 @@ export async function loader({request, params, context}: LoaderFunctionArgs) {
   });
 
   return json(search, {
-    headers: {'Cache-Control': `max-age=${search.searchTerm ? 60 : 3600}`},
+    headers: { "Cache-Control": `max-age=${search.searchTerm ? 60 : 3600}` },
   });
 }
 
@@ -52,24 +52,24 @@ async function fetchPredictiveSearchResults({
   params,
   request,
   context,
-}: Pick<LoaderFunctionArgs, 'params' | 'context' | 'request'>) {
+}: Pick<LoaderFunctionArgs, "params" | "context" | "request">) {
   const url = new URL(request.url);
   const searchParams = new URLSearchParams(url.search);
-  const searchTerm = searchParams.get('q') || '';
-  const limit = Number(searchParams.get('limit') || 10);
-  const rawTypes = String(searchParams.get('type') || 'ANY');
+  const searchTerm = searchParams.get("q") || "";
+  const limit = Number(searchParams.get("limit") || 10);
+  const rawTypes = String(searchParams.get("type") || "ANY");
 
   const searchTypes =
-    rawTypes === 'ANY'
+    rawTypes === "ANY"
       ? DEFAULT_SEARCH_TYPES
       : rawTypes
-          .split(',')
+          .split(",")
           .map((t) => t.toUpperCase() as PredictiveSearchTypes)
           .filter((t) => DEFAULT_SEARCH_TYPES.includes(t));
 
   if (!searchTerm) {
     return {
-      searchResults: {results: null, totalResults: 0},
+      searchResults: { results: null, totalResults: 0 },
       searchTerm,
       searchTypes,
     };
@@ -78,14 +78,14 @@ async function fetchPredictiveSearchResults({
   const data = await context.storefront.query(PREDICTIVE_SEARCH_QUERY, {
     variables: {
       limit,
-      limitScope: 'EACH',
+      limitScope: "EACH",
       searchTerm,
       types: searchTypes,
     },
   });
 
   if (!data) {
-    throw new Error('No data returned from Shopify API');
+    throw new Error("No data returned from Shopify API");
   }
 
   const searchResults = normalizePredictiveSearchResults(
@@ -93,15 +93,15 @@ async function fetchPredictiveSearchResults({
     params.locale,
   );
 
-  return {searchResults, searchTerm, searchTypes};
+  return { searchResults, searchTerm, searchTypes };
 }
 
 /**
  * Normalize results and apply tracking qurery parameters to each result url
  */
 export function normalizePredictiveSearchResults(
-  predictiveSearch: PredictiveSearchQuery['predictiveSearch'],
-  locale: LoaderFunctionArgs['params']['locale'],
+  predictiveSearch: PredictiveSearchQuery["predictiveSearch"],
+  locale: LoaderFunctionArgs["params"]["locale"],
 ): NormalizedPredictiveSearch {
   let totalResults = 0;
   if (!predictiveSearch) {
@@ -111,12 +111,12 @@ export function normalizePredictiveSearchResults(
     };
   }
 
-  const localePrefix = locale ? `/${locale}` : '';
+  const localePrefix = locale ? `/${locale}` : "";
   const results: NormalizedPredictiveSearchResults = [];
 
   if (predictiveSearch.queries.length) {
     results.push({
-      type: 'queries',
+      type: "queries",
       items: predictiveSearch.queries.map((query: PredictiveQueryFragment) => {
         const trackingParams = applyTrackingParams(
           query,
@@ -126,7 +126,7 @@ export function normalizePredictiveSearchResults(
         totalResults++;
         return {
           __typename: query.__typename,
-          handle: '',
+          handle: "",
           id: query.text,
           image: undefined,
           title: query.text,
@@ -139,7 +139,7 @@ export function normalizePredictiveSearchResults(
 
   if (predictiveSearch.products.length) {
     results.push({
-      type: 'products',
+      type: "products",
       items: predictiveSearch.products.map(
         (product: PredictiveProductFragment) => {
           totalResults++;
@@ -160,7 +160,7 @@ export function normalizePredictiveSearchResults(
 
   if (predictiveSearch.collections.length) {
     results.push({
-      type: 'collections',
+      type: "collections",
       items: predictiveSearch.collections.map(
         (collection: PredictiveCollectionFragment) => {
           totalResults++;
@@ -180,7 +180,7 @@ export function normalizePredictiveSearchResults(
 
   if (predictiveSearch.pages.length) {
     results.push({
-      type: 'pages',
+      type: "pages",
       items: predictiveSearch.pages.map((page: PredictivePageFragment) => {
         totalResults++;
         const trackingParams = applyTrackingParams(page);
@@ -198,7 +198,7 @@ export function normalizePredictiveSearchResults(
 
   if (predictiveSearch.articles.length) {
     results.push({
-      type: 'articles',
+      type: "articles",
       items: predictiveSearch.articles.map(
         (article: PredictiveArticleFragment) => {
           totalResults++;
@@ -216,7 +216,7 @@ export function normalizePredictiveSearchResults(
     });
   }
 
-  return {results, totalResults};
+  return { results, totalResults };
 }
 
 const PREDICTIVE_SEARCH_QUERY = `#graphql

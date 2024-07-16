@@ -1,18 +1,18 @@
-import {useColorScheme} from '~/lib/color-scheme';
+import { useColorScheme } from "~/lib/color-scheme";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '~/components/ui/dropdown-menu';
-import {Form, useLocation} from '@remix-run/react';
-import Icon from './Icon';
-import {Button} from './ui/button';
+} from "~/components/ui/dropdown-menu";
+import { Form, useLocation } from "@remix-run/react";
+import Icon from "./Icon";
+import { Button } from "./ui/button";
 
 const themeIconMap = {
-  light: 'sun',
-  dark: 'moon',
-  system: 'computer',
+  light: "sun",
+  dark: "moon",
+  system: "computer",
 } as const;
 
 export function ThemeToggle() {
@@ -50,13 +50,13 @@ export function ThemeToggle() {
   );
 }
 
-function DropdownButton({theme}: {theme: 'light' | 'dark' | 'system'}) {
+function DropdownButton({ theme }: { theme: "light" | "dark" | "system" }) {
   const currentTheme = useColorScheme();
   const icon = themeIconMap[theme];
   return (
     <DropdownMenuItem asChild>
       <button
-        className="capitalize gap-2 cursor-pointer dark:hover:opacity-65"
+        className="cursor-pointer gap-2 capitalize dark:hover:opacity-65"
         value={theme}
         name="colorScheme"
         aria-current={theme === currentTheme}

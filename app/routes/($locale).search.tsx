@@ -1,27 +1,31 @@
-import {defer, type LoaderFunctionArgs} from '@shopify/remix-oxygen';
-import {useLoaderData, type MetaFunction} from '@remix-run/react';
-import {getPaginationVariables, Analytics} from '@shopify/hydrogen';
+import { defer, type LoaderFunctionArgs } from "@shopify/remix-oxygen";
+import { useLoaderData, type MetaFunction } from "@remix-run/react";
+import { getPaginationVariables, Analytics } from "@shopify/hydrogen";
 
-import {SearchForm, SearchResults, NoSearchResults} from '~/components/Search';
+import {
+  SearchForm,
+  SearchResults,
+  NoSearchResults,
+} from "~/components/Search";
 
 export const meta: MetaFunction = () => {
-  return [{title: `The Remix Store | Search`}];
+  return [{ title: `The Remix Store | Search` }];
 };
 
-export async function loader({request, context}: LoaderFunctionArgs) {
+export async function loader({ request, context }: LoaderFunctionArgs) {
   const url = new URL(request.url);
   const searchParams = new URLSearchParams(url.search);
-  const variables = getPaginationVariables(request, {pageBy: 8});
-  const searchTerm = String(searchParams.get('q') || '');
+  const variables = getPaginationVariables(request, { pageBy: 8 });
+  const searchTerm = String(searchParams.get("q") || "");
 
   if (!searchTerm) {
     return {
-      searchResults: {results: null, totalResults: 0},
+      searchResults: { results: null, totalResults: 0 },
       searchTerm,
     };
   }
 
-  const {errors, ...data} = await context.storefront.query(SEARCH_QUERY, {
+  const { errors, ...data } = await context.storefront.query(SEARCH_QUERY, {
     variables: {
       query: searchTerm,
       ...variables,
@@ -29,7 +33,7 @@ export async function loader({request, context}: LoaderFunctionArgs) {
   });
 
   if (!data) {
-    throw new Error('No search data returned from Shopify API');
+    throw new Error("No search data returned from Shopify API");
   }
 
   const totalResults = Object.values(data).reduce((total, value) => {
@@ -48,7 +52,7 @@ export async function loader({request, context}: LoaderFunctionArgs) {
 }
 
 export default function SearchPage() {
-  const {searchTerm, searchResults} = useLoaderData<typeof loader>();
+  const { searchTerm, searchResults } = useLoaderData<typeof loader>();
 
   return (
     <div className="search">
@@ -62,7 +66,7 @@ export default function SearchPage() {
           searchTerm={searchTerm}
         />
       )}
-      <Analytics.SearchView data={{searchTerm, searchResults}} />
+      <Analytics.SearchView data={{ searchTerm, searchResults }} />
     </div>
   );
 }

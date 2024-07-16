@@ -1,18 +1,18 @@
-import type {CustomerFragment} from 'customer-accountapi.generated';
-import type {CustomerUpdateInput} from '@shopify/hydrogen/customer-account-api-types';
-import {CUSTOMER_UPDATE_MUTATION} from '~/graphql/customer-account/CustomerUpdateMutation';
+import type { CustomerFragment } from "customer-accountapi.generated";
+import type { CustomerUpdateInput } from "@shopify/hydrogen/customer-account-api-types";
+import { CUSTOMER_UPDATE_MUTATION } from "~/graphql/customer-account/CustomerUpdateMutation";
 import {
   json,
   type ActionFunctionArgs,
   type LoaderFunctionArgs,
-} from '@shopify/remix-oxygen';
+} from "@shopify/remix-oxygen";
 import {
   Form,
   useActionData,
   useNavigation,
   useOutletContext,
   type MetaFunction,
-} from '@remix-run/react';
+} from "@remix-run/react";
 
 export type ActionResponse = {
   error: string | null;
@@ -20,38 +20,38 @@ export type ActionResponse = {
 };
 
 export const meta: MetaFunction = () => {
-  return [{title: 'Profile'}];
+  return [{ title: "Profile" }];
 };
 
-export async function loader({context}: LoaderFunctionArgs) {
+export async function loader({ context }: LoaderFunctionArgs) {
   await context.customerAccount.handleAuthStatus();
 
   return json({});
 }
 
-export async function action({request, context}: ActionFunctionArgs) {
-  const {customerAccount} = context;
+export async function action({ request, context }: ActionFunctionArgs) {
+  const { customerAccount } = context;
 
-  if (request.method !== 'PUT') {
-    return json({error: 'Method not allowed'}, {status: 405});
+  if (request.method !== "PUT") {
+    return json({ error: "Method not allowed" }, { status: 405 });
   }
 
   const form = await request.formData();
 
   try {
     const customer: CustomerUpdateInput = {};
-    const validInputKeys = ['firstName', 'lastName'] as const;
+    const validInputKeys = ["firstName", "lastName"] as const;
     for (const [key, value] of form.entries()) {
       if (!validInputKeys.includes(key as any)) {
         continue;
       }
-      if (typeof value === 'string' && value.length) {
+      if (typeof value === "string" && value.length) {
         customer[key as (typeof validInputKeys)[number]] = value;
       }
     }
 
     // update customer and possibly password
-    const {data, errors} = await customerAccount.mutate(
+    const { data, errors } = await customerAccount.mutate(
       CUSTOMER_UPDATE_MUTATION,
       {
         variables: {
@@ -65,7 +65,7 @@ export async function action({request, context}: ActionFunctionArgs) {
     }
 
     if (!data?.customerUpdate?.customer) {
-      throw new Error('Customer profile update failed.');
+      throw new Error("Customer profile update failed.");
     }
 
     return json({
@@ -74,7 +74,7 @@ export async function action({request, context}: ActionFunctionArgs) {
     });
   } catch (error: any) {
     return json(
-      {error: error.message, customer: null},
+      { error: error.message, customer: null },
       {
         status: 400,
       },
@@ -83,8 +83,8 @@ export async function action({request, context}: ActionFunctionArgs) {
 }
 
 export default function AccountProfile() {
-  const account = useOutletContext<{customer: CustomerFragment}>();
-  const {state} = useNavigation();
+  const account = useOutletContext<{ customer: CustomerFragment }>();
+  const { state } = useNavigation();
   const action = useActionData<ActionResponse>();
   const customer = action?.customer ?? account?.customer;
 
@@ -103,7 +103,7 @@ export default function AccountProfile() {
             autoComplete="given-name"
             placeholder="First name"
             aria-label="First name"
-            defaultValue={customer.firstName ?? ''}
+            defaultValue={customer.firstName ?? ""}
             minLength={2}
           />
           <label htmlFor="lastName">Last name</label>
@@ -114,7 +114,7 @@ export default function AccountProfile() {
             autoComplete="family-name"
             placeholder="Last name"
             aria-label="Last name"
-            defaultValue={customer.lastName ?? ''}
+            defaultValue={customer.lastName ?? ""}
             minLength={2}
           />
         </fieldset>
@@ -127,8 +127,8 @@ export default function AccountProfile() {
         ) : (
           <br />
         )}
-        <button type="submit" disabled={state !== 'idle'}>
-          {state !== 'idle' ? 'Updating' : 'Update'}
+        <button type="submit" disabled={state !== "idle"}>
+          {state !== "idle" ? "Updating" : "Update"}
         </button>
       </Form>
     </div>

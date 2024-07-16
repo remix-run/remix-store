@@ -1,21 +1,21 @@
-import {json, type LoaderFunctionArgs} from '@shopify/remix-oxygen';
-import {useLoaderData, Link} from '@remix-run/react';
-import {Image} from '~/components/Image';
+import { json, type LoaderFunctionArgs } from "@shopify/remix-oxygen";
+import { useLoaderData, Link } from "@remix-run/react";
+import { Image } from "~/components/Image";
 
-export async function loader({context}: LoaderFunctionArgs) {
+export async function loader({ context }: LoaderFunctionArgs) {
   const data = await context.storefront.query(POLICIES_QUERY);
 
-  const {refundPolicy, shippingPolicy} = data.shop;
+  const { refundPolicy, shippingPolicy } = data.shop;
 
   if (!refundPolicy || !shippingPolicy) {
-    throw new Response('No policies found', {status: 404});
+    throw new Response("No policies found", { status: 404 });
   }
 
-  return json({refundPolicy, shippingPolicy});
+  return json({ refundPolicy, shippingPolicy });
 }
 
 export default function Policies() {
-  const {refundPolicy, shippingPolicy} = useLoaderData<typeof loader>();
+  const { refundPolicy, shippingPolicy } = useLoaderData<typeof loader>();
 
   return (
     <div className="px-9 pb-12">
@@ -23,15 +23,15 @@ export default function Policies() {
         className="rounded-3xl"
         // TODO: figure out how to get this data from GraphQL
         data={{
-          url: 'https://cdn.shopify.com/s/files/1/0655/4127/5819/files/help-banner.png?v=1719583076',
+          url: "https://cdn.shopify.com/s/files/1/0655/4127/5819/files/help-banner.png?v=1719583076",
           width: 1368,
           height: 300,
-          altText: '',
+          altText: "",
         }}
         sizes="100vw"
       />
-      <div className="grid lg:grid-cols-2 mt-3 gap-3">
-        <div className="p-12 rounded-3xl bg-neutral-100 dark:bg-neutral-700">
+      <div className="mt-3 grid gap-3 lg:grid-cols-2">
+        <div className="rounded-3xl bg-neutral-100 p-12 dark:bg-neutral-700">
           <h1>Info & Help</h1>
           <p className="pt-6">
             Remix is a full stack web framework that lets you focus on the user
@@ -40,20 +40,20 @@ export default function Policies() {
             your stuff.
           </p>
         </div>
-        <div className="p-12 rounded-3xl bg-neutral-100 dark:bg-neutral-700">
+        <div className="rounded-3xl bg-neutral-100 p-12 dark:bg-neutral-700">
           <h2 className="font-body text-2xl tracking-normal">
             {shippingPolicy.title}
           </h2>
           <div
-            className="flex flex-col gap-9 pt-6 policy-container"
-            dangerouslySetInnerHTML={{__html: shippingPolicy.body}}
+            className="policy-container flex flex-col gap-9 pt-6"
+            dangerouslySetInnerHTML={{ __html: shippingPolicy.body }}
           />
-          <h2 className="font-body text-2xl tracking-normal pt-6">
+          <h2 className="pt-6 font-body text-2xl tracking-normal">
             {refundPolicy.title}
           </h2>
           <div
-            className="flex flex-col gap-9 pt-6 policy-container"
-            dangerouslySetInnerHTML={{__html: refundPolicy.body}}
+            className="policy-container flex flex-col gap-9 pt-6"
+            dangerouslySetInnerHTML={{ __html: refundPolicy.body }}
           />
         </div>
       </div>

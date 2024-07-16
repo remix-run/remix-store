@@ -1,6 +1,6 @@
 // @ts-ignore
 // Virtual entry point for the app
-import * as remixBuild from 'virtual:remix/server-build';
+import * as remixBuild from "virtual:remix/server-build";
 import {
   cartGetIdDefault,
   cartSetIdDefault,
@@ -8,14 +8,14 @@ import {
   createStorefrontClient,
   storefrontRedirect,
   createCustomerAccountClient,
-} from '@shopify/hydrogen';
+} from "@shopify/hydrogen";
 import {
   createRequestHandler,
   getStorefrontHeaders,
   type AppLoadContext,
-} from '@shopify/remix-oxygen';
-import {AppSession} from '~/lib/session';
-import {CART_QUERY_FRAGMENT, CART_MUTATE_FRAGMENT} from '~/lib/fragments';
+} from "@shopify/remix-oxygen";
+import { AppSession } from "~/lib/session";
+import { CART_QUERY_FRAGMENT, CART_MUTATE_FRAGMENT } from "~/lib/fragments";
 
 /**
  * Export a fetch handler in module format.
@@ -31,19 +31,19 @@ export default {
        * Open a cache instance in the worker and a custom session instance.
        */
       if (!env?.SESSION_SECRET) {
-        throw new Error('SESSION_SECRET environment variable is not set');
+        throw new Error("SESSION_SECRET environment variable is not set");
       }
 
       const waitUntil = executionContext.waitUntil.bind(executionContext);
       const [cache, session] = await Promise.all([
-        caches.open('hydrogen'),
+        caches.open("hydrogen"),
         AppSession.init(request, [env.SESSION_SECRET]),
       ]);
 
       /**
        * Create Hydrogen's Storefront client.
        */
-      const {storefront} = createStorefrontClient({
+      const { storefront } = createStorefrontClient({
         cache,
         waitUntil,
         i18n: getLocaleFromRequest(request),
@@ -98,7 +98,7 @@ export default {
       const response = await handleRequest(request);
 
       if (session.isPending) {
-        response.headers.set('Set-Cookie', await session.commit());
+        response.headers.set("Set-Cookie", await session.commit());
       }
 
       if (response.status === 404) {
@@ -107,30 +107,30 @@ export default {
          * If the redirect doesn't exist, then `storefrontRedirect`
          * will pass through the 404 response.
          */
-        return storefrontRedirect({request, response, storefront});
+        return storefrontRedirect({ request, response, storefront });
       }
 
       return response;
     } catch (error) {
       console.error(error);
-      return new Response('An unexpected error occurred', {status: 500});
+      return new Response("An unexpected error occurred", { status: 500 });
     }
   },
 };
 
 function getLocaleFromRequest(request: Request): I18nLocale {
   const url = new URL(request.url);
-  const firstPathPart = url.pathname.split('/')[1]?.toUpperCase() ?? '';
+  const firstPathPart = url.pathname.split("/")[1]?.toUpperCase() ?? "";
 
-  type I18nFromUrl = [I18nLocale['language'], I18nLocale['country']];
+  type I18nFromUrl = [I18nLocale["language"], I18nLocale["country"]];
 
-  let pathPrefix = '';
-  let [language, country]: I18nFromUrl = ['EN', 'US'];
+  let pathPrefix = "";
+  let [language, country]: I18nFromUrl = ["EN", "US"];
 
   if (/^[A-Z]{2}-[A-Z]{2}$/i.test(firstPathPart)) {
-    pathPrefix = '/' + firstPathPart;
-    [language, country] = firstPathPart.split('-') as I18nFromUrl;
+    pathPrefix = "/" + firstPathPart;
+    [language, country] = firstPathPart.split("-") as I18nFromUrl;
   }
 
-  return {language, country, pathPrefix};
+  return { language, country, pathPrefix };
 }

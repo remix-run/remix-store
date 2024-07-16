@@ -1,4 +1,4 @@
-import {redirect} from '@shopify/remix-oxygen';
+import { redirect } from "@shopify/remix-oxygen";
 
 export function safeRedirect(
   to: FormDataEntryValue | string | null | undefined,
@@ -6,11 +6,11 @@ export function safeRedirect(
 ) {
   if (
     !to ||
-    typeof to !== 'string' ||
-    !to.startsWith('/') ||
-    to.startsWith('//')
+    typeof to !== "string" ||
+    !to.startsWith("/") ||
+    to.startsWith("//")
   ) {
-    to = '/';
+    to = "/";
   }
   return redirect(to, init);
 }

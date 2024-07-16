@@ -1,8 +1,8 @@
-import {createContext, type ReactNode, useContext, useState} from 'react';
-import clsx from 'clsx';
-import Icon from '~/components/Icon';
+import { createContext, type ReactNode, useContext, useState } from "react";
+import clsx from "clsx";
+import Icon from "~/components/Icon";
 
-type AsideType = 'search' | 'cart' | 'mobile' | 'closed';
+type AsideType = "search" | "cart" | "mobile" | "closed";
 type AsideContextValue = {
   type: AsideType;
   open: (mode: AsideType) => void;
@@ -29,7 +29,7 @@ export function Aside({
   type: AsideType;
   heading: React.ReactNode;
 }) {
-  const {type: activeType, close} = useAside();
+  const { type: activeType, close } = useAside();
   const isOpen = type === activeType;
   const asideWidth = `w-[586px]`;
 
@@ -39,23 +39,23 @@ export function Aside({
         role="presentation"
         onClick={close}
         className={clsx(
-          `fixed pointer-none bg-neutral-800 bg-opacity-50 z-0`,
-          isOpen && 'inset-0 backdrop-blur-md	pointer-events-auto z-10',
+          `pointer-none fixed z-0 bg-neutral-800 bg-opacity-50`,
+          isOpen && "pointer-events-auto inset-0 z-10 backdrop-blur-md",
         )}
       />
       <aside
         className={clsx(
-          isOpen ? 'translate-x-0' : 'translate-x-full',
-          'bg-neutral-200 dark:bg-neutral-800 absolute top-0 right-0 h-dvh z-20 transition-transform duration-300 ease-in-out',
+          isOpen ? "translate-x-0" : "translate-x-full",
+          "absolute right-0 top-0 z-20 h-dvh bg-neutral-200 transition-transform duration-300 ease-in-out dark:bg-neutral-800",
           asideWidth,
         )}
       >
         <header
           className={clsx(
-            'top-0 sticky justify-between items-center flex px-8 h-[110px] bg-neutral-100 dark:bg-neutral-700',
+            "sticky top-0 flex h-[110px] items-center justify-between bg-neutral-100 px-8 dark:bg-neutral-700",
           )}
         >
-          <h3 className={clsx('m-0')}>{heading}</h3>
+          <h3 className={clsx("m-0")}>{heading}</h3>
           <Icon
             name="x"
             aria-label="Close"
@@ -63,7 +63,7 @@ export function Aside({
             onClick={close}
           />
         </header>
-        <main className={clsx('flex h-[calc(100vh_-_110px)] w-full')}>
+        <main className={clsx("flex h-[calc(100vh_-_110px)] w-full")}>
           {children}
         </main>
       </aside>
@@ -73,16 +73,16 @@ export function Aside({
 
 const AsideContext = createContext<AsideContextValue | null>(null);
 
-Aside.Provider = function AsideProvider({children}: {children: ReactNode}) {
-  const [type, setType] = useState<AsideType>('closed');
+Aside.Provider = function AsideProvider({ children }: { children: ReactNode }) {
+  const [type, setType] = useState<AsideType>("closed");
 
   return (
     <AsideContext.Provider
       value={{
         type,
         open: setType,
-        close: () => setType('closed'),
-        isOpen: type !== 'closed',
+        close: () => setType("closed"),
+        isOpen: type !== "closed",
       }}
     >
       {children}
@@ -93,7 +93,7 @@ Aside.Provider = function AsideProvider({children}: {children: ReactNode}) {
 export function useAside() {
   const aside = useContext(AsideContext);
   if (!aside) {
-    throw new Error('useAside must be used within an AsideProvider');
+    throw new Error("useAside must be used within an AsideProvider");
   }
   return aside;
 }

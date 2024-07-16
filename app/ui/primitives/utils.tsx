@@ -1,7 +1,7 @@
-import {useEffect, useLayoutEffect as React_useLayoutEffect} from 'react';
+import { useEffect, useLayoutEffect as React_useLayoutEffect } from "react";
 
 export const canUseDOM = !!(
-  typeof window !== 'undefined' &&
+  typeof window !== "undefined" &&
   window.document &&
   window.document.createElement
 );

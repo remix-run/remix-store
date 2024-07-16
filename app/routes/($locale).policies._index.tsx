@@ -1,21 +1,21 @@
-import {json, type LoaderFunctionArgs} from '@shopify/remix-oxygen';
-import {useLoaderData, Link} from '@remix-run/react';
-import {Image} from '~/components/Image';
+import { json, type LoaderFunctionArgs } from "@shopify/remix-oxygen";
+import { useLoaderData, Link } from "@remix-run/react";
+import { Image } from "~/components/Image";
 
-export async function loader({context}: LoaderFunctionArgs) {
+export async function loader({ context }: LoaderFunctionArgs) {
   const data = await context.storefront.query(POLICIES_QUERY);
 
-  const {privacyPolicy} = data.shop;
+  const { privacyPolicy } = data.shop;
 
   if (!privacyPolicy) {
-    throw new Response('No policies found', {status: 404});
+    throw new Response("No policies found", { status: 404 });
   }
 
-  return json({privacyPolicy});
+  return json({ privacyPolicy });
 }
 
 export default function Policies() {
-  const {privacyPolicy} = useLoaderData<typeof loader>();
+  const { privacyPolicy } = useLoaderData<typeof loader>();
 
   return (
     <div className="px-9 pb-12">
@@ -23,18 +23,18 @@ export default function Policies() {
         className="rounded-3xl"
         // TODO: figure out how to get this data from GraphQL
         data={{
-          url: 'https://cdn.shopify.com/s/files/1/0655/4127/5819/files/privacy-banner.png?v=1719583076',
+          url: "https://cdn.shopify.com/s/files/1/0655/4127/5819/files/privacy-banner.png?v=1719583076",
           width: 1368,
           height: 300,
-          altText: '',
+          altText: "",
         }}
         sizes="100vw"
       />
-      <div className="p-12 rounded-3xl bg-neutral-100 dark:bg-neutral-700 mt-3">
+      <div className="mt-3 rounded-3xl bg-neutral-100 p-12 dark:bg-neutral-700">
         <h1>{privacyPolicy.title}</h1>
         <div
-          className="flex flex-col gap-9 pt-9 policy-container"
-          dangerouslySetInnerHTML={{__html: privacyPolicy.body}}
+          className="policy-container flex flex-col gap-9 pt-9"
+          dangerouslySetInnerHTML={{ __html: privacyPolicy.body }}
         />
       </div>
     </div>

@@ -1,18 +1,22 @@
-import {Suspense} from 'react';
-import {defer, redirect, type LoaderFunctionArgs} from '@shopify/remix-oxygen';
+import { Suspense } from "react";
+import {
+  defer,
+  redirect,
+  type LoaderFunctionArgs,
+} from "@shopify/remix-oxygen";
 import {
   Await,
   Link,
   useLoaderData,
   type MetaFunction,
   type FetcherWithComponents,
-} from '@remix-run/react';
+} from "@remix-run/react";
 import type {
   ProductFragment,
   ProductVariantsQuery,
   ProductVariantFragment,
-} from 'storefrontapi.generated';
-import {Image, type ImageGradientColors} from '~/components/Image';
+} from "storefrontapi.generated";
+import { Image, type ImageGradientColors } from "~/components/Image";
 import {
   type OptimisticCartLineInput,
   Money,
@@ -23,18 +27,18 @@ import {
   Analytics,
   type CartViewPayload,
   useAnalytics,
-} from '@shopify/hydrogen';
-import type {SelectedOption} from '@shopify/hydrogen/storefront-api-types';
-import {getVariantUrl} from '~/lib/variants';
-import {useAside} from '~/components/Aside';
-import {parseGradientColors} from '~/lib/metafields';
+} from "@shopify/hydrogen";
+import type { SelectedOption } from "@shopify/hydrogen/storefront-api-types";
+import { getVariantUrl } from "~/lib/variants";
+import { useAside } from "~/components/Aside";
+import { parseGradientColors } from "~/lib/metafields";
 import {
   PRODUCT_DETAIL_FRAGMENT,
   PRODUCT_VARIANT_FRAGMENT,
-} from '~/lib/fragments';
+} from "~/lib/fragments";
 
-export const meta: MetaFunction<typeof loader> = ({data}) => {
-  return [{title: `The Remix Store | ${data?.product.title ?? ''}`}];
+export const meta: MetaFunction<typeof loader> = ({ data }) => {
+  return [{ title: `The Remix Store | ${data?.product.title ?? ""}` }];
 };
 
 export async function loader(args: LoaderFunctionArgs) {
@@ -44,7 +48,7 @@ export async function loader(args: LoaderFunctionArgs) {
   // Await the critical data required to render initial state of the page
   const criticalData = await loadCriticalData(args);
 
-  return defer({...deferredData, ...criticalData});
+  return defer({ ...deferredData, ...criticalData });
 }
 
 /**
@@ -56,29 +60,32 @@ async function loadCriticalData({
   params,
   request,
 }: LoaderFunctionArgs) {
-  const {handle} = params;
-  const {storefront} = context;
+  const { handle } = params;
+  const { storefront } = context;
 
   if (!handle) {
-    throw new Error('Expected product handle to be defined');
+    throw new Error("Expected product handle to be defined");
   }
 
-  const [{product}] = await Promise.all([
+  const [{ product }] = await Promise.all([
     storefront.query(PRODUCT_QUERY, {
-      variables: {handle, selectedOptions: getSelectedProductOptions(request)},
+      variables: {
+        handle,
+        selectedOptions: getSelectedProductOptions(request),
+      },
     }),
     // Add other queries here, so that they are loaded in parallel
   ]);
 
   if (!product?.id) {
-    throw new Response(null, {status: 404});
+    throw new Response(null, { status: 404 });
   }
 
   const firstVariant = product.variants.nodes[0];
   const firstVariantIsDefault = Boolean(
     firstVariant.selectedOptions.find(
       (option: SelectedOption) =>
-        option.name === 'Title' && option.value === 'Default Title',
+        option.name === "Title" && option.value === "Default Title",
     ),
   );
 
@@ -88,7 +95,7 @@ async function loadCriticalData({
     // if no selected variant was returned from the selected options,
     // we redirect to the first variant's url with it's selected options applied
     if (!product.selectedVariant) {
-      throw redirectToFirstVariant({product, request});
+      throw redirectToFirstVariant({ product, request });
     }
   }
 
@@ -102,7 +109,7 @@ async function loadCriticalData({
  * fetched after the initial page load. If it's unavailable, the page should still 200.
  * Make sure to not throw any errors here, as it will cause the page to 500.
  */
-function loadDeferredData({context, params}: LoaderFunctionArgs) {
+function loadDeferredData({ context, params }: LoaderFunctionArgs) {
   // In order to show which variants are available in the UI, we need to query
   // all of them. But there might be a *lot*, so instead separate the variants
   // into it's own separate query that is deferred. So there's a brief moment
@@ -110,7 +117,7 @@ function loadDeferredData({context, params}: LoaderFunctionArgs) {
   // this deffered query resolves, the UI will update.
   const variants = context.storefront
     .query(VARIANTS_QUERY, {
-      variables: {handle: params.handle!},
+      variables: { handle: params.handle! },
     })
     .catch((error) => {
       // Log query errors, but don't throw them so the page can still render
@@ -147,8 +154,8 @@ function redirectToFirstVariant({
 }
 
 export default function Product() {
-  const {product, variants} = useLoaderData<typeof loader>();
-  const {selectedVariant} = product;
+  const { product, variants } = useLoaderData<typeof loader>();
+  const { selectedVariant } = product;
   return (
     <div className="product">
       <ProductImages
@@ -167,10 +174,10 @@ export default function Product() {
             {
               id: product.id,
               title: product.title,
-              price: selectedVariant?.price.amount || '0',
+              price: selectedVariant?.price.amount || "0",
               vendor: product.vendor,
-              variantId: selectedVariant?.id || '',
-              variantTitle: selectedVariant?.title || '',
+              variantId: selectedVariant?.id || "",
+              variantTitle: selectedVariant?.title || "",
               quantity: 1,
             },
           ],
@@ -184,15 +191,15 @@ function ProductImages({
   images,
   gradientColors,
 }: {
-  images: Array<ProductVariantFragment['image']>;
-  gradientColors: ProductFragment['gradientColors'];
+  images: Array<ProductVariantFragment["image"]>;
+  gradientColors: ProductFragment["gradientColors"];
 }) {
   const gradients = parseGradientColors(gradientColors);
   return (
     <div className="product-images">
       {images.map((image) => {
         if (!image) return null;
-        const gradient = gradients.shift() ?? 'random';
+        const gradient = gradients.shift() ?? "random";
         return (
           <ProductImage key={image.id} image={image} gradient={gradient} />
         );
@@ -205,7 +212,7 @@ function ProductImage({
   image,
   gradient,
 }: {
-  image: ProductVariantFragment['image'];
+  image: ProductVariantFragment["image"];
   gradient?: ImageGradientColors;
 }) {
   if (!image) {
@@ -213,9 +220,9 @@ function ProductImage({
   }
   return (
     <div className="product-image mb-3">
-      <div className="relative overflow-hidden aspect-ratio rounded-lg isolate">
+      <div className="aspect-ratio relative isolate overflow-hidden rounded-lg">
         <Image
-          alt={image.altText || 'Product Image'}
+          alt={image.altText || "Product Image"}
           aspectRatio="1/1"
           data={image}
           key={image.id}
@@ -234,10 +241,10 @@ function ProductMain({
   variants,
 }: {
   product: ProductFragment;
-  selectedVariant: ProductFragment['selectedVariant'];
+  selectedVariant: ProductFragment["selectedVariant"];
   variants: Promise<ProductVariantsQuery | null>;
 }) {
-  const {title, descriptionHtml} = product;
+  const { title, descriptionHtml } = product;
   return (
     <div className="product-main">
       <h1>{title}</h1>
@@ -271,7 +278,7 @@ function ProductMain({
         <strong>Description</strong>
       </p>
       <br />
-      <div dangerouslySetInnerHTML={{__html: descriptionHtml}} />
+      <div dangerouslySetInnerHTML={{ __html: descriptionHtml }} />
       <br />
     </div>
   );
@@ -280,7 +287,7 @@ function ProductMain({
 function ProductPrice({
   selectedVariant,
 }: {
-  selectedVariant: ProductFragment['selectedVariant'];
+  selectedVariant: ProductFragment["selectedVariant"];
 }) {
   return (
     <div className="product-price">
@@ -308,11 +315,11 @@ function ProductForm({
   variants,
 }: {
   product: ProductFragment;
-  selectedVariant: ProductFragment['selectedVariant'];
+  selectedVariant: ProductFragment["selectedVariant"];
   variants: Array<ProductVariantFragment>;
 }) {
-  const {open} = useAside();
-  const {publish, shop, cart, prevCart} = useAnalytics();
+  const { open } = useAside();
+  const { publish, shop, cart, prevCart } = useAnalytics();
   return (
     <div className="product-form">
       <VariantSelector
@@ -320,18 +327,18 @@ function ProductForm({
         options={product.options.filter((option) => option.values.length > 1)}
         variants={variants}
       >
-        {({option}) => <ProductOptions key={option.name} option={option} />}
+        {({ option }) => <ProductOptions key={option.name} option={option} />}
       </VariantSelector>
       <br />
       <AddToCartButton
         disabled={!selectedVariant || !selectedVariant.availableForSale}
         onClick={() => {
-          open('cart');
-          publish('cart_viewed', {
+          open("cart");
+          publish("cart_viewed", {
             cart,
             prevCart,
             shop,
-            url: window.location.href || '',
+            url: window.location.href || "",
           } as CartViewPayload);
         }}
         lines={
@@ -346,18 +353,18 @@ function ProductForm({
             : []
         }
       >
-        {selectedVariant?.availableForSale ? 'Add to cart' : 'Sold out'}
+        {selectedVariant?.availableForSale ? "Add to cart" : "Sold out"}
       </AddToCartButton>
     </div>
   );
 }
 
-function ProductOptions({option}: {option: VariantOption}) {
+function ProductOptions({ option }: { option: VariantOption }) {
   return (
     <div className="product-options" key={option.name}>
       <h5>{option.name}</h5>
       <div className="product-options-grid">
-        {option.values.map(({value, isAvailable, isActive, to}) => {
+        {option.values.map(({ value, isAvailable, isActive, to }) => {
           return (
             <Link
               className="product-options-item"
@@ -367,7 +374,7 @@ function ProductOptions({option}: {option: VariantOption}) {
               replace
               to={to}
               style={{
-                border: isActive ? '1px solid black' : '1px solid transparent',
+                border: isActive ? "1px solid black" : "1px solid transparent",
                 opacity: isAvailable ? 1 : 0.3,
               }}
             >
@@ -395,7 +402,11 @@ function AddToCartButton({
   onClick?: () => void;
 }) {
   return (
-    <CartForm route="/cart" inputs={{lines}} action={CartForm.ACTIONS.LinesAdd}>
+    <CartForm
+      route="/cart"
+      inputs={{ lines }}
+      action={CartForm.ACTIONS.LinesAdd}
+    >
       {(fetcher: FetcherWithComponents<any>) => (
         <>
           <input
@@ -406,7 +417,7 @@ function AddToCartButton({
           <button
             type="submit"
             onClick={onClick}
-            disabled={disabled ?? fetcher.state !== 'idle'}
+            disabled={disabled ?? fetcher.state !== "idle"}
           >
             {children}
           </button>
