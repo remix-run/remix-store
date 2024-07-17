@@ -1,8 +1,7 @@
-import { useState } from "react";
+import { useRef } from "react";
 import { useNavigation, useRouteLoaderData } from "@remix-run/react";
 import type { loader as rootLoader } from "~/root";
 import { useLayoutEffect } from "~/ui/primitives/utils";
-import { useNonce } from "@shopify/hydrogen";
 
 export type ColorScheme = "dark" | "light" | "system";
 
@@ -29,15 +28,13 @@ export function ColorSchemeScript({ nonce }: { nonce?: string }) {
   const colorScheme = useColorScheme();
   // This script automatically adds the dark class to the document element if
   // colorScheme is "system" and prefers-color-scheme: dark is true.
-  const [script] = useState(
-    () => `
-        let colorScheme = ${JSON.stringify(colorScheme)};
-        if (colorScheme === "system") {
-          let media = window.matchMedia("(prefers-color-scheme: dark)")
-          if (media.matches) document.documentElement.classList.add("dark");
-        }
-      `,
-  );
+  const script = useRef(`
+    let colorScheme = ${JSON.stringify(colorScheme)};
+    if (colorScheme === "system") {
+      let media = window.matchMedia("(prefers-color-scheme: dark)")
+      if (media.matches) document.documentElement.classList.add("dark");
+    }
+  `);
 
   // Set the theme value on the document
   useLayoutEffect(() => {
@@ -70,7 +67,7 @@ export function ColorSchemeScript({ nonce }: { nonce?: string }) {
     <script
       nonce={nonce}
       suppressHydrationWarning
-      dangerouslySetInnerHTML={{ __html: script }}
+      dangerouslySetInnerHTML={{ __html: script.current }}
     />
   );
 }

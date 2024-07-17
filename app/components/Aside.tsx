@@ -31,7 +31,6 @@ export function Aside({
 }) {
   const { type: activeType, close } = useAside();
   const isOpen = type === activeType;
-  const asideWidth = `w-[586px]`;
 
   return (
     <div data-type={`aside-${type}`} aria-modal role="dialog">
@@ -45,17 +44,13 @@ export function Aside({
       />
       <aside
         className={clsx(
-          isOpen ? "translate-x-0" : "translate-x-full",
+          "w-[var(--aside-width)]",
           "absolute right-0 top-0 z-20 h-dvh bg-neutral-200 transition-transform duration-300 ease-in-out dark:bg-neutral-800",
-          asideWidth,
+          isOpen ? "translate-x-0" : "translate-x-full",
         )}
       >
-        <header
-          className={clsx(
-            "sticky top-0 flex h-[110px] items-center justify-between bg-neutral-100 px-8 dark:bg-neutral-700",
-          )}
-        >
-          <h3 className={clsx("m-0")}>{heading}</h3>
+        <header className="sticky top-0 flex h-[var(--aside-header-height)] items-center justify-between bg-neutral-100 px-8 dark:bg-neutral-700">
+          <h3 className="m-0">{heading}</h3>
           <Icon
             name="x"
             aria-label="Close"
@@ -63,7 +58,7 @@ export function Aside({
             onClick={close}
           />
         </header>
-        <main className={clsx("flex h-[calc(100vh_-_110px)] w-full")}>
+        <main className="flex h-[calc(100vh_-_var(--aside-header-height))] w-full">
           {children}
         </main>
       </aside>

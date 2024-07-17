@@ -12,7 +12,6 @@ export async function parseColorScheme(request: Request) {
 
   const colorScheme = vals?.colorScheme;
   if (validateColorScheme(colorScheme)) {
-    // not sure why type narrowing isn't working here
     return colorScheme;
   }
   return "system";

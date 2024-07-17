@@ -156,8 +156,9 @@ function redirectToFirstVariant({
 export default function Product() {
   const { product, variants } = useLoaderData<typeof loader>();
   const { selectedVariant } = product;
+
   return (
-    <div className="product">
+    <div className="grid grid-cols-2 gap-3">
       <ProductImages
         images={product?.images.nodes || []}
         gradientColors={product.gradientColors}
@@ -196,7 +197,7 @@ function ProductImages({
 }) {
   const gradients = parseGradientColors(gradientColors);
   return (
-    <div className="product-images">
+    <div className="max-w-[800px] justify-self-end">
       {images.map((image) => {
         if (!image) return null;
         const gradient = gradients.shift() ?? "random";
@@ -219,7 +220,7 @@ function ProductImage({
     return null;
   }
   return (
-    <div className="product-image mb-3">
+    <div className="mb-3">
       <div className="aspect-ratio relative isolate overflow-hidden rounded-lg">
         <Image
           alt={image.altText || "Product Image"}
@@ -246,7 +247,7 @@ function ProductMain({
 }) {
   const { title, descriptionHtml } = product;
   return (
-    <div className="product-main">
+    <div>
       <h1>{title}</h1>
       <ProductPrice selectedVariant={selectedVariant} />
       <br />
@@ -290,12 +291,12 @@ function ProductPrice({
   selectedVariant: ProductFragment["selectedVariant"];
 }) {
   return (
-    <div className="product-price">
+    <div>
       {selectedVariant?.compareAtPrice ? (
         <>
           <p>Sale</p>
           <br />
-          <div className="product-price-on-sale">
+          <div>
             {selectedVariant ? <Money data={selectedVariant.price} /> : null}
             <s>
               <Money data={selectedVariant.compareAtPrice} />
@@ -321,7 +322,7 @@ function ProductForm({
   const { open } = useAside();
   const { publish, shop, cart, prevCart } = useAnalytics();
   return (
-    <div className="product-form">
+    <div>
       <VariantSelector
         handle={product.handle}
         options={product.options.filter((option) => option.values.length > 1)}
@@ -361,13 +362,12 @@ function ProductForm({
 
 function ProductOptions({ option }: { option: VariantOption }) {
   return (
-    <div className="product-options" key={option.name}>
+    <div key={option.name}>
       <h5>{option.name}</h5>
-      <div className="product-options-grid">
+      <div>
         {option.values.map(({ value, isAvailable, isActive, to }) => {
           return (
             <Link
-              className="product-options-item"
               key={option.name + value}
               prefetch="intent"
               preventScrollReset

@@ -11,10 +11,11 @@ import type { CartApiQueryFragment } from "storefrontapi.generated";
 import { useVariantUrl } from "~/lib/variants";
 import { Image } from "~/components/Image";
 import { parseGradientColors } from "~/lib/metafields";
-import clsx from "clsx";
 import { Button } from "~/components/ui/button";
 import Icon from "~/components/Icon";
 import { useRef } from "react";
+import clsx from "clsx";
+import { cn } from "~/lib";
 
 type CartLine = OptimisticCartLine<CartApiQueryFragment["lines"]["nodes"][0]>;
 
@@ -29,7 +30,7 @@ export function CartMain({ layout, cart: originalCart }: CartMainProps) {
   const linesCount = Boolean(cart?.lines?.nodes?.length || 0);
 
   return (
-    <div className={clsx("h-full w-full")}>
+    <div className="h-full w-full">
       <CartEmpty hidden={linesCount} layout={layout} />
       <CartDetails hidden={!linesCount} cart={cart} layout={layout} />
     </div>
@@ -80,7 +81,7 @@ function CartDetails({
 
   return (
     <div className={clsx("h-full flex-col p-8", hidden ? "hidden" : "flex")}>
-      <p className="mb-8">
+      <p className="h-14">
         There are <strong>{cart.totalQuantity}</strong> items in this cart
       </p>
       <CartLines lines={cart?.lines?.nodes} layout={layout} />
@@ -104,20 +105,17 @@ function CartLines({
 }) {
   if (!lines) return null;
 
-  // This height is calculated based on:
-  //  100vh (viewport height)
-  // - 110px (header height)
-  // - 280px (cart summary height)
-  // - 24px (cart lines total quantity height)
-  const cartLinesHeight = `max-h-[calc(100vh-_478px)]`;
+  // This ungodly height calculation is:
+  // 100vh - cart header - cart summary - line item count - padding
+  const cartLinesHeight = `max-h-[calc(100vh_-_var(--aside-header-height)_-_var(--aside-summary-height)_-_theme(spacing[14])_-_theme(spacing[8]))]`;
 
   return (
     <div
       aria-labelledby="cart-lines"
-      className={clsx("overflow-y-scroll", cartLinesHeight)}
+      className={clsx("overflow-y-auto", cartLinesHeight)}
     >
       <ul>
-        {lines.map((line) => (
+        {lines.slice(0, 1).map((line) => (
           <CartLineItem key={line.id} line={line} layout={layout} />
         ))}
       </ul>
@@ -138,10 +136,7 @@ function CartLineItem({
   const gradients = parseGradientColors(product.gradientColors);
 
   return (
-    <li
-      key={id}
-      className={clsx("cart-line", "flex py-4 first:pt-0 last:pb-8")}
-    >
+    <li key={id} className="flex py-4 first:pt-0 last:pb-8">
       {image && (
         <div className="h-[148px] w-[148px]">
           <Image
@@ -157,7 +152,7 @@ function CartLineItem({
         </div>
       )}
 
-      <div className={clsx("ml-6 flex flex-col")}>
+      <div className="ml-6 flex flex-col">
         <Link
           prefetch="intent"
           to={lineItemUrl}
@@ -200,7 +195,7 @@ function CartSubTotal({
   subtotalAmount?: Partial<CartApiQueryFragment["cost"]["subtotalAmount"]>;
 }) {
   return (
-    <dl className={clsx("flex w-full justify-between")}>
+    <dl className="flex w-full justify-between">
       <dt className="text-xl">Subtotal</dt>
       <dd>
         {subtotalAmount?.amount ? (
@@ -225,21 +220,15 @@ export function CartSummary({
   layout: CartMainProps["layout"];
   className?: string;
 }) {
-  const classes =
-    layout === "page" ? "cart-summary-page" : "cart-summary-aside";
-
-  const summaryHeight = `h-[280px]`;
-
   return (
     <div
       aria-labelledby="cart-summary"
-      className={clsx(
-        classes,
-        className,
+      className={cn(
         // should be conditional wether user has already inputted a discount or not
-        summaryHeight,
+        "h-[var(--aside-summary-height)]",
         "absolute bottom-0 left-0 bg-neutral-100 dark:bg-neutral-700",
         "w-full p-8",
+        className,
       )}
     >
       {children}
@@ -359,7 +348,7 @@ function CartDiscounts({
       {/* Have existing discount, display it with a remove option */}
       {Boolean(codes.length) && (
         <div className="flex justify-between">
-          <p className="lh-5 h-[56px] w-full rounded-input bg-neutral-200 p-5 leading-5 text-blue-brand dark:bg-neutral-800">
+          <p className="w-full rounded-input bg-neutral-200 p-5 leading-5 text-blue-brand dark:bg-neutral-800">
             Promo code applied
           </p>
         </div>
@@ -368,11 +357,7 @@ function CartDiscounts({
       {/* Show an input to apply a discount */}
       {!codes.length && (
         <UpdateDiscountForm discountCodes={codes}>
-          <div
-            className={clsx(
-              "flex w-full justify-between rounded-input bg-neutral-200 pl-5 dark:bg-neutral-800",
-            )}
-          >
+          <div className="flex h-[60px] w-full justify-between rounded-input bg-neutral-200 pl-5 dark:bg-neutral-800">
             <input
               type="text"
               ref={inputRef}
@@ -385,9 +370,9 @@ function CartDiscounts({
                 "w-full",
               )}
             />
-            <div className="mr-[1px] mt-[1px]">
-              <Button type="submit" className="h-[56px] w-[140px]">
-                APPLY CODE
+            <div className="pr-[1px] pt-[1px]">
+              <Button type="submit" className="w-max uppercase">
+                apply code
               </Button>
             </div>
           </div>

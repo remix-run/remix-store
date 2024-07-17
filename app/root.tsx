@@ -183,7 +183,7 @@ export function Layout({ children }: { children?: React.ReactNode }) {
       </head>
       <body
         className={clsx(
-          "font-sans min-h-[100vh] overflow-x-hidden antialiased",
+          "font-sans min-h-screen overflow-x-hidden antialiased",
           isOpen && "overflow-hidden",
         )}
       >

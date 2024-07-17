@@ -7,6 +7,12 @@
 }
 
 @layer base {
+  :root {
+    --aside-width: 586px;
+    --aside-header-height: 110px;
+    --aside-summary-height: 280px;
+  }
+
   html,
   body {
     @apply font-body text-neutral-800 dark:text-neutral-300;
