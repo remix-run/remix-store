@@ -1,5 +1,5 @@
 import { cn } from "~/lib";
-import type { IconName } from "./types";
+import type { IconName } from "./types.generated";
 
 export type IconProps = Omit<React.SVGProps<SVGElement>, "ref"> & {
   name: IconName;
