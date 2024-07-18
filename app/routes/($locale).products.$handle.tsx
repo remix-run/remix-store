@@ -36,6 +36,7 @@ import {
   PRODUCT_DETAIL_FRAGMENT,
   PRODUCT_VARIANT_FRAGMENT,
 } from "~/lib/fragments";
+import { Button } from "~/components/ui/button";
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
   return [{ title: `The Remix Store | ${data?.product.title ?? ""}` }];
@@ -158,7 +159,7 @@ export default function Product() {
   const { selectedVariant } = product;
 
   return (
-    <div className="grid grid-cols-2 gap-3">
+    <div className="mx-auto grid max-w-[1600px] grid-cols-2 gap-3">
       <ProductImages
         images={product?.images.nodes || []}
         gradientColors={product.gradientColors}
@@ -197,7 +198,7 @@ function ProductImages({
 }) {
   const gradients = parseGradientColors(gradientColors);
   return (
-    <div className="max-w-[800px] justify-self-end">
+    <div>
       {images.map((image) => {
         if (!image) return null;
         const gradient = gradients.shift() ?? "random";
@@ -246,41 +247,56 @@ function ProductMain({
   variants: Promise<ProductVariantsQuery | null>;
 }) {
   const { title, descriptionHtml } = product;
+
+  const cardCss =
+    "flex flex-col gap-8 rounded-3xl bg-neutral-100 p-12 dark:bg-neutral-700";
+
   return (
-    <div>
-      <h1>{title}</h1>
-      <ProductPrice selectedVariant={selectedVariant} />
-      <br />
-      <Suspense
-        fallback={
-          <ProductForm
-            product={product}
-            selectedVariant={selectedVariant}
-            variants={[]}
-          />
-        }
-      >
-        <Await
-          errorElement="There was a problem loading product variants"
-          resolve={variants}
-        >
-          {(data) => (
-            <ProductForm
-              product={product}
-              selectedVariant={selectedVariant}
-              variants={data?.product?.variants.nodes || []}
-            />
-          )}
-        </Await>
-      </Suspense>
-      <br />
-      <br />
-      <p>
-        <strong>Description</strong>
-      </p>
-      <br />
-      <div dangerouslySetInnerHTML={{ __html: descriptionHtml }} />
-      <br />
+    <div className="flex flex-col gap-3">
+      <div className={cardCss}>
+        <div className="flex flex-col gap-6">
+          {/* TODO: get from data */}
+          <p>Cotopaxi</p>
+          <h1>{title}</h1>
+          <ProductPrice selectedVariant={selectedVariant} />
+        </div>
+
+        {/* TODO: get from data */}
+        <p>
+          Each of these Remix-branded Cotopaxi Kapai 3L hip packs are
+          one-of-a-kind, each having their own combination of colors. We only
+          ordered a few of these for a previous event, so quantities are
+          extremely limited.
+        </p>
+
+        <div className="flex flex-col gap-3">
+          <Suspense
+            fallback={
+              <ProductForm
+                product={product}
+                selectedVariant={selectedVariant}
+                variants={[]}
+              />
+            }
+          >
+            <Await
+              errorElement="There was a problem loading product variants"
+              resolve={variants}
+            >
+              {(data) => (
+                <ProductForm
+                  product={product}
+                  selectedVariant={selectedVariant}
+                  variants={data?.product?.variants.nodes || []}
+                />
+              )}
+            </Await>
+          </Suspense>
+        </div>
+      </div>
+      <div className={cardCss}>
+        TODO: accordion -- description, specs, shipping
+      </div>
     </div>
   );
 }
@@ -304,7 +320,13 @@ function ProductPrice({
           </div>
         </>
       ) : (
-        selectedVariant?.price && <Money data={selectedVariant?.price} />
+        selectedVariant?.price && (
+          <Money
+            className="text-2xl"
+            data={selectedVariant?.price}
+            withoutTrailingZeros
+          />
+        )
       )}
     </div>
   );
@@ -414,13 +436,19 @@ function AddToCartButton({
             type="hidden"
             value={JSON.stringify(analytics)}
           />
-          <button
-            type="submit"
-            onClick={onClick}
-            disabled={disabled ?? fetcher.state !== "idle"}
-          >
-            {children}
-          </button>
+          <div className="rounded-[20px] bg-black bg-opacity-5 p-1 dark:bg-opacity-20">
+            <Button
+              className="rounded-2xl text-2xl"
+              size="fw"
+              type="submit"
+              onClick={onClick}
+              disabled={disabled ?? fetcher.state !== "idle"}
+            >
+              {children}
+            </Button>
+
+            {/* TODO: add shop button */}
+          </div>
         </>
       )}
     </CartForm>
