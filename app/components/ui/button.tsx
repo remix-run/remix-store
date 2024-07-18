@@ -17,7 +17,7 @@ const button = cva(["block leading-6", "active:translate-y-0.5"], {
       primary:
         "text-white bg-success-brand dark:bg-success-brand bg-opacity-100 shadow-yamaha-blue",
       secondary:
-        "text-neutral-600 dark:text-neutral-300 bg-neutral-50 dark:bg-neutral-500 dark:hover:bg-neutral-400 hover:bg-neutral-100 bg-opacity-5 dark:bg-opacity-100 shadow-yamaha-grey-light dark:shadow-yamaha-grey",
+        "text-neutral-600 dark:text-neutral-300 bg-neutral-50 dark:bg-neutral-500 dark:hover:bg-neutral-400 hover:bg-neutral-100 shadow-yamaha-grey-light dark:shadow-yamaha-grey",
     },
     size: {
       icon: ["rounded-xl px-[14px] py-3"],
