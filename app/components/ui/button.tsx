@@ -23,7 +23,7 @@ const button = cva(["block leading-6", "active:translate-y-0.5"], {
       icon: ["rounded-xl px-[14px] py-3"],
       sm: ["font-bold uppercase leading-6", "rounded-xl px-4 py-3"],
       lg: ["font-bold text-2xl", "rounded-2xl py-5 w-full"],
-      fw: ["font-bold rounded-xl px-4 py-3 w-full"],
+      fw: ["font-bold rounded-2xl px-4 py-3 w-full"],
     },
   },
   defaultVariants: {
@@ -33,16 +33,14 @@ const button = cva(["block leading-6", "active:translate-y-0.5"], {
 });
 
 const well = cva(
-  [
-    "overflow-hidden relative rounded-[14px] bg-neutral-800 bg-opacity-5 dark:bg-opacity-15 px-0.5 pt-0.5 pb-[7px]",
-  ],
+  ["overflow-hidden relative bg-black bg-opacity-5 dark:bg-opacity-20"],
   {
     variants: {
       size: {
-        lg: "rounded-[18px]",
-        sm: "rounded-[14px]",
-        icon: "rounded-[14px]",
-        fw: "rounded-[14px] w-full",
+        lg: "rounded-[18px] px-1 pt-1 pb-2",
+        sm: "rounded-[14px] px-1 pt-[3px] pb-[7px]",
+        icon: "rounded-[14px] px-1 pt-[3px] pb-[7px]",
+        fw: "rounded-[20px] w-full px-1 pt-1 pb-2",
       },
     },
   },

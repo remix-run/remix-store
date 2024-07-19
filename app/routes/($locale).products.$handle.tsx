@@ -159,7 +159,7 @@ export default function Product() {
   const { selectedVariant } = product;
 
   return (
-    <div className="mx-auto grid max-w-[1600px] grid-cols-2 gap-3">
+    <div className="mx-auto grid max-w-[theme(screens.2xl)] grid-cols-2 gap-3 px-9">
       <ProductImages
         images={product?.images.nodes || []}
         gradientColors={product.gradientColors}
@@ -436,19 +436,17 @@ function AddToCartButton({
             type="hidden"
             value={JSON.stringify(analytics)}
           />
-          <div className="rounded-[20px] bg-black bg-opacity-5 p-1 dark:bg-opacity-20">
-            <Button
-              className="rounded-2xl text-2xl"
-              size="fw"
-              type="submit"
-              onClick={onClick}
-              disabled={disabled ?? fetcher.state !== "idle"}
-            >
-              {children}
-            </Button>
+          <Button
+            className="rounded-2xl text-2xl"
+            size="fw"
+            type="submit"
+            onClick={onClick}
+            disabled={disabled ?? fetcher.state !== "idle"}
+          >
+            {children}
+          </Button>
 
-            {/* TODO: add shop button */}
-          </div>
+          {/* TODO: add shop button */}
         </>
       )}
     </CartForm>
