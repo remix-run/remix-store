@@ -85,6 +85,7 @@ export function Image(props: ImageProps) {
           zIndex: -2,
           backgroundImage: activeGradient,
         }}
+        suppressHydrationWarning={gradient === "random"}
       />
 
       {gradientFade && (

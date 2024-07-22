@@ -2,6 +2,7 @@ import { Slot } from "@radix-ui/react-slot";
 import { forwardRef } from "react";
 import { cn } from "~/lib";
 import { cva, type VariantProps } from "class-variance-authority";
+import { int } from "drizzle-orm/mysql-core";
 
 type ButtonVariantProps = VariantProps<typeof button>;
 
@@ -21,10 +22,9 @@ const button = cva(
   {
     variants: {
       intent: {
-        primary:
-          "text-white bg-success-brand dark:bg-success-brand bg-opacity-100 shadow-yamaha-blue",
+        primary: "text-white shadow-yamaha-blue",
         secondary:
-          "text-neutral-600 dark:text-neutral-300 bg-neutral-50 dark:bg-neutral-500 dark:hover:bg-neutral-400 hover:bg-neutral-100 shadow-yamaha-grey-light dark:shadow-yamaha-grey",
+          "text-neutral-600 dark:text-neutral-300 shadow-yamaha-grey-light dark:shadow-yamaha-grey",
       },
       size: {
         icon: ["rounded-xl px-[14px] py-3"],
@@ -32,11 +32,38 @@ const button = cva(
         lg: ["font-bold text-2xl", "rounded-2xl py-5 w-full"],
         fw: ["font-bold rounded-2xl px-4 py-3 w-full"],
       },
+      disabled: {
+        true: ["cursor-not-allowed"],
+      },
     },
     defaultVariants: {
       intent: "secondary",
       size: "sm",
     },
+    compoundVariants: [
+      {
+        intent: "primary",
+        disabled: false,
+        className: ["bg-success-brand hover:text-white"],
+      },
+      {
+        intent: "primary",
+        disabled: true,
+        className: ["bg-success-brand/50 hover:text-white"],
+      },
+      {
+        intent: "secondary",
+        disabled: false,
+        className: [
+          "bg-neutral-50 dark:bg-neutral-500 dark:hover:bg-neutral-400 hover:bg-neutral-100",
+        ],
+      },
+      {
+        intent: "secondary",
+        disabled: true,
+        className: ["bg-neutral-50/50 dark:bg-neutral-500/50"],
+      },
+    ],
   },
 );
 
@@ -55,7 +82,13 @@ const well = cva(
 );
 
 export const Button = forwardRef(function Button(
-  { asChild, intent = "secondary", size = "sm", ...props }: ButtonProps,
+  {
+    asChild,
+    intent = "secondary",
+    size = "sm",
+    disabled = false,
+    ...props
+  }: ButtonProps,
   ref: React.Ref<HTMLDivElement>,
 ) {
   const Comp = asChild ? Slot : "button";
@@ -64,7 +97,8 @@ export const Button = forwardRef(function Button(
     <div ref={ref} className={well({ size })}>
       <Comp
         {...props}
-        className={cn(button({ intent, size }), props.className)}
+        className={cn(button({ intent, size, disabled }), props.className)}
+        disabled={disabled}
       />
     </div>
   );

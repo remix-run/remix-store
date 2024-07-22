@@ -45,6 +45,9 @@ import {
   AccordionTrigger,
 } from "~/components/ui/accordion";
 
+/** The default vendor, which we hide because nobody cares */
+const DEFAULT_VENDOR = "Remix Swag Store";
+
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
   return [{ title: `The Remix Store | ${data?.product.title ?? ""}` }];
 };
@@ -253,7 +256,7 @@ function ProductMain({
   selectedVariant: ProductFragment["selectedVariant"];
   variants: Promise<ProductVariantsQuery | null>;
 }) {
-  const { title, description, specs, fullDescription } = product;
+  const { title, vendor, description, specs, fullDescription } = product;
 
   const cardCss =
     "flex flex-col gap-8 rounded-3xl bg-neutral-100 p-12 dark:bg-neutral-700";
@@ -263,7 +266,7 @@ function ProductMain({
       <div className={cardCss}>
         <div className="flex flex-col gap-6">
           {/* TODO: get from data */}
-          <p>Cotopaxi</p>
+          {vendor !== DEFAULT_VENDOR ? <p>Cotopaxi</p> : null}
           <h1>{title}</h1>
           <ProductPrice selectedVariant={selectedVariant} />
         </div>
