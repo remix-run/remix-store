@@ -27,6 +27,7 @@ import {
   Analytics,
   type CartViewPayload,
   useAnalytics,
+  RichText,
 } from "@shopify/hydrogen";
 import type { SelectedOption } from "@shopify/hydrogen/storefront-api-types";
 import { getVariantUrl } from "~/lib/variants";
@@ -37,6 +38,12 @@ import {
   PRODUCT_VARIANT_FRAGMENT,
 } from "~/lib/fragments";
 import { Button } from "~/components/ui/button";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "~/components/ui/accordion";
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
   return [{ title: `The Remix Store | ${data?.product.title ?? ""}` }];
@@ -115,7 +122,7 @@ function loadDeferredData({ context, params }: LoaderFunctionArgs) {
   // all of them. But there might be a *lot*, so instead separate the variants
   // into it's own separate query that is deferred. So there's a brief moment
   // where variant options might show as available when they're not, but after
-  // this deffered query resolves, the UI will update.
+  // this deferred query resolves, the UI will update.
   const variants = context.storefront
     .query(VARIANTS_QUERY, {
       variables: { handle: params.handle! },
@@ -222,7 +229,7 @@ function ProductImage({
   }
   return (
     <div className="mb-3">
-      <div className="aspect-ratio relative isolate overflow-hidden rounded-lg">
+      <div className="aspect-ratio relative isolate overflow-hidden rounded-3xl">
         <Image
           alt={image.altText || "Product Image"}
           aspectRatio="1/1"
@@ -246,7 +253,7 @@ function ProductMain({
   selectedVariant: ProductFragment["selectedVariant"];
   variants: Promise<ProductVariantsQuery | null>;
 }) {
-  const { title, descriptionHtml } = product;
+  const { title, description, specs, fullDescription } = product;
 
   const cardCss =
     "flex flex-col gap-8 rounded-3xl bg-neutral-100 p-12 dark:bg-neutral-700";
@@ -261,13 +268,7 @@ function ProductMain({
           <ProductPrice selectedVariant={selectedVariant} />
         </div>
 
-        {/* TODO: get from data */}
-        <p>
-          Each of these Remix-branded Cotopaxi Kapai 3L hip packs are
-          one-of-a-kind, each having their own combination of colors. We only
-          ordered a few of these for a previous event, so quantities are
-          extremely limited.
-        </p>
+        <p>{description}</p>
 
         <div className="flex flex-col gap-3">
           <Suspense
@@ -295,7 +296,36 @@ function ProductMain({
         </div>
       </div>
       <div className={cardCss}>
-        TODO: accordion -- description, specs, shipping
+        <Accordion type="multiple">
+          {fullDescription ? (
+            <AccordionItem value="description">
+              <AccordionTrigger>Description</AccordionTrigger>
+              <AccordionContent>
+                <RichText data={fullDescription.value} />
+              </AccordionContent>
+            </AccordionItem>
+          ) : null}
+          {specs ? (
+            <AccordionItem value="specs">
+              <AccordionTrigger>Specs</AccordionTrigger>
+              <AccordionContent>
+                <RichText
+                  data={specs.value}
+                  // Should this be set globally?
+                  className="[&_ul]:list-inside [&_ul]:list-disc [&_ul]:pl-2"
+                />
+              </AccordionContent>
+            </AccordionItem>
+          ) : null}
+          <AccordionItem value="shipping">
+            <AccordionTrigger>Shipping</AccordionTrigger>
+            <AccordionContent>
+              {/* Not sure if this should be coming from the data or just be standard for all products */}
+              See a full list of countries we ship to{" "}
+              <Link to="/help">here</Link>.
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
       </div>
     </div>
   );

@@ -27,6 +27,10 @@
   h3 {
     @apply font-heading text-5xl font-bold tracking-tightest text-neutral-600 dark:text-neutral-300;
   }
+
+  a {
+    @apply text-black underline dark:text-white;
+  }
 }
 
 /*
