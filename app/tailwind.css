@@ -29,7 +29,7 @@
   }
 
   a {
-    @apply text-black underline dark:text-white;
+    @apply text-black hover:text-success-brand dark:text-white;
   }
 }
 

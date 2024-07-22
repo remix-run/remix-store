@@ -11,26 +11,34 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   asChild?: boolean;
 }
 
-const button = cva(["block leading-6", "active:translate-y-0.5"], {
-  variants: {
-    intent: {
-      primary:
-        "text-white bg-success-brand dark:bg-success-brand bg-opacity-100 shadow-yamaha-blue",
-      secondary:
-        "text-neutral-600 dark:text-neutral-300 bg-neutral-50 dark:bg-neutral-500 dark:hover:bg-neutral-400 hover:bg-neutral-100 shadow-yamaha-grey-light dark:shadow-yamaha-grey",
+const button = cva(
+  [
+    "block leading-6",
+    // overrides button link text hover colors
+    "hover:text-inherit",
+    "active:translate-y-0.5",
+  ],
+  {
+    variants: {
+      intent: {
+        primary:
+          "text-white bg-success-brand dark:bg-success-brand bg-opacity-100 shadow-yamaha-blue",
+        secondary:
+          "text-neutral-600 dark:text-neutral-300 bg-neutral-50 dark:bg-neutral-500 dark:hover:bg-neutral-400 hover:bg-neutral-100 shadow-yamaha-grey-light dark:shadow-yamaha-grey",
+      },
+      size: {
+        icon: ["rounded-xl px-[14px] py-3"],
+        sm: ["font-bold uppercase leading-6", "rounded-xl px-4 py-3"],
+        lg: ["font-bold text-2xl", "rounded-2xl py-5 w-full"],
+        fw: ["font-bold rounded-2xl px-4 py-3 w-full"],
+      },
     },
-    size: {
-      icon: ["rounded-xl px-[14px] py-3"],
-      sm: ["font-bold uppercase leading-6", "rounded-xl px-4 py-3"],
-      lg: ["font-bold text-2xl", "rounded-2xl py-5 w-full"],
-      fw: ["font-bold rounded-2xl px-4 py-3 w-full"],
+    defaultVariants: {
+      intent: "secondary",
+      size: "sm",
     },
   },
-  defaultVariants: {
-    intent: "secondary",
-    size: "sm",
-  },
-});
+);
 
 const well = cva(
   ["overflow-hidden relative bg-black bg-opacity-5 dark:bg-opacity-20"],

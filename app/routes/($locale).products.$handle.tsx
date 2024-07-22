@@ -259,7 +259,7 @@ function ProductMain({
     "flex flex-col gap-8 rounded-3xl bg-neutral-100 p-12 dark:bg-neutral-700";
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-3 [&_a]:underline">
       <div className={cardCss}>
         <div className="flex flex-col gap-6">
           {/* TODO: get from data */}
@@ -296,7 +296,7 @@ function ProductMain({
         </div>
       </div>
       <div className={cardCss}>
-        <Accordion type="multiple">
+        <Accordion type="multiple" className="-mx-6">
           {fullDescription ? (
             <AccordionItem value="description">
               <AccordionTrigger>Description</AccordionTrigger>
