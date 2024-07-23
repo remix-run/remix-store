@@ -18,7 +18,7 @@ export function CollectionItem({ product }: CollectionItemProps) {
 
   return (
     <Link
-      className="contents hover:no-underline"
+      className="contents hover:text-inherit hover:no-underline"
       prefetch="intent"
       to={`/products/${handle}`}
     >

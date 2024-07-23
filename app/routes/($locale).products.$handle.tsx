@@ -265,7 +265,6 @@ function ProductMain({
     <div className="flex flex-col gap-3 [&_a]:underline">
       <div className={cardCss}>
         <div className="flex flex-col gap-6">
-          {/* TODO: get from data */}
           {vendor !== DEFAULT_VENDOR ? <p>Cotopaxi</p> : null}
           <h1>{title}</h1>
           <ProductPrice selectedVariant={selectedVariant} />
@@ -470,7 +469,6 @@ function AddToCartButton({
             value={JSON.stringify(analytics)}
           />
           <Button
-            className="rounded-2xl text-2xl"
             size="fw"
             type="submit"
             onClick={onClick}

@@ -12,70 +12,67 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   asChild?: boolean;
 }
 
-const button = cva(
-  [
-    "block leading-6",
-    // overrides button link text hover colors
-    "hover:text-inherit",
-    "active:translate-y-0.5",
-  ],
-  {
-    variants: {
-      intent: {
-        primary: "text-white shadow-yamaha-blue",
-        secondary:
-          "text-neutral-600 dark:text-neutral-300 shadow-yamaha-grey-light dark:shadow-yamaha-grey",
-      },
-      size: {
-        icon: ["rounded-xl px-[14px] py-3"],
-        sm: ["font-bold uppercase leading-6", "rounded-xl px-4 py-3"],
-        lg: ["font-bold text-2xl", "rounded-2xl py-5 w-full"],
-        fw: ["font-bold rounded-2xl px-4 py-3 w-full"],
-      },
-      disabled: {
-        true: ["cursor-not-allowed"],
-      },
+const button = cva(["block leading-6"], {
+  variants: {
+    intent: {
+      primary: ["text-white hover:text-white bg-success-brand"],
+      secondary: [
+        "text-neutral-600 hover:text-neutral-600",
+        "dark:text-neutral-300 dark:hover:text-neutral-300",
+        "bg-neutral-50 dark:bg-neutral-500",
+      ],
     },
-    defaultVariants: {
-      intent: "secondary",
-      size: "sm",
+    size: {
+      icon: ["rounded-xl px-[14px] py-3"],
+      sm: ["font-bold uppercase leading-6 rounded-xl px-4 py-3"],
+      lg: ["font-bold text-2xl rounded-2xl py-5 w-full"],
+      fw: ["font-bold text-2xl rounded-2xl px-4 py-3 w-full"],
     },
-    compoundVariants: [
-      {
-        intent: "primary",
-        disabled: false,
-        className: ["bg-success-brand hover:text-white"],
-      },
-      {
-        intent: "primary",
-        disabled: true,
-        className: ["bg-success-brand/50 hover:text-white"],
-      },
-      {
-        intent: "secondary",
-        disabled: false,
-        className: [
-          "bg-neutral-50 dark:bg-neutral-500 dark:hover:bg-neutral-400 hover:bg-neutral-100",
-        ],
-      },
-      {
-        intent: "secondary",
-        disabled: true,
-        className: ["bg-neutral-50/50 dark:bg-neutral-500/50"],
-      },
-    ],
+    disabled: {
+      false: [
+        "active:translate-y-0.5 hover:bg-gradient-to-b hover:from-white/20 hover:to-white/20 ",
+      ],
+      true: ["cursor-not-allowed bg-neutral-100 dark:bg-neutral-700"],
+    },
   },
-);
+  compoundVariants: [
+    {
+      intent: "primary",
+      disabled: false,
+      className: ["shadow-yamaha-blue"],
+    },
+    {
+      intent: "secondary",
+      disabled: false,
+      className: ["shadow-yamaha-grey-light dark:shadow-yamaha-grey"],
+    },
+    {
+      intent: "secondary",
+      size: "fw",
+      className: [
+        "text-black hover:text-black dark:text-white dark:hover:text-white",
+      ],
+    },
+  ],
+  defaultVariants: {
+    intent: "secondary",
+    size: "sm",
+    disabled: false,
+  },
+});
 
 const well = cva(
   ["overflow-hidden relative bg-black bg-opacity-5 dark:bg-opacity-20"],
   {
     variants: {
       size: {
-        lg: "rounded-[18px] px-1 pt-1 pb-2",
-        sm: "rounded-[14px] px-1 pt-[3px] pb-[7px]",
         icon: "rounded-[14px] px-1 pt-[3px] pb-[7px]",
+        sm: "rounded-[14px] px-1 pt-[3px] pb-[7px]",
+        lg: "rounded-[18px] px-1 pt-1 pb-2",
         fw: "rounded-[20px] w-full px-1 pt-1 pb-2",
+      },
+      disabled: {
+        true: "p-1",
       },
     },
   },
@@ -94,7 +91,7 @@ export const Button = forwardRef(function Button(
   const Comp = asChild ? Slot : "button";
 
   return (
-    <div ref={ref} className={well({ size })}>
+    <div ref={ref} className={cn(well({ size, disabled }))}>
       <Comp
         {...props}
         className={cn(button({ intent, size, disabled }), props.className)}
