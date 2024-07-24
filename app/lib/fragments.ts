@@ -281,6 +281,12 @@ export const PRODUCT_DETAIL_FRAGMENT = `#graphql
     gradientColors: metafield(key: "images_gradient_background", namespace: "custom") {
       value
     }
+    fullDescription: metafield(key: "full_description", namespace: "custom") {
+      value
+    }
+    specs: metafield(key: "specs", namespace: "custom") {
+      value
+    }
   }
   ${PRODUCT_VARIANT_FRAGMENT}
 ` as const;

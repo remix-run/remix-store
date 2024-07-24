@@ -27,6 +27,7 @@ import {
   Analytics,
   type CartViewPayload,
   useAnalytics,
+  RichText,
 } from "@shopify/hydrogen";
 import type { SelectedOption } from "@shopify/hydrogen/storefront-api-types";
 import { getVariantUrl } from "~/lib/variants";
@@ -36,6 +37,17 @@ import {
   PRODUCT_DETAIL_FRAGMENT,
   PRODUCT_VARIANT_FRAGMENT,
 } from "~/lib/fragments";
+import { Button } from "~/components/ui/button";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "~/components/ui/accordion";
+import Icon from "~/components/Icon";
+
+/** The default vendor, which we hide because nobody cares */
+const DEFAULT_VENDOR = "Remix Swag Store";
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
   return [{ title: `The Remix Store | ${data?.product.title ?? ""}` }];
@@ -114,7 +126,7 @@ function loadDeferredData({ context, params }: LoaderFunctionArgs) {
   // all of them. But there might be a *lot*, so instead separate the variants
   // into it's own separate query that is deferred. So there's a brief moment
   // where variant options might show as available when they're not, but after
-  // this deffered query resolves, the UI will update.
+  // this deferred query resolves, the UI will update.
   const variants = context.storefront
     .query(VARIANTS_QUERY, {
       variables: { handle: params.handle! },
@@ -158,7 +170,7 @@ export default function Product() {
   const { selectedVariant } = product;
 
   return (
-    <div className="grid grid-cols-2 gap-3">
+    <div className="mx-auto grid max-w-[theme(screens.2xl)] grid-cols-2 gap-3 px-9">
       <ProductImages
         images={product?.images.nodes || []}
         gradientColors={product.gradientColors}
@@ -197,7 +209,7 @@ function ProductImages({
 }) {
   const gradients = parseGradientColors(gradientColors);
   return (
-    <div className="max-w-[800px] justify-self-end">
+    <div>
       {images.map((image) => {
         if (!image) return null;
         const gradient = gradients.shift() ?? "random";
@@ -221,7 +233,7 @@ function ProductImage({
   }
   return (
     <div className="mb-3">
-      <div className="aspect-ratio relative isolate overflow-hidden rounded-lg">
+      <div className="aspect-ratio relative isolate overflow-hidden rounded-3xl">
         <Image
           alt={image.altText || "Product Image"}
           aspectRatio="1/1"
@@ -245,42 +257,79 @@ function ProductMain({
   selectedVariant: ProductFragment["selectedVariant"];
   variants: Promise<ProductVariantsQuery | null>;
 }) {
-  const { title, descriptionHtml } = product;
+  const { title, vendor, description, specs, fullDescription } = product;
+
+  const cardCss =
+    "flex flex-col gap-8 rounded-3xl bg-neutral-100 p-12 dark:bg-neutral-700";
+
   return (
-    <div>
-      <h1>{title}</h1>
-      <ProductPrice selectedVariant={selectedVariant} />
-      <br />
-      <Suspense
-        fallback={
-          <ProductForm
-            product={product}
-            selectedVariant={selectedVariant}
-            variants={[]}
-          />
-        }
-      >
-        <Await
-          errorElement="There was a problem loading product variants"
-          resolve={variants}
-        >
-          {(data) => (
-            <ProductForm
-              product={product}
-              selectedVariant={selectedVariant}
-              variants={data?.product?.variants.nodes || []}
-            />
-          )}
-        </Await>
-      </Suspense>
-      <br />
-      <br />
-      <p>
-        <strong>Description</strong>
-      </p>
-      <br />
-      <div dangerouslySetInnerHTML={{ __html: descriptionHtml }} />
-      <br />
+    <div className="flex flex-col gap-3 [&_a]:underline">
+      <div className={cardCss}>
+        <div className="flex flex-col gap-6">
+          {vendor !== DEFAULT_VENDOR ? <p>Cotopaxi</p> : null}
+          <h1>{title}</h1>
+          <ProductPrice selectedVariant={selectedVariant} />
+        </div>
+
+        <p>{description}</p>
+
+        <div className="flex flex-col gap-3">
+          <Suspense
+            fallback={
+              <ProductForm
+                product={product}
+                selectedVariant={selectedVariant}
+                variants={[]}
+              />
+            }
+          >
+            <Await
+              errorElement="There was a problem loading product variants"
+              resolve={variants}
+            >
+              {(data) => (
+                <ProductForm
+                  product={product}
+                  selectedVariant={selectedVariant}
+                  variants={data?.product?.variants.nodes || []}
+                />
+              )}
+            </Await>
+          </Suspense>
+        </div>
+      </div>
+      <div className={cardCss}>
+        <Accordion type="multiple" className="-mx-6">
+          {fullDescription ? (
+            <AccordionItem value="description">
+              <AccordionTrigger>Description</AccordionTrigger>
+              <AccordionContent>
+                <RichText data={fullDescription.value} />
+              </AccordionContent>
+            </AccordionItem>
+          ) : null}
+          {specs ? (
+            <AccordionItem value="specs">
+              <AccordionTrigger>Specs</AccordionTrigger>
+              <AccordionContent>
+                <RichText
+                  data={specs.value}
+                  // Should this be set globally?
+                  className="[&_ul]:list-inside [&_ul]:list-disc [&_ul]:pl-2"
+                />
+              </AccordionContent>
+            </AccordionItem>
+          ) : null}
+          <AccordionItem value="shipping">
+            <AccordionTrigger>Shipping</AccordionTrigger>
+            <AccordionContent>
+              {/* Not sure if this should be coming from the data or just be standard for all products */}
+              See a full list of countries we ship to{" "}
+              <Link to="/help">here</Link>.
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
+      </div>
     </div>
   );
 }
@@ -304,7 +353,13 @@ function ProductPrice({
           </div>
         </>
       ) : (
-        selectedVariant?.price && <Money data={selectedVariant?.price} />
+        selectedVariant?.price && (
+          <Money
+            className="text-2xl"
+            data={selectedVariant?.price}
+            withoutTrailingZeros
+          />
+        )
       )}
     </div>
   );
@@ -321,8 +376,10 @@ function ProductForm({
 }) {
   const { open } = useAside();
   const { publish, shop, cart, prevCart } = useAnalytics();
+  const isAvailable = !!selectedVariant?.availableForSale;
+
   return (
-    <div>
+    <div className="flex flex-col gap-3">
       <VariantSelector
         handle={product.handle}
         options={product.options.filter((option) => option.values.length > 1)}
@@ -332,7 +389,7 @@ function ProductForm({
       </VariantSelector>
       <br />
       <AddToCartButton
-        disabled={!selectedVariant || !selectedVariant.availableForSale}
+        disabled={!selectedVariant || !isAvailable}
         onClick={() => {
           open("cart");
           publish("cart_viewed", {
@@ -354,8 +411,20 @@ function ProductForm({
             : []
         }
       >
-        {selectedVariant?.availableForSale ? "Add to cart" : "Sold out"}
+        {isAvailable ? "Add to cart" : "Sold out"}
       </AddToCartButton>
+
+      {isAvailable ? (
+        // ShopPayButton -- if reused pull out into a component
+        <Button
+          className="flex justify-center bg-shop-pay-brand py-[22px] [--yamaha-shadow-color:theme(colors.shop-pay.brand)]"
+          intent="primary"
+          size="fw"
+          // TODO: Add link to immediate checkout
+        >
+          <Icon name="shop-pay" className="h-6 w-auto" />
+        </Button>
+      ) : null}
     </div>
   );
 }
@@ -414,13 +483,14 @@ function AddToCartButton({
             type="hidden"
             value={JSON.stringify(analytics)}
           />
-          <button
+          <Button
+            size="fw"
             type="submit"
             onClick={onClick}
             disabled={disabled ?? fetcher.state !== "idle"}
           >
             {children}
-          </button>
+          </Button>
         </>
       )}
     </CartForm>

@@ -11,55 +11,90 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   asChild?: boolean;
 }
 
-const button = cva(["block leading-6", "active:translate-y-0.5"], {
+const button = cva(["block"], {
   variants: {
     intent: {
-      primary:
-        "text-white bg-success-brand dark:bg-success-brand bg-opacity-100 shadow-yamaha-blue",
-      secondary:
-        "text-neutral-600 dark:text-neutral-300 bg-neutral-50 dark:bg-neutral-500 dark:hover:bg-neutral-400 hover:bg-neutral-100 bg-opacity-5 dark:bg-opacity-100 shadow-yamaha-grey-light dark:shadow-yamaha-grey",
+      primary: [
+        "text-white hover:text-white bg-success-brand",
+        "shadow-yamaha-primary [--yamaha-shadow-color:theme(colors.success.brand)]",
+      ],
+      secondary: [
+        "text-neutral-600 hover:text-neutral-600",
+        "dark:text-neutral-300 dark:hover:text-neutral-300",
+        "bg-neutral-50 dark:bg-neutral-500",
+        "shadow-yamaha-secondary",
+      ],
     },
     size: {
       icon: ["rounded-xl px-[14px] py-3"],
-      sm: ["font-bold uppercase leading-6", "rounded-xl px-4 py-3"],
-      lg: ["font-bold text-2xl", "rounded-2xl py-5 w-full"],
-      fw: ["font-bold rounded-xl px-4 py-3 w-full"],
+      sm: ["font-bold uppercase leading-6 rounded-xl px-4 py-3"],
+      lg: ["font-bold text-2xl rounded-2xl py-5 w-full"],
+      fw: ["font-bold text-2xl rounded-2xl px-4 py-5 w-full"],
+    },
+    disabled: {
+      false: [
+        "active:translate-y-0.5 hover:bg-gradient-to-b hover:from-white/20 hover:to-white/20 ",
+      ],
+      true: [
+        "shadow-none cursor-not-allowed bg-neutral-100 dark:bg-neutral-700",
+      ],
     },
   },
+  compoundVariants: [
+    {
+      intent: "secondary",
+      size: "fw",
+      className: [
+        "text-black hover:text-black dark:text-white dark:hover:text-white",
+      ],
+    },
+  ],
   defaultVariants: {
     intent: "secondary",
     size: "sm",
+    disabled: false,
   },
 });
 
 const well = cva(
-  [
-    "overflow-hidden relative rounded-[14px] bg-neutral-800 bg-opacity-5 dark:bg-opacity-15 px-0.5 pt-0.5 pb-[7px]",
-  ],
+  ["overflow-hidden relative bg-black bg-opacity-5 dark:bg-opacity-20"],
   {
     variants: {
       size: {
-        lg: "rounded-[18px]",
-        sm: "rounded-[14px]",
-        icon: "rounded-[14px]",
-        fw: "rounded-[14px] w-full",
+        icon: "rounded-[14px] px-1 pt-[3px] pb-[7px]",
+        sm: "rounded-[14px] px-1 pt-[3px] pb-[7px]",
+        lg: "rounded-[18px] px-1 pt-1 pb-2",
+        fw: "rounded-[20px] w-full px-1 pt-1 pb-2",
+      },
+      disabled: {
+        true: "p-1",
       },
     },
   },
 );
 
-export const Button = forwardRef(function Button(
-  { asChild, intent = "secondary", size = "sm", ...props }: ButtonProps,
-  ref: React.Ref<HTMLDivElement>,
-) {
-  const Comp = asChild ? Slot : "button";
+export const Button = forwardRef(
+  (
+    {
+      asChild,
+      intent = "secondary",
+      size = "sm",
+      disabled = false,
+      ...props
+    }: ButtonProps,
+    ref: React.Ref<HTMLDivElement>,
+  ) => {
+    const Comp = asChild ? Slot : "button";
 
-  return (
-    <div ref={ref} className={well({ size })}>
-      <Comp
-        {...props}
-        className={cn(button({ intent, size }), props.className)}
-      />
-    </div>
-  );
-});
+    return (
+      <div ref={ref} className={cn(well({ size, disabled }))}>
+        <Comp
+          {...props}
+          className={cn(button({ intent, size, disabled }), props.className)}
+          disabled={disabled}
+        />
+      </div>
+    );
+  },
+);
+Button.displayName = "Button";

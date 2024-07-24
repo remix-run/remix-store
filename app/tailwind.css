@@ -11,6 +11,11 @@
     --aside-width: 586px;
     --aside-header-height: 110px;
     --aside-summary-height: 280px;
+    --yamaha-shadow-color: theme(colors.neutral.50);
+  }
+
+  .dark:root {
+    --yamaha-shadow-color: theme(colors.neutral.500);
   }
 
   html,
@@ -26,6 +31,10 @@
   h2,
   h3 {
     @apply font-heading text-5xl font-bold tracking-tightest text-neutral-600 dark:text-neutral-300;
+  }
+
+  a {
+    @apply text-black hover:text-success-brand dark:text-white;
   }
 }
 

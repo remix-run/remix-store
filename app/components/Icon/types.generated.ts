@@ -5,6 +5,7 @@ export const iconNames = [
   "trash",
   "tag",
   "sun",
+  "shop-pay",
   "plus",
   "moon",
   "minus",
