@@ -2,7 +2,6 @@ import { Slot } from "@radix-ui/react-slot";
 import { forwardRef } from "react";
 import { cn } from "~/lib";
 import { cva, type VariantProps } from "class-variance-authority";
-import { int } from "drizzle-orm/mysql-core";
 
 type ButtonVariantProps = VariantProps<typeof button>;
 
@@ -12,40 +11,36 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   asChild?: boolean;
 }
 
-const button = cva(["block leading-6"], {
+const button = cva(["block"], {
   variants: {
     intent: {
-      primary: ["text-white hover:text-white bg-success-brand"],
+      primary: [
+        "text-white hover:text-white bg-success-brand",
+        "shadow-yamaha-primary [--yamaha-shadow-color:theme(colors.success.brand)]",
+      ],
       secondary: [
         "text-neutral-600 hover:text-neutral-600",
         "dark:text-neutral-300 dark:hover:text-neutral-300",
         "bg-neutral-50 dark:bg-neutral-500",
+        "shadow-yamaha-secondary",
       ],
     },
     size: {
       icon: ["rounded-xl px-[14px] py-3"],
       sm: ["font-bold uppercase leading-6 rounded-xl px-4 py-3"],
       lg: ["font-bold text-2xl rounded-2xl py-5 w-full"],
-      fw: ["font-bold text-2xl rounded-2xl px-4 py-3 w-full"],
+      fw: ["font-bold text-2xl rounded-2xl px-4 py-5 w-full"],
     },
     disabled: {
       false: [
         "active:translate-y-0.5 hover:bg-gradient-to-b hover:from-white/20 hover:to-white/20 ",
       ],
-      true: ["cursor-not-allowed bg-neutral-100 dark:bg-neutral-700"],
+      true: [
+        "shadow-none cursor-not-allowed bg-neutral-100 dark:bg-neutral-700",
+      ],
     },
   },
   compoundVariants: [
-    {
-      intent: "primary",
-      disabled: false,
-      className: ["shadow-yamaha-blue"],
-    },
-    {
-      intent: "secondary",
-      disabled: false,
-      className: ["shadow-yamaha-grey-light dark:shadow-yamaha-grey"],
-    },
     {
       intent: "secondary",
       size: "fw",
@@ -78,25 +73,28 @@ const well = cva(
   },
 );
 
-export const Button = forwardRef(function Button(
-  {
-    asChild,
-    intent = "secondary",
-    size = "sm",
-    disabled = false,
-    ...props
-  }: ButtonProps,
-  ref: React.Ref<HTMLDivElement>,
-) {
-  const Comp = asChild ? Slot : "button";
+export const Button = forwardRef(
+  (
+    {
+      asChild,
+      intent = "secondary",
+      size = "sm",
+      disabled = false,
+      ...props
+    }: ButtonProps,
+    ref: React.Ref<HTMLDivElement>,
+  ) => {
+    const Comp = asChild ? Slot : "button";
 
-  return (
-    <div ref={ref} className={cn(well({ size, disabled }))}>
-      <Comp
-        {...props}
-        className={cn(button({ intent, size, disabled }), props.className)}
-        disabled={disabled}
-      />
-    </div>
-  );
-});
+    return (
+      <div ref={ref} className={cn(well({ size, disabled }))}>
+        <Comp
+          {...props}
+          className={cn(button({ intent, size, disabled }), props.className)}
+          disabled={disabled}
+        />
+      </div>
+    );
+  },
+);
+Button.displayName = "Button";

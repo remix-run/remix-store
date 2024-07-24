@@ -44,6 +44,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "~/components/ui/accordion";
+import Icon from "~/components/Icon";
 
 /** The default vendor, which we hide because nobody cares */
 const DEFAULT_VENDOR = "Remix Swag Store";
@@ -375,8 +376,10 @@ function ProductForm({
 }) {
   const { open } = useAside();
   const { publish, shop, cart, prevCart } = useAnalytics();
+  const isAvailable = !!selectedVariant?.availableForSale;
+
   return (
-    <div>
+    <div className="flex flex-col gap-3">
       <VariantSelector
         handle={product.handle}
         options={product.options.filter((option) => option.values.length > 1)}
@@ -386,7 +389,7 @@ function ProductForm({
       </VariantSelector>
       <br />
       <AddToCartButton
-        disabled={!selectedVariant || !selectedVariant.availableForSale}
+        disabled={!selectedVariant || !isAvailable}
         onClick={() => {
           open("cart");
           publish("cart_viewed", {
@@ -408,8 +411,20 @@ function ProductForm({
             : []
         }
       >
-        {selectedVariant?.availableForSale ? "Add to cart" : "Sold out"}
+        {isAvailable ? "Add to cart" : "Sold out"}
       </AddToCartButton>
+
+      {isAvailable ? (
+        // ShopPayButton -- if reused pull out into a component
+        <Button
+          className="flex justify-center bg-shop-pay-brand py-[22px] [--yamaha-shadow-color:theme(colors.shop-pay.brand)]"
+          intent="primary"
+          size="fw"
+          // TODO: Add link to immediate checkout
+        >
+          <Icon name="shop-pay" className="h-6 w-auto" />
+        </Button>
+      ) : null}
     </div>
   );
 }
@@ -476,8 +491,6 @@ function AddToCartButton({
           >
             {children}
           </Button>
-
-          {/* TODO: add shop button */}
         </>
       )}
     </CartForm>

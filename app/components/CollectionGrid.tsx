@@ -24,7 +24,7 @@ export function CollectionItem({ product }: CollectionItemProps) {
     >
       <div
         className={clsx(
-          "relative isolate aspect-square w-full overflow-hidden rounded-2xl bg-neutral-100 card-shadow-light dark:bg-neutral-700 dark:card-shadow-dark",
+          "relative isolate aspect-square w-full overflow-hidden rounded-2xl bg-neutral-100 shadow-yamaha-secondary dark:bg-neutral-700",
         )}
       >
         <Image

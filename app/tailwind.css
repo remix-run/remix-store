@@ -11,6 +11,11 @@
     --aside-width: 586px;
     --aside-header-height: 110px;
     --aside-summary-height: 280px;
+    --yamaha-shadow-color: theme(colors.neutral.50);
+  }
+
+  .dark:root {
+    --yamaha-shadow-color: theme(colors.neutral.500);
   }
 
   html,
