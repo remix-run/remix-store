@@ -14,15 +14,11 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 const button = cva(["block"], {
   variants: {
     intent: {
-      primary: [
-        "text-white hover:text-white bg-success-brand",
-        "shadow-yamaha-primary [--yamaha-shadow-color:theme(colors.success.brand)]",
-      ],
+      primary: ["text-white hover:text-white bg-success-brand"],
       secondary: [
         "text-neutral-600 hover:text-neutral-600",
         "dark:text-neutral-300 dark:hover:text-neutral-300",
         "bg-neutral-50 dark:bg-neutral-500",
-        "shadow-yamaha-secondary",
       ],
     },
     size: {
@@ -41,6 +37,18 @@ const button = cva(["block"], {
     },
   },
   compoundVariants: [
+    {
+      intent: "primary",
+      disabled: false,
+      className: [
+        "shadow-yamaha-primary [--yamaha-shadow-color:theme(colors.success.brand)]",
+      ],
+    },
+    {
+      intent: "secondary",
+      disabled: false,
+      className: "shadow-yamaha-secondary",
+    },
     {
       intent: "secondary",
       size: "fw",
