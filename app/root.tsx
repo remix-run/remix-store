@@ -56,6 +56,7 @@ export function links() {
     appStyles, // TODO: remove when finished with tailwind
     "https://fonts.googleapis.com/css2?family=Inter:wght@300..800&display=swap",
     "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&display=swap",
+    "https://fonts.googleapis.com/css2?family=Jersey+10&family=Sometype+Mono:ital,wght@0,400..700;1,400..700&display=swap",
   ];
 
   const localFonts = ["FoundersGrotesk-Bold.woff2"];

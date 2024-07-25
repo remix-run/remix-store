@@ -45,3 +45,32 @@
 .policy-container h2 {
   @apply font-body text-2xl font-bold;
 }
+
+.hero-subtitle {
+  color: rgba(0, 0, 0, 0.8);
+  text-shadow:
+    4px 0px 4px rgba(0, 102, 255, 0.2),
+    -4px 0px 4px rgba(255, 0, 0, 0.2),
+    0px 0px 3px rgba(0, 0, 0, 0.4),
+    0px 0px 24px rgba(40, 166, 159, 0.4);
+
+  font-style: normal;
+  font-weight: 600;
+  line-height: normal;
+  letter-spacing: 0.64px;
+  text-transform: uppercase;
+}
+
+.hero-title {
+  color: rgba(0, 0, 0, 0.8);
+  text-shadow:
+    4px 0px 4px rgba(0, 102, 255, 0.2),
+    -4px 0px 4px rgba(255, 0, 0, 0.2),
+    0px 0px 3px rgba(0, 0, 0, 0.4),
+    0px 0px 24px rgba(40, 166, 159, 0.4);
+
+  font-style: normal;
+  font-weight: 400;
+  line-height: 75%; /* 63px */
+  text-transform: capitalize;
+}

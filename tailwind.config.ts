@@ -9,6 +9,8 @@ const config = {
     fontFamily: {
       body: ['"Inter"', ...defaultTheme.fontFamily.sans],
       heading: ["Founders Grotesk", ...defaultTheme.fontFamily.sans],
+      "jersey-10": ['"Jersey 10"'],
+      "sometype-mono": ['"Sometype Mono"'],
     },
     screens: {
       sm: "640px",

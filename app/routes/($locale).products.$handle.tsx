@@ -170,7 +170,7 @@ export default function Product() {
   const { selectedVariant } = product;
 
   return (
-    <div className="mx-auto grid max-w-[theme(screens.2xl)] grid-cols-2 gap-3 px-9">
+    <div className="lg mx-auto grid max-w-[theme(screens.2xl)] grid-cols-2 gap-3 px-9">
       <ProductImages
         images={product?.images.nodes || []}
         gradientColors={product.gradientColors}

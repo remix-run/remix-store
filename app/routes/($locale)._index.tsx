@@ -14,6 +14,7 @@ import type {
   RecommendedProductsQuery,
 } from "storefrontapi.generated";
 import featuredFrame from "~/assets/featured-frame.svg?url";
+import { Hero } from "~/components/hero";
 
 export const meta: MetaFunction = () => {
   return [{ title: "The Remix Store | Home" }];
@@ -91,6 +92,9 @@ function FeaturedCollection({
 }) {
   if (!collection) return null;
   const image = collection?.image;
+
+  return <Hero />;
+
   return (
     <Link
       className="relative block bg-neutral-200 px-16 pb-8 dark:bg-neutral-800"
