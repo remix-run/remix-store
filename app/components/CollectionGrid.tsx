@@ -39,7 +39,9 @@ export function CollectionItem({ product }: CollectionItemProps) {
         ) : null}
 
         <div className="absolute bottom-5 gap-2 pl-6">
-          <h3 className="text-2xl font-bold tracking-tight">{title}</h3>
+          <h3 className="font-body text-2xl font-bold tracking-tight">
+            {title}
+          </h3>
           <small>
             {/* TODO: account for if the product is out of stock -- might not be feasible since we'd have to grab all variants */}
             <Money data={price} />

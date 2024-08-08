@@ -11,7 +11,6 @@ import {
   isRouteErrorResponse,
   type ShouldRevalidateFunction,
 } from "@remix-run/react";
-import appStyles from "~/styles/app.css?url";
 import { PageLayout } from "~/components/PageLayout";
 import { FOOTER_QUERY, HEADER_QUERY } from "~/lib/fragments";
 import { parseColorScheme } from "./lib/color-scheme.server";
@@ -19,6 +18,7 @@ import clsx from "clsx";
 import { ColorSchemeScript, useColorScheme } from "~/lib/color-scheme";
 import { useAside } from "~/components/Aside";
 
+import "~/styles/app.css"; // TODO: remove when finished with tailwind
 import "./tailwind.css";
 
 export type RootLoader = typeof loader;
@@ -52,15 +52,18 @@ export function links() {
     { href: "https://shop.app" },
   ];
 
-  const styleSheets = [
-    appStyles, // TODO: remove when finished with tailwind
+  const fonts = [
+    "https://fonts.googleapis.com/css2?family=Sometype+Mono:ital,wght@0,400..700;1,400..700&display=swap",
     "https://fonts.googleapis.com/css2?family=Inter:wght@300..800&display=swap",
-    "https://fonts.googleapis.com/css2?family=Jersey+10&family=Sometype+Mono:ital,wght@0,400..700;1,400..700&display=swap",
   ];
 
   return [
+    // Preload Jersey 10, earliest, since it's a blocking font
+    { rel: "preload", as: "font", href: "/font/jersey-10/latin-ext.woff2" },
+    { rel: "preload", as: "font", href: "/font/jersey-10/latin.woff2" },
     ...preconnects.map((preconnect) => ({ rel: "preconnect", ...preconnect })),
-    ...styleSheets.map((href) => ({ rel: "stylesheet", href })),
+    ...fonts.map((href) => ({ rel: "preload", as: "style", href })),
+    ...fonts.map((href) => ({ rel: "stylesheet", href })),
     { rel: "icon", href: "/favicon-32.png", sizes: "32x32" },
     { rel: "icon", href: "/favicon-128.png", sizes: "128x128" },
     { rel: "icon", href: "/favicon-180.png", sizes: "180x180" },

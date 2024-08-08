@@ -23,11 +23,11 @@ export function Hero() {
               "--hero-bg-image": `url(${ledMiniSkateboard})`,
             }}
           />
-          <div className="absolute flex h-full max-w-[484px] flex-col justify-center gap-2 p-6 text-center sm:pl-9 sm:text-left lg:pl-[100px]">
+          <div className="absolute flex h-full flex-col justify-center gap-2 p-6 text-center sm:pl-9 sm:text-left lg:pl-[100px]">
             <p className="text-shadow-hero font-mono text-xs font-semibold uppercase tracking-[0.48px] text-black text-opacity-80 sm:tracking-[0.64px] md:text-base">
               Build your very own
             </p>
-            <h1 className="text-shadow-hero font-header text-[64px] font-normal capitalize leading-[75%] text-black text-opacity-80 md:text-[84px]">
+            <h1 className="text-shadow-hero font-header max-w-[484px] text-[64px] font-normal capitalize leading-[75%] text-black text-opacity-80 md:text-[84px]">
               remix mini skateboard
             </h1>
           </div>
