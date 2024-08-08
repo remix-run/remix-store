@@ -8,9 +8,8 @@ const config = {
   theme: {
     fontFamily: {
       body: ['"Inter"', ...defaultTheme.fontFamily.sans],
-      heading: ["Founders Grotesk", ...defaultTheme.fontFamily.sans],
-      "jersey-10": ['"Jersey 10"'],
-      "sometype-mono": ['"Sometype Mono"'],
+      heading: ['"Jersey 10"', ...defaultTheme.fontFamily.sans],
+      mono: ['"Sometype Mono"', ...defaultTheme.fontFamily.mono],
     },
     screens: {
       sm: "640px",

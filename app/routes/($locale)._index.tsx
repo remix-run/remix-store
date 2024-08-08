@@ -13,22 +13,11 @@ import type {
   FeaturedCollectionFragment,
   RecommendedProductsQuery,
 } from "storefrontapi.generated";
-import featuredFrame from "~/assets/featured-frame.svg?url";
+
 import { Hero } from "~/components/hero";
 
 export const meta: MetaFunction = () => {
   return [{ title: "The Remix Store | Home" }];
-};
-
-export const links: LinksFunction = () => {
-  return [
-    {
-      rel: "preload",
-      href: featuredFrame,
-      as: "image",
-      type: "image/svg+xml",
-    },
-  ];
 };
 
 export async function loader(args: LoaderFunctionArgs) {

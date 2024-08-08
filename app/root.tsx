@@ -55,32 +55,17 @@ export function links() {
   const styleSheets = [
     appStyles, // TODO: remove when finished with tailwind
     "https://fonts.googleapis.com/css2?family=Inter:wght@300..800&display=swap",
-    "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&display=swap",
     "https://fonts.googleapis.com/css2?family=Jersey+10&family=Sometype+Mono:ital,wght@0,400..700;1,400..700&display=swap",
   ];
-
-  const localFonts = ["FoundersGrotesk-Bold.woff2"];
 
   return [
     ...preconnects.map((preconnect) => ({ rel: "preconnect", ...preconnect })),
     ...styleSheets.map((href) => ({ rel: "stylesheet", href })),
-
-    ...localFonts.map((href) => ({
-      rel: "preload",
-      as: "font",
-      href: `/font/${href}`,
-    })),
     { rel: "icon", href: "/favicon-32.png", sizes: "32x32" },
     { rel: "icon", href: "/favicon-128.png", sizes: "128x128" },
     { rel: "icon", href: "/favicon-180.png", sizes: "180x180" },
     { rel: "icon", href: "/favicon-192.png", sizes: "192x192" },
     { rel: "apple-touch-icon", href: "/favicon-180.png", sizes: "180x180" },
-    {
-      rel: "preload",
-      as: "image",
-      href: "/sprite.svg",
-      type: "image/svg+xml",
-    },
   ];
 }
 

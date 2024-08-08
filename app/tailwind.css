@@ -30,7 +30,7 @@
   h1,
   h2,
   h3 {
-    @apply font-heading text-5xl font-bold tracking-tightest text-neutral-600 dark:text-neutral-300;
+    @apply font-heading text-[64px] font-normal leading-[75%] tracking-[-0.64px] text-neutral-600 dark:text-neutral-300;
   }
 
   a {
