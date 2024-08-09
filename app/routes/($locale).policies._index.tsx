@@ -1,6 +1,7 @@
 import { json, type LoaderFunctionArgs } from "@shopify/remix-oxygen";
 import { useLoaderData, Link } from "@remix-run/react";
 import { Image } from "~/components/Image";
+import { Hero } from "~/components/hero";
 
 export async function loader({ context }: LoaderFunctionArgs) {
   const data = await context.storefront.query(POLICIES_QUERY);
@@ -19,17 +20,7 @@ export default function Policies() {
 
   return (
     <div className="px-9 pb-12">
-      <Image
-        className="rounded-3xl"
-        // TODO: figure out how to get this data from GraphQL
-        data={{
-          url: "https://cdn.shopify.com/s/files/1/0655/4127/5819/files/privacy-banner.png?v=1719583076",
-          width: 1368,
-          height: 300,
-          altText: "",
-        }}
-        sizes="100vw"
-      />
+      <Hero subtitle="resources" title={privacyPolicy.title} />
       <div className="mt-3 rounded-3xl bg-neutral-100 p-12 dark:bg-neutral-700">
         <h1>{privacyPolicy.title}</h1>
         <div

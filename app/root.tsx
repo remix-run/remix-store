@@ -10,6 +10,7 @@ import {
   ScrollRestoration,
   isRouteErrorResponse,
   type ShouldRevalidateFunction,
+  Link,
 } from "@remix-run/react";
 import { PageLayout } from "~/components/PageLayout";
 import { FOOTER_QUERY, HEADER_QUERY } from "~/lib/fragments";
@@ -20,6 +21,8 @@ import { useAside } from "~/components/Aside";
 
 import "~/styles/app.css"; // TODO: remove when finished with tailwind
 import "./tailwind.css";
+import { Hero } from "./components/hero";
+import { Button } from "./components/ui/button";
 
 export type RootLoader = typeof loader;
 
@@ -210,15 +213,23 @@ export function ErrorBoundary() {
     errorMessage = error.message;
   }
 
+  // TODO: make error page a bit more generic
+
   return (
-    <div className="route-error">
-      <h1>Oops</h1>
-      <h2>{errorStatus}</h2>
-      {errorMessage && (
-        <fieldset>
-          <pre>{errorMessage}</pre>
-        </fieldset>
-      )}
+    <div className="px-9">
+      <Hero subtitle="page note found" title={`error ${errorStatus}`} />
+      <div className="my-[100px] flex flex-col items-center gap-6">
+        <p className="text-xl">
+          Please check to see if you have typed the URL correctly.
+        </p>
+        <div className="w-[340px]">
+          <Button size="fw" asChild>
+            <Link className="text-center" to="/">
+              Back to shop
+            </Link>
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }

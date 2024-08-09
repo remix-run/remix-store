@@ -82,7 +82,16 @@ function FeaturedCollection({
   if (!collection) return null;
   const image = collection?.image;
 
-  return <Hero />;
+  return (
+    <div className="px-9">
+      <Hero
+        image={true}
+        title="remix mini skateboard"
+        subtitle="build your very own"
+        to={`/collections/${collection.handle}`}
+      />
+    </div>
+  );
 
   return (
     <Link
