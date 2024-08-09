@@ -15,6 +15,7 @@ export default async function handleRequest(
   const { nonce, header, NonceProvider } = createContentSecurityPolicy({
     fontSrc: [
       "'self'",
+      "https://cdn.shopify.com",
       "https://fonts.googleapis.com",
       "https://fonts.gstatic.com/",
     ],
