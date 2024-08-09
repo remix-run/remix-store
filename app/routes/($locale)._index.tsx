@@ -85,31 +85,12 @@ function FeaturedCollection({
   return (
     <div className="px-9">
       <Hero
-        image={true}
+        image={image}
         title="remix mini skateboard"
         subtitle="build your very own"
         to={`/collections/${collection.handle}`}
       />
     </div>
-  );
-
-  return (
-    <Link
-      className="relative block bg-neutral-200 px-16 pb-8 dark:bg-neutral-800"
-      to={`/collections/${collection.handle}`}
-    >
-      <div className="relative mx-auto max-w-7xl">
-        <img className="aspect-[1290/426]" src={featuredFrame} alt="" />
-        {image && (
-          <Image
-            className="absolute top-1/2 -translate-y-1/2"
-            data={image}
-            sizes="100vw"
-            alt=""
-          />
-        )}
-      </div>
-    </Link>
   );
 }
 

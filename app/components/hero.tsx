@@ -1,12 +1,18 @@
 import type { LinkProps } from "@remix-run/react";
 import { Link } from "@remix-run/react";
 import { clsx } from "clsx";
+import { Image } from "@shopify/hydrogen";
+import type { HydrogenImageProps } from "./Image";
+import type { Maybe } from "@shopify/hydrogen/customer-account-api-types";
 
-import ledScreen from "~/assets/led-screen.png";
-import ledMiniSkateboard from "~/assets/led-screen-mini-skateboard.png";
+// TODO: get from Shopify CDN
+const ledScreenUrl =
+  "https://cdn.shopify.com/s/files/1/0655/4127/5819/files/led-screen.png?v=1723231764";
+const miniSkateboardUrl =
+  "https://cdn.shopify.com/s/files/1/0655/4127/5819/files/led-screen-mini-skateboard.png?v=1723231764";
 
 type HeroProps = {
-  image?: boolean; // TODO - replace with actual image type
+  image?: Maybe<HydrogenImageProps>; // TODO - replace with actual image type
   title: string;
   subtitle: string;
   to?: string;
@@ -20,29 +26,30 @@ export function Hero({ image, title, subtitle, to }: HeroProps) {
       <div className="hero-frame h-[240px] w-full rounded-[36px] border-2 border-black p-6 sm:h-[348px]">
         <div
           className={clsx(
-            "hero-led-background relative flex h-[192px] w-full overflow-hidden rounded-3xl bg-blue-led sm:h-[300px]",
+            "relative flex h-[192px] w-full overflow-hidden rounded-3xl bg-blue-led sm:h-[300px]",
             !hasImage && "flex justify-center",
           )}
         >
-          <div
+          <Image
             className={clsx(
-              "hero-image absolute h-full w-full",
+              "absolute h-full w-full object-cover",
               hasImage && "opacity-50 sm:opacity-100",
             )}
-            // TODO: get from Shopify CDN
-            style={{
-              // @ts-expect-error -- you can use css vars, it's fine
-              "--hero-bg-image": `url(${hasImage ? ledMiniSkateboard : ledScreen})`,
-            }}
+            // TODO: figure out how to get this data from GraphQL
+            data={
+              hasImage
+                ? image
+                : {
+                    url: ledScreenUrl,
+                    width: 1342,
+                    height: 310,
+                    altText: "",
+                  }
+            }
+            sizes="100vw"
+            loading="eager"
           />
-          {/* {image && (
-            <Image
-              className="absolute top-1/2 -translate-y-1/2"
-              data={image}
-              sizes="100vw"
-              alt=""
-            />
-          )} */}
+          <div className="hero-gradient-mask absolute h-full w-full rounded-3xl" />
           <div
             className={clsx(
               "absolute flex h-full select-none flex-col justify-center gap-2 p-6 text-center",
@@ -69,7 +76,7 @@ function Container({
   to?: LinkProps["to"];
   children: React.ReactNode;
 }) {
-  const className = "relative mb-8 block bg-neutral-200 dark:bg-neutral-800";
+  const className = "relative mb-8 block";
   return to ? (
     <Link className={className} to={to}>
       {children}

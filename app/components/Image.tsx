@@ -1,7 +1,7 @@
 import { Image as HydrogenImage } from "@shopify/hydrogen";
 import clx from "clsx";
 
-type HydrogenImageProps = Parameters<typeof HydrogenImage>[0];
+export type HydrogenImageProps = Parameters<typeof HydrogenImage>[0];
 
 export type ImageGradientColors =
   | "green"
