@@ -1,5 +1,5 @@
 import { json, type LoaderFunctionArgs } from "@shopify/remix-oxygen";
-import { useLoaderData, Link } from "@remix-run/react";
+import { useLoaderData } from "@remix-run/react";
 import { Hero } from "~/components/hero";
 
 export async function loader({ context }: LoaderFunctionArgs) {

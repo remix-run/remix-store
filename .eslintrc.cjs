@@ -16,5 +16,6 @@ module.exports = {
     "no-case-declarations": "off",
     "no-console": ["warn", { allow: ["warn", "error"] }],
     "prettier/prettier": "off",
+    "no-unused-vars": "warn",
   },
 };

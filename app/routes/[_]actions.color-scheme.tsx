@@ -1,5 +1,4 @@
 import type { ActionFunctionArgs } from "@remix-run/node";
-import { redirect } from "@shopify/remix-oxygen";
 import {
   serializeColorScheme,
   validateColorScheme,

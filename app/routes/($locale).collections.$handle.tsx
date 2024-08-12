@@ -3,23 +3,26 @@ import {
   redirect,
   type LoaderFunctionArgs,
 } from "@shopify/remix-oxygen";
-import { useLoaderData, Link, type MetaFunction } from "@remix-run/react";
+import { useLoaderData, type MetaFunction } from "@remix-run/react";
 import {
   Pagination,
   getPaginationVariables,
-  Image,
-  Money,
   Analytics,
 } from "@shopify/hydrogen";
-import type { ProductItemFragment } from "storefrontapi.generated";
-import { useVariantUrl } from "~/lib/variants";
 import { PRODUCT_ITEM_FRAGMENT } from "~/lib/fragments";
 import { CollectionGrid } from "~/components/CollectionGrid";
+import { Hero } from "~/components/hero";
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
-  return [
-    { title: `The Remix Store | ${data?.collection.title ?? ""} Collection` },
-  ];
+  let title = `The Remix Store`;
+
+  if (data?.collection.seo?.title) {
+    title += ` | ${data.collection.seo.title}`;
+  } else if (data?.collection.title) {
+    title += ` | ${data.collection.title} Collection`;
+  }
+
+  return [{ title }];
 };
 
 export async function loader(args: LoaderFunctionArgs) {
@@ -83,8 +86,13 @@ export default function Collection() {
 
   return (
     <div>
-      <h1>{collection.title}</h1>
-      <p>{collection.description}</p>
+      <div className="px-9">
+        <Hero
+          title={collection.title}
+          subtitle="now browsing"
+          image={collection.image}
+        />
+      </div>
       <Pagination connection={collection.products}>
         {({ nodes, isLoading, PreviousLink, NextLink }) => (
           <>
@@ -127,7 +135,16 @@ const COLLECTION_QUERY = `#graphql
       id
       handle
       title
-      description
+      image {
+        id
+        url
+        altText
+        width
+        height
+      }
+      seo {
+        title
+      }
       products(
         first: $first,
         last: $last,

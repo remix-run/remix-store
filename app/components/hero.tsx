@@ -2,17 +2,14 @@ import type { LinkProps } from "@remix-run/react";
 import { Link } from "@remix-run/react";
 import { clsx } from "clsx";
 import { Image } from "@shopify/hydrogen";
-import type { HydrogenImageProps } from "./Image";
-import type { Maybe } from "@shopify/hydrogen/customer-account-api-types";
+import type { ProductImageFragment } from "storefrontapi.generated";
 
 // TODO: get from Shopify CDN
 const ledScreenUrl =
   "https://cdn.shopify.com/s/files/1/0655/4127/5819/files/led-screen.png?v=1723231764";
-const miniSkateboardUrl =
-  "https://cdn.shopify.com/s/files/1/0655/4127/5819/files/led-screen-mini-skateboard.png?v=1723231764";
 
 type HeroProps = {
-  image?: Maybe<HydrogenImageProps>; // TODO - replace with actual image type
+  image?: ProductImageFragment | null; // TODO - replace with actual image type
   title: string;
   subtitle: string;
   to?: string;

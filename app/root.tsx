@@ -217,7 +217,7 @@ export function ErrorBoundary() {
 
   return (
     <div className="px-9">
-      <Hero subtitle="page note found" title={`error ${errorStatus}`} />
+      <Hero subtitle="page not found" title={`error ${errorStatus}`} />
       <div className="my-[100px] flex flex-col items-center gap-6">
         <p className="text-xl">
           Please check to see if you have typed the URL correctly.
