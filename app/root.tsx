@@ -51,7 +51,7 @@ export function links() {
   const preconnects = [
     { href: "https://fonts.googleapis.com" },
     { href: "https://fonts.gstatic.com", crossOrigin: "true" },
-    { href: "https://cdn.shopify.com" },
+    { href: "https://cdn.shopify.com", crossOrigin: "true" },
     { href: "https://shop.app" },
   ];
 
@@ -213,11 +213,9 @@ export function ErrorBoundary() {
     errorMessage = error.message;
   }
 
-  // TODO: make error page a bit more generic
-
   return (
     <div className="px-9">
-      <Hero subtitle="page not found" title={`error ${errorStatus}`} />
+      <Hero subtitle={errorMessage} title={`error ${errorStatus}`} />
       <div className="my-[100px] flex flex-col items-center gap-6">
         <p className="text-xl">
           Please check to see if you have typed the URL correctly.

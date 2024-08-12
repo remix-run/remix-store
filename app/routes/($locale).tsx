@@ -9,7 +9,7 @@ export async function loader({ params, context }: LoaderFunctionArgs) {
   ) {
     // If the locale URL param is defined, yet we still are still at the default locale
     // then the the locale param must be invalid, send to the 404 page
-    throw new Response(null, { status: 404 });
+    throw new Response("Page not found", { status: 404 });
   }
 
   return null;

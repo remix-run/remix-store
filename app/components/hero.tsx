@@ -4,12 +4,16 @@ import { clsx } from "clsx";
 import { Image } from "@shopify/hydrogen";
 import type { ProductImageFragment } from "storefrontapi.generated";
 
-// TODO: get from Shopify CDN
-const ledScreenUrl =
-  "https://cdn.shopify.com/s/files/1/0655/4127/5819/files/led-screen.png?v=1723231764";
+// I don't see a good way to get this URL from the GraphQL API, should be fine to hardcode it here
+const DEFAULT_IMAGE = {
+  url: "https://cdn.shopify.com/s/files/1/0655/4127/5819/files/led-screen.png?v=1723231764",
+  width: 1342,
+  height: 310,
+  altText: "",
+};
 
 type HeroProps = {
-  image?: ProductImageFragment | null; // TODO - replace with actual image type
+  image?: ProductImageFragment | null;
   title: string;
   subtitle: string;
   to?: string;
@@ -32,17 +36,7 @@ export function Hero({ image, title, subtitle, to }: HeroProps) {
               "absolute h-full w-full object-cover",
               hasImage && "opacity-50 sm:opacity-100",
             )}
-            // TODO: figure out how to get this data from GraphQL
-            data={
-              hasImage
-                ? image
-                : {
-                    url: ledScreenUrl,
-                    width: 1342,
-                    height: 310,
-                    altText: "",
-                  }
-            }
+            data={image ?? DEFAULT_IMAGE}
             sizes="100vw"
             loading="eager"
           />

@@ -90,7 +90,7 @@ async function loadCriticalData({
   ]);
 
   if (!product?.id) {
-    throw new Response(null, { status: 404 });
+    throw new Response("Product not found", { status: 404 });
   }
 
   const firstVariant = product.variants.nodes[0];
