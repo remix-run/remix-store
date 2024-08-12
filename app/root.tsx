@@ -19,6 +19,9 @@ import clsx from "clsx";
 import { ColorSchemeScript, useColorScheme } from "~/lib/color-scheme";
 import { useAside } from "~/components/Aside";
 
+import fontUrl from "/font/jersey-10/latin.woff2?url";
+import fontUrl2 from "~/assets/fonts/jersey-10/latin.woff2";
+
 import "~/styles/app.css"; // TODO: remove when finished with tailwind
 import "./tailwind.css";
 import { Hero } from "./components/hero";
@@ -62,8 +65,9 @@ export function links() {
 
   return [
     // Preload Jersey 10, earliest, since it's a blocking font
-    { rel: "preload", as: "font", href: "/font/jersey-10/latin-ext.woff2" },
-    { rel: "preload", as: "font", href: "/font/jersey-10/latin.woff2" },
+    // { rel: "preload", as: "font", href: "/font/jersey-10/latin-ext.woff2" },
+    { rel: "preload", as: "font", href: fontUrl },
+    // { rel: "preload", as: "font", href: "/font/jersey-10/latin.woff2" },
     ...preconnects.map((preconnect) => ({ rel: "preconnect", ...preconnect })),
     ...fonts.map((href) => ({ rel: "preload", as: "style", href })),
     ...fonts.map((href) => ({ rel: "stylesheet", href })),
@@ -155,6 +159,8 @@ function loadDeferredData({ context }: LoaderFunctionArgs) {
 }
 
 export function Layout({ children }: { children?: React.ReactNode }) {
+  console.log({ fontUrl, fontUrl2 });
+
   const nonce = useNonce();
   const data = useRouteLoaderData<RootLoader>("root");
   const colorScheme = useColorScheme();
