@@ -19,8 +19,8 @@ import clsx from "clsx";
 import { ColorSchemeScript, useColorScheme } from "~/lib/color-scheme";
 import { useAside } from "~/components/Aside";
 
-import fontUrl from "/font/jersey-10/latin.woff2?url";
-import fontUrl2 from "~/assets/fonts/jersey-10/latin.woff2";
+import jersey10Url from "/font/jersey-10/latin.woff2?url";
+import jersey10ExtUrl from "/font/jersey-10/latin-ext.woff2?url";
 
 import "~/styles/app.css"; // TODO: remove when finished with tailwind
 import "./tailwind.css";
@@ -58,19 +58,23 @@ export function links() {
     { href: "https://shop.app" },
   ];
 
-  const fonts = [
+  const localFonts = [jersey10Url, jersey10ExtUrl];
+  const googleFonts = [
     "https://fonts.googleapis.com/css2?family=Sometype+Mono:ital,wght@0,400..700;1,400..700&display=swap",
     "https://fonts.googleapis.com/css2?family=Inter:wght@300..800&display=swap",
   ];
 
   return [
-    // Preload Jersey 10, earliest, since it's a blocking font
-    // { rel: "preload", as: "font", href: "/font/jersey-10/latin-ext.woff2" },
-    { rel: "preload", as: "font", href: fontUrl },
-    // { rel: "preload", as: "font", href: "/font/jersey-10/latin.woff2" },
     ...preconnects.map((preconnect) => ({ rel: "preconnect", ...preconnect })),
-    ...fonts.map((href) => ({ rel: "preload", as: "style", href })),
-    ...fonts.map((href) => ({ rel: "stylesheet", href })),
+    // Preload Jersey 10, earliest, since it's a blocking font
+    ...localFonts.map((href) => ({
+      rel: "preload",
+      as: "font",
+      href,
+      crossOrigin: "anonymous",
+    })),
+    ...googleFonts.map((href) => ({ rel: "preload", as: "style", href })),
+    ...googleFonts.map((href) => ({ rel: "stylesheet", href })),
     { rel: "icon", href: "/favicon-32.png", sizes: "32x32" },
     { rel: "icon", href: "/favicon-128.png", sizes: "128x128" },
     { rel: "icon", href: "/favicon-180.png", sizes: "180x180" },
@@ -159,8 +163,6 @@ function loadDeferredData({ context }: LoaderFunctionArgs) {
 }
 
 export function Layout({ children }: { children?: React.ReactNode }) {
-  console.log({ fontUrl, fontUrl2 });
-
   const nonce = useNonce();
   const data = useRouteLoaderData<RootLoader>("root");
   const colorScheme = useColorScheme();
