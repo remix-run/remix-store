@@ -17,20 +17,17 @@ const config = {
       lg: "1600px",
       xl: "1920px",
     },
+    // TODO: make all colors
     colors: {
       inherit: "inherit",
       current: "currentColor",
       transparent: "transparent",
       cyan: { brand: "#3DEFE9" },
-      blue: { brand: "#3988F8", led: "#C8DFEA" },
+      blue: { brand: "#3992FF", led: "#C8DFEA" },
       green: { brand: "#6BD968" },
       yellow: { brand: "#FECC1B" },
       magenta: { brand: "#D83BD2" },
       red: { brand: "#F44250" },
-      "shop-pay": { brand: "#5A31F4" },
-      success: { brand: "#3992FF" },
-      error: { brand: "#F44250" },
-      warning: { brand: "#FECC1B" },
       black: "#000000",
       white: "#FFFFFF",
       neutral: {
@@ -45,6 +42,7 @@ const config = {
         800: "#242426",
         900: "#1D1D1E",
       },
+      "shop-pay": "#5A31F4",
     },
     fontSize: {
       ...defaultTheme.fontSize,

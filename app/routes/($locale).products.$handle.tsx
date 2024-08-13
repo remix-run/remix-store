@@ -419,7 +419,7 @@ function ProductForm({
       {isAvailable ? (
         // ShopPayButton -- if reused pull out into a component
         <Button
-          className="flex justify-center bg-shop-pay-brand py-[22px] [--yamaha-shadow-color:theme(colors.shop-pay.brand)]"
+          className="bg-shop-pay flex justify-center py-[22px] [--yamaha-shadow-color:theme(colors.shop-pay)]"
           intent="primary"
           size="fw"
           // TODO: Add link to immediate checkout

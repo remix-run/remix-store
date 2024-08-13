@@ -47,7 +47,7 @@
   }
 
   a {
-    @apply underline hover:text-success-brand;
+    @apply underline hover:text-blue-brand;
   }
 }
 
