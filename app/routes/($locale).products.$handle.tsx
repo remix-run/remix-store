@@ -16,7 +16,7 @@ import type {
   ProductVariantsQuery,
   ProductVariantFragment,
 } from "storefrontapi.generated";
-import { Image, type ImageGradientColors } from "~/components/temp-image";
+import { Image, type ImageGradientColors } from "~/components/image";
 import {
   type OptimisticCartLineInput,
   Money,
@@ -31,7 +31,7 @@ import {
 } from "@shopify/hydrogen";
 import type { SelectedOption } from "@shopify/hydrogen/storefront-api-types";
 import { getVariantUrl } from "~/lib/variants";
-import { useAside } from "~/components/temp-aside";
+import { useAside } from "~/components/aside";
 import { parseGradientColors } from "~/lib/metafields";
 import {
   PRODUCT_DETAIL_FRAGMENT,
@@ -44,7 +44,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "~/components/ui/accordion";
-import Icon from "~/components/temp-icon";
+import Icon from "~/components/icon";
 
 /** The default vendor, which we hide because nobody cares */
 const DEFAULT_VENDOR = "Remix Swag Store";

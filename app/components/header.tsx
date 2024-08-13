@@ -6,10 +6,10 @@ import type {
   HeaderQuery,
   CartApiQueryFragment,
 } from "storefrontapi.generated";
-import { useAside } from "~/components/temp-aside";
-import { ThemeToggle } from "~/components/temp-theme-toggle";
-import Icon from "~/components/temp-icon";
-import { TitleLogo } from "~/components/temp-title-logo";
+import { useAside } from "~/components/aside";
+import { ThemeToggle } from "~/components/theme-toggle";
+import Icon from "~/components/icon";
+import { TitleLogo } from "~/components/title-logo";
 import { Button } from "~/components/ui/button";
 import { cn } from "~/lib";
 

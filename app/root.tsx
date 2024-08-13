@@ -12,12 +12,12 @@ import {
   type ShouldRevalidateFunction,
   Link,
 } from "@remix-run/react";
-import { PageLayout } from "~/components/temp-page-layout";
+import { PageLayout } from "~/components/page-layout";
 import { FOOTER_QUERY, HEADER_QUERY } from "~/lib/fragments";
 import { parseColorScheme } from "./lib/color-scheme.server";
 import clsx from "clsx";
 import { ColorSchemeScript, useColorScheme } from "~/lib/color-scheme";
-import { useAside } from "~/components/temp-aside";
+import { useAside } from "~/components/aside";
 
 import jersey10Url from "/font/jersey-10/latin.woff2?url";
 import jersey10ExtUrl from "/font/jersey-10/latin-ext.woff2?url";

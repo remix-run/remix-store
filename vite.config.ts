@@ -12,7 +12,7 @@ export default defineConfig({
     iconsSpritesheet({
       inputDir: "app/assets/icons",
       outputDir: "public",
-      typesOutputFile: "app/components/Icon/types.generated.ts",
+      typesOutputFile: "app/components/icon/types.generated.ts",
       withTypes: true,
       iconNameTransformer: (name) =>
         name.charAt(0).toLowerCase() + name.slice(1),

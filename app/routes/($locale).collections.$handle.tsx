@@ -10,7 +10,7 @@ import {
   Analytics,
 } from "@shopify/hydrogen";
 import { PRODUCT_ITEM_FRAGMENT } from "~/lib/fragments";
-import { CollectionGrid } from "~/components/temp-collection-grid";
+import { CollectionGrid } from "~/components/collection-grid";
 import { Hero } from "~/components/hero";
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {

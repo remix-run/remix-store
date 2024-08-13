@@ -1,5 +1,5 @@
 import type { ProductFragment } from "storefrontapi.generated";
-import type { ImageGradientColors } from "~/components/temp-image";
+import type { ImageGradientColors } from "~/components/image";
 
 /**
  * Parse the gradient colors metafield string array and return as an array of gradients
