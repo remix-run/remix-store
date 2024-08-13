@@ -11,7 +11,7 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   asChild?: boolean;
 }
 
-const button = cva(["block"], {
+const button = cva(["block no-underline"], {
   variants: {
     intent: {
       primary: ["text-white hover:text-white bg-success-brand"],

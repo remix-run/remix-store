@@ -76,22 +76,15 @@ function FooterMenu({
             ? new URL(item.url).pathname
             : item.url;
         const isExternal = !url.startsWith("/");
-        return isExternal ? (
-          <a
-            href={url}
-            key={item.id}
-            rel="noopener noreferrer"
-            target="_blank"
-            className="text-sm tracking-[-0.28px]"
-          >
-            {item.title}
-          </a>
-        ) : (
+        return (
           <Link
             key={item.id}
             prefetch="intent"
             to={url}
-            className="text-sm tracking-[-0.28px]"
+            {...(isExternal
+              ? { target: "_blank", rel: "noopener noreferrer" }
+              : {})}
+            className="text-sm tracking-[-0.28px] no-underline"
           >
             {item.title}
           </Link>

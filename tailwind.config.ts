@@ -12,11 +12,10 @@ const config = {
       mono: ['"Sometype Mono"', ...defaultTheme.fontFamily.mono],
     },
     screens: {
-      sm: "640px",
-      md: "768px",
-      lg: "1024px",
-      xl: "1440px",
-      "2xl": "1980px",
+      sm: "430px",
+      md: "800px",
+      lg: "1600px",
+      xl: "1920px",
     },
     colors: {
       inherit: "inherit",

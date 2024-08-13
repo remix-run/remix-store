@@ -46,11 +46,8 @@
     @apply font-body text-neutral-800 dark:text-neutral-300;
   }
 
-  /* TODO: re figure out our header situation, this is causing a lot of global styles to be applied poorly */
-
-  /* TODO: remove this */
   a {
-    @apply text-black hover:text-success-brand dark:text-white;
+    @apply underline hover:text-success-brand;
   }
 }
 

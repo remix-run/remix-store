@@ -39,7 +39,7 @@ export function CollectionItem({ product }: CollectionItemProps) {
         ) : null}
 
         <div className="absolute bottom-5 gap-2 pl-6">
-          <h3 className="text-2xl font-bold leading-[2] tracking-[-0.96px]">
+          <h3 className="text-2xl font-bold leading-loose tracking-[-0.96px]">
             {title}
           </h3>
           <small>
@@ -62,7 +62,7 @@ export function CollectionGrid({ products }: CollectionGridProps) {
   return (
     <div
       className={
-        "grid grid-cols-2 gap-3 bg-black bg-opacity-5 px-3 py-12 md:px-12 lg:grid-cols-3 2xl:grid-cols-4 dark:bg-opacity-20"
+        "grid grid-cols-2 gap-3 bg-black bg-opacity-5 px-3 py-12 md:grid-cols-3 md:px-12 lg:grid-cols-4 dark:bg-opacity-20"
       }
     >
       {products.map((product) => (

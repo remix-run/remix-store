@@ -62,7 +62,7 @@ export default function Homepage() {
   return (
     <>
       {featuredCollection ? (
-        <div className="px-9">
+        <div className="px-4 sm:px-9">
           <Hero
             image={featuredCollection.image}
             title="remix mini skateboard"

@@ -43,14 +43,19 @@ export function Hero({ image, title, subtitle, to }: HeroProps) {
           <div className="hero-gradient-mask absolute h-full w-full rounded-3xl" />
           <div
             className={clsx(
-              "absolute flex h-full select-none flex-col justify-center gap-2 p-6 text-center",
+              "absolute flex h-full w-full select-none flex-col justify-center gap-2 p-6 text-center",
               hasImage && "sm:pl-9 sm:text-left lg:pl-[100px]",
             )}
           >
             <p className="text-shadow-hero font-mono text-xs font-semibold uppercase tracking-[0.48px] text-black text-opacity-80 sm:tracking-[0.64px] md:text-base">
               {subtitle}
             </p>
-            <h1 className="text-shadow-hero font-header max-w-[484px] font-heading text-6xl font-normal capitalize leading-[0.75] text-black text-opacity-80 md:text-8xl">
+            <h1
+              className={clsx(
+                "text-shadow-hero max-w-[484px] font-heading text-6xl font-normal capitalize leading-[0.75] text-black text-opacity-80",
+                "md:text-8xl md:leading-[0.75]",
+              )}
+            >
               {title}
             </h1>
           </div>
