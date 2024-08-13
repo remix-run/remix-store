@@ -64,13 +64,8 @@ function FooterMenu({
   publicStoreDomain: string;
 }) {
   return (
-    <nav
-      className="flex-col items-start justify-start gap-y-2 py-10"
-      role="navigation"
-    >
-      <h3 className="dark-text-white justify-start py-1 font-body text-xs font-bold tracking-tight">
-        {menu?.title}
-      </h3>
+    <nav className="flex flex-col items-start gap-3 py-10" role="navigation">
+      <h3 className="font-bold tracking-[-0.32px]">{menu?.title}</h3>
       {(menu || FALLBACK_FOOTER_MENU).items.map((item) => {
         if (!item.url) return null;
         // if the url is internal, we strip the domain
@@ -87,7 +82,7 @@ function FooterMenu({
             key={item.id}
             rel="noopener noreferrer"
             target="_blank"
-            className="flex items-center gap-1 py-1 text-xs font-thin"
+            className="text-sm tracking-[-0.28px]"
           >
             {item.title}
           </a>
@@ -96,7 +91,7 @@ function FooterMenu({
             key={item.id}
             prefetch="intent"
             to={url}
-            className="flex items-start gap-1 py-1 text-xs font-thin"
+            className="text-sm tracking-[-0.28px]"
           >
             {item.title}
           </Link>
@@ -150,10 +145,10 @@ const FALLBACK_FOOTER_MENU = {
 
 function CopyrightContent() {
   return (
-    <div className="flex justify-center bg-neutral-200 pb-6 text-xs text-neutral-400 dark:bg-neutral-800">
-      <div className="mx-6">The Remix Store was built with Hydrogen</div>
-      <div className="mx-6">© {new Date().getFullYear()} Shopify, Inc.</div>
-      <div className="mx-6">
+    <div className="flex justify-center gap-12 pb-6 opacity-50">
+      <div className="text-sm">The Remix Store was built with Hydrogen</div>
+      <div className="text-sm">© {new Date().getFullYear()} Shopify, Inc.</div>
+      <div className="text-sm">
         Hydrogen is an MIT Licensed Open Source project
       </div>
     </div>

@@ -2,10 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-.dark {
-  color-scheme: dark;
-}
-
 @layer base {
   /* font face's taken from https://fonts.googleapis.com/css2?family=Jersey+10&display=block  */
   /* latin-ext */
@@ -41,22 +37,18 @@
     --yamaha-shadow-color: theme(colors.neutral.500);
   }
 
+  .dark {
+    color-scheme: dark;
+  }
+
   html,
   body {
     @apply font-body text-neutral-800 dark:text-neutral-300;
   }
 
-  body {
-    @apply bg-neutral-200 font-body dark:bg-neutral-800;
-  }
-
   /* TODO: re figure out our header situation, this is causing a lot of global styles to be applied poorly */
-  h1,
-  h2,
-  h3 {
-    @apply font-heading text-[64px] font-normal leading-[75%] tracking-[-0.64px] text-neutral-600 dark:text-neutral-300;
-  }
 
+  /* TODO: remove this */
   a {
     @apply text-black hover:text-success-brand dark:text-white;
   }
@@ -64,7 +56,7 @@
 
 @layer components {
   .policy-container h2 {
-    @apply font-body text-2xl font-bold;
+    @apply text-2xl font-bold tracking-[-0.48px];
   }
 
   .hero-frame {

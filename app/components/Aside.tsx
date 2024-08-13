@@ -50,7 +50,9 @@ export function Aside({
         )}
       >
         <header className="sticky top-0 flex h-[var(--aside-header-height)] items-center justify-between bg-neutral-100 px-8 dark:bg-neutral-700">
-          <h3 className="m-0">{heading}</h3>
+          <h2 className="font-heading text-4xl tracking-[-0.36px] sm:text-5xl sm:tracking-[-0.48px]">
+            {heading}
+          </h2>
           <Icon
             name="x"
             aria-label="Close"

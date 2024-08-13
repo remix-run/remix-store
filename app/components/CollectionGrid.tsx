@@ -39,7 +39,7 @@ export function CollectionItem({ product }: CollectionItemProps) {
         ) : null}
 
         <div className="absolute bottom-5 gap-2 pl-6">
-          <h3 className="font-body text-2xl font-bold tracking-tight">
+          <h3 className="text-2xl font-bold leading-[2] tracking-[-0.96px]">
             {title}
           </h3>
           <small>

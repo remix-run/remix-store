@@ -47,6 +47,14 @@ const config = {
         900: "#1D1D1E",
       },
     },
+    fontSize: {
+      ...defaultTheme.fontSize,
+      base: ["1rem", { lineHeight: "1.4rem" }],
+      "6xl": ["4rem", { lineHeight: "1" }],
+      "7xl": ["4.5rem", { lineHeight: "1" }],
+      "8xl": ["5.25rem", { lineHeight: "1" }],
+      "9xl": ["8rem", { lineHeight: "1" }],
+    },
     container: {
       center: true,
       padding: "2rem",

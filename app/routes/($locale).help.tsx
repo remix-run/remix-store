@@ -18,31 +18,20 @@ export default function Policies() {
   const { refundPolicy, shippingPolicy } = useLoaderData<typeof loader>();
 
   return (
-    <div className="px-9 pb-12">
+    <div className="policy-container px-9 pb-12">
       <Hero subtitle="resources" title="info & help" />
       <div className="mt-3 grid gap-3 lg:grid-cols-2">
         <div className="rounded-3xl bg-neutral-100 p-12 dark:bg-neutral-700">
-          <h1>Info & Help</h1>
-          <p className="pt-6">
-            Remix is a full stack web framework that lets you focus on the user
-            interface and work back through web standards to deliver a fast,
-            slick, and resilient user experience. People are gonna love using
-            your stuff.
-          </p>
-        </div>
-        <div className="rounded-3xl bg-neutral-100 p-12 dark:bg-neutral-700">
-          <h2 className="font-body text-2xl tracking-normal">
-            {shippingPolicy.title}
-          </h2>
+          <h2>{shippingPolicy.title}</h2>
           <div
-            className="policy-container flex flex-col gap-9 pt-6"
+            className="flex flex-col gap-9 pt-6"
             dangerouslySetInnerHTML={{ __html: shippingPolicy.body }}
           />
-          <h2 className="pt-6 font-body text-2xl tracking-normal">
-            {refundPolicy.title}
-          </h2>
+        </div>
+        <div className="rounded-3xl bg-neutral-100 p-12 dark:bg-neutral-700">
+          <h2>{refundPolicy.title}</h2>
           <div
-            className="policy-container flex flex-col gap-9 pt-6"
+            className="flex flex-col gap-9 pt-6"
             dangerouslySetInnerHTML={{ __html: refundPolicy.body }}
           />
         </div>

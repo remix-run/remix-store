@@ -18,12 +18,11 @@ export default function Policies() {
   const { privacyPolicy } = useLoaderData<typeof loader>();
 
   return (
-    <div className="px-9 pb-12">
+    <div className="policy-container px-9 pb-12">
       <Hero subtitle="resources" title={privacyPolicy.title} />
       <div className="mt-3 rounded-3xl bg-neutral-100 p-12 dark:bg-neutral-700">
-        <h1>{privacyPolicy.title}</h1>
         <div
-          className="policy-container flex flex-col gap-9 pt-9"
+          className="flex flex-col gap-9"
           dangerouslySetInnerHTML={{ __html: privacyPolicy.body }}
         />
       </div>

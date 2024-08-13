@@ -381,7 +381,7 @@ function CartDiscounts({
 
       <span
         className={clsx(
-          "mt-2 text-xs text-error-brand",
+          "mt-2 text-sm text-error-brand",
           codeEnteredInvalid ? "visible" : "hidden",
         )}
       >
