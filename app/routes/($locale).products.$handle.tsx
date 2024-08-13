@@ -170,7 +170,7 @@ export default function Product() {
   const { selectedVariant } = product;
 
   return (
-    <div className="lg mx-auto grid max-w-[theme(screens.2xl)] grid-cols-2 gap-3 px-9">
+    <div className="lg mx-auto grid max-w-[theme(screens.xl)] grid-cols-2 gap-3 px-9">
       <ProductImages
         images={product?.images.nodes || []}
         gradientColors={product.gradientColors}
@@ -419,7 +419,7 @@ function ProductForm({
       {isAvailable ? (
         // ShopPayButton -- if reused pull out into a component
         <Button
-          className="bg-shop-pay flex justify-center py-[22px] [--yamaha-shadow-color:theme(colors.shop-pay)]"
+          className="flex justify-center bg-shop-pay py-[22px] [--yamaha-shadow-color:theme(colors.shop-pay)]"
           intent="primary"
           size="fw"
           // TODO: Add link to immediate checkout

@@ -41,7 +41,7 @@ const button = cva(["block no-underline"], {
       intent: "primary",
       disabled: false,
       className: [
-        "shadow-yamaha-primary [--yamaha-shadow-color:theme(colors.success.brand)]",
+        "shadow-yamaha-primary [--yamaha-shadow-color:theme(colors.blue.brand)]",
       ],
     },
     {
