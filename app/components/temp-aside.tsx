@@ -1,6 +1,6 @@
 import { createContext, type ReactNode, useContext, useState } from "react";
 import clsx from "clsx";
-import Icon from "~/components/Icon";
+import Icon from "~/components/temp-icon";
 
 type AsideType = "search" | "cart" | "mobile" | "closed";
 type AsideContextValue = {

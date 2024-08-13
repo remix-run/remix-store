@@ -2,7 +2,7 @@ import type { LoaderFunctionArgs } from "@shopify/remix-oxygen";
 import { defer } from "@shopify/remix-oxygen";
 import { Await, useLoaderData, type MetaFunction } from "@remix-run/react";
 import { Suspense } from "react";
-import { CollectionGrid } from "~/components/CollectionGrid";
+import { CollectionGrid } from "~/components/temp-collection-grid";
 import type { RecommendedProductsQuery } from "storefrontapi.generated";
 
 import { Hero } from "~/components/hero";

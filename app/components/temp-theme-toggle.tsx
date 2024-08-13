@@ -6,7 +6,7 @@ import {
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
 import { Form, useLocation } from "@remix-run/react";
-import Icon from "./Icon";
+import Icon from "./temp-icon";
 import { Button } from "./ui/button";
 
 const themeIconMap = {

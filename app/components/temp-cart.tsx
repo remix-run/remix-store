@@ -9,10 +9,10 @@ import type { CartLineUpdateInput } from "@shopify/hydrogen/storefront-api-types
 import { Link, type FetcherWithComponents } from "@remix-run/react";
 import type { CartApiQueryFragment } from "storefrontapi.generated";
 import { useVariantUrl } from "~/lib/variants";
-import { Image } from "~/components/Image";
+import { Image } from "~/components/temp-image";
 import { parseGradientColors } from "~/lib/metafields";
 import { Button } from "~/components/ui/button";
-import Icon from "~/components/Icon";
+import Icon from "~/components/temp-icon";
 import { useRef } from "react";
 import clsx from "clsx";
 import { cn } from "~/lib";

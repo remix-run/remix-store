@@ -3,7 +3,7 @@ import { RemixServer } from "@remix-run/react";
 import isbot from "isbot";
 import { renderToReadableStream } from "react-dom/server";
 import { createContentSecurityPolicy } from "@shopify/hydrogen";
-import { Aside } from "~/components/Aside";
+import { Aside } from "~/components/temp-aside";
 
 export default async function handleRequest(
   request: Request,

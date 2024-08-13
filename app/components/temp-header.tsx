@@ -6,13 +6,12 @@ import type {
   HeaderQuery,
   CartApiQueryFragment,
 } from "storefrontapi.generated";
-import { useAside } from "~/components/Aside";
-import { ThemeToggle } from "./ThemeToggle";
+import { useAside } from "~/components/temp-aside";
+import { ThemeToggle } from "~/components/temp-theme-toggle";
+import Icon from "~/components/temp-icon";
+import { TitleLogo } from "~/components/temp-title-logo";
+import { Button } from "~/components/ui/button";
 import { cn } from "~/lib";
-
-import Icon from "./Icon";
-import { TitleLogo } from "./TitleLogo";
-import { Button } from "./ui/button";
 
 interface HeaderProps {
   header: HeaderQuery;
