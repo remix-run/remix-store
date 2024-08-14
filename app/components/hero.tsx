@@ -44,7 +44,7 @@ export function Hero({ image, title, subtitle, to }: HeroProps) {
           <div
             className={clsx(
               "absolute flex h-full w-full select-none flex-col justify-center gap-2 p-6 text-center",
-              hasImage && "sm:pl-9 sm:text-left lg:pl-[100px]",
+              hasImage ? "sm:pl-9 sm:text-left lg:pl-[100px]" : "items-center",
             )}
           >
             <p className="text-shadow-hero font-mono text-xs font-semibold uppercase tracking-[0.48px] text-black text-opacity-80 sm:tracking-[0.64px] md:text-base">

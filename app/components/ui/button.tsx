@@ -25,7 +25,7 @@ const button = cva(["block no-underline"], {
       icon: ["rounded-xl px-[14px] py-3"],
       sm: ["font-bold uppercase leading-6 rounded-xl px-4 py-3"],
       lg: ["font-bold text-2xl rounded-2xl py-5 w-full"],
-      fw: ["font-bold text-2xl rounded-2xl px-4 py-5 w-full"],
+      fw: ["font-bold text-2xl rounded-2xl px-4 py-5 w-full text-center"],
     },
     disabled: {
       false: [

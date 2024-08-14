@@ -5,6 +5,41 @@ import { Image } from "~/components/image";
 import { parseGradientColors } from "~/lib/metafields";
 import clsx from "clsx";
 
+interface CollectionGridProps {
+  products?: RecommendedProductsQuery["products"]["nodes"];
+}
+
+export function CollectionGrid({ products }: CollectionGridProps) {
+  if (!products) return null;
+
+  return (
+    <div
+      className={clsx(
+        // Undo padding on the body for full-width grid
+        "-mx-3 py-6 sm:-mx-9 sm:py-8",
+        "flex justify-center bg-black bg-opacity-5 dark:bg-opacity-20",
+      )}
+    >
+      <div
+        // TODO: validate with design these breakpoints/the in-between states. For example, the desktop is at 1440px
+        className={clsx(
+          "grid",
+          "grid-cols-[repeat(2,_174px)] gap-3",
+          "sm:grid-cols-[repeat(2,_232px)] sm:gap-x-3 sm:gap-y-4",
+          "md:grid-cols-[repeat(3,_232px)]",
+          "lg:grid-cols-[repeat(3,_320px)] lg:gap-3",
+          "xl:grid-cols-[repeat(3,_400px)]",
+          "2xl:grid-cols-[repeat(4,_400px)]",
+        )}
+      >
+        {products.map((product) => (
+          <CollectionItem product={product} key={product.id} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 interface CollectionItemProps {
   product: RecommendedProductsQuery["products"]["nodes"][0];
 }
@@ -18,7 +53,7 @@ export function CollectionItem({ product }: CollectionItemProps) {
 
   return (
     <Link
-      className="contents hover:text-inherit hover:no-underline"
+      className="hover:text-inherit hover:no-underline"
       prefetch="intent"
       to={`/products/${handle}`}
     >
@@ -39,7 +74,7 @@ export function CollectionItem({ product }: CollectionItemProps) {
         ) : null}
 
         <div className="absolute bottom-5 gap-2 pl-6">
-          <h3 className="text-2xl font-bold leading-loose tracking-[-0.96px]">
+          <h3 className="text-xs font-bold tracking-[-0.96px] md:text-2xl">
             {title}
           </h3>
           <small>
@@ -49,25 +84,5 @@ export function CollectionItem({ product }: CollectionItemProps) {
         </div>
       </div>
     </Link>
-  );
-}
-
-interface CollectionGridProps {
-  products?: RecommendedProductsQuery["products"]["nodes"];
-}
-
-export function CollectionGrid({ products }: CollectionGridProps) {
-  if (!products) return null;
-
-  return (
-    <div
-      className={
-        "grid grid-cols-2 gap-3 bg-black bg-opacity-5 px-3 py-12 md:grid-cols-3 md:px-12 lg:grid-cols-4 dark:bg-opacity-20"
-      }
-    >
-      {products.map((product) => (
-        <CollectionItem product={product} key={product.id} />
-      ))}
-    </div>
   );
 }

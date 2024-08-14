@@ -33,7 +33,7 @@ export function Header({
     <header
       className={cn(
         "sticky flex items-center justify-between",
-        "px-9 pb-5 pt-7",
+        "pb-5 pt-7",
         "bg-neutral-200 dark:bg-neutral-800",
         "text-neutral-800 dark:text-white",
       )}

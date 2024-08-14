@@ -86,13 +86,11 @@ export default function Collection() {
 
   return (
     <div>
-      <div className="px-9">
-        <Hero
-          title={collection.title}
-          subtitle="now browsing"
-          image={collection.image}
-        />
-      </div>
+      <Hero
+        title={collection.title}
+        subtitle="now browsing"
+        image={collection.image}
+      />
       <Pagination connection={collection.products}>
         {({ nodes, isLoading, PreviousLink, NextLink }) => (
           <>

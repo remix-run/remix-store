@@ -183,7 +183,7 @@ export function Layout({ children }: { children?: React.ReactNode }) {
       </head>
       <body
         className={clsx(
-          "min-h-screen overflow-x-hidden bg-neutral-200 antialiased dark:bg-neutral-800",
+          "min-h-screen min-w-[100vw] overflow-x-hidden bg-neutral-200 antialiased dark:bg-neutral-800",
           isOpen && "overflow-hidden",
         )}
       >
@@ -222,7 +222,7 @@ export function ErrorBoundary() {
   }
 
   return (
-    <div className="px-9">
+    <>
       <Hero subtitle={errorMessage} title={`error ${errorStatus}`} />
       <div className="my-[100px] flex flex-col items-center gap-6">
         <p className="text-xl">
@@ -230,12 +230,10 @@ export function ErrorBoundary() {
         </p>
         <div className="w-[340px]">
           <Button size="fw" asChild>
-            <Link className="text-center" to="/">
-              Back to shop
-            </Link>
+            <Link to="/">Back to shop</Link>
           </Button>
         </div>
       </div>
-    </div>
+    </>
   );
 }

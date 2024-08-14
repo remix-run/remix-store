@@ -62,14 +62,12 @@ export default function Homepage() {
   return (
     <>
       {featuredCollection ? (
-        <div className="px-4 sm:px-9">
-          <Hero
-            image={featuredCollection.image}
-            title="remix mini skateboard"
-            subtitle="build your very own"
-            to={`/products/${featuredCollection.products.nodes[0].handle}`}
-          />
-        </div>
+        <Hero
+          image={featuredCollection.image}
+          title="remix mini skateboard"
+          subtitle="build your very own"
+          to={`/products/${featuredCollection.products.nodes[0].handle}`}
+        />
       ) : null}
       <RecommendedProducts products={recommendedProducts} />
     </>
