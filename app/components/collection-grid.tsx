@@ -17,7 +17,7 @@ export function CollectionGrid({ products }: CollectionGridProps) {
       className={clsx(
         // Undo padding on the body for full-width grid
         "-mx-3 py-6 sm:-mx-9 sm:py-8",
-        "flex justify-center bg-black bg-opacity-20",
+        "flex justify-center bg-black bg-opacity-5 dark:bg-opacity-20",
       )}
     >
       <div
@@ -76,7 +76,9 @@ export function CollectionItem({ product }: CollectionItemProps) {
         ) : null}
 
         <div className="absolute bottom-5 gap-2 pl-6">
-          <h3 className="text-2xl font-bold tracking-[-0.96px]">{title}</h3>
+          <h3 className="text-xs font-bold tracking-[-0.96px] md:text-2xl">
+            {title}
+          </h3>
           <small>
             {/* TODO: account for if the product is out of stock -- might not be feasible since we'd have to grab all variants */}
             <Money data={price} />
