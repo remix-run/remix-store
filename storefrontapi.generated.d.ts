@@ -225,7 +225,7 @@ export type FooterQueryVariables = StorefrontAPI.Exact<{
 }>;
 
 export type FooterQuery = {
-  col1?: StorefrontAPI.Maybe<
+  remixShop?: StorefrontAPI.Maybe<
     Pick<StorefrontAPI.Menu, 'id' | 'title'> & {
       items: Array<
         Pick<
@@ -242,7 +242,7 @@ export type FooterQuery = {
       >;
     }
   >;
-  col2?: StorefrontAPI.Maybe<
+  remixCommunity?: StorefrontAPI.Maybe<
     Pick<StorefrontAPI.Menu, 'id' | 'title'> & {
       items: Array<
         Pick<
@@ -259,7 +259,7 @@ export type FooterQuery = {
       >;
     }
   >;
-  col3?: StorefrontAPI.Maybe<
+  remixResources?: StorefrontAPI.Maybe<
     Pick<StorefrontAPI.Menu, 'id' | 'title'> & {
       items: Array<
         Pick<
@@ -276,7 +276,7 @@ export type FooterQuery = {
       >;
     }
   >;
-  col4?: StorefrontAPI.Maybe<
+  hydrogenResources?: StorefrontAPI.Maybe<
     Pick<StorefrontAPI.Menu, 'id' | 'title'> & {
       items: Array<
         Pick<
@@ -1047,7 +1047,7 @@ interface GeneratedQueryTypes {
     return: HeaderQuery;
     variables: HeaderQueryVariables;
   };
-  '#graphql\n  query Footer(\n    $country: CountryCode\n    $language: LanguageCode\n  ) @inContext(language: $language, country: $country) {\n    col1: menu(handle: "the-remix-shop") {\n      ...Menu\n    }\n    col2: menu(handle: "remix-community") {\n      ...Menu\n    }\n    col3: menu(handle: "remix-resources") {\n      ...Menu\n    }\n    col4: menu(handle: "hydrogen-resources") {\n      ...Menu\n    }\n  }\n  #graphql\n  fragment MenuItem on MenuItem {\n    id\n    resourceId\n    tags\n    title\n    type\n    url\n  }\n  fragment ChildMenuItem on MenuItem {\n    ...MenuItem\n  }\n  fragment ParentMenuItem on MenuItem {\n    ...MenuItem\n    items {\n      ...ChildMenuItem\n    }\n  }\n  fragment Menu on Menu {\n    id\n    title\n    items {\n      ...ParentMenuItem\n    }\n  }\n\n': {
+  '#graphql\n  query Footer(\n    $country: CountryCode\n    $language: LanguageCode\n  ) @inContext(language: $language, country: $country) {\n    remixShop: menu(handle: "the-remix-shop") {\n      ...Menu\n    }\n    remixCommunity: menu(handle: "remix-community") {\n      ...Menu\n    }\n    remixResources: menu(handle: "remix-resources") {\n      ...Menu\n    }\n    hydrogenResources: menu(handle: "hydrogen-resources") {\n      ...Menu\n    }\n  }\n  #graphql\n  fragment MenuItem on MenuItem {\n    id\n    resourceId\n    tags\n    title\n    type\n    url\n  }\n  fragment ChildMenuItem on MenuItem {\n    ...MenuItem\n  }\n  fragment ParentMenuItem on MenuItem {\n    ...MenuItem\n    items {\n      ...ChildMenuItem\n    }\n  }\n  fragment Menu on Menu {\n    id\n    title\n    items {\n      ...ParentMenuItem\n    }\n  }\n\n': {
     return: FooterQuery;
     variables: FooterQueryVariables;
   };
