@@ -18,7 +18,7 @@ export default function Policies() {
   const { refundPolicy, shippingPolicy } = useLoaderData<typeof loader>();
 
   return (
-    <div className="policy-container px-9 pb-12">
+    <div className="policy-container pb-12">
       <Hero subtitle="resources" title="info & help" />
       <div className="mt-3 grid gap-3 lg:grid-cols-2">
         <div className="rounded-3xl bg-neutral-100 p-12 dark:bg-neutral-700">

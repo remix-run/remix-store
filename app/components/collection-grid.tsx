@@ -61,9 +61,11 @@ export function CollectionGrid({ products }: CollectionGridProps) {
 
   return (
     <div
-      className={
-        "grid grid-cols-2 gap-3 bg-black bg-opacity-5 px-3 py-12 md:grid-cols-3 md:px-12 lg:grid-cols-4 dark:bg-opacity-20"
-      }
+      className={clsx(
+        "grid grid-cols-2 gap-3 bg-black bg-opacity-5 px-3 py-12 md:grid-cols-3 md:px-12 lg:grid-cols-4 dark:bg-opacity-20",
+        // Undo padding on the body for full-width grid
+        "-mx-3 sm:-mx-9",
+      )}
     >
       {products.map((product) => (
         <CollectionItem product={product} key={product.id} />

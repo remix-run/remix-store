@@ -18,7 +18,7 @@ export default function Policies() {
   const { privacyPolicy } = useLoaderData<typeof loader>();
 
   return (
-    <div className="policy-container px-9 pb-12">
+    <div className="policy-container pb-12">
       <Hero subtitle="resources" title={privacyPolicy.title} />
       <div className="mt-3 rounded-3xl bg-neutral-100 p-12 dark:bg-neutral-700">
         <div
