@@ -14,10 +14,10 @@ const config = {
     screens: {
       sm: "430px",
       md: "800px",
-      lg: "1600px",
-      xl: "1920px",
+      lg: "1200px",
+      xl: "1600px",
+      "2xl": "1920px",
     },
-    // TODO: make all colors
     colors: {
       inherit: "inherit",
       current: "currentColor",

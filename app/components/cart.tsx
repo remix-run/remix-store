@@ -438,8 +438,8 @@ function CheckoutButton({ checkoutUrl }: { checkoutUrl?: string }) {
 
   return (
     <div className="flex">
-      <Button intent="primary" size="fw">
-        <a className="m-0 block p-0" href={checkoutUrl} target="_self">
+      <Button intent="primary" size="fw" asChild>
+        <a href={checkoutUrl} target="_self">
           <p>Continue to checkout</p>
         </a>
       </Button>

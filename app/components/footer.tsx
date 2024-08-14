@@ -20,7 +20,7 @@ export function Footer({
 }: FooterProps) {
   return (
     <>
-      <footer className="min-h-24 py-12 md:gap-20 lg:gap-28 xl:gap-32">
+      <footer className="min-h-24 py-12">
         <Suspense>
           <Await resolve={footerPromise}>
             {(footer) => {
@@ -29,7 +29,7 @@ export function Footer({
               return (
                 <div
                   className={clsx(
-                    "flex justify-center",
+                    "mb-16 flex justify-center",
                     // mobile
                     "flex-col gap-y-[40px]",
                     // tablet
@@ -78,7 +78,7 @@ function FooterMenu({
   primaryDomainUrl: string;
   publicStoreDomain: string;
 }) {
-  // Sometimes GraphQL and all the nullability drives me crazy
+  // sometimes GraphQL and all the nullability drives me crazy
   if (!menu) return null;
 
   return (
@@ -105,7 +105,7 @@ function FooterMenu({
             {...(isExternal
               ? { target: "_blank", rel: "noopener noreferrer" }
               : {})}
-            className="text-sm tracking-[-0.28px] text-black no-underline sm:text-neutral-600 dark:text-white sm:dark:text-neutral-300"
+            className="text-sm tracking-[-0.28px] text-black no-underline dark:text-white"
           >
             {item.title}
           </Link>
@@ -119,7 +119,7 @@ function CopyrightContent() {
   return (
     <div
       className={clsx(
-        "mt-16 flex text-center opacity-50",
+        "flex text-center opacity-50",
         "flex-col items-center gap-3",
         "md:flex-row md:justify-center md:gap-12",
       )}

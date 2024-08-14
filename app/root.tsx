@@ -230,9 +230,7 @@ export function ErrorBoundary() {
         </p>
         <div className="w-[340px]">
           <Button size="fw" asChild>
-            <Link className="text-center" to="/">
-              Back to shop
-            </Link>
+            <Link to="/">Back to shop</Link>
           </Button>
         </div>
       </div>

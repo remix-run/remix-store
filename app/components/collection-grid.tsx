@@ -23,15 +23,13 @@ export function CollectionGrid({ products }: CollectionGridProps) {
       <div
         // TODO: validate with design these breakpoints/the in-between states. For example, the desktop is at 1440px
         className={clsx(
-          "grid gap-3",
-          // mobile
-          "grid-cols-[repeat(2,_174px)] md:gap-x-3 md:gap-y-4",
-          // tablet -- is the gap-y supposed to be 4?
-          "md:grid-cols-[repeat(3,_232px)] md:gap-x-3 md:gap-y-4",
-          // desktop
-          "lg:grid-cols-[repeat(3,_400px)] lg:gap-3",
-          // desktop ultrawide
-          "xl:grid-cols-[repeat(4,_400px)] xl:gap-3",
+          "grid",
+          "grid-cols-[repeat(2,_174px)] gap-3",
+          "sm:grid-cols-[repeat(2,_232px)] sm:gap-x-3 sm:gap-y-4",
+          "md:grid-cols-[repeat(3,_232px)]",
+          "lg:grid-cols-[repeat(3,_320px)] lg:gap-3",
+          "xl:grid-cols-[repeat(3,_400px)]",
+          "2xl:grid-cols-[repeat(4,_400px)]",
         )}
       >
         {products.map((product) => (
