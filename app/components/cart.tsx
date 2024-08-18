@@ -26,7 +26,6 @@ type CartMainProps = {
 
 export function CartMain({ layout, cart: originalCart }: CartMainProps) {
   const cart = useOptimisticCart(originalCart);
-
   const linesCount = Boolean(cart?.lines?.nodes?.length || 0);
 
   return (
@@ -76,13 +75,15 @@ function CartDetails({
   layout: "page" | "aside";
   hidden: boolean;
 }) {
-  const cartHasItems = !!cart?.totalQuantity;
+  const cartHasItems = !!cart?.lines?.nodes?.length;
   if (!cartHasItems) return null;
 
   return (
     <div className={clsx("h-full flex-col p-8", hidden ? "hidden" : "flex")}>
       <p className="h-14">
-        There are <strong>{cart.totalQuantity}</strong> items in this cart
+        There are{" "}
+        <strong>{cart.isOptimistic ? "XX" : cart.totalQuantity}</strong> items
+        in this cart
       </p>
       <CartLines lines={cart?.lines?.nodes} layout={layout} />
       {cartHasItems && (
@@ -115,7 +116,7 @@ function CartLines({
       className={clsx("overflow-y-auto", cartLinesHeight)}
     >
       <ul>
-        {lines.slice(0, 1).map((line) => (
+        {lines.map((line) => (
           <CartLineItem key={line.id} line={line} layout={layout} />
         ))}
       </ul>
