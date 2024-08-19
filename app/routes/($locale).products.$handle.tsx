@@ -10,6 +10,7 @@ import {
   useLoaderData,
   type MetaFunction,
   type FetcherWithComponents,
+  useSearchParams,
 } from "@remix-run/react";
 import type {
   ProductFragment,
@@ -231,7 +232,7 @@ function ProductMain({
   const { title, vendor, description, specs, fullDescription } = product;
 
   const cardCss =
-    "flex flex-col gap-8 rounded-3xl bg-neutral-100 p-6 md:p-12 dark:bg-neutral-700";
+    "flex flex-col gap-8 rounded-3xl bg-neutral-100 p-6 lg:p-12 dark:bg-neutral-700";
 
   return (
     <div className="flex flex-col gap-3 [&_a]:underline">
@@ -350,9 +351,23 @@ function ProductForm({
   const { open } = useAside();
   const { publish, shop, cart, prevCart } = useAnalytics();
   const isAvailable = !!selectedVariant?.availableForSale;
+  const [searchParams] = useSearchParams();
+  const { options } = product;
+  let addToCartText = "Add to cart";
+
+  // If the product has options (like size, color, etc), check whether each option has been selected
+  if (options.length > 0 && !selectedVariant) {
+    for (const option of options) {
+      const selectedOption = searchParams.get(option.name);
+      if (!selectedOption) {
+        addToCartText = `Select a ${option.name.toLowerCase()}`;
+        break;
+      }
+    }
+  }
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-8">
       <VariantSelector
         handle={product.handle}
         options={product.options.filter((option) => option.values.length > 1)}
@@ -360,7 +375,6 @@ function ProductForm({
       >
         {({ option }) => <ProductOptions key={option.name} option={option} />}
       </VariantSelector>
-      <br />
       <AddToCartButton
         disabled={!selectedVariant || !isAvailable}
         onClick={() => {
@@ -384,7 +398,7 @@ function ProductForm({
             : []
         }
       >
-        {isAvailable ? "Add to cart" : "Sold out"}
+        {product.availableForSale ? addToCartText : "Sold out"}
       </AddToCartButton>
 
       {isAvailable ? (

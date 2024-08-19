@@ -287,6 +287,7 @@ export const PRODUCT_DETAIL_FRAGMENT = `#graphql
     specs: metafield(key: "specs", namespace: "custom") {
       value
     }
+    availableForSale
   }
   ${PRODUCT_VARIANT_FRAGMENT}
 ` as const;
