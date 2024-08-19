@@ -170,7 +170,7 @@ export default function Product() {
   const { selectedVariant } = product;
 
   return (
-    <div className="lg mx-auto grid max-w-[theme(screens.xl)] grid-cols-2 gap-3">
+    <div className="lg mx-auto grid max-w-[theme(screens.xl)] gap-3 md:grid-cols-2">
       <ProductImages
         images={product?.images.nodes || []}
         gradientColors={product.gradientColors}
@@ -260,7 +260,7 @@ function ProductMain({
   const { title, vendor, description, specs, fullDescription } = product;
 
   const cardCss =
-    "flex flex-col gap-8 rounded-3xl bg-neutral-100 p-12 dark:bg-neutral-700";
+    "flex flex-col gap-8 rounded-3xl bg-neutral-100 p-6 md:p-12 dark:bg-neutral-700";
 
   return (
     <div className="flex flex-col gap-3 [&_a]:underline">
@@ -433,28 +433,31 @@ function ProductForm({
 
 function ProductOptions({ option }: { option: VariantOption }) {
   return (
-    <div key={option.name}>
-      <h5>{option.name}</h5>
-      <div>
-        {option.values.map(({ value, isAvailable, isActive, to }) => {
-          return (
-            <Link
-              key={option.name + value}
-              prefetch="intent"
-              preventScrollReset
-              replace
-              to={to}
-              style={{
-                border: isActive ? "1px solid black" : "1px solid transparent",
-                opacity: isAvailable ? 1 : 0.3,
-              }}
-            >
-              {value}
-            </Link>
-          );
-        })}
-      </div>
-      <br />
+    <div
+      key={option.name}
+      className={"grid grid-flow-col justify-stretch gap-1 lg:gap-4"}
+    >
+      {option.values.map(({ value, isAvailable, isActive, to }) => {
+        return (
+          <Button
+            asChild
+            key={option.name + value}
+            size="sm"
+            type="submit"
+            intent={isActive ? "primary" : "secondary"}
+            disabled={!isAvailable}
+            className="text-center"
+          >
+            {isAvailable ? (
+              <Link prefetch="intent" preventScrollReset replace to={to}>
+                {value}
+              </Link>
+            ) : (
+              <span>{value}</span>
+            )}
+          </Button>
+        );
+      })}
     </div>
   );
 }
