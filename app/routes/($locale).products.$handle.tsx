@@ -230,7 +230,7 @@ function ProductMain({
     "flex flex-col gap-8 rounded-3xl bg-neutral-100 p-6 lg:p-12 dark:bg-neutral-700";
 
   return (
-    <div className="flex flex-col gap-3 [&_a]:underline">
+    <div className="flex flex-col gap-3">
       <div className={cardCss}>
         <div className="flex flex-col gap-6">
           <ProductHeader
