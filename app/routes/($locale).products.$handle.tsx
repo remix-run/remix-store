@@ -416,18 +416,22 @@ function ProductForm({
         {isAvailable ? "Add to cart" : "Sold out"}
       </AddToCartButton>
 
-      {isAvailable ? (
-        // ShopPayButton -- if reused pull out into a component
-        <Button
-          className="flex justify-center bg-shop-pay py-[22px] [--yamaha-shadow-color:theme(colors.shop-pay)]"
-          intent="primary"
-          size="fw"
-          // TODO: Add link to immediate checkout
-        >
-          <Icon name="shop-pay" className="h-6 w-auto" />
-        </Button>
-      ) : null}
+      {isAvailable ? <ShopPayButton /> : null}
     </div>
+  );
+}
+
+// ShopPayButton -- if reused pull out into a component
+export function ShopPayButton() {
+  return (
+    <Button
+      className="flex justify-center bg-shop-pay py-[22px] [--yamaha-shadow-color:theme(colors.shop-pay)]"
+      intent="primary"
+      size="fw"
+      // TODO: Add link to immediate checkout
+    >
+      <Icon name="shop-pay" className="h-6 w-auto" />
+    </Button>
   );
 }
 

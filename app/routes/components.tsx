@@ -8,9 +8,10 @@ import {
 } from "~/components/ui/dropdown-menu";
 
 export async function loader() {
-  if (process.env.NODE_ENV === "production") {
-    throw new Response("Not found", { status: 404 });
-  }
+  // TODO: turn this on only for the most prodest of environments
+  // if (process.env.NODE_ENV === "production") {
+  //   throw new Response("Not found", { status: 404 });
+  // }
 
   const componentFiles = import.meta.glob("../routes/components.*.tsx", {
     eager: true,
