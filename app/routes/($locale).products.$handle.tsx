@@ -419,18 +419,22 @@ function ProductForm({
         {product.availableForSale ? addToCartText : "Sold out"}
       </AddToCartButton>
 
-      {isAvailable ? (
-        // ShopPayButton -- if reused pull out into a component
-        <Button
-          className="flex justify-center bg-shop-pay py-[22px] [--yamaha-shadow-color:theme(colors.shop-pay)]"
-          intent="primary"
-          size="fw"
-          // TODO: Add link to immediate checkout
-        >
-          <Icon name="shop-pay" className="h-6 w-auto" />
-        </Button>
-      ) : null}
+      {isAvailable ? <ShopPayButton /> : null}
     </div>
+  );
+}
+
+// ShopPayButton -- if reused pull out into a component
+export function ShopPayButton() {
+  return (
+    <Button
+      className="flex justify-center bg-shop-pay py-[22px] [--yamaha-shadow-color:theme(colors.shop-pay)]"
+      intent="primary"
+      size="lg"
+      // TODO: Add link to immediate checkout
+    >
+      <Icon name="shop-pay" className="h-6 w-auto" />
+    </Button>
   );
 }
 
@@ -492,7 +496,7 @@ function AddToCartButton({
             value={JSON.stringify(analytics)}
           />
           <Button
-            size="fw"
+            size="lg"
             type="submit"
             onClick={onClick}
             disabled={disabled ?? fetcher.state !== "idle"}

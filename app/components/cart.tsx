@@ -50,7 +50,7 @@ export function CartEmpty({
     >
       <p>There are no items in this cart.</p>
       <div className="mt-auto">
-        <Button intent="secondary" size="fw" asChild>
+        <Button intent="secondary" size="lg" asChild>
           <Link
             to={ctaUrl}
             onClick={() => {
@@ -440,7 +440,7 @@ function CheckoutButton({ checkoutUrl }: { checkoutUrl?: string }) {
 
   return (
     <div className="flex">
-      <Button intent="primary" size="fw" asChild>
+      <Button intent="primary" size="lg" asChild>
         <a href={checkoutUrl} target="_self">
           <p>Continue to checkout</p>
         </a>
