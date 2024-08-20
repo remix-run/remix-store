@@ -50,17 +50,18 @@ export function CartEmpty({
     >
       <p>There are no items in this cart.</p>
       <div className="mt-auto">
-        <Link
-          to={ctaUrl}
-          onClick={() => {
-            if (layout !== "aside") return;
-            window.location.href = ctaUrl;
-          }}
-        >
-          <Button intent="secondary" size="lg">
+        <Button intent="secondary" size="fw" asChild>
+          <Link
+            to={ctaUrl}
+            onClick={() => {
+              if (layout !== "aside") return;
+              // force the drawer closed via a full page navigation
+              window.location.href = ctaUrl;
+            }}
+          >
             <span>Back to shop</span>
-          </Button>
-        </Link>
+          </Link>
+        </Button>
       </div>
     </div>
   );
