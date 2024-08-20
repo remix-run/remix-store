@@ -59,11 +59,6 @@ const button = cva(["block no-underline"], {
       disabled: true,
       className: ["text-opacity-35 dark:text-opacity-35"],
     },
-    {
-      size: "lg",
-      disabled: true,
-      className: [""],
-    },
   ],
   defaultVariants: {
     intent: "secondary",
