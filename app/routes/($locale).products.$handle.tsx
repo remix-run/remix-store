@@ -407,7 +407,8 @@ function ProductForm({
                 {
                   merchandiseId: selectedVariant.id,
                   quantity: 1,
-                  selectedVariant,
+                  // Add entire product to selected variant so we can determine gradient colours in an optimistic cart
+                  selectedVariant: { ...selectedVariant, product },
                 },
               ]
             : []
