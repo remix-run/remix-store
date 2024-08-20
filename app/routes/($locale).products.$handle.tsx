@@ -1,9 +1,5 @@
 import { Suspense } from "react";
-import {
-  defer,
-  redirect,
-  type LoaderFunctionArgs,
-} from "@shopify/remix-oxygen";
+import { defer, type LoaderFunctionArgs } from "@shopify/remix-oxygen";
 import {
   Await,
   Link,
@@ -230,7 +226,6 @@ function ProductMain({
   variants: Promise<ProductVariantsQuery | null>;
 }) {
   const { title, vendor, description, specs, fullDescription } = product;
-
   const cardCss =
     "flex flex-col gap-8 rounded-3xl bg-neutral-100 p-6 lg:p-12 dark:bg-neutral-700";
 
@@ -238,11 +233,11 @@ function ProductMain({
     <div className="flex flex-col gap-3 [&_a]:underline">
       <div className={cardCss}>
         <div className="flex flex-col gap-6">
-          {vendor !== DEFAULT_VENDOR ? <p>Cotopaxi</p> : null}
-          <h1 className="font-heading text-[2rem] tracking-[-0.32px] sm:text-6xl sm:leading-[0.75]">
-            {title}
-          </h1>
-          <ProductPrice selectedVariant={selectedVariant} />
+          <ProductHeader
+            title={title}
+            vendor={vendor}
+            selectedVariant={selectedVariant || product.variants.nodes[0]}
+          />
         </div>
 
         <p>{description}</p>
@@ -308,33 +303,53 @@ function ProductMain({
   );
 }
 
-function ProductPrice({
+function ProductHeader({
+  title,
+  vendor,
   selectedVariant,
 }: {
+  title: string;
+  vendor?: string;
   selectedVariant: ProductFragment["selectedVariant"];
 }) {
+  const displayVendor = vendor !== DEFAULT_VENDOR;
+  const price = Number(selectedVariant?.price.amount || 0);
+  const compareAtPrice = Number(selectedVariant?.compareAtPrice?.amount || 0);
+  const isOnSale = price < compareAtPrice;
+  const percentageOff = isOnSale
+    ? Math.round(((compareAtPrice - price) / compareAtPrice) * 100)
+    : 0;
+
   return (
-    <div>
-      {selectedVariant?.compareAtPrice ? (
-        <>
-          <p>Sale</p>
-          <br />
-          <div>
-            {selectedVariant ? <Money data={selectedVariant.price} /> : null}
-            <s>
-              <Money data={selectedVariant.compareAtPrice} />
-            </s>
-          </div>
-        </>
-      ) : (
-        selectedVariant?.price && (
-          <Money
-            className="text-2xl"
-            data={selectedVariant?.price}
-            withoutTrailingZeros
-          />
-        )
+    <div className="flex flex-col gap-6">
+      {(displayVendor || isOnSale) && (
+        <div className="flex justify-between">
+          {displayVendor && <div>{vendor}</div>}
+          {isOnSale && (
+            <div className="text-right font-semibold text-red-brand">SALE</div>
+          )}
+        </div>
       )}
+      <h1 className="font-heading text-[2rem] tracking-[-0.32px] sm:text-6xl sm:leading-[0.75]">
+        {title}
+      </h1>
+
+      <div className="flex gap-3 text-2xl">
+        <span>
+          <Money data={selectedVariant?.price!} withoutTrailingZeros />
+        </span>
+        {isOnSale && (
+          <>
+            <s>
+              <Money
+                data={selectedVariant?.compareAtPrice!}
+                withoutTrailingZeros
+              />
+            </s>
+            <span className="text-red-brand">{percentageOff}% Off</span>
+          </>
+        )}
+      </div>
     </div>
   );
 }
@@ -431,7 +446,7 @@ function ProductOptions({ option }: { option: VariantOption }) {
             type="submit"
             intent={isActive ? "primary" : "secondary"}
             disabled={!isAvailable}
-            className="text-center"
+            className="px-0 text-center"
           >
             {isAvailable ? (
               <Link prefetch="intent" preventScrollReset replace to={to}>
