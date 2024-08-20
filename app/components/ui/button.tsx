@@ -22,17 +22,20 @@ const button = cva(["block no-underline"], {
       ],
     },
     size: {
-      icon: ["rounded-xl px-[14px] py-3"],
-      sm: ["font-bold uppercase leading-6 rounded-xl px-4 py-3"],
-      lg: ["font-bold text-2xl rounded-2xl py-5 w-full"],
-      fw: ["font-bold text-2xl rounded-2xl px-4 py-5 w-full text-center"],
+      icon: ["rounded-xl px-[14px] py-3 flex gap-2"],
+      sm: [
+        "w-full rounded-xl px-5 py-3 font-bold uppercase leading-6 tracking-[0.64px]",
+      ],
+      lg: [
+        "w-full rounded-2xl px-4 py-5 text-center text-2xl font-bold tracking-[-0.48px]",
+      ],
     },
     disabled: {
       false: [
-        "active:translate-y-0.5 hover:bg-gradient-to-b hover:from-white/20 hover:to-white/20 ",
+        "hover:bg-gradient-to-b hover:from-white/20 hover:to-white/20 active:translate-y-0.5",
       ],
       true: [
-        "shadow-none cursor-not-allowed bg-neutral-100 dark:bg-neutral-700",
+        "cursor-not-allowed bg-black bg-opacity-5 text-neutral-600 shadow-none dark:bg-black dark:bg-opacity-20 dark:text-neutral-300",
       ],
     },
   },
@@ -47,14 +50,14 @@ const button = cva(["block no-underline"], {
     {
       intent: "secondary",
       disabled: false,
-      className: "shadow-yamaha-secondary",
+      className: [
+        "shadow-yamaha-secondary text-black hover:text-black dark:text-white dark:hover:text-white",
+      ],
     },
     {
-      intent: "secondary",
-      size: "fw",
-      className: [
-        "text-black hover:text-black dark:text-white dark:hover:text-white",
-      ],
+      size: "sm",
+      disabled: true,
+      className: ["text-opacity-35 dark:text-opacity-35"],
     },
   ],
   defaultVariants: {
@@ -64,22 +67,19 @@ const button = cva(["block no-underline"], {
   },
 });
 
-const well = cva(
-  ["overflow-hidden relative bg-black bg-opacity-5 dark:bg-opacity-20"],
-  {
-    variants: {
-      size: {
-        icon: "rounded-[14px] px-1 pt-[3px] pb-[7px]",
-        sm: "rounded-[14px] px-1 pt-[3px] pb-[7px]",
-        lg: "rounded-[18px] px-1 pt-1 pb-2",
-        fw: "rounded-[20px] w-full px-1 pt-1 pb-2",
-      },
-      disabled: {
-        true: "p-1",
-      },
+const well = cva(["overflow-hidden relative"], {
+  variants: {
+    size: {
+      icon: "rounded-[14px] px-1 pt-[3px] pb-[7px] max-w-fit",
+      sm: "rounded-[14px] px-1 pt-[3px] pb-[7px]",
+      lg: "rounded-[20px] w-full px-1 pt-1 pb-2",
+    },
+    disabled: {
+      false: "bg-black bg-opacity-5 dark:bg-opacity-20",
+      true: "p-1",
     },
   },
-);
+});
 
 export const Button = forwardRef(
   (

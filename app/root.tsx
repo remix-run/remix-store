@@ -229,7 +229,7 @@ export function ErrorBoundary() {
           Please check to see if you have typed the URL correctly.
         </p>
         <div className="w-[340px]">
-          <Button size="fw" asChild>
+          <Button size="lg" asChild>
             <Link to="/">Back to shop</Link>
           </Button>
         </div>

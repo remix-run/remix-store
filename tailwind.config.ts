@@ -31,7 +31,7 @@ const config = {
       black: "#000000",
       white: "#FFFFFF",
       neutral: {
-        50: "#F5F5EF",
+        50: "#F1F1EC",
         100: "#EAEAE4",
         200: "#E3E2DD",
         300: "#DADADA",
