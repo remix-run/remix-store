@@ -41,7 +41,7 @@ export default function Components() {
         <div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button size="sm" className="px-4">
+              <Button size="sm" className="px-4 lowercase">
                 select a component
               </Button>
             </DropdownMenuTrigger>

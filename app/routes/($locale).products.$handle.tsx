@@ -427,7 +427,7 @@ export function ShopPayButton() {
     <Button
       className="flex justify-center bg-shop-pay py-[22px] [--yamaha-shadow-color:theme(colors.shop-pay)]"
       intent="primary"
-      size="fw"
+      size="lg"
       // TODO: Add link to immediate checkout
     >
       <Icon name="shop-pay" className="h-6 w-auto" />
@@ -490,7 +490,7 @@ function AddToCartButton({
             value={JSON.stringify(analytics)}
           />
           <Button
-            size="fw"
+            size="lg"
             type="submit"
             onClick={onClick}
             disabled={disabled ?? fetcher.state !== "idle"}
