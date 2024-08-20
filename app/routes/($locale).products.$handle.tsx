@@ -334,13 +334,15 @@ function ProductHeader({
         {title}
       </h1>
 
-      <div className="flex gap-3 text-2xl">
-        <span>
-          <Money data={selectedVariant?.price!} withoutTrailingZeros />
-        </span>
+      <div className="flex gap-3 text-2xl tracking-[-0.48px]">
+        <Money
+          className="font-bold"
+          data={selectedVariant?.price!}
+          withoutTrailingZeros
+        />
         {isOnSale && (
           <>
-            <s>
+            <s className="line-through opacity-50">
               <Money
                 data={selectedVariant?.compareAtPrice!}
                 withoutTrailingZeros
