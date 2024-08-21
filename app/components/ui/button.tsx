@@ -35,7 +35,7 @@ const button = cva(["block no-underline"], {
         "hover:bg-gradient-to-b hover:from-white/20 hover:to-white/20 active:translate-y-0.5",
       ],
       true: [
-        "cursor-not-allowed bg-black bg-opacity-5 text-neutral-600 shadow-none dark:bg-black dark:bg-opacity-20 dark:text-neutral-300",
+        "cursor-not-allowed bg-transparent dark:bg-transparent text-neutral-600 shadow-none dark:text-neutral-300",
       ],
     },
   },
@@ -57,7 +57,9 @@ const button = cva(["block no-underline"], {
     {
       size: "sm",
       disabled: true,
-      className: ["text-opacity-35 dark:text-opacity-35"],
+      className: [
+        "text-opacity-35 hover:text-opacity-35 dark:hover:text-opacity-35 dark:text-opacity-35",
+      ],
     },
   ],
   defaultVariants: {
@@ -67,19 +69,18 @@ const button = cva(["block no-underline"], {
   },
 });
 
-const well = cva(["overflow-hidden relative"], {
-  variants: {
-    size: {
-      icon: "rounded-[14px] px-1 pt-[3px] pb-[7px] max-w-fit",
-      sm: "rounded-[14px] px-1 pt-[3px] pb-[7px]",
-      lg: "rounded-[20px] w-full px-1 pt-1 pb-2",
-    },
-    disabled: {
-      false: "bg-black bg-opacity-5 dark:bg-opacity-20",
-      true: "p-1",
+const well = cva(
+  ["overflow-hidden relative bg-black bg-opacity-5 dark:bg-opacity-20"],
+  {
+    variants: {
+      size: {
+        icon: "rounded-[14px] px-1 pt-[3px] pb-[7px] max-w-fit",
+        sm: "rounded-[14px] px-1 pt-[3px] pb-[7px]",
+        lg: "rounded-[20px] w-full px-1 pt-1 pb-2",
+      },
     },
   },
-});
+);
 
 export const Button = forwardRef(
   (
@@ -95,7 +96,7 @@ export const Button = forwardRef(
     const Comp = asChild ? Slot : "button";
 
     return (
-      <div ref={ref} className={cn(well({ size, disabled }))}>
+      <div ref={ref} className={cn(well({ size }))}>
         <Comp
           {...props}
           className={cn(button({ intent, size, disabled }), props.className)}
