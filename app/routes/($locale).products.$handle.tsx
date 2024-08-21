@@ -268,7 +268,7 @@ function ProductMain({
         </div>
       </div>
       <div className={cardCss}>
-        <Accordion type="multiple" className="-mx-6">
+        <Accordion type="multiple" className="lg:-m-6">
           {fullDescription ? (
             <AccordionItem value="description">
               <AccordionTrigger>Description</AccordionTrigger>
