@@ -1,4 +1,4 @@
-import { Button } from "~/components/ui/button";
+import { Button, ButtonWithWellText } from "~/components/ui/button";
 import { cn } from "~/lib";
 import { ShopPayButton } from "./($locale).products.$handle";
 import Icon from "~/components/icon";
@@ -53,6 +53,20 @@ export default function Buttons() {
             </Button>
           </Fragment>
         ))}
+      </Section>
+      <Section
+        title="Buttons with extended wells"
+        className="flex w-[500px] flex-col gap-4"
+      >
+        <ButtonWithWellText size="icon" wellPrefix="🇺🇸 USD">
+          <Icon name="globe" />
+        </ButtonWithWellText>
+        <ButtonWithWellText size="icon" wellPrefix="Price: High To Low">
+          <Icon name="chevron-down" />
+        </ButtonWithWellText>
+        <ButtonWithWellText size="icon" wellPostfix="Showing 6 items">
+          <Icon name="filter" />
+        </ButtonWithWellText>
       </Section>
     </div>
   );

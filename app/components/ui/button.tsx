@@ -3,14 +3,6 @@ import { forwardRef } from "react";
 import { cn } from "~/lib";
 import { cva, type VariantProps } from "class-variance-authority";
 
-type ButtonVariantProps = VariantProps<typeof button>;
-
-interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  intent?: NonNullable<ButtonVariantProps["intent"]>;
-  size?: NonNullable<ButtonVariantProps["size"]>;
-  asChild?: boolean;
-}
-
 const button = cva(["block no-underline"], {
   variants: {
     intent: {
@@ -82,6 +74,14 @@ const well = cva(
   },
 );
 
+type ButtonVariantProps = VariantProps<typeof button>;
+
+interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  intent?: NonNullable<ButtonVariantProps["intent"]>;
+  size?: NonNullable<ButtonVariantProps["size"]>;
+  asChild?: boolean;
+}
+
 export const Button = forwardRef(
   (
     {
@@ -107,3 +107,35 @@ export const Button = forwardRef(
   },
 );
 Button.displayName = "Button";
+
+// For now just keep this thing separate, we can merge into the main button later if we want to
+export function ButtonWithWellText({
+  asChild,
+  intent = "secondary",
+  size = "sm",
+  disabled = false,
+  wellPrefix,
+  wellPostfix,
+  ...props
+}: ButtonProps & {
+  wellPrefix?: React.ReactNode;
+  wellPostfix?: React.ReactNode;
+}) {
+  const Comp = asChild ? Slot : "button";
+
+  return (
+    <div className={cn(well({ size }), "flex items-center gap-3")}>
+      {wellPrefix ? (
+        <div className="whitespace-nowrap pl-5 font-medium">{wellPrefix}</div>
+      ) : null}
+      <Comp
+        {...props}
+        className={cn(button({ intent, size, disabled }), props.className)}
+        disabled={disabled}
+      />
+      {wellPostfix ? (
+        <div className="whitespace-nowrap pr-5 font-medium">{wellPostfix}</div>
+      ) : null}
+    </div>
+  );
+}
