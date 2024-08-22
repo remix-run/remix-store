@@ -10,8 +10,7 @@ import { useAside } from "~/components/aside";
 import { ThemeToggle } from "~/components/theme-toggle";
 import Icon from "~/components/icon";
 import { TitleLogo } from "~/components/title-logo";
-import { Button } from "~/components/ui/button";
-import clsx from "clsx";
+import { Button, ButtonWithWellText } from "~/components/ui/button";
 
 interface HeaderProps {
   header: HeaderQuery;
@@ -29,6 +28,7 @@ export function Header({
   publicStoreDomain,
 }: HeaderProps) {
   const { shop, menu } = header;
+  if (!menu) return null;
   return (
     <header
       // TODO: make sticky
@@ -40,16 +40,10 @@ export function Header({
         primaryDomainUrl={shop.primaryDomain.url}
         publicStoreDomain={publicStoreDomain}
       />
-      <NavLink
-        prefetch="intent"
-        to="/"
-        style={activeLinkStyle}
-        className="flex-1 text-center"
-        end
-      >
+      <NavLink prefetch="intent" to="/" className="flex-1 text-center" end>
         <TitleLogo />
       </NavLink>
-      <HeaderCtas isLoggedIn={isLoggedIn} cart={cart} />
+      <HeaderCartActions isLoggedIn={isLoggedIn} cart={cart} />
     </header>
   );
 }
@@ -60,7 +54,7 @@ export function HeaderMenu({
   viewport,
   publicStoreDomain,
 }: {
-  menu: HeaderProps["header"]["menu"];
+  menu: NonNullable<HeaderProps["header"]["menu"]>;
   primaryDomainUrl: HeaderProps["header"]["shop"]["primaryDomain"]["url"];
   viewport: Viewport;
   publicStoreDomain: HeaderProps["publicStoreDomain"];
@@ -77,28 +71,14 @@ export function HeaderMenu({
       <div className="flex-1 md:hidden">
         <HeaderMenuMobileToggle />
       </div>
-      <nav
-        className="hidden flex-1 md:flex md:gap-3"
-        // className={clsx({
-        //   "flex gap-3": true,
-        //   "flex-col": viewport === "mobile",
-        //   "hidden flex-row sm:flex": viewport === "desktop",
-        // })}
-        role="navigation"
-      >
+      <nav className="hidden flex-1 md:flex md:gap-3" role="navigation">
         {viewport === "mobile" && (
-          <NavLink
-            end
-            onClick={closeAside}
-            prefetch="intent"
-            style={activeLinkStyle}
-            to="/"
-          >
+          <NavLink end onClick={closeAside} prefetch="intent" to="/">
             Home
           </NavLink>
         )}
         {/* TODO: should we just remove all this? This seems convoluted */}
-        {(menu || FALLBACK_HEADER_MENU).items.map((item) => {
+        {menu.items.map((item) => {
           if (!item.url) return null;
 
           // if the url is internal, we strip the domain
@@ -131,7 +111,6 @@ export function HeaderMenu({
                 end
                 onClick={closeAside}
                 prefetch="intent"
-                style={activeLinkStyle}
                 to={url}
               >
                 {contents}
@@ -145,17 +124,14 @@ export function HeaderMenu({
   );
 }
 
-function HeaderCtas({
-  isLoggedIn,
-  cart,
-}: Pick<HeaderProps, "isLoggedIn" | "cart">) {
-  // TODO: collapse these?
+function HeaderCartActions({ cart }: Pick<HeaderProps, "isLoggedIn" | "cart">) {
   return (
     <div className="flex flex-1 gap-3" role="navigation">
       <div className="ml-auto hidden md:block">
-        <Button size="icon">
-          <Icon name="globe" aria-label="currency" />
-        </Button>
+        {/* TODO: make interactive */}
+        <ButtonWithWellText size="icon" wellPrefix="🇺🇸 USD">
+          <Icon name="globe" aria-label="change currency" />
+        </ButtonWithWellText>
       </div>
       <div className="ml-auto md:ml-0">
         <CartToggle cart={cart} />
@@ -210,53 +186,4 @@ function CartToggle({ cart }: Pick<HeaderProps, "cart">) {
       </Await>
     </Suspense>
   );
-}
-
-const FALLBACK_HEADER_MENU = {
-  id: "gid://shopify/Menu/199655587896",
-  items: [
-    {
-      id: "gid://shopify/MenuItem/461609500728",
-      resourceId: null,
-      tags: [],
-      title: "Collections",
-      type: "HTTP",
-      url: "/collections",
-      items: [],
-    },
-    {
-      id: "gid://shopify/MenuItem/461609533496",
-      resourceId: null,
-      tags: [],
-      title: "Blog",
-      type: "HTTP",
-      url: "/blogs/journal",
-      items: [],
-    },
-    {
-      id: "gid://shopify/MenuItem/461609566264",
-      resourceId: null,
-      tags: [],
-      title: "Policies",
-      type: "HTTP",
-      url: "/policies",
-      items: [],
-    },
-    {
-      id: "gid://shopify/MenuItem/461609599032",
-      resourceId: "gid://shopify/Page/92591030328",
-      tags: [],
-      title: "About",
-      type: "PAGE",
-      url: "/pages/about",
-      items: [],
-    },
-  ],
-};
-
-function activeLinkStyle({ isActive }: { isActive: boolean }) {
-  return {
-    fontWeight: isActive ? "bold" : undefined,
-    pointerEvents: isActive ? "none" : undefined,
-  } satisfies CSSProperties;
 }

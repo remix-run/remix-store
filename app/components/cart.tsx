@@ -45,9 +45,7 @@ export function CartEmpty({
 }) {
   const ctaUrl = "/collections/all";
   return (
-    <div
-      className={clsx("h-full w-full flex-col p-8", hidden ? "hidden" : "flex")}
-    >
+    <div className={clsx("h-full w-full flex-col", hidden ? "hidden" : "flex")}>
       <p>There are no items in this cart.</p>
       <div className="mt-auto">
         <Button intent="secondary" size="lg" asChild>

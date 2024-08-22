@@ -1,4 +1,4 @@
-import { Await } from "@remix-run/react";
+import { Await, Link } from "@remix-run/react";
 import { Suspense } from "react";
 import type {
   CartApiQueryFragment,
@@ -13,6 +13,8 @@ import {
   PredictiveSearchForm,
   PredictiveSearchResults,
 } from "~/components/search";
+import { Button } from "./ui/button";
+import clsx from "clsx";
 
 interface PageLayoutProps {
   cart: Promise<CartApiQueryFragment | null>;
@@ -34,7 +36,7 @@ export function PageLayout({
   return (
     <div className="px-3 sm:px-9">
       <CartAside cart={cart} />
-      <SearchAside />
+      {/* <SearchAside /> */}
       <MobileMenuAside header={header} publicStoreDomain={publicStoreDomain} />
       {header && (
         <Header
@@ -103,6 +105,12 @@ function SearchAside() {
   );
 }
 
+// Still need to do
+// - Get mobile menu from the data
+// - Add theme toggle to mobile menu
+// - Make header sticky
+// - Add filter and sorting header
+
 function MobileMenuAside({
   header,
   publicStoreDomain,
@@ -113,13 +121,26 @@ function MobileMenuAside({
   return (
     header.menu &&
     header.shop.primaryDomain?.url && (
-      <Aside type="mobile" heading="MENU">
-        <HeaderMenu
+      <Aside type="mobile" heading="MENU" direction="left">
+        <div className="flex h-full w-full flex-col gap-4">
+          {/* TODO: get from the data */}
+
+          <Button size="lg" asChild className="text-left">
+            <Link to="/shop">Shop All Items</Link>
+          </Button>
+          <Button size="lg" asChild className="text-left">
+            <Link to="/new">New & Featured</Link>
+          </Button>
+          <Button size="lg" asChild className="text-left">
+            <Link to="/help">Info & Help</Link>
+          </Button>
+          {/* <HeaderMenu
           menu={header.menu}
           viewport="mobile"
           primaryDomainUrl={header.shop.primaryDomain.url}
           publicStoreDomain={publicStoreDomain}
-        />
+          /> */}
+        </div>
       </Aside>
     )
   );

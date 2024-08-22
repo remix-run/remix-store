@@ -1,4 +1,11 @@
-import { createContext, type ReactNode, useContext, useState } from "react";
+import {
+  createContext,
+  type ReactNode,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import clsx from "clsx";
 import Icon from "~/components/icon";
 
@@ -23,14 +30,33 @@ type AsideContextValue = {
 export function Aside({
   children,
   heading,
+  direction = "right",
   type,
 }: {
   children?: React.ReactNode;
   type: AsideType;
   heading: React.ReactNode;
+  direction?: "left" | "right";
 }) {
   const { type: activeType, close } = useAside();
+  // const { close } = useAside();
+  // const activeType = "mobile";
   const isOpen = type === activeType;
+  const previousIsOpen = useRef(isOpen);
+
+  const [transitionState, setTransitionState] = useState<
+    "closed" | "transitioning" | "open"
+  >(isOpen ? "open" : "closed");
+
+  // TODO: allow the sidebar to be closed with escape key
+
+  // This is temporary, will be replaced with https://github.com/remix-run/remix-store/issues/74
+  useEffect(() => {
+    if (isOpen !== previousIsOpen.current) {
+      setTransitionState("transitioning");
+      previousIsOpen.current = isOpen;
+    }
+  }, [isOpen]);
 
   return (
     <div data-type={`aside-${type}`} aria-modal role="dialog">
@@ -45,29 +71,39 @@ export function Aside({
       <aside
         className={clsx(
           "w-[var(--aside-width)]",
-          "absolute right-0 top-0 z-20 h-dvh bg-neutral-200 transition-transform duration-300 ease-in-out dark:bg-neutral-800",
-          isOpen ? "translate-x-0" : "translate-x-full",
+          "absolute top-0 z-20 h-dvh bg-neutral-200 transition-transform duration-300 ease-in-out dark:bg-neutral-800",
+          isOpen
+            ? "translate-x-0"
+            : direction === "left"
+              ? "-translate-x-full"
+              : "translate-x-full",
+          direction === "left" ? "left-0" : "right-0",
         )}
+        onTransitionEnd={() => {
+          setTransitionState(isOpen ? "open" : "closed");
+        }}
       >
-        <header className="sticky top-0 flex h-[var(--aside-header-height)] items-center justify-between bg-neutral-100 px-8 dark:bg-neutral-700">
-          <h2
-            className={clsx(
-              "font-heading text-4xl tracking-[-0.36px]",
-              "sm:text-5xl sm:tracking-[-0.48px]",
-            )}
-          >
-            {heading}
-          </h2>
-          <Icon
-            name="x"
-            aria-label="Close"
-            className="cursor-pointer"
-            onClick={close}
-          />
-        </header>
-        <main className="flex h-[calc(100vh_-_var(--aside-header-height))] w-full">
-          {children}
-        </main>
+        <div className={clsx({ hidden: transitionState === "closed" })}>
+          <header className="sticky top-0 flex h-[var(--aside-header-height)] items-center justify-between bg-neutral-100 px-9 dark:bg-neutral-700">
+            <h2
+              className={clsx(
+                "font-heading text-4xl tracking-[-0.36px]",
+                "sm:text-5xl sm:tracking-[-0.48px]",
+              )}
+            >
+              {heading}
+            </h2>
+            <Icon
+              name="x"
+              aria-label="Close"
+              className="cursor-pointer"
+              onClick={close}
+            />
+          </header>
+          <main className="flex h-[calc(100vh_-_var(--aside-header-height))] w-full p-9">
+            {children}
+          </main>
+        </div>
       </aside>
     </div>
   );

@@ -42,8 +42,14 @@ const button = cva(["block no-underline"], {
     {
       intent: "secondary",
       disabled: false,
+      className: ["shadow-yamaha-secondary"],
+    },
+    {
+      size: "lg",
+      intent: "secondary",
+      disabled: false,
       className: [
-        "shadow-yamaha-secondary text-black hover:text-black dark:text-white dark:hover:text-white",
+        "text-black hover:text-black dark:text-white dark:hover:text-white",
       ],
     },
     {
