@@ -11,7 +11,7 @@ import { ThemeToggle } from "~/components/theme-toggle";
 import Icon from "~/components/icon";
 import { TitleLogo } from "~/components/title-logo";
 import { Button } from "~/components/ui/button";
-import { cn } from "~/lib";
+import clsx from "clsx";
 
 interface HeaderProps {
   header: HeaderQuery;
@@ -31,12 +31,8 @@ export function Header({
   const { shop, menu } = header;
   return (
     <header
-      className={cn(
-        "sticky flex items-center justify-between",
-        "pb-5 pt-7",
-        "bg-neutral-200 dark:bg-neutral-800",
-        "text-neutral-800 dark:text-white",
-      )}
+      // TODO: make sticky
+      className="z-10 flex h-[var(--header-height)] items-center justify-between"
     >
       <HeaderMenu
         menu={menu}
@@ -48,7 +44,7 @@ export function Header({
         prefetch="intent"
         to="/"
         style={activeLinkStyle}
-        className="flex-grow text-center"
+        className="flex-1 text-center"
         end
       >
         <TitleLogo />
@@ -78,13 +74,16 @@ export function HeaderMenu({
 
   return (
     <>
-      <HeaderMenuMobileToggle />
+      <div className="flex-1 md:hidden">
+        <HeaderMenuMobileToggle />
+      </div>
       <nav
-        className={cn({
-          "flex gap-4": true,
-          "flex-col": viewport === "mobile",
-          "hidden flex-row sm:flex": viewport === "desktop",
-        })}
+        className="hidden flex-1 md:flex md:gap-3"
+        // className={clsx({
+        //   "flex gap-3": true,
+        //   "flex-col": viewport === "mobile",
+        //   "hidden flex-row sm:flex": viewport === "desktop",
+        // })}
         role="navigation"
       >
         {viewport === "mobile" && (
@@ -98,6 +97,7 @@ export function HeaderMenu({
             Home
           </NavLink>
         )}
+        {/* TODO: should we just remove all this? This seems convoluted */}
         {(menu || FALLBACK_HEADER_MENU).items.map((item) => {
           if (!item.url) return null;
 
@@ -149,12 +149,17 @@ function HeaderCtas({
   isLoggedIn,
   cart,
 }: Pick<HeaderProps, "isLoggedIn" | "cart">) {
+  // TODO: collapse these?
   return (
-    <div className="ml-auto flex items-center gap-4" role="navigation">
-      <Button size="icon">
-        <Icon name="globe" aria-label="currency" />
-      </Button>
-      <CartToggle cart={cart} />
+    <div className="flex flex-1 gap-3" role="navigation">
+      <div className="ml-auto hidden md:block">
+        <Button size="icon">
+          <Icon name="globe" aria-label="currency" />
+        </Button>
+      </div>
+      <div className="ml-auto md:ml-0">
+        <CartToggle cart={cart} />
+      </div>
     </div>
   );
 }
@@ -162,9 +167,9 @@ function HeaderCtas({
 function HeaderMenuMobileToggle() {
   const { open } = useAside();
   return (
-    <button className="sm:hidden" onClick={() => open("mobile")}>
-      <h3>☰</h3>
-    </button>
+    <Button size="icon" className="md:hidden" onClick={() => open("mobile")}>
+      <Icon name="menu" aria-label="navigation menu" />
+    </Button>
   );
 }
 
