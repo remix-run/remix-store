@@ -96,8 +96,6 @@ function SearchAside() {
 }
 
 // Still need to do
-// - Get mobile menu from the data
-// - Add theme toggle to mobile menu
 // - Make header sticky
 // - Add filter and sorting header
 

@@ -23,7 +23,7 @@ export function Header({ menu, isLoggedIn, cart }: HeaderProps) {
   return (
     <header
       // TODO: make sticky
-      className="z-10 flex h-[var(--header-height)] items-center justify-between"
+      className="flex h-[var(--header-height)] items-center justify-between"
     >
       <HeaderMenu menu={menu} />
       <NavLink prefetch="intent" to="/" className="flex-1 text-center" end>
@@ -51,7 +51,7 @@ export function HeaderMenu({ menu }: HeaderMenuProps) {
         {menu.items.map((item) => {
           if (!item.url) return null;
           return (
-            <MobileMenuLink
+            <HeaderMenuLink
               key={item.id}
               title={item.title}
               url={item.url}
@@ -59,94 +59,32 @@ export function HeaderMenu({ menu }: HeaderMenuProps) {
             />
           );
         })}
-        <ThemeToggle />
+        <ThemeToggle display="icon" />
       </nav>
     </>
   );
 }
 
-export function HeaderMenuMobile({ menu }: HeaderMenuProps) {
-  // force the drawer closed via a full page navigation
-  function closeAside(event: React.MouseEvent<HTMLAnchorElement>) {
-    event.preventDefault();
-    window.location.href = event.currentTarget.href;
-  }
-
-  return (
-    <nav className="flex h-full w-full flex-col gap-4">
-      <Button size="lg" asChild className="text-left">
-        <NavLink prefetch="intent" to="/collections/all" onClick={closeAside}>
-          Shop All Items
-        </NavLink>
-      </Button>
-      <Button size="lg" asChild className="text-left">
-        <NavLink to="/new" onClick={closeAside}>
-          New & Featured
-        </NavLink>
-      </Button>
-      <Button size="lg" asChild className="text-left">
-        <NavLink to="/help" onClick={closeAside}>
-          Info & Help
-        </NavLink>
-      </Button>
-
-      {/* TODO: should we just remove all this? This seems convoluted */}
-      {menu.items.map((item) => {
-        if (!item.url) return null;
-
-        const { url } = useRelativeUrl(item.url);
-
-        let size;
-        let contents;
-        if (item.title === "Info") {
-          contents = (
-            <Icon
-              name="info"
-              aria-label={item.title}
-              className="text-inherit"
-            />
-          );
-          size = "icon" as const;
-        } else {
-          size = "sm" as const;
-          contents = item.title;
-        }
-        return (
-          <Button key={item.id} asChild size={size}>
-            <NavLink
-              className="cursor-pointer uppercase"
-              end
-              onClick={closeAside}
-              prefetch="intent"
-              to={url}
-            >
-              {contents}
-            </NavLink>
-          </Button>
-        );
-      })}
-      <ThemeToggle />
-    </nav>
-  );
-}
-
-function MobileMenuLink(props: {
+type HeaderMenuLinkProps = {
   title: string;
   url: string;
   onClick?: NavLinkProps["onClick"];
-}) {
+};
+function HeaderMenuLink(props: HeaderMenuLinkProps) {
   const { url } = useRelativeUrl(props.url);
 
+  // Not my favorite, honestly might be better to just hardcode this data
+  // and not get it as data from Shopify
   let size;
   let contents;
-  if (props.title === "Info") {
+  if (props.title.toLowerCase().startsWith("info")) {
     contents = (
       <Icon name="info" aria-label={props.title} className="text-inherit" />
     );
     size = "icon" as const;
   } else {
     size = "sm" as const;
-    contents = props.title;
+    contents = props.title.split(" ")[0];
   }
 
   return (
@@ -159,6 +97,43 @@ function MobileMenuLink(props: {
         to={url}
       >
         {contents}
+      </NavLink>
+    </Button>
+  );
+}
+
+export function HeaderMenuMobile({ menu }: HeaderMenuProps) {
+  // force the drawer closed via a full page navigation
+  function closeAside(event: React.MouseEvent<HTMLAnchorElement>) {
+    event.preventDefault();
+    window.location.href = event.currentTarget.href;
+  }
+
+  return (
+    <nav className="flex h-full w-full flex-col gap-4">
+      {menu.items.map((item) => {
+        if (!item.url) return null;
+        return (
+          <HeaderMenuMobileLink
+            key={item.id}
+            title={item.title}
+            url={item.url}
+            onClick={closeAside}
+          />
+        );
+      })}
+      <ThemeToggle display="button" />
+    </nav>
+  );
+}
+
+function HeaderMenuMobileLink(props: HeaderMenuLinkProps) {
+  const { url } = useRelativeUrl(props.url);
+
+  return (
+    <Button size="lg" asChild className="text-left">
+      <NavLink prefetch="intent" to={url} onClick={props.onClick}>
+        {props.title}
       </NavLink>
     </Button>
   );

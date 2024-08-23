@@ -115,33 +115,46 @@ export const Button = forwardRef(
 Button.displayName = "Button";
 
 // For now just keep this thing separate, we can merge into the main button later if we want to
-export function ButtonWithWellText({
-  asChild,
-  intent = "secondary",
-  size = "sm",
-  disabled = false,
-  wellPrefix,
-  wellPostfix,
-  ...props
-}: ButtonProps & {
-  wellPrefix?: React.ReactNode;
-  wellPostfix?: React.ReactNode;
-}) {
-  const Comp = asChild ? Slot : "button";
+export const ButtonWithWellText = forwardRef(
+  (
+    {
+      asChild,
+      intent = "secondary",
+      size = "sm",
+      disabled = false,
+      wellPrefix,
+      wellPostfix,
+      ...props
+    }: ButtonProps & {
+      wellPrefix?: React.ReactNode;
+      wellPostfix?: React.ReactNode;
+    },
+    ref: React.Ref<HTMLDivElement>,
+  ) => {
+    const Comp = asChild ? Slot : "button";
 
-  return (
-    <div className={cn(well({ size }), "flex items-center gap-3")}>
-      {wellPrefix ? (
-        <div className="whitespace-nowrap pl-5 font-medium">{wellPrefix}</div>
-      ) : null}
-      <Comp
-        {...props}
-        className={cn(button({ intent, size, disabled }), props.className)}
-        disabled={disabled}
-      />
-      {wellPostfix ? (
-        <div className="whitespace-nowrap pr-5 font-medium">{wellPostfix}</div>
-      ) : null}
-    </div>
-  );
-}
+    return (
+      <div
+        ref={ref}
+        className={cn(
+          well({ size }),
+          "flex min-w-fit max-w-full items-center justify-between gap-3",
+        )}
+      >
+        {wellPrefix ? (
+          <div className="whitespace-nowrap pl-5 font-medium">{wellPrefix}</div>
+        ) : null}
+        <Comp
+          {...props}
+          className={cn(button({ intent, size, disabled }), props.className)}
+          disabled={disabled}
+        />
+        {wellPostfix ? (
+          <div className="whitespace-nowrap pr-5 font-medium">
+            {wellPostfix}
+          </div>
+        ) : null}
+      </div>
+    );
+  },
+);
