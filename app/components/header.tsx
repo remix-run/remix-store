@@ -1,5 +1,5 @@
-import type { CSSProperties } from "react";
 import { Suspense } from "react";
+import type { NavLinkProps } from "@remix-run/react";
 import { Await, NavLink } from "@remix-run/react";
 import { type CartViewPayload, useAnalytics } from "@shopify/hydrogen";
 import type {
@@ -10,161 +10,164 @@ import { useAside } from "~/components/aside";
 import { ThemeToggle } from "~/components/theme-toggle";
 import Icon from "~/components/icon";
 import { TitleLogo } from "~/components/title-logo";
-import { Button } from "~/components/ui/button";
-import { cn } from "~/lib";
+import { Button, ButtonWithWellText } from "~/components/ui/button";
+import { useRelativeUrl } from "~/ui/primitives/utils";
 
 interface HeaderProps {
-  header: HeaderQuery;
+  menu: NonNullable<HeaderQuery["menu"]>;
   cart: Promise<CartApiQueryFragment | null>;
   isLoggedIn: Promise<boolean>;
-  publicStoreDomain: string;
 }
 
-type Viewport = "desktop" | "mobile";
-
-export function Header({
-  header,
-  isLoggedIn,
-  cart,
-  publicStoreDomain,
-}: HeaderProps) {
-  const { shop, menu } = header;
+export function Header({ menu, isLoggedIn, cart }: HeaderProps) {
   return (
     <header
-      className={cn(
-        "sticky flex items-center justify-between",
-        "pb-5 pt-7",
-        "bg-neutral-200 dark:bg-neutral-800",
-        "text-neutral-800 dark:text-white",
-      )}
+      // TODO: make sticky
+      className="flex h-[var(--header-height)] items-center justify-between"
     >
-      <HeaderMenu
-        menu={menu}
-        viewport="desktop"
-        primaryDomainUrl={shop.primaryDomain.url}
-        publicStoreDomain={publicStoreDomain}
-      />
-      <NavLink
-        prefetch="intent"
-        to="/"
-        style={activeLinkStyle}
-        className="flex-grow text-center"
-        end
-      >
+      <HeaderMenu menu={menu} />
+      <NavLink prefetch="intent" to="/" className="flex-1 text-center" end>
         <TitleLogo />
       </NavLink>
-      <HeaderCtas isLoggedIn={isLoggedIn} cart={cart} />
+      <HeaderCartActions isLoggedIn={isLoggedIn} cart={cart} />
     </header>
   );
 }
 
-export function HeaderMenu({
-  menu,
-  primaryDomainUrl,
-  viewport,
-  publicStoreDomain,
-}: {
-  menu: HeaderProps["header"]["menu"];
-  primaryDomainUrl: HeaderProps["header"]["shop"]["primaryDomain"]["url"];
-  viewport: Viewport;
-  publicStoreDomain: HeaderProps["publicStoreDomain"];
-}) {
+type HeaderMenuProps = Pick<HeaderProps, "menu">;
+
+export function HeaderMenu({ menu }: HeaderMenuProps) {
   function closeAside(event: React.MouseEvent<HTMLAnchorElement>) {
-    if (viewport === "mobile") {
-      event.preventDefault();
-      window.location.href = event.currentTarget.href;
-    }
+    event.preventDefault();
+    window.location.href = event.currentTarget.href;
   }
 
   return (
     <>
-      <HeaderMenuMobileToggle />
-      <nav
-        className={cn({
-          "flex gap-4": true,
-          "flex-col": viewport === "mobile",
-          "hidden flex-row sm:flex": viewport === "desktop",
-        })}
-        role="navigation"
-      >
-        {viewport === "mobile" && (
-          <NavLink
-            end
-            onClick={closeAside}
-            prefetch="intent"
-            style={activeLinkStyle}
-            to="/"
-          >
-            Home
-          </NavLink>
-        )}
-        {(menu || FALLBACK_HEADER_MENU).items.map((item) => {
+      <div className="flex-1 md:hidden">
+        <HeaderMenuMobileToggle />
+      </div>
+      <nav className="hidden flex-1 md:flex md:gap-3" role="navigation">
+        {menu.items.map((item) => {
           if (!item.url) return null;
-
-          // if the url is internal, we strip the domain
-          const url =
-            item.url.includes("myshopify.com") ||
-            item.url.includes(publicStoreDomain) ||
-            item.url.includes(primaryDomainUrl)
-              ? new URL(item.url).pathname
-              : item.url;
-
-          let size;
-          let contents;
-          if (item.title === "Info") {
-            contents = (
-              <Icon
-                name="info"
-                aria-label={item.title}
-                className="text-inherit"
-              />
-            );
-            size = "icon" as const;
-          } else {
-            size = "sm" as const;
-            contents = item.title;
-          }
           return (
-            <Button key={item.id} asChild size={size}>
-              <NavLink
-                className="cursor-pointer uppercase"
-                end
-                onClick={closeAside}
-                prefetch="intent"
-                style={activeLinkStyle}
-                to={url}
-              >
-                {contents}
-              </NavLink>
-            </Button>
+            <HeaderMenuLink
+              key={item.id}
+              title={item.title}
+              url={item.url}
+              onClick={closeAside}
+            />
           );
         })}
-        <ThemeToggle />
+        <ThemeToggle display="icon" />
       </nav>
     </>
   );
 }
 
-function HeaderCtas({
-  isLoggedIn,
-  cart,
-}: Pick<HeaderProps, "isLoggedIn" | "cart">) {
+type HeaderMenuLinkProps = {
+  title: string;
+  url: string;
+  onClick?: NavLinkProps["onClick"];
+};
+function HeaderMenuLink(props: HeaderMenuLinkProps) {
+  const { url } = useRelativeUrl(props.url);
+
+  // Not my favorite, honestly might be better to just hardcode this data
+  // and not get it as data from Shopify
+  let size;
+  let contents;
+  if (props.title.toLowerCase().startsWith("info")) {
+    contents = (
+      <Icon name="info" aria-label={props.title} className="text-inherit" />
+    );
+    size = "icon" as const;
+  } else {
+    size = "sm" as const;
+    contents = props.title.split(" ")[0];
+  }
+
   return (
-    <div className="ml-auto flex items-center gap-4" role="navigation">
-      <Button size="icon">
-        <Icon name="globe" aria-label="currency" />
-      </Button>
-      <CartToggle cart={cart} />
-    </div>
+    <Button asChild size={size}>
+      <NavLink
+        className="cursor-pointer uppercase"
+        end
+        onClick={props.onClick}
+        prefetch="intent"
+        to={url}
+      >
+        {contents}
+      </NavLink>
+    </Button>
+  );
+}
+
+export function HeaderMenuMobile({ menu }: HeaderMenuProps) {
+  // force the drawer closed via a full page navigation
+  function closeAside(event: React.MouseEvent<HTMLAnchorElement>) {
+    event.preventDefault();
+    window.location.href = event.currentTarget.href;
+  }
+
+  return (
+    <nav className="flex h-full w-full flex-col gap-4">
+      {menu.items.map((item) => {
+        if (!item.url) return null;
+        return (
+          <HeaderMenuMobileLink
+            key={item.id}
+            title={item.title}
+            url={item.url}
+            onClick={closeAside}
+          />
+        );
+      })}
+      <ThemeToggle display="button" />
+    </nav>
+  );
+}
+
+function HeaderMenuMobileLink(props: HeaderMenuLinkProps) {
+  const { url } = useRelativeUrl(props.url);
+
+  return (
+    <Button size="lg" asChild className="text-left">
+      <NavLink prefetch="intent" to={url} onClick={props.onClick}>
+        {props.title}
+      </NavLink>
+    </Button>
   );
 }
 
 function HeaderMenuMobileToggle() {
   const { open } = useAside();
   return (
-    <button className="sm:hidden" onClick={() => open("mobile")}>
-      <h3>☰</h3>
-    </button>
+    <Button size="icon" className="md:hidden" onClick={() => open("mobile")}>
+      <Icon name="menu" aria-label="navigation menu" />
+    </Button>
+  );
+}
+
+function HeaderCartActions({ cart }: Pick<HeaderProps, "isLoggedIn" | "cart">) {
+  return (
+    <div className="flex flex-1 gap-3" role="navigation">
+      <div className="ml-auto hidden md:block">
+        {/* TODO: make interactive */}
+        <ButtonWithWellText size="icon" wellPrefix="🇺🇸 USD">
+          <Icon name="globe" aria-label="change currency" />
+        </ButtonWithWellText>
+      </div>
+      <div className="ml-auto md:ml-0">
+        <Suspense fallback={<CartBadge count={0} />}>
+          <Await resolve={cart}>
+            {(cart) => {
+              if (!cart) return <CartBadge count={0} />;
+              return <CartBadge count={cart.totalQuantity || 0} />;
+            }}
+          </Await>
+        </Suspense>
+      </div>
+    </div>
   );
 }
 
@@ -192,66 +195,4 @@ function CartBadge({ count }: { count: number }) {
       </a>
     </Button>
   );
-}
-
-function CartToggle({ cart }: Pick<HeaderProps, "cart">) {
-  return (
-    <Suspense fallback={<CartBadge count={0} />}>
-      <Await resolve={cart}>
-        {(cart) => {
-          if (!cart) return <CartBadge count={0} />;
-          return <CartBadge count={cart.totalQuantity || 0} />;
-        }}
-      </Await>
-    </Suspense>
-  );
-}
-
-const FALLBACK_HEADER_MENU = {
-  id: "gid://shopify/Menu/199655587896",
-  items: [
-    {
-      id: "gid://shopify/MenuItem/461609500728",
-      resourceId: null,
-      tags: [],
-      title: "Collections",
-      type: "HTTP",
-      url: "/collections",
-      items: [],
-    },
-    {
-      id: "gid://shopify/MenuItem/461609533496",
-      resourceId: null,
-      tags: [],
-      title: "Blog",
-      type: "HTTP",
-      url: "/blogs/journal",
-      items: [],
-    },
-    {
-      id: "gid://shopify/MenuItem/461609566264",
-      resourceId: null,
-      tags: [],
-      title: "Policies",
-      type: "HTTP",
-      url: "/policies",
-      items: [],
-    },
-    {
-      id: "gid://shopify/MenuItem/461609599032",
-      resourceId: "gid://shopify/Page/92591030328",
-      tags: [],
-      title: "About",
-      type: "PAGE",
-      url: "/pages/about",
-      items: [],
-    },
-  ],
-};
-
-function activeLinkStyle({ isActive }: { isActive: boolean }) {
-  return {
-    fontWeight: isActive ? "bold" : undefined,
-    pointerEvents: isActive ? "none" : undefined,
-  } satisfies CSSProperties;
 }

@@ -7,7 +7,7 @@ import type {
 } from "storefrontapi.generated";
 import { Aside } from "~/components/aside";
 import { Footer } from "~/components/footer";
-import { Header, HeaderMenu } from "~/components/header";
+import { Header, HeaderMenuMobile } from "~/components/header";
 import { CartMain } from "~/components/cart";
 import {
   PredictiveSearchForm,
@@ -19,7 +19,6 @@ interface PageLayoutProps {
   footer: Promise<FooterQuery | null>;
   header: HeaderQuery;
   isLoggedIn: Promise<boolean>;
-  publicStoreDomain: string;
   children?: React.ReactNode;
 }
 
@@ -29,27 +28,20 @@ export function PageLayout({
   footer,
   header,
   isLoggedIn,
-  publicStoreDomain,
 }: PageLayoutProps) {
   return (
     <div className="px-3 sm:px-9">
       <CartAside cart={cart} />
-      <SearchAside />
-      <MobileMenuAside header={header} publicStoreDomain={publicStoreDomain} />
-      {header && (
-        <Header
-          header={header}
-          cart={cart}
-          isLoggedIn={isLoggedIn}
-          publicStoreDomain={publicStoreDomain}
-        />
+      {/* <SearchAside /> */}
+
+      {header.menu && (
+        <>
+          <Header menu={header.menu} cart={cart} isLoggedIn={isLoggedIn} />
+          <MobileMenuAside menu={header.menu} />
+        </>
       )}
       <main>{children}</main>
-      <Footer
-        footer={footer}
-        header={header}
-        publicStoreDomain={publicStoreDomain}
-      />
+      <Footer footer={footer} />
     </div>
   );
 }
@@ -103,24 +95,16 @@ function SearchAside() {
   );
 }
 
-function MobileMenuAside({
-  header,
-  publicStoreDomain,
-}: {
-  header: PageLayoutProps["header"];
-  publicStoreDomain: PageLayoutProps["publicStoreDomain"];
-}) {
+// Still need to do
+// - Make header sticky
+// - Add filter and sorting header
+
+function MobileMenuAside({ menu }: { menu: NonNullable<HeaderQuery["menu"]> }) {
   return (
-    header.menu &&
-    header.shop.primaryDomain?.url && (
-      <Aside type="mobile" heading="MENU">
-        <HeaderMenu
-          menu={header.menu}
-          viewport="mobile"
-          primaryDomainUrl={header.shop.primaryDomain.url}
-          publicStoreDomain={publicStoreDomain}
-        />
-      </Aside>
-    )
+    <Aside type="mobile" heading="MENU" direction="left">
+      <div className="flex h-full w-full flex-col gap-4">
+        <HeaderMenuMobile menu={menu} />
+      </div>
+    </Aside>
   );
 }

@@ -184,7 +184,9 @@ export function Layout({ children }: { children?: React.ReactNode }) {
       </head>
       <body
         className={clsx(
-          "min-h-screen min-w-[100vw] overflow-x-hidden bg-neutral-200 antialiased dark:bg-neutral-800",
+          // I don't like this min width, I think it's wrong. Right now it's here to fix when you open the dropdown if you have scroll bars set to always be visible
+          "min-w-[100vw]",
+          "min-h-screen overflow-x-hidden bg-neutral-200 antialiased dark:bg-neutral-800",
           isOpen && "overflow-hidden",
         )}
       >

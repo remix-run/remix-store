@@ -7,7 +7,7 @@ import {
 } from "~/components/ui/dropdown-menu";
 import { Form, useLocation } from "@remix-run/react";
 import Icon from "./icon";
-import { Button } from "./ui/button";
+import { Button, ButtonWithWellText } from "./ui/button";
 
 const themeIconMap = {
   light: "sun",
@@ -15,7 +15,11 @@ const themeIconMap = {
   system: "computer",
 } as const;
 
-export function ThemeToggle() {
+export function ThemeToggle({
+  display = "icon",
+}: {
+  display: "icon" | "button";
+}) {
   const theme = useColorScheme();
   const location = useLocation();
 
@@ -23,11 +27,20 @@ export function ThemeToggle() {
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button size="icon">
-            <Icon name={themeIconMap[theme]} aria-label="Change theme" />
-          </Button>
+          {display === "icon" ? (
+            <Button size="icon">
+              <Icon name={themeIconMap[theme]} aria-label="Change theme" />
+            </Button>
+          ) : (
+            <ButtonWithWellText
+              size="icon"
+              wellPrefix={<div className="capitalize">view: {theme} mode</div>}
+            >
+              <Icon name="chevron-down" aria-label="Change theme" />
+            </ButtonWithWellText>
+          )}
         </DropdownMenuTrigger>
-        <DropdownMenuContent>
+        <DropdownMenuContent align={display === "icon" ? "center" : "end"}>
           <Form
             preventScrollReset
             replace

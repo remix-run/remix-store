@@ -31,6 +31,11 @@
     --aside-header-height: 110px;
     --aside-summary-height: 280px;
     --yamaha-shadow-color: theme(colors.neutral.50);
+    --header-height: 84px;
+
+    @screen sm {
+      --header-height: 110px;
+    }
   }
 
   .dark:root {

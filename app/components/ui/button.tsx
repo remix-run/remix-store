@@ -3,14 +3,6 @@ import { forwardRef } from "react";
 import { cn } from "~/lib";
 import { cva, type VariantProps } from "class-variance-authority";
 
-type ButtonVariantProps = VariantProps<typeof button>;
-
-interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  intent?: NonNullable<ButtonVariantProps["intent"]>;
-  size?: NonNullable<ButtonVariantProps["size"]>;
-  asChild?: boolean;
-}
-
 const button = cva(["block no-underline"], {
   variants: {
     intent: {
@@ -50,8 +42,14 @@ const button = cva(["block no-underline"], {
     {
       intent: "secondary",
       disabled: false,
+      className: ["shadow-yamaha-secondary"],
+    },
+    {
+      size: "lg",
+      intent: "secondary",
+      disabled: false,
       className: [
-        "shadow-yamaha-secondary text-black hover:text-black dark:text-white dark:hover:text-white",
+        "text-black hover:text-black dark:text-white dark:hover:text-white",
       ],
     },
     {
@@ -82,6 +80,14 @@ const well = cva(
   },
 );
 
+type ButtonVariantProps = VariantProps<typeof button>;
+
+interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  intent?: NonNullable<ButtonVariantProps["intent"]>;
+  size?: NonNullable<ButtonVariantProps["size"]>;
+  asChild?: boolean;
+}
+
 export const Button = forwardRef(
   (
     {
@@ -107,3 +113,48 @@ export const Button = forwardRef(
   },
 );
 Button.displayName = "Button";
+
+// For now just keep this thing separate, we can merge into the main button later if we want to
+export const ButtonWithWellText = forwardRef(
+  (
+    {
+      asChild,
+      intent = "secondary",
+      size = "sm",
+      disabled = false,
+      wellPrefix,
+      wellPostfix,
+      ...props
+    }: ButtonProps & {
+      wellPrefix?: React.ReactNode;
+      wellPostfix?: React.ReactNode;
+    },
+    ref: React.Ref<HTMLDivElement>,
+  ) => {
+    const Comp = asChild ? Slot : "button";
+
+    return (
+      <div
+        ref={ref}
+        className={cn(
+          well({ size }),
+          "flex min-w-fit max-w-full items-center justify-between gap-3",
+        )}
+      >
+        {wellPrefix ? (
+          <div className="whitespace-nowrap pl-5 font-medium">{wellPrefix}</div>
+        ) : null}
+        <Comp
+          {...props}
+          className={cn(button({ intent, size, disabled }), props.className)}
+          disabled={disabled}
+        />
+        {wellPostfix ? (
+          <div className="whitespace-nowrap pr-5 font-medium">
+            {wellPostfix}
+          </div>
+        ) : null}
+      </div>
+    );
+  },
+);

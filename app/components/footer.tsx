@@ -1,83 +1,47 @@
 import { Suspense } from "react";
 import { Await, Link } from "@remix-run/react";
-import type {
-  FooterQuery,
-  HeaderQuery,
-  MenuFragment,
-} from "storefrontapi.generated";
+import type { FooterQuery, MenuFragment } from "storefrontapi.generated";
 import clsx from "clsx";
+import { useRelativeUrl } from "~/ui/primitives/utils";
 
 interface FooterProps {
   footer: Promise<FooterQuery | null>;
-  header: HeaderQuery;
-  publicStoreDomain: string;
 }
 
-export function Footer({
-  footer: footerPromise,
-  header,
-  publicStoreDomain,
-}: FooterProps) {
+export function Footer({ footer: footerPromise }: FooterProps) {
   return (
-    <>
-      <footer className="min-h-24 py-12">
-        <Suspense>
-          <Await resolve={footerPromise}>
-            {(footer) => {
-              const primaryDomainUrl = header.shop.primaryDomain.url;
-              if (!footer) return null;
-              return (
-                <div
-                  className={clsx(
-                    "mb-16 flex justify-center",
-                    // mobile
-                    "flex-col gap-y-[40px]",
-                    // tablet
-                    "sm:flex-row sm:flex-wrap sm:gap-x-[100px] sm:gap-y-[50px] sm:text-left",
-                    // desktop
-                    "md:gap-x-[120px]",
-                  )}
-                >
-                  <FooterMenu
-                    menu={footer.remixShop}
-                    primaryDomainUrl={primaryDomainUrl}
-                    publicStoreDomain={publicStoreDomain}
-                  />
-                  <FooterMenu
-                    menu={footer.remixCommunity}
-                    primaryDomainUrl={primaryDomainUrl}
-                    publicStoreDomain={publicStoreDomain}
-                  />
-                  <FooterMenu
-                    menu={footer.remixResources}
-                    primaryDomainUrl={primaryDomainUrl}
-                    publicStoreDomain={publicStoreDomain}
-                  />
-                  <FooterMenu
-                    menu={footer.hydrogenResources}
-                    primaryDomainUrl={primaryDomainUrl}
-                    publicStoreDomain={publicStoreDomain}
-                  />
-                </div>
-              );
-            }}
-          </Await>
-        </Suspense>
-        <CopyrightContent />
-      </footer>
-    </>
+    <footer className="min-h-24 py-12">
+      <Suspense>
+        <Await resolve={footerPromise}>
+          {(footer) => {
+            if (!footer) return null;
+            return (
+              <div
+                className={clsx(
+                  "mb-16 flex justify-center",
+                  // mobile
+                  "flex-col gap-y-[40px]",
+                  // tablet
+                  "sm:flex-row sm:flex-wrap sm:gap-x-[100px] sm:gap-y-[50px] sm:text-left",
+                  // desktop
+                  "md:gap-x-[120px]",
+                )}
+              >
+                <FooterMenu menu={footer.remixShop} />
+                <FooterMenu menu={footer.remixCommunity} />
+                <FooterMenu menu={footer.remixResources} />
+                <FooterMenu menu={footer.hydrogenResources} />
+              </div>
+            );
+          }}
+        </Await>
+      </Suspense>
+      <CopyrightContent />
+    </footer>
   );
 }
 
-function FooterMenu({
-  menu,
-  primaryDomainUrl,
-  publicStoreDomain,
-}: {
-  menu: MenuFragment | undefined | null;
-  primaryDomainUrl: string;
-  publicStoreDomain: string;
-}) {
+function FooterMenu({ menu }: { menu: MenuFragment | undefined | null }) {
   // sometimes GraphQL and all the nullability drives me crazy
   if (!menu) return null;
 
@@ -88,30 +52,26 @@ function FooterMenu({
     >
       <h3 className="font-bold tracking-[-0.32px]">{menu.title}</h3>
       {menu.items.map((item) => {
-        if (!item.url) return null;
-        // if the url is internal, we strip the domain
-        const url =
-          item.url.includes("myshopify.com") ||
-          item.url.includes(publicStoreDomain) ||
-          item.url.includes(primaryDomainUrl)
-            ? new URL(item.url).pathname
-            : item.url;
-        const isExternal = !url.startsWith("/");
-        return (
-          <Link
-            key={item.id}
-            prefetch="intent"
-            to={url}
-            {...(isExternal
-              ? { target: "_blank", rel: "noopener noreferrer" }
-              : {})}
-            className="text-sm tracking-[-0.28px] text-black no-underline dark:text-white"
-          >
-            {item.title}
-          </Link>
-        );
+        const url = item.url;
+        if (!url) return null;
+        return <FooterLink key={item.id} {...item} url={url} />;
       })}
     </nav>
+  );
+}
+
+function FooterLink(props: { title: string; url: string }) {
+  const { url, isExternal } = useRelativeUrl(props.url);
+
+  return (
+    <Link
+      prefetch="intent"
+      to={url}
+      {...(isExternal ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+      className="text-sm tracking-[-0.28px] text-black no-underline dark:text-white"
+    >
+      {props.title}
+    </Link>
   );
 }
 
