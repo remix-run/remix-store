@@ -114,7 +114,7 @@ const Tag = ({ isSoldOut, isOnSale, isNew }: TagProps) => {
     }
     if (isOnSale) {
       return {
-        text: "ON SALE",
+        text: "SALE",
         styles: "text-red-brand",
       };
     }
