@@ -4,16 +4,31 @@ import type { RecommendedProductsQuery } from "storefrontapi.generated";
 import { Image } from "~/components/image";
 import { parseGradientColors } from "~/lib/metafields";
 import clsx from "clsx";
+import { cva } from "class-variance-authority";
 
 interface CollectionGridProps {
   products?: RecommendedProductsQuery["products"]["nodes"];
 }
 
 interface TagProps {
-  isSoldOut: boolean;
-  isOnSale: boolean;
-  isNew: boolean;
+  status: "soldOut" | "onSale" | "new" | "none";
 }
+
+const statusText = {
+  soldOut: "SOLD OUT",
+  onSale: "SALE",
+  new: "NEW",
+};
+
+const tagStyles = cva("absolute left-6 top-5 text-sm font-bold", {
+  variants: {
+    status: {
+      soldOut: "text-neutral-600 dark:text-neutral-300 opacity-50",
+      onSale: "text-red-brand",
+      new: "text-neutral-600 dark:text-neutral-300",
+    },
+  },
+});
 
 export function CollectionGrid({ products }: CollectionGridProps) {
   if (!products) return null;
@@ -58,8 +73,15 @@ export function CollectionItem({ product }: CollectionItemProps) {
   const compareAtPrice = firstVariant.compareAtPrice;
 
   const isOnSale = !!(compareAtPrice && price.amount < compareAtPrice.amount);
-  const isSoldOut = !availableForSale;
-  const isNew = tags.some((tag) => tag.toLowerCase() === "new");
+
+  let status: TagProps["status"] = "none";
+  if (!availableForSale) {
+    status = "soldOut";
+  } else if (isOnSale) {
+    status = "onSale";
+  } else if (tags.some((tag) => tag.toLowerCase() === "new")) {
+    status = "new";
+  }
 
   const gradients = parseGradientColors(product.gradientColors);
 
@@ -82,13 +104,13 @@ export function CollectionItem({ product }: CollectionItemProps) {
           sizes="(min-width: 45em) 20vw, 50vw"
         />
 
-        <Tag isSoldOut={isSoldOut} isOnSale={isOnSale} isNew={isNew} />
+        <Tag status={status} />
 
-        <div className="absolute bottom-5 grid pl-6">
+        <div className="absolute bottom-5 pl-6">
           <h3 className="mb-2 text-xs font-bold tracking-[-0.96px] md:text-2xl">
             {title}
           </h3>
-          <small className="flex gap-2">
+          <small className="flex gap-2 text-xs">
             <Money data={price} withoutTrailingZeros />
             {isOnSale && (
               <Money
@@ -104,41 +126,7 @@ export function CollectionItem({ product }: CollectionItemProps) {
   );
 }
 
-const Tag = ({ isSoldOut, isOnSale, isNew }: TagProps) => {
-  const getTagInfo = () => {
-    if (isSoldOut) {
-      return {
-        text: "SOLD OUT",
-        styles: "text-neutral-600 dark:text-neutral-300 opacity-50",
-      };
-    }
-    if (isOnSale) {
-      return {
-        text: "SALE",
-        styles: "text-red-brand",
-      };
-    }
-    if (isNew) {
-      return {
-        text: "NEW",
-        styles: "text-neutral-600 dark:text-neutral-300",
-      };
-    }
-    return null;
-  };
-
-  const tagInfo = getTagInfo();
-
-  if (!tagInfo) return null;
-
-  return (
-    <span
-      className={clsx(
-        "absolute left-6 top-5 text-sm font-bold",
-        tagInfo.styles,
-      )}
-    >
-      {tagInfo.text}
-    </span>
-  );
+const Tag = ({ status }: TagProps) => {
+  if (status === "none") return null;
+  return <span className={tagStyles({ status })}>{statusText[status]}</span>;
 };
