@@ -31,10 +31,7 @@ interface HeaderProps {
 
 export function Header({ menu, cart }: HeaderProps) {
   return (
-    <header
-      // TODO: make sticky
-      className="flex h-[var(--header-height)] items-center justify-between"
-    >
+    <header className="sticky top-0 z-50 flex h-[var(--header-height)] items-center justify-between bg-neutral-200 dark:bg-neutral-800">
       <HeaderMenu menu={menu} />
       <NavLink prefetch="intent" to="/" className="flex-1 text-center" end>
         <TitleLogo />
