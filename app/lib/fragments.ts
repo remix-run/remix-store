@@ -301,6 +301,8 @@ export const PRODUCT_ITEM_FRAGMENT = `#graphql
     id
     handle
     title
+    tags
+    availableForSale
     featuredImage {
       ...ProductImage
     }
@@ -322,6 +324,14 @@ export const PRODUCT_ITEM_FRAGMENT = `#graphql
         selectedOptions {
           name
           value
+        }
+        price {
+          amount
+          currencyCode
+        }
+        compareAtPrice {
+          amount
+          currencyCode
         }
       }
     }
