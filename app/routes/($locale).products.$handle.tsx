@@ -176,7 +176,7 @@ function ProductImages({
 }) {
   const gradients = parseGradientColors(gradientColors);
   return (
-    <div>
+    <div className="flex flex-col gap-3">
       {images.map((image) => {
         if (!image) return null;
         const gradient = gradients.shift() ?? "random";
@@ -199,18 +199,16 @@ function ProductImage({
     return null;
   }
   return (
-    <div className="mb-3">
-      <div className="aspect-ratio relative isolate overflow-hidden rounded-3xl">
-        <Image
-          alt={image.altText || "Product Image"}
-          aspectRatio="1/1"
-          data={image}
-          key={image.id}
-          gradient={gradient}
-          gradientFade={true}
-          sizes="(min-width: 45em) 50vw, 100vw"
-        />
-      </div>
+    <div className="aspect-ratio relative isolate overflow-hidden rounded-3xl">
+      <Image
+        alt={image.altText || "Product Image"}
+        aspectRatio="1/1"
+        data={image}
+        key={image.id}
+        gradient={gradient}
+        gradientFade={true}
+        sizes="(min-width: 45em) 50vw, 100vw"
+      />
     </div>
   );
 }
