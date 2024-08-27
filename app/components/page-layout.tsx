@@ -22,12 +22,12 @@ export function PageLayout({
   isLoggedIn,
 }: PageLayoutProps) {
   return (
-    <div className="px-3 sm:px-9">
+    <>
       {header.menu && (
         <Header menu={header.menu} cart={cart} isLoggedIn={isLoggedIn} />
       )}
-      <main>{children}</main>
+      <main className="px-3 sm:px-9">{children}</main>
       <Footer footer={footer} />
-    </div>
+    </>
   );
 }
