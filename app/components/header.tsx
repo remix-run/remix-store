@@ -31,7 +31,7 @@ interface HeaderProps {
 
 export function Header({ menu, cart }: HeaderProps) {
   return (
-    <header className="sticky top-0 z-50 flex h-[var(--header-height)] items-center justify-between bg-neutral-200 dark:bg-neutral-800">
+    <header className="sticky top-0 z-10 flex h-[var(--header-height)] items-center justify-between bg-neutral-200 dark:bg-neutral-800">
       <HeaderMenu menu={menu} />
       <NavLink prefetch="intent" to="/" className="flex-1 text-center" end>
         <TitleLogo />
