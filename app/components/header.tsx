@@ -11,16 +11,17 @@ import { ThemeToggle } from "~/components/theme-toggle";
 import Icon from "~/components/icon";
 import { TitleLogo } from "~/components/title-logo";
 import { Button, ButtonWithWellText } from "~/components/ui/button";
-import { useRelativeUrl } from "~/ui/primitives/utils";
+import { useHydrated, useRelativeUrl } from "~/ui/primitives/utils";
 import {
   Sheet,
+  SheetBody,
   SheetContent,
   SheetDescription,
-  SheetFooter,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
 } from "~/components/ui/sheet";
+import { CartMain } from "./cart";
 
 interface HeaderProps {
   menu: NonNullable<HeaderQuery["menu"]>;
@@ -28,7 +29,7 @@ interface HeaderProps {
   isLoggedIn: Promise<boolean>;
 }
 
-export function Header({ menu, isLoggedIn, cart }: HeaderProps) {
+export function Header({ menu, cart }: HeaderProps) {
   return (
     <header
       // TODO: make sticky
@@ -38,7 +39,7 @@ export function Header({ menu, isLoggedIn, cart }: HeaderProps) {
       <NavLink prefetch="intent" to="/" className="flex-1 text-center" end>
         <TitleLogo />
       </NavLink>
-      <HeaderCartActions isLoggedIn={isLoggedIn} cart={cart} />
+      <HeaderCartActions cart={cart} />
     </header>
   );
 }
@@ -157,7 +158,9 @@ function HeaderMenuMobileToggle() {
   );
 }
 
-function HeaderCartActions({ cart }: Pick<HeaderProps, "isLoggedIn" | "cart">) {
+// TODO: fix focus management
+
+function HeaderCartActions({ cart }: Pick<HeaderProps, "cart">) {
   return (
     <div className="flex flex-1 gap-3" role="navigation">
       <div className="ml-auto hidden md:block">
@@ -169,10 +172,24 @@ function HeaderCartActions({ cart }: Pick<HeaderProps, "isLoggedIn" | "cart">) {
       <div className="ml-auto md:ml-0">
         <Suspense fallback={<CartBadge count={0} />}>
           <Await resolve={cart}>
-            {(cart) => {
-              if (!cart) return <CartBadge count={0} />;
-              return <CartBadge count={cart.totalQuantity || 0} />;
-            }}
+            {(cart) => (
+              <Sheet>
+                <SheetTrigger>
+                  <CartBadge count={cart?.totalQuantity || 0} />
+                </SheetTrigger>
+                <SheetContent>
+                  <SheetHeader>
+                    <SheetTitle>Your Cart</SheetTitle>
+                  </SheetHeader>
+                  <SheetDescription className="sr-only">
+                    Your cart with {cart?.totalQuantity} items
+                  </SheetDescription>
+                  <SheetBody>
+                    <CartMain cart={cart!} layout="aside" />
+                  </SheetBody>
+                </SheetContent>
+              </Sheet>
+            )}
           </Await>
         </Suspense>
       </div>
@@ -181,51 +198,32 @@ function HeaderCartActions({ cart }: Pick<HeaderProps, "isLoggedIn" | "cart">) {
 }
 
 function CartBadge({ count }: { count: number }) {
-  const { open } = useAside();
   const { publish, shop, cart, prevCart } = useAnalytics();
+  const isHydrated = useHydrated();
 
-  return (
-    <Sheet open>
-      <SheetTrigger asChild>
-        <Button
-          className="flex gap-2"
-          intent={count > 0 ? "primary" : "secondary"}
-        >
-          <Icon name="bag" className="text-inherit" aria-label="cart" /> {count}
-        </Button>
-      </SheetTrigger>
-      <SheetContent>
-        <SheetHeader>
-          <SheetTitle>Your Cart</SheetTitle>
-        </SheetHeader>
-        <SheetDescription>
-          This action cannot be undone. This will permanently delete your
-          account and remove your data from our servers.
-          <Button>Click me</Button>
-        </SheetDescription>
-        <SheetFooter>Stuff that goes in the footer</SheetFooter>
-      </SheetContent>
-    </Sheet>
+  const inner = (
+    <div className="flex gap-2">
+      <Icon name="bag" className="text-inherit" aria-label="cart" /> {count}
+    </div>
   );
 
   return (
-    <Button asChild intent={count > 0 ? "primary" : "secondary"}>
-      <a
-        href="/cart"
-        className={"flex gap-2"}
-        onClick={(e) => {
-          e.preventDefault();
-          open("cart");
-          publish("cart_viewed", {
-            cart,
-            prevCart,
-            shop,
-            url: window.location.href || "",
-          } as CartViewPayload);
-        }}
-      >
-        <Icon name="bag" className="text-inherit" aria-label="cart" /> {count}
-      </a>
+    <Button
+      asChild
+      intent={count > 0 ? "primary" : "secondary"}
+      onClick={() => {
+        publish("cart_viewed", {
+          cart,
+          prevCart,
+          shop,
+          url: window.location.href || "",
+        } as CartViewPayload);
+      }}
+    >
+      {
+        // clicking the button before hydration will navigate to the cart page
+        !isHydrated ? <a href="/cart">{inner}</a> : inner
+      }
     </Button>
   );
 }

@@ -29,13 +29,13 @@ const SheetOverlay = React.forwardRef<
 SheetOverlay.displayName = SheetPrimitive.Overlay.displayName;
 
 const sheetVariants = cva(
-  "fixed z-50 gap-4 bg-white shadow-lg transition ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:duration-300 data-[state=open]:duration-500 dark:bg-neutral-900",
+  "fixed z-50 w-full gap-4 overflow-hidden bg-neutral-200 transition ease-in-out data-[state=closed]:duration-300 data-[state=open]:duration-500 data-[state=open]:animate-in data-[state=closed]:animate-out dark:bg-neutral-800",
   {
     variants: {
       side: {
-        left: "inset-y-0 left-0 h-full w-3/4 data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left sm:max-w-sm",
+        left: "inset-y-0 left-0 h-full w-3/4 rounded-r-3xl data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left sm:max-w-[var(--aside-width)]",
         right:
-          "inset-y-0 right-0 h-full w-3/4 data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right sm:max-w-sm",
+          "inset-y-0 right-0 h-full w-3/4 rounded-l-3xl data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right sm:max-w-[var(--aside-width)]",
       },
     },
     defaultVariants: {
@@ -74,7 +74,7 @@ const SheetHeader = ({
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
     className={cn(
-      "flex h-[110px] flex-row items-center justify-between bg-neutral-200 px-9 text-center sm:text-left dark:bg-neutral-700",
+      "flex h-[var(--aside-header-height)] flex-row items-center justify-between bg-neutral-200 px-9 text-center sm:text-left dark:bg-neutral-700",
       className,
     )}
     {...props}
@@ -87,6 +87,20 @@ const SheetHeader = ({
   </div>
 );
 SheetHeader.displayName = "SheetHeader";
+
+const SheetBody = ({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement>) => (
+  <div
+    className={cn(
+      "h-[calc(100vh_-_var(--aside-header-height))] p-9",
+      className,
+    )}
+    {...props}
+  />
+);
+SheetBody.displayName = "SheetBody";
 
 const SheetFooter = ({
   className,
@@ -137,6 +151,7 @@ export {
   SheetClose,
   SheetContent,
   SheetHeader,
+  SheetBody,
   SheetFooter,
   SheetTitle,
   SheetDescription,

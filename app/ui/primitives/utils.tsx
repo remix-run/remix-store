@@ -1,5 +1,9 @@
 import { useRouteLoaderData } from "@remix-run/react";
-import { useEffect, useLayoutEffect as React_useLayoutEffect } from "react";
+import {
+  useEffect,
+  useLayoutEffect as React_useLayoutEffect,
+  useSyncExternalStore,
+} from "react";
 import type { loader as rootLoader } from "~/root";
 
 export const canUseDOM = !!(
@@ -32,4 +36,18 @@ export function useRelativeUrl(ogUrl: string) {
   const isExternal = !url.startsWith("/");
 
   return { url, isExternal };
+}
+
+// Taken from https://github.com/sergiodxa/remix-utils/blob/main/src/react/use-hydrated.ts#L25
+
+function subscribe() {
+  return () => {};
+}
+
+export function useHydrated() {
+  return useSyncExternalStore(
+    subscribe,
+    () => true,
+    () => false,
+  );
 }
