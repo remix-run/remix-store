@@ -80,9 +80,10 @@ function CartDetails({
   return (
     <div className={clsx("h-full flex-col", hidden ? "hidden" : "flex")}>
       <p className="h-14">
-        There are{" "}
-        <strong>{cart.isOptimistic ? "XX" : cart.totalQuantity}</strong> items
-        in this cart
+        <strong className="font-bold">
+          {cart.isOptimistic ? "XX" : cart.totalQuantity}
+        </strong>{" "}
+        {cart.totalQuantity === 1 ? "item" : "item(s)"} in this cart
       </p>
       <CartLines lines={cart?.lines?.nodes} layout={layout} />
       {cartHasItems && (
@@ -154,7 +155,7 @@ function CartLineItem({
 
       <div className="ml-6 flex flex-col">
         <Link
-          prefetch="intent"
+          // prefetch="intent"
           className="no-underline"
           to={lineItemUrl}
           onClick={() => {

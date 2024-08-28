@@ -6,7 +6,6 @@ import type {
   HeaderQuery,
   CartApiQueryFragment,
 } from "storefrontapi.generated";
-import { useAside } from "~/components/aside";
 import { ThemeToggle } from "~/components/theme-toggle";
 import Icon from "~/components/icon";
 import { TitleLogo } from "~/components/title-logo";
@@ -55,7 +54,7 @@ export function HeaderMenu({ menu }: HeaderMenuProps) {
   return (
     <>
       <div className="flex-1 md:hidden">
-        <HeaderMenuMobileToggle />
+        <HeaderMenuMobileToggle menu={menu} />
       </div>
       <nav className="hidden flex-1 md:flex md:gap-3" role="navigation">
         {menu.items.map((item) => {
@@ -112,7 +111,7 @@ function HeaderMenuLink(props: HeaderMenuLinkProps) {
   );
 }
 
-export function HeaderMenuMobile({ menu }: HeaderMenuProps) {
+function HeaderMenuMobileToggle({ menu }: HeaderMenuProps) {
   // force the drawer closed via a full page navigation
   function closeAside(event: React.MouseEvent<HTMLAnchorElement>) {
     event.preventDefault();
@@ -120,20 +119,35 @@ export function HeaderMenuMobile({ menu }: HeaderMenuProps) {
   }
 
   return (
-    <nav className="flex h-full w-full flex-col gap-4">
-      {menu.items.map((item) => {
-        if (!item.url) return null;
-        return (
-          <HeaderMenuMobileLink
-            key={item.id}
-            title={item.title}
-            url={item.url}
-            onClick={closeAside}
-          />
-        );
-      })}
-      <ThemeToggle display="button" />
-    </nav>
+    <Sheet>
+      <SheetTrigger asChild>
+        <Button size="icon" className="md:hidden">
+          <Icon name="menu" aria-label="navigation menu" />
+        </Button>
+      </SheetTrigger>
+      <SheetContent side="left">
+        <SheetHeader>
+          <SheetTitle>Menu</SheetTitle>
+        </SheetHeader>
+        <SheetDescription className="sr-only">navigation menu</SheetDescription>
+        <SheetBody>
+          <nav className="flex h-full w-full flex-col gap-4">
+            {menu.items.map((item) => {
+              if (!item.url) return null;
+              return (
+                <HeaderMenuMobileLink
+                  key={item.id}
+                  title={item.title}
+                  url={item.url}
+                  onClick={closeAside}
+                />
+              );
+            })}
+            <ThemeToggle display="button" />
+          </nav>
+        </SheetBody>
+      </SheetContent>
+    </Sheet>
   );
 }
 
@@ -142,23 +156,16 @@ function HeaderMenuMobileLink(props: HeaderMenuLinkProps) {
 
   return (
     <Button size="lg" asChild className="text-left">
-      <NavLink prefetch="intent" to={url} onClick={props.onClick}>
+      <NavLink
+        // prefetch="intent"
+        to={url}
+        onClick={props.onClick}
+      >
         {props.title}
       </NavLink>
     </Button>
   );
 }
-
-function HeaderMenuMobileToggle() {
-  const { open } = useAside();
-  return (
-    <Button size="icon" className="md:hidden" onClick={() => open("mobile")}>
-      <Icon name="menu" aria-label="navigation menu" />
-    </Button>
-  );
-}
-
-// TODO: fix focus management
 
 function HeaderCartActions({ cart }: Pick<HeaderProps, "cart">) {
   return (

@@ -7,7 +7,7 @@ import type {
 } from "storefrontapi.generated";
 import { Aside } from "~/components/aside";
 import { Footer } from "~/components/footer";
-import { Header, HeaderMenuMobile } from "~/components/header";
+import { Header } from "~/components/header";
 import { CartMain } from "~/components/cart";
 import {
   PredictiveSearchForm,
@@ -31,13 +31,13 @@ export function PageLayout({
 }: PageLayoutProps) {
   return (
     <div className="px-3 sm:px-9">
-      <CartAside cart={cart} />
+      {/* <CartAside cart={cart} /> */}
       {/* <SearchAside /> */}
 
       {header.menu && (
         <>
           <Header menu={header.menu} cart={cart} isLoggedIn={isLoggedIn} />
-          <MobileMenuAside menu={header.menu} />
+          {/* <MobileMenuAside menu={header.menu} /> */}
         </>
       )}
       <main>{children}</main>
@@ -90,20 +90,6 @@ function SearchAside() {
           )}
         </PredictiveSearchForm>
         <PredictiveSearchResults />
-      </div>
-    </Aside>
-  );
-}
-
-// Still need to do
-// - Make header sticky
-// - Add filter and sorting header
-
-function MobileMenuAside({ menu }: { menu: NonNullable<HeaderQuery["menu"]> }) {
-  return (
-    <Aside type="mobile" heading="MENU" direction="left">
-      <div className="flex h-full w-full flex-col gap-4">
-        <HeaderMenuMobile menu={menu} />
       </div>
     </Aside>
   );

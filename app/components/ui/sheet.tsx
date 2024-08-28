@@ -1,4 +1,4 @@
-import * as React from "react";
+import { forwardRef } from "react";
 import * as SheetPrimitive from "@radix-ui/react-dialog";
 import { cva, type VariantProps } from "class-variance-authority";
 
@@ -13,7 +13,7 @@ const SheetClose = SheetPrimitive.Close;
 
 const SheetPortal = SheetPrimitive.Portal;
 
-const SheetOverlay = React.forwardRef<
+const SheetOverlay = forwardRef<
   React.ElementRef<typeof SheetPrimitive.Overlay>,
   React.ComponentPropsWithoutRef<typeof SheetPrimitive.Overlay>
 >(({ className, ...props }, ref) => (
@@ -29,13 +29,13 @@ const SheetOverlay = React.forwardRef<
 SheetOverlay.displayName = SheetPrimitive.Overlay.displayName;
 
 const sheetVariants = cva(
-  "fixed z-50 w-full gap-4 overflow-hidden bg-neutral-200 transition ease-in-out data-[state=closed]:duration-300 data-[state=open]:duration-500 data-[state=open]:animate-in data-[state=closed]:animate-out dark:bg-neutral-800",
+  "fixed z-50 h-full w-full gap-4 overflow-hidden bg-neutral-200 transition ease-in-out data-[state=closed]:duration-300 data-[state=open]:duration-500 data-[state=open]:animate-in data-[state=closed]:animate-out sm:max-w-[var(--aside-width)] dark:bg-neutral-800",
   {
     variants: {
       side: {
-        left: "inset-y-0 left-0 h-full w-3/4 rounded-r-3xl data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left sm:max-w-[var(--aside-width)]",
+        left: "inset-y-0 left-0 rounded-r-3xl data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left ",
         right:
-          "inset-y-0 right-0 h-full w-3/4 rounded-l-3xl data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right sm:max-w-[var(--aside-width)]",
+          "inset-y-0 right-0 rounded-l-3xl data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right ",
       },
     },
     defaultVariants: {
@@ -48,7 +48,7 @@ interface SheetContentProps
   extends React.ComponentPropsWithoutRef<typeof SheetPrimitive.Content>,
     VariantProps<typeof sheetVariants> {}
 
-const SheetContent = React.forwardRef<
+const SheetContent = forwardRef<
   React.ElementRef<typeof SheetPrimitive.Content>,
   SheetContentProps
 >(({ side = "right", className, children, ...props }, ref) => {
@@ -102,21 +102,7 @@ const SheetBody = ({
 );
 SheetBody.displayName = "SheetBody";
 
-const SheetFooter = ({
-  className,
-  ...props
-}: React.HTMLAttributes<HTMLDivElement>) => (
-  <div
-    className={cn(
-      "flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2",
-      className,
-    )}
-    {...props}
-  />
-);
-SheetFooter.displayName = "SheetFooter";
-
-const SheetTitle = React.forwardRef<
+const SheetTitle = forwardRef<
   React.ElementRef<typeof SheetPrimitive.Title>,
   React.ComponentPropsWithoutRef<typeof SheetPrimitive.Title>
 >(({ className, ...props }, ref) => (
@@ -131,7 +117,7 @@ const SheetTitle = React.forwardRef<
 ));
 SheetTitle.displayName = SheetPrimitive.Title.displayName;
 
-const SheetDescription = React.forwardRef<
+const SheetDescription = forwardRef<
   React.ElementRef<typeof SheetPrimitive.Description>,
   React.ComponentPropsWithoutRef<typeof SheetPrimitive.Description>
 >(({ className, ...props }, ref) => (
@@ -152,7 +138,6 @@ export {
   SheetContent,
   SheetHeader,
   SheetBody,
-  SheetFooter,
   SheetTitle,
   SheetDescription,
 };
