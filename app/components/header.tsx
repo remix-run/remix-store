@@ -12,6 +12,15 @@ import Icon from "~/components/icon";
 import { TitleLogo } from "~/components/title-logo";
 import { Button, ButtonWithWellText } from "~/components/ui/button";
 import { useRelativeUrl } from "~/ui/primitives/utils";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "~/components/ui/sheet";
 
 interface HeaderProps {
   menu: NonNullable<HeaderQuery["menu"]>;
@@ -174,6 +183,30 @@ function HeaderCartActions({ cart }: Pick<HeaderProps, "isLoggedIn" | "cart">) {
 function CartBadge({ count }: { count: number }) {
   const { open } = useAside();
   const { publish, shop, cart, prevCart } = useAnalytics();
+
+  return (
+    <Sheet open>
+      <SheetTrigger asChild>
+        <Button
+          className="flex gap-2"
+          intent={count > 0 ? "primary" : "secondary"}
+        >
+          <Icon name="bag" className="text-inherit" aria-label="cart" /> {count}
+        </Button>
+      </SheetTrigger>
+      <SheetContent>
+        <SheetHeader>
+          <SheetTitle>Your Cart</SheetTitle>
+        </SheetHeader>
+        <SheetDescription>
+          This action cannot be undone. This will permanently delete your
+          account and remove your data from our servers.
+          <Button>Click me</Button>
+        </SheetDescription>
+        <SheetFooter>Stuff that goes in the footer</SheetFooter>
+      </SheetContent>
+    </Sheet>
+  );
 
   return (
     <Button asChild intent={count > 0 ? "primary" : "secondary"}>
