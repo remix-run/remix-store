@@ -12,14 +12,15 @@ import { TitleLogo } from "~/components/title-logo";
 import { Button, ButtonWithWellText } from "~/components/ui/button";
 import { useHydrated, useRelativeUrl } from "~/ui/primitives/utils";
 import {
-  Sheet,
-  SheetBody,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "~/components/ui/sheet";
+  Aside,
+  AsideBody,
+  AsideContent,
+  AsideDescription,
+  AsideHeader,
+  AsideTitle,
+  AsideTrigger,
+  useAside,
+} from "~/components/ui/aside";
 import { CartMain } from "./cart";
 
 interface HeaderProps {
@@ -45,7 +46,7 @@ export function Header({ menu, cart }: HeaderProps) {
 
 type HeaderMenuProps = Pick<HeaderProps, "menu">;
 
-export function HeaderMenu({ menu }: HeaderMenuProps) {
+function HeaderMenu({ menu }: HeaderMenuProps) {
   function closeAside(event: React.MouseEvent<HTMLAnchorElement>) {
     event.preventDefault();
     window.location.href = event.currentTarget.href;
@@ -119,18 +120,18 @@ function HeaderMenuMobileToggle({ menu }: HeaderMenuProps) {
   }
 
   return (
-    <Sheet>
-      <SheetTrigger asChild>
+    <Aside>
+      <AsideTrigger asChild>
         <Button size="icon" className="md:hidden">
           <Icon name="menu" aria-label="navigation menu" />
         </Button>
-      </SheetTrigger>
-      <SheetContent side="left">
-        <SheetHeader>
-          <SheetTitle>Menu</SheetTitle>
-        </SheetHeader>
-        <SheetDescription className="sr-only">navigation menu</SheetDescription>
-        <SheetBody>
+      </AsideTrigger>
+      <AsideContent side="left">
+        <AsideHeader>
+          <AsideTitle>Menu</AsideTitle>
+        </AsideHeader>
+        <AsideDescription className="sr-only">navigation menu</AsideDescription>
+        <AsideBody>
           <nav className="flex h-full w-full flex-col gap-4">
             {menu.items.map((item) => {
               if (!item.url) return null;
@@ -145,9 +146,9 @@ function HeaderMenuMobileToggle({ menu }: HeaderMenuProps) {
             })}
             <ThemeToggle display="button" />
           </nav>
-        </SheetBody>
-      </SheetContent>
-    </Sheet>
+        </AsideBody>
+      </AsideContent>
+    </Aside>
   );
 }
 
@@ -168,6 +169,9 @@ function HeaderMenuMobileLink(props: HeaderMenuLinkProps) {
 }
 
 function HeaderCartActions({ cart }: Pick<HeaderProps, "cart">) {
+  // needs to be a controlled component so we can trigger it from add to cart buttons
+  const aside = useAside();
+
   return (
     <div className="flex flex-1 gap-3" role="navigation">
       <div className="ml-auto hidden md:block">
@@ -180,22 +184,25 @@ function HeaderCartActions({ cart }: Pick<HeaderProps, "cart">) {
         <Suspense fallback={<CartBadge count={0} />}>
           <Await resolve={cart}>
             {(cart) => (
-              <Sheet>
-                <SheetTrigger>
+              <Aside
+                open={aside.type === "cart"}
+                onOpenChange={(open) => aside.open(open ? "cart" : "none")}
+              >
+                <AsideTrigger>
                   <CartBadge count={cart?.totalQuantity || 0} />
-                </SheetTrigger>
-                <SheetContent>
-                  <SheetHeader>
-                    <SheetTitle>Your Cart</SheetTitle>
-                  </SheetHeader>
-                  <SheetDescription className="sr-only">
+                </AsideTrigger>
+                <AsideContent>
+                  <AsideHeader>
+                    <AsideTitle>Your Cart</AsideTitle>
+                  </AsideHeader>
+                  <AsideDescription className="sr-only">
                     Your cart with {cart?.totalQuantity} items
-                  </SheetDescription>
-                  <SheetBody>
+                  </AsideDescription>
+                  <AsideBody>
                     <CartMain cart={cart!} layout="aside" />
-                  </SheetBody>
-                </SheetContent>
-              </Sheet>
+                  </AsideBody>
+                </AsideContent>
+              </Aside>
             )}
           </Await>
         </Suspense>
