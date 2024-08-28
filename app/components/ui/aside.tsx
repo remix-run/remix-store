@@ -54,9 +54,9 @@ const asideVariants = cva(
   {
     variants: {
       side: {
-        left: "inset-y-0 left-0 rounded-r-3xl data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left ",
+        left: "inset-y-0 left-0 sm:rounded-r-3xl data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left ",
         right:
-          "inset-y-0 right-0 rounded-l-3xl data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right ",
+          "inset-y-0 right-0 sm:rounded-l-3xl data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right ",
       },
     },
     defaultVariants: {

@@ -21,7 +21,7 @@ import {
   AsideTrigger,
   useAside,
 } from "~/components/ui/aside";
-import { CartMain } from "./cart";
+import { CartMain } from "~/components/cart";
 
 interface HeaderProps {
   menu: NonNullable<HeaderQuery["menu"]>;
@@ -157,11 +157,7 @@ function HeaderMenuMobileLink(props: HeaderMenuLinkProps) {
 
   return (
     <Button size="lg" asChild className="text-left">
-      <NavLink
-        // prefetch="intent"
-        to={url}
-        onClick={props.onClick}
-      >
+      <NavLink to={url} onClick={props.onClick}>
         {props.title}
       </NavLink>
     </Button>

@@ -155,7 +155,7 @@ function CartLineItem({
 
       <div className="ml-6 flex flex-col">
         <Link
-          // prefetch="intent"
+          prefetch="intent"
           className="no-underline"
           to={lineItemUrl}
           onClick={() => {
