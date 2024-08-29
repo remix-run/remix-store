@@ -1,3 +1,4 @@
+import React, { useRef } from "react";
 import {
   CartForm,
   Money,
@@ -11,9 +12,9 @@ import type { CartApiQueryFragment } from "storefrontapi.generated";
 import { useVariantUrl } from "~/lib/variants";
 import { Image } from "~/components/image";
 import { parseGradientColors } from "~/lib/metafields";
+import { AsideDescription } from "~/components/ui/aside";
 import { Button } from "~/components/ui/button";
 import Icon from "~/components/icon";
-import { useRef } from "react";
 import clsx from "clsx";
 import { cn } from "~/lib";
 
@@ -46,7 +47,7 @@ function CartEmpty({
   const ctaUrl = "/collections/all";
   return (
     <div className={clsx("h-full w-full flex-col", hidden ? "hidden" : "flex")}>
-      <p>There are no items in this cart.</p>
+      <CartItems layout={layout}>There are no items in this cart.</CartItems>
       <div className="mt-auto">
         <Button intent="secondary" size="lg" asChild>
           <Link
@@ -79,12 +80,12 @@ function CartDetails({
 
   return (
     <div className={clsx("h-full flex-col", hidden ? "hidden" : "flex")}>
-      <p className="h-14">
+      <CartItems layout={layout}>
         <strong className="font-bold">
           {cart.isOptimistic ? "XX" : cart.totalQuantity}
         </strong>{" "}
         {cart.totalQuantity === 1 ? "item" : "item(s)"} in this cart
-      </p>
+      </CartItems>
       <CartLines lines={cart?.lines?.nodes} layout={layout} />
       {cartHasItems && (
         <CartSummary layout={layout}>
@@ -95,6 +96,21 @@ function CartDetails({
       )}
     </div>
   );
+}
+
+function CartItems({
+  layout,
+  children,
+}: Pick<CartMainProps, "layout"> & { children: React.ReactNode }) {
+  if (layout === "aside") {
+    return (
+      <AsideDescription asChild>
+        <p className="h-14">{children}</p>
+      </AsideDescription>
+    );
+  }
+
+  return <p className="h-14">{children}</p>;
 }
 
 function CartLines({

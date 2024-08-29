@@ -193,9 +193,6 @@ function HeaderCartActions({ cart }: Pick<HeaderProps, "cart">) {
                     <AsideHeader>
                       <AsideTitle>Your Cart</AsideTitle>
                     </AsideHeader>
-                    <AsideDescription className="sr-only">
-                      Your cart with {count === 1 ? "1 item" : `${count} items`}
-                    </AsideDescription>
                     <AsideBody>
                       <CartMain cart={cart!} layout="aside" />
                     </AsideBody>
