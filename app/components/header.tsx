@@ -6,12 +6,22 @@ import type {
   HeaderQuery,
   CartApiQueryFragment,
 } from "storefrontapi.generated";
-import { useAside } from "~/components/aside";
 import { ThemeToggle } from "~/components/theme-toggle";
 import Icon from "~/components/icon";
 import { TitleLogo } from "~/components/title-logo";
 import { Button, ButtonWithWellText } from "~/components/ui/button";
-import { useRelativeUrl } from "~/ui/primitives/utils";
+import { useHydrated, useRelativeUrl } from "~/ui/primitives/utils";
+import {
+  Aside,
+  AsideBody,
+  AsideContent,
+  AsideDescription,
+  AsideHeader,
+  AsideTitle,
+  AsideTrigger,
+  useAside,
+} from "~/components/ui/aside";
+import { CartMain } from "~/components/cart";
 
 interface HeaderProps {
   menu: NonNullable<HeaderQuery["menu"]>;
@@ -19,7 +29,7 @@ interface HeaderProps {
   isLoggedIn: Promise<boolean>;
 }
 
-export function Header({ menu, isLoggedIn, cart }: HeaderProps) {
+export function Header({ menu, cart }: HeaderProps) {
   return (
     <header
       // TODO: make sticky
@@ -29,14 +39,14 @@ export function Header({ menu, isLoggedIn, cart }: HeaderProps) {
       <NavLink prefetch="intent" to="/" className="flex-1 text-center" end>
         <TitleLogo />
       </NavLink>
-      <HeaderCartActions isLoggedIn={isLoggedIn} cart={cart} />
+      <HeaderCartActions cart={cart} />
     </header>
   );
 }
 
 type HeaderMenuProps = Pick<HeaderProps, "menu">;
 
-export function HeaderMenu({ menu }: HeaderMenuProps) {
+function HeaderMenu({ menu }: HeaderMenuProps) {
   function closeAside(event: React.MouseEvent<HTMLAnchorElement>) {
     event.preventDefault();
     window.location.href = event.currentTarget.href;
@@ -45,7 +55,7 @@ export function HeaderMenu({ menu }: HeaderMenuProps) {
   return (
     <>
       <div className="flex-1 md:hidden">
-        <HeaderMenuMobileToggle />
+        <HeaderMenuMobileToggle menu={menu} />
       </div>
       <nav className="hidden flex-1 md:flex md:gap-3" role="navigation">
         {menu.items.map((item) => {
@@ -102,7 +112,7 @@ function HeaderMenuLink(props: HeaderMenuLinkProps) {
   );
 }
 
-export function HeaderMenuMobile({ menu }: HeaderMenuProps) {
+function HeaderMenuMobileToggle({ menu }: HeaderMenuProps) {
   // force the drawer closed via a full page navigation
   function closeAside(event: React.MouseEvent<HTMLAnchorElement>) {
     event.preventDefault();
@@ -110,20 +120,35 @@ export function HeaderMenuMobile({ menu }: HeaderMenuProps) {
   }
 
   return (
-    <nav className="flex h-full w-full flex-col gap-4">
-      {menu.items.map((item) => {
-        if (!item.url) return null;
-        return (
-          <HeaderMenuMobileLink
-            key={item.id}
-            title={item.title}
-            url={item.url}
-            onClick={closeAside}
-          />
-        );
-      })}
-      <ThemeToggle display="button" />
-    </nav>
+    <Aside>
+      <AsideTrigger asChild>
+        <Button size="icon" className="md:hidden">
+          <Icon name="menu" aria-label="navigation menu" />
+        </Button>
+      </AsideTrigger>
+      <AsideContent side="left">
+        <AsideHeader>
+          <AsideTitle>Menu</AsideTitle>
+        </AsideHeader>
+        <AsideDescription className="sr-only">navigation menu</AsideDescription>
+        <AsideBody>
+          <nav className="flex h-full w-full flex-col gap-4">
+            {menu.items.map((item) => {
+              if (!item.url) return null;
+              return (
+                <HeaderMenuMobileLink
+                  key={item.id}
+                  title={item.title}
+                  url={item.url}
+                  onClick={closeAside}
+                />
+              );
+            })}
+            <ThemeToggle display="button" />
+          </nav>
+        </AsideBody>
+      </AsideContent>
+    </Aside>
   );
 }
 
@@ -132,23 +157,17 @@ function HeaderMenuMobileLink(props: HeaderMenuLinkProps) {
 
   return (
     <Button size="lg" asChild className="text-left">
-      <NavLink prefetch="intent" to={url} onClick={props.onClick}>
+      <NavLink to={url} onClick={props.onClick}>
         {props.title}
       </NavLink>
     </Button>
   );
 }
 
-function HeaderMenuMobileToggle() {
-  const { open } = useAside();
-  return (
-    <Button size="icon" className="md:hidden" onClick={() => open("mobile")}>
-      <Icon name="menu" aria-label="navigation menu" />
-    </Button>
-  );
-}
+function HeaderCartActions({ cart }: Pick<HeaderProps, "cart">) {
+  // needs to be a controlled component so we can trigger it from add to cart buttons
+  const aside = useAside();
 
-function HeaderCartActions({ cart }: Pick<HeaderProps, "isLoggedIn" | "cart">) {
   return (
     <div className="flex flex-1 gap-3" role="navigation">
       <div className="ml-auto hidden md:block">
@@ -161,8 +180,25 @@ function HeaderCartActions({ cart }: Pick<HeaderProps, "isLoggedIn" | "cart">) {
         <Suspense fallback={<CartBadge count={0} />}>
           <Await resolve={cart}>
             {(cart) => {
-              if (!cart) return <CartBadge count={0} />;
-              return <CartBadge count={cart.totalQuantity || 0} />;
+              const count = cart?.totalQuantity || 0;
+              return (
+                <Aside
+                  open={aside.type === "cart"}
+                  onOpenChange={(open) => aside.open(open ? "cart" : "none")}
+                >
+                  <AsideTrigger>
+                    <CartBadge count={count} />
+                  </AsideTrigger>
+                  <AsideContent>
+                    <AsideHeader>
+                      <AsideTitle>Your Cart</AsideTitle>
+                    </AsideHeader>
+                    <AsideBody>
+                      <CartMain cart={cart!} layout="aside" />
+                    </AsideBody>
+                  </AsideContent>
+                </Aside>
+              );
             }}
           </Await>
         </Suspense>
@@ -172,27 +208,32 @@ function HeaderCartActions({ cart }: Pick<HeaderProps, "isLoggedIn" | "cart">) {
 }
 
 function CartBadge({ count }: { count: number }) {
-  const { open } = useAside();
   const { publish, shop, cart, prevCart } = useAnalytics();
+  const isHydrated = useHydrated();
+
+  const inner = (
+    <div className="flex gap-2">
+      <Icon name="bag" className="text-inherit" aria-label="cart" /> {count}
+    </div>
+  );
 
   return (
-    <Button asChild intent={count > 0 ? "primary" : "secondary"}>
-      <a
-        href="/cart"
-        className={"flex gap-2"}
-        onClick={(e) => {
-          e.preventDefault();
-          open("cart");
-          publish("cart_viewed", {
-            cart,
-            prevCart,
-            shop,
-            url: window.location.href || "",
-          } as CartViewPayload);
-        }}
-      >
-        <Icon name="bag" className="text-inherit" aria-label="cart" /> {count}
-      </a>
+    <Button
+      asChild
+      intent={count > 0 ? "primary" : "secondary"}
+      onClick={() => {
+        publish("cart_viewed", {
+          cart,
+          prevCart,
+          shop,
+          url: window.location.href || "",
+        } as CartViewPayload);
+      }}
+    >
+      {
+        // clicking the button before hydration will navigate to the cart page
+        !isHydrated ? <a href="/cart">{inner}</a> : inner
+      }
     </Button>
   );
 }

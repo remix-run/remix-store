@@ -27,7 +27,7 @@ import {
   RichText,
 } from "@shopify/hydrogen";
 import type { SelectedOption } from "@shopify/hydrogen/storefront-api-types";
-import { useAside } from "~/components/aside";
+import { useAside } from "~/components/ui/aside";
 import { parseGradientColors } from "~/lib/metafields";
 import {
   PRODUCT_DETAIL_FRAGMENT,

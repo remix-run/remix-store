@@ -1,3 +1,4 @@
+import React, { useRef } from "react";
 import {
   CartForm,
   Money,
@@ -11,9 +12,9 @@ import type { CartApiQueryFragment } from "storefrontapi.generated";
 import { useVariantUrl } from "~/lib/variants";
 import { Image } from "~/components/image";
 import { parseGradientColors } from "~/lib/metafields";
+import { AsideDescription } from "~/components/ui/aside";
 import { Button } from "~/components/ui/button";
 import Icon from "~/components/icon";
-import { useRef } from "react";
 import clsx from "clsx";
 import { cn } from "~/lib";
 
@@ -36,7 +37,7 @@ export function CartMain({ layout, cart: originalCart }: CartMainProps) {
   );
 }
 
-export function CartEmpty({
+function CartEmpty({
   hidden = false,
   layout = "aside",
 }: {
@@ -46,7 +47,7 @@ export function CartEmpty({
   const ctaUrl = "/collections/all";
   return (
     <div className={clsx("h-full w-full flex-col", hidden ? "hidden" : "flex")}>
-      <p>There are no items in this cart.</p>
+      <CartItems layout={layout}>There are no items in this cart.</CartItems>
       <div className="mt-auto">
         <Button intent="secondary" size="lg" asChild>
           <Link
@@ -78,12 +79,13 @@ function CartDetails({
   if (!cartHasItems) return null;
 
   return (
-    <div className={clsx("h-full flex-col p-8", hidden ? "hidden" : "flex")}>
-      <p className="h-14">
-        There are{" "}
-        <strong>{cart.isOptimistic ? "XX" : cart.totalQuantity}</strong> items
-        in this cart
-      </p>
+    <div className={clsx("h-full flex-col", hidden ? "hidden" : "flex")}>
+      <CartItems layout={layout}>
+        <strong className="font-bold">
+          {cart.isOptimistic ? "XX" : cart.totalQuantity}
+        </strong>{" "}
+        {cart.totalQuantity === 1 ? "item" : "item(s)"} in this cart
+      </CartItems>
       <CartLines lines={cart?.lines?.nodes} layout={layout} />
       {cartHasItems && (
         <CartSummary layout={layout}>
@@ -94,6 +96,21 @@ function CartDetails({
       )}
     </div>
   );
+}
+
+function CartItems({
+  layout,
+  children,
+}: Pick<CartMainProps, "layout"> & { children: React.ReactNode }) {
+  if (layout === "aside") {
+    return (
+      <AsideDescription asChild>
+        <p className="h-14">{children}</p>
+      </AsideDescription>
+    );
+  }
+
+  return <p className="h-14">{children}</p>;
 }
 
 function CartLines({
@@ -107,14 +124,14 @@ function CartLines({
 
   // This ungodly height calculation is:
   // 100vh - cart header - cart summary - line item count - padding
-  const cartLinesHeight = `max-h-[calc(100vh_-_var(--aside-header-height)_-_var(--aside-summary-height)_-_theme(spacing[14])_-_theme(spacing[8]))]`;
+  const cartLinesHeight = `h-[calc(100vh_-_var(--aside-header-height)_-_var(--aside-summary-height)_-_theme(spacing[14])_-_theme(spacing[9]))]`;
 
   return (
     <div
       aria-labelledby="cart-lines"
       className={clsx("overflow-y-auto", cartLinesHeight)}
     >
-      <ul>
+      <ul className="flex flex-col gap-9">
         {lines.map((line) => (
           <CartLineItem key={line.id} line={line} layout={layout} />
         ))}
@@ -136,7 +153,7 @@ function CartLineItem({
   const gradients = parseGradientColors(product.gradientColors);
 
   return (
-    <li key={id} className="flex py-4 first:pt-0 last:pb-8">
+    <li key={id} className="flex first:pt-0 last:pb-8">
       {image && (
         <div className="h-[148px] w-[148px]">
           <Image
@@ -155,6 +172,7 @@ function CartLineItem({
       <div className="ml-6 flex flex-col">
         <Link
           prefetch="intent"
+          className="no-underline"
           to={lineItemUrl}
           onClick={() => {
             if (layout === "aside") {
@@ -211,7 +229,7 @@ function CartSubTotal({
   );
 }
 
-export function CartSummary({
+function CartSummary({
   layout,
   children = null,
   className,

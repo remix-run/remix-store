@@ -17,7 +17,6 @@ import { FOOTER_QUERY, HEADER_QUERY } from "~/lib/fragments";
 import { parseColorScheme } from "./lib/color-scheme.server";
 import clsx from "clsx";
 import { ColorSchemeScript, useColorScheme } from "~/lib/color-scheme";
-import { useAside } from "~/components/aside";
 
 import jersey10Url from "/font/jersey-10/latin.woff2?url";
 import jersey10ExtUrl from "/font/jersey-10/latin-ext.woff2?url";
@@ -26,6 +25,7 @@ import "~/styles/app.css"; // TODO: remove when finished with tailwind
 import "./tailwind.css";
 import { Hero } from "./components/hero";
 import { Button } from "./components/ui/button";
+import { AsideProvider } from "./components/ui/aside";
 
 export type RootLoader = typeof loader;
 
@@ -167,7 +167,6 @@ export function Layout({ children }: { children?: React.ReactNode }) {
   const nonce = useNonce();
   const data = useRouteLoaderData<RootLoader>("root");
   const colorScheme = useColorScheme();
-  const { isOpen } = useAside();
 
   return (
     <html
@@ -187,7 +186,6 @@ export function Layout({ children }: { children?: React.ReactNode }) {
           // I don't like this min width, I think it's wrong. Right now it's here to fix when you open the dropdown if you have scroll bars set to always be visible
           "min-w-[100vw]",
           "min-h-screen overflow-x-hidden bg-neutral-200 antialiased dark:bg-neutral-800",
-          isOpen && "overflow-hidden",
         )}
       >
         {data ? (
@@ -196,7 +194,9 @@ export function Layout({ children }: { children?: React.ReactNode }) {
             shop={data.shop}
             consent={data.consent}
           >
-            <PageLayout {...data}>{children}</PageLayout>
+            <AsideProvider>
+              <PageLayout {...data}>{children}</PageLayout>
+            </AsideProvider>
           </Analytics.Provider>
         ) : (
           children
