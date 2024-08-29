@@ -23,14 +23,8 @@ export function PageLayout({
 }: PageLayoutProps) {
   return (
     <div className="px-3 sm:px-9">
-      {/* <CartAside cart={cart} /> */}
-      {/* <SearchAside /> */}
-
       {header.menu && (
-        <>
-          <Header menu={header.menu} cart={cart} isLoggedIn={isLoggedIn} />
-          {/* <MobileMenuAside menu={header.menu} /> */}
-        </>
+        <Header menu={header.menu} cart={cart} isLoggedIn={isLoggedIn} />
       )}
       <main>{children}</main>
       <Footer footer={footer} />
