@@ -179,27 +179,30 @@ function HeaderCartActions({ cart }: Pick<HeaderProps, "cart">) {
       <div className="ml-auto md:ml-0">
         <Suspense fallback={<CartBadge count={0} />}>
           <Await resolve={cart}>
-            {(cart) => (
-              <Aside
-                open={aside.type === "cart"}
-                onOpenChange={(open) => aside.open(open ? "cart" : "none")}
-              >
-                <AsideTrigger>
-                  <CartBadge count={cart?.totalQuantity || 0} />
-                </AsideTrigger>
-                <AsideContent>
-                  <AsideHeader>
-                    <AsideTitle>Your Cart</AsideTitle>
-                  </AsideHeader>
-                  <AsideDescription className="sr-only">
-                    Your cart with {cart?.totalQuantity} items
-                  </AsideDescription>
-                  <AsideBody>
-                    <CartMain cart={cart!} layout="aside" />
-                  </AsideBody>
-                </AsideContent>
-              </Aside>
-            )}
+            {(cart) => {
+              const count = cart?.totalQuantity || 0;
+              return (
+                <Aside
+                  open={aside.type === "cart"}
+                  onOpenChange={(open) => aside.open(open ? "cart" : "none")}
+                >
+                  <AsideTrigger>
+                    <CartBadge count={count} />
+                  </AsideTrigger>
+                  <AsideContent>
+                    <AsideHeader>
+                      <AsideTitle>Your Cart</AsideTitle>
+                    </AsideHeader>
+                    <AsideDescription className="sr-only">
+                      Your cart with {count === 1 ? "1 item" : `${count} items`}
+                    </AsideDescription>
+                    <AsideBody>
+                      <CartMain cart={cart!} layout="aside" />
+                    </AsideBody>
+                  </AsideContent>
+                </Aside>
+              );
+            }}
           </Await>
         </Suspense>
       </div>
