@@ -170,7 +170,7 @@ function HeaderCartActions({ cart }: Pick<HeaderProps, "cart">) {
 
   return (
     <div className="flex flex-1 gap-3" role="navigation">
-      <div className="ml-auto hidden md:block">
+      <div className="ml-auto hidden md:block md:w-[150px]">
         {/* TODO: make interactive */}
         <ButtonWithWellText size="icon" wellPrefix="🇺🇸 USD">
           <Icon name="globe" aria-label="change currency" />

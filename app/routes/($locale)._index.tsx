@@ -1,12 +1,12 @@
+import { Suspense } from "react";
 import type { LoaderFunctionArgs } from "@shopify/remix-oxygen";
 import { defer } from "@shopify/remix-oxygen";
 import { Await, useLoaderData, type MetaFunction } from "@remix-run/react";
-import { Suspense } from "react";
+import { Hero } from "~/components/hero";
+import { FiltersToolbar } from "~/components/filters";
 import { PRODUCT_ITEM_FRAGMENT } from "~/lib/fragments";
 import { CollectionGrid } from "~/components/collection-grid";
 import type { RecommendedProductsQuery } from "storefrontapi.generated";
-
-import { Hero } from "~/components/hero";
 
 export const meta: MetaFunction = () => {
   return [{ title: "The Remix Store | Home" }];
@@ -70,6 +70,7 @@ export default function Homepage() {
           to={`/products/${featuredCollection.products.nodes[0].handle}`}
         />
       ) : null}
+      <FiltersToolbar />
       <RecommendedProducts products={recommendedProducts} />
     </>
   );

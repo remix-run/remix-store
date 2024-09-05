@@ -56,17 +56,27 @@ export default function Buttons() {
       </Section>
       <Section
         title="Buttons with extended wells"
-        className="flex w-[500px] flex-col gap-4"
+        className="flex flex-col gap-4"
       >
-        <ButtonWithWellText size="icon" wellPrefix="🇺🇸 USD">
-          <Icon name="globe" />
-        </ButtonWithWellText>
-        <ButtonWithWellText size="icon" wellPrefix="Price: High To Low">
-          <Icon name="chevron-down" />
-        </ButtonWithWellText>
-        <ButtonWithWellText size="icon" wellPostfix="Showing 6 items">
-          <Icon name="filter" />
-        </ButtonWithWellText>
+        <div className="w-[150px]">
+          <ButtonWithWellText
+            size="icon"
+            wellPrefix="🇺🇸 USD"
+            className="max-w-[250px]"
+          >
+            <Icon name="globe" />
+          </ButtonWithWellText>
+        </div>
+        <div className="w-[250px]">
+          <ButtonWithWellText size="icon" wellPostfix="Showing 6 items">
+            <Icon name="filter" />
+          </ButtonWithWellText>
+        </div>
+        <div className="w-fit md:w-[280px]">
+          <ButtonWithWellText size="icon" wellPrefix="Price: High To Low">
+            <Icon name="chevron-down" />
+          </ButtonWithWellText>
+        </div>
       </Section>
     </div>
   );

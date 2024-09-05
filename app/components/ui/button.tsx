@@ -136,13 +136,12 @@ export const ButtonWithWellText = forwardRef(
     return (
       <div
         ref={ref}
-        className={cn(
-          well({ size }),
-          "flex min-w-fit max-w-full items-center justify-between gap-3",
-        )}
+        className={cn(well({ size }), "flex min-w-fit max-w-full items-center")}
       >
         {wellPrefix ? (
-          <div className="whitespace-nowrap pl-5 font-medium">{wellPrefix}</div>
+          <div className="mr-auto whitespace-nowrap px-5 text-sm font-medium md:text-base">
+            {wellPrefix}
+          </div>
         ) : null}
         <Comp
           {...props}
@@ -150,7 +149,7 @@ export const ButtonWithWellText = forwardRef(
           disabled={disabled}
         />
         {wellPostfix ? (
-          <div className="whitespace-nowrap pr-5 font-medium">
+          <div className="ml-auto whitespace-nowrap px-5 text-sm font-medium md:text-base">
             {wellPostfix}
           </div>
         ) : null}
