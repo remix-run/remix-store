@@ -6,6 +6,7 @@ import {
   DropdownMenuItem,
   DropdownMenuContent,
 } from "~/components/ui/dropdown-menu";
+import { cn } from "~/lib";
 
 export async function loader() {
   // TODO: turn this on only for the most prodest of environments
@@ -63,5 +64,22 @@ export default function Components() {
         <Outlet />
       </div>
     </div>
+  );
+}
+
+export function Section({
+  title,
+  className,
+  children,
+}: {
+  title: string;
+  className?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="mt-8 px-8 py-6">
+      <h2 className="text-4xl">{title}</h2>
+      <div className={cn("mt-6", className)}>{children}</div>
+    </section>
   );
 }

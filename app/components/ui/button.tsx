@@ -68,7 +68,9 @@ const button = cva(["block no-underline"], {
 });
 
 const well = cva(
-  ["overflow-hidden relative bg-black bg-opacity-5 dark:bg-opacity-20"],
+  [
+    "overflow-hidden relative select-none bg-black bg-opacity-5 dark:bg-opacity-20",
+  ],
   {
     variants: {
       size: {
@@ -97,13 +99,14 @@ export const Button = forwardRef(
       disabled = false,
       ...props
     }: ButtonProps,
-    ref: React.Ref<HTMLDivElement>,
+    ref: React.Ref<HTMLButtonElement>,
   ) => {
     const Comp = asChild ? Slot : "button";
 
     return (
-      <div ref={ref} className={cn(well({ size }))}>
+      <div className={cn(well({ size }))}>
         <Comp
+          ref={ref}
           {...props}
           className={cn(button({ intent, size, disabled }), props.className)}
           disabled={disabled}
@@ -129,13 +132,12 @@ export const ButtonWithWellText = forwardRef(
       wellPrefix?: React.ReactNode;
       wellPostfix?: React.ReactNode;
     },
-    ref: React.Ref<HTMLDivElement>,
+    ref: React.Ref<HTMLButtonElement>,
   ) => {
     const Comp = asChild ? Slot : "button";
 
     return (
       <div
-        ref={ref}
         className={cn(well({ size }), "flex min-w-fit max-w-full items-center")}
       >
         {wellPrefix ? (
@@ -145,7 +147,12 @@ export const ButtonWithWellText = forwardRef(
         ) : null}
         <Comp
           {...props}
-          className={cn(button({ intent, size, disabled }), props.className)}
+          ref={ref}
+          className={cn(
+            button({ intent, size, disabled }),
+            "before:absolute before:inset-0 before:size-full",
+            props.className,
+          )}
           disabled={disabled}
         />
         {wellPostfix ? (

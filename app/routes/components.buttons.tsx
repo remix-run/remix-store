@@ -4,6 +4,7 @@ import { ShopPayButton } from "./($locale).products.$handle";
 import Icon from "~/components/icon";
 import { iconNames } from "~/components/icon/types.generated";
 import { Fragment } from "react/jsx-runtime";
+import { Section } from "./components";
 
 export default function Buttons() {
   return (
@@ -79,23 +80,5 @@ export default function Buttons() {
         </div>
       </Section>
     </div>
-  );
-}
-
-// Might want to pull this out 🤷‍♂️
-function Section({
-  title,
-  className,
-  children,
-}: {
-  title: string;
-  className?: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <section className="mt-8 px-8 py-6">
-      <h2 className="text-4xl">{title}</h2>
-      <div className={cn("mt-6", className)}>{children}</div>
-    </section>
   );
 }
