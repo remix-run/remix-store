@@ -24,42 +24,43 @@ export function ThemeToggle({
   const location = useLocation();
 
   return (
-    <>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          {display === "icon" ? (
-            <Button size="icon">
-              <Icon name={themeIconMap[theme]} aria-label="Change theme" />
-            </Button>
-          ) : (
-            <ButtonWithWellText
-              size="icon"
-              wellPrefix={<div className="capitalize">view: {theme} mode</div>}
-            >
-              <Icon name="chevron-down" aria-label="Change theme" />
-            </ButtonWithWellText>
-          )}
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align={display === "icon" ? "center" : "end"}>
-          <Form
-            preventScrollReset
-            replace
-            action="/_actions/color-scheme"
-            method="post"
-            className="flex flex-col gap-px"
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        {display === "icon" ? (
+          <Button size="icon">
+            <Icon name={themeIconMap[theme]} aria-label="Change theme" />
+          </Button>
+        ) : (
+          <ButtonWithWellText
+            size="icon"
+            wellPrefix={<div className="capitalize">view: {theme} mode</div>}
           >
-            <input
-              type="hidden"
-              name="returnTo"
-              value={location.pathname + location.search}
-            />
-            <DropdownButton theme="light" />
-            <DropdownButton theme="dark" />
-            <DropdownButton theme="system" />
-          </Form>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    </>
+            <Icon name="chevron-down" aria-label="Change theme" />
+          </ButtonWithWellText>
+        )}
+      </DropdownMenuTrigger>
+      <DropdownMenuContent
+        className="w-[160px]"
+        align={display === "icon" ? "start" : "end"}
+      >
+        <Form
+          preventScrollReset
+          replace
+          action="/_actions/color-scheme"
+          method="post"
+          className="flex flex-col gap-px"
+        >
+          <input
+            type="hidden"
+            name="returnTo"
+            value={location.pathname + location.search}
+          />
+          <DropdownButton theme="light" />
+          <DropdownButton theme="dark" />
+          <DropdownButton theme="system" />
+        </Form>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
 
