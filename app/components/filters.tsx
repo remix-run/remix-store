@@ -1,4 +1,4 @@
-import { Form } from "@remix-run/react";
+import { Form, useSearchParams } from "@remix-run/react";
 import Icon from "~/components/icon";
 import { Button, ButtonWithWellText } from "~/components/ui/button";
 import {
@@ -14,13 +14,21 @@ import {
   AsideHeader,
   AsideBody,
   AsideTitle,
+  AsideDescription,
 } from "~/components/ui/aside";
+import {
+  Accordion,
+  AccordionItem,
+  AccordionTrigger,
+  AccordionContent,
+} from "~/components/ui/accordion";
+import clsx from "clsx";
+import * as RadioGroup from "@radix-ui/react-radio-group";
 
 export function FiltersToolbar() {
   return (
     <div className="flex h-[var(--header-height)] items-center justify-between">
       <FiltersAside />
-
       <SortDropdown />
     </div>
   );
@@ -44,16 +52,102 @@ function FiltersAside() {
           </ButtonWithWellText>
         </AsideTrigger>
       </div>
+
       <AsideContent side="left">
         <AsideHeader>
-          <AsideTitle>Filters</AsideTitle>
+          <AsideTitle>Filter By</AsideTitle>
         </AsideHeader>
-        <AsideBody>{/* Add filter content here */}</AsideBody>
+        <AsideBody>
+          {/* TODO: clean up accordion padding */}
+          <Accordion
+            type="multiple"
+            defaultValue={["availability", "price", "product-type"]}
+            className="w-full"
+          >
+            <AsideDescription className="sr-only">
+              filter products
+            </AsideDescription>
+            <FilterAccordionItem title="Availability" value="availability">
+              <FilterStockRadioButtons />
+            </FilterAccordionItem>
+            <FilterAccordionItem
+              title="Price"
+              value="price"
+            ></FilterAccordionItem>
+            <FilterAccordionItem
+              title="Product Type"
+              value="product-type"
+            ></FilterAccordionItem>
+          </Accordion>
+        </AsideBody>
       </AsideContent>
     </Aside>
   );
 }
 
+function FilterStockRadioButtons() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  let availability: string | undefined =
+    searchParams.get("availability") || undefined;
+  if (availability !== "in-stock" && availability !== "out-of-stock") {
+    availability = undefined;
+  }
+
+  return (
+    <RadioGroup.Root
+      className="flex w-[300px] flex-col gap-3"
+      aria-label="select availability"
+      value={availability}
+      onValueChange={(newAvailability) => {
+        setSearchParams({ availability: newAvailability });
+      }}
+    >
+      <RadioGroup.Item value="in-stock" id="in-stock" asChild>
+        <Button
+          className="flex justify-between text-left uppercase"
+          intent={availability === "in-stock" ? "primary" : "secondary"}
+        >
+          In Stock
+          {availability === "in-stock" ? <Icon name="check" /> : null}
+        </Button>
+      </RadioGroup.Item>
+      <RadioGroup.Item value="out-of-stock" id="out-of-stock" asChild>
+        <Button
+          className="flex justify-between text-left uppercase"
+          intent={availability === "out-of-stock" ? "primary" : "secondary"}
+        >
+          Out of Stock
+          {availability === "out-of-stock" ? <Icon name="check" /> : null}
+        </Button>
+      </RadioGroup.Item>
+    </RadioGroup.Root>
+  );
+}
+
+function FilterAccordionItem({
+  title,
+  value,
+  children,
+  className,
+}: {
+  title: string;
+  value: string;
+  children?: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <AccordionItem
+      value={value}
+      className={clsx(
+        "border-b border-b-neutral-400 border-opacity-15 dark:border-opacity-20",
+        className,
+      )}
+    >
+      <AccordionTrigger icon="chevron-up">{title}</AccordionTrigger>
+      <AccordionContent className="p-0">{children}</AccordionContent>
+    </AccordionItem>
+  );
+}
 export function SortDropdown() {
   return (
     <DropdownMenu>

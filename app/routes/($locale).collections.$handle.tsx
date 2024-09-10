@@ -12,6 +12,7 @@ import {
 import { PRODUCT_ITEM_FRAGMENT } from "~/lib/fragments";
 import { CollectionGrid } from "~/components/collection-grid";
 import { Hero } from "~/components/hero";
+import { FiltersToolbar } from "~/components/filters";
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
   let title = `The Remix Store`;
@@ -91,6 +92,7 @@ export default function Collection() {
         subtitle="now browsing"
         image={collection.image}
       />
+      <FiltersToolbar />
       <Pagination connection={collection.products}>
         {({ nodes, isLoading, PreviousLink, NextLink }) => (
           <>
