@@ -80,10 +80,9 @@ function FiltersAside() {
               <FilterAccordionItem title="Availability" value="availability">
                 <FilterProductStock />
               </FilterAccordionItem>
-              <FilterAccordionItem
-                title="Price"
-                value="price"
-              ></FilterAccordionItem>
+              <FilterAccordionItem title="Price" value="price">
+                <FilterPriceRange />
+              </FilterAccordionItem>
               <FilterAccordionItem title="Product Type" value="product-type">
                 <FilterProductType />
               </FilterAccordionItem>
@@ -157,6 +156,68 @@ function FilterProductStock() {
   );
 }
 
+// TODO: need some client-side validation and probably want to throttle submitting the form
+function FilterPriceRange() {
+  const [searchParams] = useSearchParams();
+  const min = searchParams.get("min") || "";
+  const max = searchParams.get("max") || "";
+
+  return (
+    <div className="flex items-center gap-3 font-bold">
+      <label htmlFor="from">
+        From <span className="sr-only">minimum price</span>
+      </label>
+      <PriceInput
+        id="from"
+        name="min"
+        placeholder="0"
+        defaultValue={min}
+        min={0}
+        max={max}
+      />
+      <label htmlFor="to">
+        To <span className="sr-only">maximum price</span>
+      </label>
+      <PriceInput
+        id="to"
+        name="max"
+        placeholder="1000"
+        defaultValue={max}
+        min={min}
+        max={1000}
+      />
+    </div>
+  );
+}
+
+function PriceInput({
+  id,
+  name,
+  placeholder,
+  defaultValue,
+  min,
+  max,
+}: React.InputHTMLAttributes<HTMLInputElement>) {
+  return (
+    <div className="relative">
+      <span className="absolute left-3 top-1/2 -translate-y-1/2 select-none">
+        $
+      </span>
+      <input
+        className="h-[58px] w-[120px] rounded-[14px] bg-black bg-opacity-5 p-[10px] pl-7 text-blue-brand placeholder:text-neutral-600 placeholder:text-opacity-30 dark:bg-opacity-20 dark:placeholder:text-neutral-300 dark:placeholder:text-opacity-20"
+        type="number"
+        id={id}
+        name={name}
+        placeholder={placeholder}
+        defaultValue={defaultValue}
+        min={min}
+        max={max}
+      />
+    </div>
+  );
+}
+
+// TODO: get this from the storefront API
 const productTypes = [
   "apparel",
   "accessories",

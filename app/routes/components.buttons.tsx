@@ -1,5 +1,4 @@
 import { Button, ButtonWithWellText } from "~/components/ui/button";
-import { cn } from "~/lib";
 import { ShopPayButton } from "./($locale).products.$handle";
 import Icon from "~/components/icon";
 import { iconNames } from "~/components/icon/types.generated";
