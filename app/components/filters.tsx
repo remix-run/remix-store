@@ -1,4 +1,4 @@
-import { Form, useSearchParams } from "@remix-run/react";
+import { Form, useSearchParams, useSubmit } from "@remix-run/react";
 import Icon from "~/components/icon";
 import { Button, ButtonWithWellText } from "~/components/ui/button";
 import {
@@ -24,6 +24,7 @@ import {
 } from "~/components/ui/accordion";
 import clsx from "clsx";
 import * as RadioGroup from "@radix-ui/react-radio-group";
+import * as Checkbox from "@radix-ui/react-checkbox";
 
 export function FiltersToolbar() {
   return (
@@ -35,6 +36,8 @@ export function FiltersToolbar() {
 }
 
 function FiltersAside() {
+  const submit = useSubmit();
+
   return (
     <Aside>
       <div className="md:hidden">
@@ -58,69 +61,37 @@ function FiltersAside() {
           <AsideTitle>Filter By</AsideTitle>
         </AsideHeader>
         <AsideBody>
-          {/* TODO: clean up accordion padding */}
-          <Accordion
-            type="multiple"
-            defaultValue={["availability", "price", "product-type"]}
-            className="w-full"
+          <Form
+            // This form automatically submits any time any of the filter controls change
+            onChange={(e) => {
+              submit(e.currentTarget);
+            }}
+            method="get"
           >
-            <AsideDescription className="sr-only">
-              filter products
-            </AsideDescription>
-            <FilterAccordionItem title="Availability" value="availability">
-              <FilterStockRadioButtons />
-            </FilterAccordionItem>
-            <FilterAccordionItem
-              title="Price"
-              value="price"
-            ></FilterAccordionItem>
-            <FilterAccordionItem
-              title="Product Type"
-              value="product-type"
-            ></FilterAccordionItem>
-          </Accordion>
+            {/* TODO: clean up accordion padding */}
+            <Accordion
+              type="multiple"
+              defaultValue={["availability", "price", "product-type"]}
+              className="w-full"
+            >
+              <AsideDescription className="sr-only">
+                filter products
+              </AsideDescription>
+              <FilterAccordionItem title="Availability" value="availability">
+                <FilterProductStock />
+              </FilterAccordionItem>
+              <FilterAccordionItem
+                title="Price"
+                value="price"
+              ></FilterAccordionItem>
+              <FilterAccordionItem title="Product Type" value="product-type">
+                <FilterProductType />
+              </FilterAccordionItem>
+            </Accordion>
+          </Form>
         </AsideBody>
       </AsideContent>
     </Aside>
-  );
-}
-
-function FilterStockRadioButtons() {
-  const [searchParams, setSearchParams] = useSearchParams();
-  let availability: string | undefined =
-    searchParams.get("availability") || undefined;
-  if (availability !== "in-stock" && availability !== "out-of-stock") {
-    availability = undefined;
-  }
-
-  return (
-    <RadioGroup.Root
-      className="flex w-[300px] flex-col gap-3"
-      aria-label="select availability"
-      value={availability}
-      onValueChange={(newAvailability) => {
-        setSearchParams({ availability: newAvailability });
-      }}
-    >
-      <RadioGroup.Item value="in-stock" id="in-stock" asChild>
-        <Button
-          className="flex justify-between text-left uppercase"
-          intent={availability === "in-stock" ? "primary" : "secondary"}
-        >
-          In Stock
-          {availability === "in-stock" ? <Icon name="check" /> : null}
-        </Button>
-      </RadioGroup.Item>
-      <RadioGroup.Item value="out-of-stock" id="out-of-stock" asChild>
-        <Button
-          className="flex justify-between text-left uppercase"
-          intent={availability === "out-of-stock" ? "primary" : "secondary"}
-        >
-          Out of Stock
-          {availability === "out-of-stock" ? <Icon name="check" /> : null}
-        </Button>
-      </RadioGroup.Item>
-    </RadioGroup.Root>
   );
 }
 
@@ -148,6 +119,84 @@ function FilterAccordionItem({
     </AccordionItem>
   );
 }
+
+function FilterProductStock() {
+  const [searchParams] = useSearchParams();
+  let availability: string | undefined =
+    searchParams.get("availability") || undefined;
+  if (availability !== "in-stock" && availability !== "out-of-stock") {
+    availability = undefined;
+  }
+
+  return (
+    <RadioGroup.Root
+      className="flex w-[300px] flex-col gap-3"
+      aria-label="select availability"
+      name="availability"
+      defaultValue={availability}
+    >
+      <RadioGroup.Item value="in-stock" id="in-stock" asChild>
+        <Button
+          className="flex justify-between text-left uppercase"
+          intent={availability === "in-stock" ? "primary" : "secondary"}
+        >
+          In Stock
+          {availability === "in-stock" ? <Icon name="check" /> : null}
+        </Button>
+      </RadioGroup.Item>
+      <RadioGroup.Item value="out-of-stock" id="out-of-stock" asChild>
+        <Button
+          className="flex justify-between text-left uppercase"
+          intent={availability === "out-of-stock" ? "primary" : "secondary"}
+        >
+          Out of Stock
+          {availability === "out-of-stock" ? <Icon name="check" /> : null}
+        </Button>
+      </RadioGroup.Item>
+    </RadioGroup.Root>
+  );
+}
+
+const productTypes = [
+  "apparel",
+  "accessories",
+  "stationary",
+  "stickers",
+  "toys",
+];
+
+function FilterProductType() {
+  const [searchParams] = useSearchParams();
+
+  const selectedProductTypes = new Set(searchParams.getAll("product-type"));
+
+  return (
+    <div className="flex flex-wrap gap-3">
+      {productTypes.map((productType) => {
+        const checked = selectedProductTypes.has(productType);
+        return (
+          <Checkbox.Root
+            key={productType}
+            className="CheckboxRoot"
+            name="product-type"
+            value={productType}
+            defaultChecked={checked}
+            asChild
+          >
+            <Button
+              size="sm"
+              className="uppercase"
+              intent={checked ? "primary" : "secondary"}
+            >
+              {productType}
+            </Button>
+          </Checkbox.Root>
+        );
+      })}
+    </div>
+  );
+}
+
 export function SortDropdown() {
   return (
     <DropdownMenu>
