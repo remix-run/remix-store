@@ -60,6 +60,7 @@ function FiltersAside() {
         <AsideHeader>
           <AsideTitle>Filter By</AsideTitle>
         </AsideHeader>
+        <AsideDescription className="sr-only">filter products</AsideDescription>
         <AsideBody>
           <Form
             // This form automatically submits any time any of the filter controls change
@@ -71,12 +72,9 @@ function FiltersAside() {
             {/* TODO: clean up accordion padding */}
             <Accordion
               type="multiple"
+              className="gap-0"
               defaultValue={["availability", "price", "product-type"]}
-              className="w-full"
             >
-              <AsideDescription className="sr-only">
-                filter products
-              </AsideDescription>
               <FilterAccordionItem title="Availability" value="availability">
                 <FilterProductStock />
               </FilterAccordionItem>
@@ -109,12 +107,12 @@ function FilterAccordionItem({
     <AccordionItem
       value={value}
       className={clsx(
-        "border-b border-b-neutral-400 border-opacity-15 dark:border-opacity-20",
+        "-mx-6 border-b border-b-neutral-400 border-opacity-15 py-3 dark:border-opacity-20 [&[data-state=open]]:pb-9",
         className,
       )}
     >
       <AccordionTrigger icon="chevron-up">{title}</AccordionTrigger>
-      <AccordionContent className="p-0">{children}</AccordionContent>
+      <AccordionContent className="mt-0">{children}</AccordionContent>
     </AccordionItem>
   );
 }
