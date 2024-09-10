@@ -64,7 +64,7 @@ const AccordionTrigger = React.forwardRef<
         {children}
         <Icon
           name={icon}
-          className={cn("h-6 w-6 shrink-0 transition-transform duration-200")}
+          className="h-6 w-6 shrink-0 transition-transform duration-200"
         />
       </AccordionPrimitive.Trigger>
     </h2>

@@ -256,25 +256,41 @@ function FilterProductType() {
   );
 }
 
+const sortOptions = [
+  { value: "featured", label: "Featured" },
+  { value: "price-high-to-low", label: "Price: High To Low" },
+  { value: "price-low-to-high", label: "Price: Low To High" },
+  { value: "best-selling", label: "Best Selling" },
+  { value: "newest", label: "Newest" },
+];
+
 export function SortDropdown() {
+  const [searchParams] = useSearchParams();
+  const currentSort = searchParams.get("sort") || "featured";
+
+  const currentSortLabel =
+    sortOptions.find((option) => option.value === currentSort)?.label || "Sort";
+
   return (
     <DropdownMenu>
       <div className="w-fit md:w-[280px]">
         <DropdownMenuTrigger asChild>
-          <ButtonWithWellText size="icon" wellPrefix="Price: High To Low">
+          <ButtonWithWellText size="icon" wellPrefix={currentSortLabel}>
             <Icon name="chevron-down" />
           </ButtonWithWellText>
         </DropdownMenuTrigger>
       </div>
       <DropdownMenuContent className="w-fit md:w-[280px]" align="end">
         <Form method="get" className="flex flex-col gap-1">
-          <SortButton value="featured" selected>
-            Featured
-          </SortButton>
-          <SortButton value="price-high-to-low">Price: High To Low</SortButton>
-          <SortButton value="price-low-to-high">Price: Low To High</SortButton>
-          <SortButton value="best-selling">Best Selling</SortButton>
-          <SortButton value="newest">Newest</SortButton>
+          {sortOptions.map((option) => (
+            <SortButton
+              key={option.value}
+              value={option.value}
+              selected={currentSort === option.value}
+            >
+              {option.label}
+            </SortButton>
+          ))}
         </Form>
       </DropdownMenuContent>
     </DropdownMenu>

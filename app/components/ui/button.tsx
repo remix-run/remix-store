@@ -122,6 +122,8 @@ export const ButtonWithWellText = forwardRef(
   (
     {
       asChild,
+      className,
+      children,
       intent = "secondary",
       size = "sm",
       disabled = false,
@@ -151,10 +153,12 @@ export const ButtonWithWellText = forwardRef(
           className={cn(
             button({ intent, size, disabled }),
             "before:absolute before:inset-0 before:size-full",
-            props.className,
+            className,
           )}
           disabled={disabled}
-        />
+        >
+          {children}
+        </Comp>
         {wellPostfix ? (
           <div className="ml-auto whitespace-nowrap px-5 text-sm font-medium md:text-base">
             {wellPostfix}
