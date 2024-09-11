@@ -65,9 +65,10 @@ function FiltersAside() {
           <Form
             // This form automatically submits any time any of the filter controls change
             onChange={(e) => {
-              submit(e.currentTarget);
+              submit(e.currentTarget, { preventScrollReset: true });
             }}
             method="get"
+            preventScrollReset
           >
             {/* TODO: clean up accordion padding */}
             <Accordion
@@ -281,7 +282,7 @@ export function SortDropdown() {
         </DropdownMenuTrigger>
       </div>
       <DropdownMenuContent className="w-fit md:w-[280px]" align="end">
-        <Form method="get" className="flex flex-col gap-1">
+        <Form method="get" className="flex flex-col gap-1" preventScrollReset>
           {sortOptions.map((option) => (
             <SortButton
               key={option.value}
