@@ -36,9 +36,7 @@ export default function Components() {
   return (
     <div>
       <nav className="flex items-center justify-between">
-        <h1 className="font-heading text-8xl capitalize">
-          {selectedComponent}
-        </h1>
+        <h1 className="font-sans text-8xl capitalize">{selectedComponent}</h1>
         <div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

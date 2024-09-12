@@ -329,7 +329,7 @@ function ProductHeader({
           )}
         </div>
       )}
-      <h1 className="font-heading text-[2rem] tracking-[-0.32px] sm:text-6xl sm:leading-[0.75]">
+      <h1 className="font-sans text-[2rem] tracking-[-0.32px] sm:text-6xl sm:leading-[0.75]">
         {title}
       </h1>
 

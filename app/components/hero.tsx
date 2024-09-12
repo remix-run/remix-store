@@ -52,7 +52,7 @@ export function Hero({ image, title, subtitle, to }: HeroProps) {
             </p>
             <h1
               className={clsx(
-                "text-shadow-hero max-w-[484px] font-heading text-6xl font-normal capitalize leading-[0.75] text-black text-opacity-80",
+                "text-shadow-hero max-w-[484px] font-sans text-6xl font-normal capitalize leading-[0.75] text-black text-opacity-80",
                 "md:text-8xl md:leading-[0.75]",
               )}
             >
