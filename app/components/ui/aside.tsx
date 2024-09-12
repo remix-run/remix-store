@@ -130,7 +130,7 @@ const AsideTitle = forwardRef<
   <DialogPrimitive.Title
     ref={ref}
     className={cn(
-      "font-sans text-4xl tracking-[-0.36px] sm:text-5xl sm:tracking-[-0.48px]",
+      "font-sans text-2xl font-bold leading-none sm:text-4xl sm:tracking-[-1.08px]",
       className,
     )}
     {...props}
