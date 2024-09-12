@@ -15,6 +15,7 @@ import {
   type AppLoadContext,
 } from "@shopify/remix-oxygen";
 import { AppSession } from "~/lib/session";
+import { createAppLoadContext } from "~/lib/context";
 import { CART_QUERY_FRAGMENT, CART_MUTATE_FRAGMENT } from "~/lib/fragments";
 
 /**
@@ -40,43 +41,11 @@ export default {
         AppSession.init(request, [env.SESSION_SECRET]),
       ]);
 
-      /**
-       * Create Hydrogen's Storefront client.
-       */
-      const { storefront } = createStorefrontClient({
-        cache,
-        waitUntil,
-        i18n: getLocaleFromRequest(request),
-        publicStorefrontToken: env.PUBLIC_STOREFRONT_API_TOKEN,
-        privateStorefrontToken: env.PRIVATE_STOREFRONT_API_TOKEN,
-        storeDomain: env.PUBLIC_STORE_DOMAIN,
-        storefrontId: env.PUBLIC_STOREFRONT_ID,
-        storefrontHeaders: getStorefrontHeaders(request),
-      });
-
-      /**
-       * Create a client for Customer Account API.
-       */
-      const customerAccount = createCustomerAccountClient({
-        waitUntil,
+      const appLoadContext = await createAppLoadContext(
         request,
-        session,
-        customerAccountId: env.PUBLIC_CUSTOMER_ACCOUNT_API_CLIENT_ID,
-        customerAccountUrl: env.PUBLIC_CUSTOMER_ACCOUNT_API_URL,
-      });
-
-      /*
-       * Create a cart handler that will be used to
-       * create and update the cart in the session.
-       */
-      const cart = createCartHandler({
-        storefront,
-        customerAccount,
-        getCartId: cartGetIdDefault(request.headers),
-        setCartId: cartSetIdDefault(),
-        cartQueryFragment: CART_QUERY_FRAGMENT,
-        cartMutateFragment: CART_MUTATE_FRAGMENT,
-      });
+        env,
+        executionContext,
+      );
 
       /**
        * Create a Remix request handler and pass
@@ -85,14 +54,7 @@ export default {
       const handleRequest = createRequestHandler({
         build: remixBuild,
         mode: process.env.NODE_ENV,
-        getLoadContext: (): AppLoadContext => ({
-          session,
-          storefront,
-          customerAccount,
-          cart,
-          env,
-          waitUntil,
-        }),
+        getLoadContext: () => appLoadContext,
       });
 
       const response = await handleRequest(request);
