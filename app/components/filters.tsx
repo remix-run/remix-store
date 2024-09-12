@@ -198,7 +198,7 @@ function PriceInput({
   max,
 }: React.InputHTMLAttributes<HTMLInputElement>) {
   return (
-    <div className="relative">
+    <div className="relative font-normal">
       <span className="absolute left-3 top-1/2 -translate-y-1/2 select-none">
         $
       </span>
