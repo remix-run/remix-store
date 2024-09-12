@@ -380,7 +380,7 @@ function CartDiscounts({
               name="discountCode"
               placeholder="Enter promo code"
               className={clsx(
-                "font-sm lh-5 my-5 bg-neutral-200 font-bold uppercase leading-5 dark:bg-neutral-800",
+                "font-sm lh-5 my-5 bg-neutral-200 font-mono font-bold uppercase leading-5 dark:bg-neutral-800",
                 "focus:border-transparent focus:outline-none focus:ring-0",
                 "placeholder:font-thin placeholder:normal-case",
                 "w-full",

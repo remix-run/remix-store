@@ -117,6 +117,20 @@ export const Button = forwardRef(
 );
 Button.displayName = "Button";
 
+const buttonText = cva(
+  [
+    "whitespace-nowrap px-5 font-mono font-medium capitalize leading-normal md:text-base",
+  ],
+  {
+    variants: {
+      side: {
+        left: ["mr-auto"],
+        right: ["ml-auto"],
+      },
+    },
+  },
+);
+
 // For now just keep this thing separate, we can merge into the main button later if we want to
 export const ButtonWithWellText = forwardRef(
   (
@@ -143,7 +157,7 @@ export const ButtonWithWellText = forwardRef(
         className={cn(well({ size }), "flex min-w-fit max-w-full items-center")}
       >
         {wellPrefix ? (
-          <div className="mr-auto whitespace-nowrap px-5 text-sm font-medium md:text-base">
+          <div className={cn(buttonText({ side: "left" }), "mr-auto")}>
             {wellPrefix}
           </div>
         ) : null}
@@ -160,7 +174,7 @@ export const ButtonWithWellText = forwardRef(
           {children}
         </Comp>
         {wellPostfix ? (
-          <div className="ml-auto whitespace-nowrap px-5 text-sm font-medium md:text-base">
+          <div className={cn(buttonText({ side: "right" }), "ml-auto")}>
             {wellPostfix}
           </div>
         ) : null}
