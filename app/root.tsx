@@ -23,7 +23,6 @@ import interItalicUrl from "/font/inter-italic-latin-var.woff2?url";
 import sourceCodeProUrl from "/font/source-code-pro-roman-var.woff2?url";
 import sourceCodeProItalicUrl from "/font/source-code-pro-italic-var.woff2?url";
 
-import "~/styles/app.css"; // TODO: remove when finished with tailwind
 import "./tailwind.css";
 import { Hero } from "./components/hero";
 import { Button } from "./components/ui/button";
