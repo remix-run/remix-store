@@ -113,7 +113,7 @@ function FilterAccordionItem({
       )}
     >
       <AccordionTrigger icon="chevron-up">{title}</AccordionTrigger>
-      <AccordionContent className="mt-0">{children}</AccordionContent>
+      <AccordionContent>{children}</AccordionContent>
     </AccordionItem>
   );
 }
