@@ -1,22 +1,9 @@
 // @ts-ignore
 // Virtual entry point for the app
 import * as remixBuild from "virtual:remix/server-build";
-import {
-  cartGetIdDefault,
-  cartSetIdDefault,
-  createCartHandler,
-  createStorefrontClient,
-  storefrontRedirect,
-  createCustomerAccountClient,
-} from "@shopify/hydrogen";
-import {
-  createRequestHandler,
-  getStorefrontHeaders,
-  type AppLoadContext,
-} from "@shopify/remix-oxygen";
-import { AppSession } from "~/lib/session";
+import { storefrontRedirect } from "@shopify/hydrogen";
+import { createRequestHandler } from "@shopify/remix-oxygen";
 import { createAppLoadContext } from "~/lib/context";
-import { CART_QUERY_FRAGMENT, CART_MUTATE_FRAGMENT } from "~/lib/fragments";
 
 /**
  * Export a fetch handler in module format.
@@ -28,19 +15,6 @@ export default {
     executionContext: ExecutionContext,
   ): Promise<Response> {
     try {
-      /**
-       * Open a cache instance in the worker and a custom session instance.
-       */
-      if (!env?.SESSION_SECRET) {
-        throw new Error("SESSION_SECRET environment variable is not set");
-      }
-
-      const waitUntil = executionContext.waitUntil.bind(executionContext);
-      const [cache, session] = await Promise.all([
-        caches.open("hydrogen"),
-        AppSession.init(request, [env.SESSION_SECRET]),
-      ]);
-
       const appLoadContext = await createAppLoadContext(
         request,
         env,
@@ -59,8 +33,11 @@ export default {
 
       const response = await handleRequest(request);
 
-      if (session.isPending) {
-        response.headers.set("Set-Cookie", await session.commit());
+      if (appLoadContext.session.isPending) {
+        response.headers.set(
+          "Set-Cookie",
+          await appLoadContext.session.commit(),
+        );
       }
 
       if (response.status === 404) {
@@ -69,7 +46,11 @@ export default {
          * If the redirect doesn't exist, then `storefrontRedirect`
          * will pass through the 404 response.
          */
-        return storefrontRedirect({ request, response, storefront });
+        return storefrontRedirect({
+          request,
+          response,
+          storefront: appLoadContext.storefront,
+        });
       }
 
       return response;
@@ -79,20 +60,3 @@ export default {
     }
   },
 };
-
-function getLocaleFromRequest(request: Request): I18nLocale {
-  const url = new URL(request.url);
-  const firstPathPart = url.pathname.split("/")[1]?.toUpperCase() ?? "";
-
-  type I18nFromUrl = [I18nLocale["language"], I18nLocale["country"]];
-
-  let pathPrefix = "";
-  let [language, country]: I18nFromUrl = ["EN", "US"];
-
-  if (/^[A-Z]{2}-[A-Z]{2}$/i.test(firstPathPart)) {
-    pathPrefix = "/" + firstPathPart;
-    [language, country] = firstPathPart.split("-") as I18nFromUrl;
-  }
-
-  return { language, country, pathPrefix };
-}
