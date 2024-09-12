@@ -7,8 +7,9 @@ const config = {
   prefix: "",
   theme: {
     fontFamily: {
-      sans: ["Inter", ...defaultTheme.fontFamily.sans],
-      mono: ["Source Code Pro", ...defaultTheme.fontFamily.mono],
+      body: ['"Inter"', ...defaultTheme.fontFamily.sans],
+      heading: ['"Jersey 10"', ...defaultTheme.fontFamily.sans],
+      mono: ['"Sometype Mono"', ...defaultTheme.fontFamily.mono],
     },
     screens: {
       sm: "430px",
