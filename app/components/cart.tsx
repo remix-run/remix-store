@@ -81,9 +81,7 @@ function CartDetails({
   return (
     <div className={clsx("h-full flex-col", hidden ? "hidden" : "flex")}>
       <CartItems layout={layout}>
-        <strong className="font-bold">
-          {cart.isOptimistic ? "XX" : cart.totalQuantity}
-        </strong>{" "}
+        <strong className="font-bold">{cart.totalQuantity}</strong>{" "}
         {cart.totalQuantity === 1 ? "item" : "item(s)"} in this cart
       </CartItems>
       <CartLines lines={cart?.lines?.nodes} layout={layout} />
