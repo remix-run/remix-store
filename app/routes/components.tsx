@@ -75,7 +75,7 @@ export function Section({
   children: React.ReactNode;
 }) {
   return (
-    <section className="mt-8 px-8 py-6">
+    <section className="mt-8 px-9 py-6">
       <h2 className="text-4xl">{title}</h2>
       <div className={cn("mt-6", className)}>{children}</div>
     </section>
