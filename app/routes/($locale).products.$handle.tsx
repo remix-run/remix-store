@@ -134,7 +134,12 @@ function loadDeferredData({ context, params }: LoaderFunctionArgs) {
 
 export default function Product() {
   const { product, variants } = useLoaderData<typeof loader>();
-  const { selectedVariant } = product;
+  let { selectedVariant } = product;
+
+  // If a variant isn't selected, use the first variant for price, analytics, etc
+  if (!selectedVariant) {
+    selectedVariant = product.variants.nodes[0];
+  }
 
   return (
     <div className="lg mx-auto grid max-w-[theme(screens.xl)] gap-3 md:grid-cols-2">
@@ -142,7 +147,6 @@ export default function Product() {
         images={product?.images.nodes || []}
         gradientColors={product.gradientColors}
       />
-      {/* <ProductImage image={selectedVariant?.image} /> */}
       <ProductMain
         selectedVariant={selectedVariant}
         product={product}
