@@ -228,7 +228,7 @@ function ProductMain({
 }) {
   const { title, vendor, description, specs, fullDescription } = product;
   const cardCss =
-    "flex flex-col gap-8 rounded-3xl bg-neutral-100 p-6 lg:p-12 dark:bg-neutral-700";
+    "flex flex-col gap-8 rounded-3xl bg-neutral-100 p-6 lg:p-9 dark:bg-neutral-700";
 
   return (
     <div>
@@ -291,9 +291,9 @@ function ProductMain({
                 </AccordionContent>
               </AccordionItem>
             ) : null}
-            <AccordionItem value="shipping">
+            <AccordionItem value="shipping" className="pb-0">
               <AccordionTrigger>Shipping</AccordionTrigger>
-              <AccordionContent>
+              <AccordionContent className="pb-9">
                 {/* Not sure if this should be coming from the data or just be standard for all products */}
                 See a full list of countries we ship to{" "}
                 <Link to="/help">here</Link>.
@@ -324,25 +324,18 @@ function ProductHeader({
     : 0;
 
   return (
-    <div className="flex flex-col gap-3 md:gap-4">
+    <div className="flex flex-col gap-[18px] md:gap-4">
       {(displayVendor || isOnSale) && (
         <div className="flex justify-between">
           {displayVendor && <div>{vendor}</div>}
-          {isOnSale && (
-            <div className="text-right font-semibold text-red-brand">SALE</div>
-          )}
         </div>
       )}
       <h1 className="font-sans text-[2rem] font-bold leading-9 tracking-[-0.32px] sm:text-3xl">
         {title}
       </h1>
 
-      <div className="flex gap-3 text-2xl tracking-[-0.48px]">
-        <Money
-          className="font-bold"
-          data={selectedVariant?.price!}
-          withoutTrailingZeros
-        />
+      <div className="flex gap-3 font-mono text-2xl tracking-[-0.48px]">
+        <Money data={selectedVariant?.price!} withoutTrailingZeros />
         {isOnSale && (
           <>
             <s className="line-through opacity-50">
