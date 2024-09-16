@@ -324,13 +324,13 @@ function ProductHeader({
     : 0;
 
   return (
-    <div className="flex flex-col gap-[18px] md:gap-4">
+    <div className="flex flex-col gap-[18px]">
       {(displayVendor || isOnSale) && (
-        <div className="flex justify-between">
+        <div className="flex justify-between text-2xl/6">
           {displayVendor && <div>{vendor}</div>}
         </div>
       )}
-      <h1 className="font-sans text-[2rem] font-bold leading-9 tracking-[-0.32px] sm:text-3xl">
+      <h1 className="font-sans text-[2rem] font-bold tracking-[-0.32px] sm:text-3xl sm:leading-[1.875rem]">
         {title}
       </h1>
 
