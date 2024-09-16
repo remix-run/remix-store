@@ -28,7 +28,7 @@ export function Hero({ image, title, subtitle, href }: HeroProps) {
   return (
     <div
       // a neat trick taken from the Wes Bos: https://x.com/wesbos/status/1834640452865101907
-      className={clsx("grid [&>*]:[grid-area:1/1]", heightClasses)}
+      className={clsx("relative grid [&>*]:[grid-area:1/1]", heightClasses)}
     >
       {image && (
         <Image
@@ -53,7 +53,7 @@ export function Hero({ image, title, subtitle, href }: HeroProps) {
 
         {href && (
           <Link
-            className="flex h-12 min-w-fit items-center rounded-xl border-2 border-white p-4 font-bold uppercase tracking-[0.8px] no-underline"
+            className="flex h-12 min-w-fit items-center rounded-xl border-2 border-white p-4 font-bold uppercase tracking-[0.8px] no-underline before:absolute before:inset-0 before:size-full hover:border-blue-brand hover:bg-blue-brand hover:text-white"
             to={href.to}
           >
             {href.text}
