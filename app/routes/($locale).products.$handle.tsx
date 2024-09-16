@@ -228,7 +228,7 @@ function ProductMain({
 }) {
   const { title, vendor, description, specs, fullDescription } = product;
   const cardCss =
-    "flex flex-col gap-8 rounded-3xl bg-neutral-100 p-6 lg:p-9 dark:bg-neutral-700";
+    "flex flex-col gap-6 md:gap-8 rounded-3xl bg-neutral-100 p-6 lg:p-9 dark:bg-neutral-700";
 
   return (
     <div>
@@ -380,7 +380,7 @@ function ProductForm({
   }
 
   return (
-    <div className="flex flex-col gap-8">
+    <>
       <VariantSelector
         handle={product.handle}
         options={product.options.filter((option) => option.values.length > 1)}
@@ -388,35 +388,37 @@ function ProductForm({
       >
         {({ option }) => <ProductOptions key={option.name} option={option} />}
       </VariantSelector>
-      <AddToCartButton
-        disabled={!selectedVariant || !isAvailable}
-        onClick={() => {
-          open("cart");
-          publish("cart_viewed", {
-            cart,
-            prevCart,
-            shop,
-            url: window.location.href || "",
-          } as CartViewPayload);
-        }}
-        lines={
-          selectedVariant
-            ? [
-                {
-                  merchandiseId: selectedVariant.id,
-                  quantity: 1,
-                  // Add entire product to selected variant so we can determine gradient colours in an optimistic cart
-                  selectedVariant: { ...selectedVariant, product },
-                },
-              ]
-            : []
-        }
-      >
-        {product.availableForSale ? addToCartText : "Sold out"}
-      </AddToCartButton>
+      <div className="mt-8 flex flex-col gap-3">
+        <AddToCartButton
+          disabled={!selectedVariant || !isAvailable}
+          onClick={() => {
+            open("cart");
+            publish("cart_viewed", {
+              cart,
+              prevCart,
+              shop,
+              url: window.location.href || "",
+            } as CartViewPayload);
+          }}
+          lines={
+            selectedVariant
+              ? [
+                  {
+                    merchandiseId: selectedVariant.id,
+                    quantity: 1,
+                    // Add entire product to selected variant so we can determine gradient colours in an optimistic cart
+                    selectedVariant: { ...selectedVariant, product },
+                  },
+                ]
+              : []
+          }
+        >
+          {product.availableForSale ? addToCartText : "Sold out"}
+        </AddToCartButton>
 
-      {isAvailable ? <ShopPayButton /> : null}
-    </div>
+        {isAvailable ? <ShopPayButton /> : null}
+      </div>
+    </>
   );
 }
 
@@ -424,7 +426,7 @@ function ProductForm({
 export function ShopPayButton() {
   return (
     <Button
-      className="flex justify-center bg-shop-pay py-[22px] [--yamaha-shadow-color:theme(colors.shop-pay)]"
+      className="flex justify-center bg-shop-pay py-[24px] [--yamaha-shadow-color:theme(colors.shop-pay)]"
       intent="primary"
       size="lg"
       // TODO: Add link to immediate checkout
