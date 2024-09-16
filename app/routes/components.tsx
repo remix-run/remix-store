@@ -1,4 +1,5 @@
-import { Link, Outlet, useLoaderData, useLocation } from "@remix-run/react";
+import { Link, Outlet, useLoaderData } from "@remix-run/react";
+import type { LoaderFunctionArgs, MetaFunction } from "@remix-run/node";
 import { Button } from "~/components/ui/button";
 import {
   DropdownMenu,
@@ -8,7 +9,19 @@ import {
 } from "~/components/ui/dropdown-menu";
 import { cn } from "~/lib";
 
-export async function loader() {
+export const meta: MetaFunction<typeof loader> = ({ data }) => {
+  const selectedComponent = data?.selectedComponent;
+  const title = selectedComponent
+    ? `${selectedComponent} | Component Library`
+    : "Component Library";
+  return [
+    {
+      title: title.charAt(0).toUpperCase() + title.slice(1),
+    },
+  ];
+};
+
+export async function loader({ request }: LoaderFunctionArgs) {
   // TODO: turn this on only for the most prodest of environments
   // if (process.env.NODE_ENV === "production") {
   //   throw new Response("Not found", { status: 404 });
@@ -23,15 +36,15 @@ export async function loader() {
     return routePath;
   });
 
-  // Return the paths as loader data
-  return { componentRoutes: paths };
+  const url = new URL(request.url);
+  const selectedComponent = url.pathname.split("/").at(-1);
+
+  // Return the paths and selectedComponent as loader data
+  return { componentRoutes: paths, selectedComponent };
 }
 
 export default function Components() {
-  const { componentRoutes } = useLoaderData<typeof loader>();
-  const { pathname } = useLocation();
-
-  const selectedComponent = pathname.split("/").at(-1);
+  const { componentRoutes, selectedComponent } = useLoaderData<typeof loader>();
 
   return (
     <div>
@@ -41,7 +54,7 @@ export default function Components() {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button size="sm" className="px-4 lowercase">
-                select a component
+                {selectedComponent ? selectedComponent : "select a component"}
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
@@ -64,6 +77,8 @@ export default function Components() {
     </div>
   );
 }
+
+export const shouldRevalidate = () => true;
 
 export function Section({
   title,
