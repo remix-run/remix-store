@@ -1,8 +1,11 @@
 import type { LinkProps } from "@remix-run/react";
 import { Link } from "@remix-run/react";
 import { clsx } from "clsx";
-import { Image } from "@shopify/hydrogen";
-import type { ProductImageFragment } from "storefrontapi.generated";
+import { Image, Video } from "@shopify/hydrogen";
+import type {
+  CollectionVideoFragment,
+  ProductImageFragment,
+} from "storefrontapi.generated";
 
 // I don't see a good way to get this URL from the GraphQL API, should be fine to hardcode it here
 const DEFAULT_IMAGE = {
@@ -14,6 +17,7 @@ const DEFAULT_IMAGE = {
 
 type HeroProps = {
   image?: ProductImageFragment | null;
+  video?: CollectionVideoFragment | null;
   title: string;
   subtitle?: string;
   href?: {
@@ -22,7 +26,7 @@ type HeroProps = {
   };
 };
 
-export function Hero({ image, title, subtitle, href }: HeroProps) {
+export function Hero({ title, subtitle, video, image, href }: HeroProps) {
   const heightClasses = "h-[300px] md:h-[480px] xl:h-[540px]";
 
   return (
@@ -30,12 +34,23 @@ export function Hero({ image, title, subtitle, href }: HeroProps) {
       // a neat trick taken from the Wes Bos: https://x.com/wesbos/status/1834640452865101907
       className={clsx("relative grid [&>*]:[grid-area:1/1]", heightClasses)}
     >
-      {image && (
+      {/* {image && (
         <Image
           className={clsx("w-full object-cover", heightClasses)}
           data={image}
           sizes="100vw"
           loading="eager"
+        />
+      )} */}
+      {video && (
+        <Video
+          className={clsx("w-full object-cover", heightClasses)}
+          data={video}
+          playsInline
+          autoPlay
+          muted
+          loop
+          controls={false}
         />
       )}
       <div className="flex w-full flex-col items-center gap-6 self-end justify-self-center p-6 text-white sm:p-9 md:flex-row md:items-end md:justify-between md:gap-0 md:justify-self-start">

@@ -12,13 +12,12 @@ export default async function handleRequest(
   context: AppLoadContext,
 ) {
   const { nonce, header, NonceProvider } = createContentSecurityPolicy({
-    fontSrc: [
+    fontSrc: ["'self'", "https://cdn.shopify.com"],
+    defaultSrc: [
       "'self'",
       "https://cdn.shopify.com",
-      "https://fonts.googleapis.com",
-      "https://fonts.gstatic.com/",
+      context.env.PUBLIC_STORE_DOMAIN,
     ],
-    styleSrc: ["'self'", "https://fonts.googleapis.com"],
     shop: {
       checkoutDomain: context.env.PUBLIC_CHECKOUT_DOMAIN,
       storeDomain: context.env.PUBLIC_STORE_DOMAIN,

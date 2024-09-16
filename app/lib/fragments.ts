@@ -341,3 +341,20 @@ export const PRODUCT_ITEM_FRAGMENT = `#graphql
   }
   ${PRODUCT_IMAGE_FRAGMENT}
 ` as const;
+
+export const COLLECTION_VIDEO_FRAGMENT = `#graphql
+  ${PRODUCT_IMAGE_FRAGMENT}
+  fragment CollectionVideo on Video {
+    id
+    previewImage {
+      ...ProductImage
+    }
+    sources {
+      url
+      format
+      width
+      height
+      mimeType
+    }
+  }
+` as const;
