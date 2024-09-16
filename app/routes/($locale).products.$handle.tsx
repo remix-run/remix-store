@@ -142,7 +142,7 @@ export default function Product() {
   }
 
   return (
-    <div className="lg mx-auto grid max-w-[theme(screens.xl)] gap-3 md:grid-cols-2">
+    <div className="lg mx-auto grid max-w-[theme(screens.xl)] gap-4 md:grid-cols-2">
       <ProductImages
         images={product?.images.nodes || []}
         gradientColors={product.gradientColors}
@@ -238,7 +238,7 @@ function ProductMain({
             <ProductHeader
               title={title}
               vendor={vendor}
-              selectedVariant={selectedVariant || product.variants.nodes[0]}
+              selectedVariant={selectedVariant}
             />
           </div>
 
@@ -324,7 +324,7 @@ function ProductHeader({
     : 0;
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-3 md:gap-4">
       {(displayVendor || isOnSale) && (
         <div className="flex justify-between">
           {displayVendor && <div>{vendor}</div>}
@@ -333,7 +333,7 @@ function ProductHeader({
           )}
         </div>
       )}
-      <h1 className="font-sans text-[2rem] tracking-[-0.32px] sm:text-6xl sm:leading-[0.75]">
+      <h1 className="font-sans text-[2rem] font-bold leading-9 tracking-[-0.32px] sm:text-3xl">
         {title}
       </h1>
 
