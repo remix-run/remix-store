@@ -436,7 +436,7 @@ export function ShopPayButton() {
       size="lg"
       // TODO: Add link to immediate checkout
     >
-      <Icon name="shop-pay" className="h-6 w-auto" />
+      <Icon name="shop-pay" className="h-6 w-auto max-w-full" />
     </Button>
   );
 }
