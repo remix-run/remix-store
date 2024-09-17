@@ -426,7 +426,7 @@ function ProductForm({
 export function ShopPayButton() {
   return (
     <Button
-      className="flex justify-center bg-shop-pay py-[24px] [--yamaha-shadow-color:theme(colors.shop-pay)]"
+      className="flex justify-center bg-shop-pay py-6 [--yamaha-shadow-color:theme(colors.shop-pay)]"
       intent="primary"
       size="lg"
       // TODO: Add link to immediate checkout
