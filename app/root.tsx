@@ -223,7 +223,16 @@ export function ErrorBoundary() {
 
   return (
     <>
-      <Hero subtitle={errorMessage} title={`error ${errorStatus}`} />
+      <Hero
+        subtitle={errorMessage}
+        title={`error ${errorStatus}`}
+        image={{
+          url: "https://cdn.shopify.com/s/files/1/0655/4127/5819/files/404-image.png?v=1726259004",
+          width: 1200,
+          height: 1200,
+          altText: "Suspended coat hanger with no clothes on it",
+        }}
+      />
       <div className="my-[100px] flex flex-col items-center gap-6">
         <p className="text-xl">
           Please check to see if you have typed the URL correctly.

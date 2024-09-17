@@ -4,7 +4,10 @@ import { defer } from "@shopify/remix-oxygen";
 import { Await, useLoaderData, type MetaFunction } from "@remix-run/react";
 import { Hero } from "~/components/hero";
 import { FiltersToolbar } from "~/components/filters";
-import { PRODUCT_ITEM_FRAGMENT } from "~/lib/fragments";
+import {
+  COLLECTION_VIDEO_FRAGMENT,
+  PRODUCT_ITEM_FRAGMENT,
+} from "~/lib/fragments";
 import { CollectionGrid } from "~/components/collection-grid";
 import type { RecommendedProductsQuery } from "storefrontapi.generated";
 
@@ -27,13 +30,17 @@ export async function loader(args: LoaderFunctionArgs) {
  * needed to render the page. If it's unavailable, the whole page should 400 or 500 error.
  */
 async function loadCriticalData({ context }: LoaderFunctionArgs) {
-  const [collection] = await Promise.all([
-    context.storefront.query(FEATURED_COLLECTION_QUERY),
+  const [collectionData] = await Promise.all([
+    context.storefront.query(FEATURED_COLLECTION_QUERY, {
+      variables: {
+        handle: context.featuredCollection,
+      },
+    }),
     // Add other queries here, so that they are loaded in parallel
   ]);
 
   return {
-    featuredCollection: collection.collectionByHandle,
+    featuredCollection: collectionData.collection,
   };
 }
 
@@ -64,10 +71,18 @@ export default function Homepage() {
     <>
       {featuredCollection ? (
         <Hero
+          video={
+            featuredCollection.video?.reference?.__typename === "Video"
+              ? featuredCollection.video?.reference
+              : undefined
+          }
           image={featuredCollection.image}
-          title="remix mini skateboard"
-          subtitle="build your very own"
-          to={`/products/${featuredCollection.products.nodes[0].handle}`}
+          title={featuredCollection.title}
+          subtitle={featuredCollection.description}
+          href={{
+            text: "shop collection",
+            to: `/collections/${featuredCollection.handle}`,
+          }}
         />
       ) : null}
       <FiltersToolbar />
@@ -92,20 +107,24 @@ function RecommendedProducts({
   );
 }
 
-const FEATURED_COLLECTION_QUERY = `#graphql
-  query FeaturedCollection($country: CountryCode, $language: LanguageCode)
+export const FEATURED_COLLECTION_QUERY = `#graphql
+  ${COLLECTION_VIDEO_FRAGMENT}
+  query FeaturedCollection($country: CountryCode, $language: LanguageCode, $handle: String!)
     @inContext(country: $country, language: $language) {
-    collectionByHandle(handle: "featured") {
+    collection(handle: $handle) {
+      title
+      description
+      handle
       image {
-        id
-        url
-        altText
-        width
-        height
+        ...ProductImage
       }
-      products(first: 1) {
-        nodes {
-          handle
+      video: metafield(key: "featured_video", namespace: "custom") {
+        id
+        reference {
+          __typename
+          ... on Video {
+            ...CollectionVideo
+          }
         }
       }
     }

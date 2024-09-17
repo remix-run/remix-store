@@ -8,7 +8,7 @@ const config = {
   theme: {
     fontFamily: {
       sans: ['"Inter"', ...defaultTheme.fontFamily.sans],
-      mono: ['"Sometype Mono"', ...defaultTheme.fontFamily.mono],
+      mono: ['"Source Code Pro"', ...defaultTheme.fontFamily.mono],
     },
     screens: {
       sm: "430px",

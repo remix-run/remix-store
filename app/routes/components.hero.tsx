@@ -2,7 +2,7 @@ import { Section } from "./components";
 import { Hero } from "~/components/hero";
 import type { LoaderFunctionArgs } from "@remix-run/server-runtime";
 import { useLoaderData } from "@remix-run/react";
-import { COLLECTION_VIDEO_FRAGMENT } from "~/lib/fragments";
+import { FEATURED_COLLECTION_QUERY } from "./($locale)._index";
 
 const imageData = {
   url: "https://cdn.shopify.com/s/files/1/0655/4127/5819/files/shirt-hanging.png?v=1726259004",
@@ -12,68 +12,69 @@ const imageData = {
 };
 
 export async function loader({ context }: LoaderFunctionArgs) {
-  const collection = await context.storefront.query(
-    HERO_COMPONENTS_EXAMPLE_DATA,
+  const { collection } = await context.storefront.query(
+    FEATURED_COLLECTION_QUERY,
+    {
+      variables: {
+        handle: context.featuredCollection,
+      },
+    },
   );
 
-  return {
-    collection,
-  };
+  return { collection };
 }
 
 export default function Buttons() {
   const { collection } = useLoaderData<typeof loader>();
 
-  const heroMedia = collection.collectionByHandle?.heroMedia?.reference;
+  if (!collection) {
+    return <h1>No collection found</h1>;
+  }
 
   return (
     <div className="-mx-9 bg-neutral-100 dark:bg-neutral-700">
-      <Section title="Hero component" className="p">
+      <Section title="Hero component -- video, title, subtitle, link">
         <Hero
-          title="Remix Logo Apparel"
-          subtitle="New for Fall/Winter 2024"
+          title={collection.title}
+          subtitle={collection.description}
           image={imageData}
-          video={heroMedia?.__typename === "Video" ? heroMedia : undefined}
+          video={
+            collection.video?.reference?.__typename === "Video"
+              ? collection.video?.reference
+              : undefined
+          }
           href={{
-            to: "collections/all",
             text: "shop collection",
+            to: `/collections/${collection.handle}`,
+          }}
+        />
+      </Section>
+      <Section title="Hero component -- image, title, subtitle, link">
+        <Hero
+          title={collection.title}
+          subtitle={collection.description}
+          image={imageData}
+          href={{
+            text: "shop collection",
+            to: `/collections/${collection.handle}`,
           }}
         />
       </Section>
 
-      {/* <Section title="Hero component -- with/without subtitle, no link">
-        <div />
+      <Section
+        title="Hero component -- with/without subtitle, no link"
+        className="space-y-8"
+      >
+        <Hero
+          title={collection.title}
+          subtitle={collection.description}
+          image={imageData}
+        />
+        <Hero title={collection.title} image={imageData} />
       </Section>
       <Section title="Hero component -- Title only">
         <div />
-      </Section> */}
+      </Section>
     </div>
   );
 }
-
-const HERO_COMPONENTS_EXAMPLE_DATA = `#graphql
-  ${COLLECTION_VIDEO_FRAGMENT}
-  query ExampleCollection($country: CountryCode, $language: LanguageCode)
-    @inContext(country: $country, language: $language) {
-    collectionByHandle(handle: "featured") {
-      image {
-        id
-        url
-        altText
-        width
-        height
-      }
-      heroMedia: metafield(key: "hero_media", namespace: "custom") {
-        namespace
-        key
-        type
-        reference {
-          __typename
-          ... on Video {
-            ...CollectionVideo
-          }
-        }
-      }
-    }
-  }
-` as const;
