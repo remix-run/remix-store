@@ -48,15 +48,30 @@ export function Hero({
       )}
     >
       {video ? (
-        <Video
-          className={clsx("w-full object-cover", heightClasses)}
-          data={video}
-          playsInline
-          autoPlay
-          muted
-          loop
-          controls={false}
-        />
+        <>
+          <Video
+            className={clsx(
+              "w-full object-cover motion-reduce:hidden",
+              heightClasses,
+            )}
+            data={video}
+            playsInline
+            autoPlay
+            muted
+            loop
+            controls={false}
+          />
+          {/* Kind of annoying to double render this image, but we need it in the event that there's a video and prefers-reduced-motion is enabled */}
+          <Image
+            className={clsx(
+              "w-full object-cover motion-safe:hidden",
+              heightClasses,
+            )}
+            data={image ?? DEFAULT_IMAGE}
+            sizes="100vw"
+            loading="eager"
+          />
+        </>
       ) : (
         <Image
           className={clsx("w-full object-cover", heightClasses)}
