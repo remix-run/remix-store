@@ -11,6 +11,8 @@ import {
 import { CollectionGrid } from "~/components/collection-grid";
 import type { RecommendedProductsQuery } from "storefrontapi.generated";
 
+const FEATURED_COLLECTION_HANDLE = "remix-logo-apparel";
+
 export const meta: MetaFunction = () => {
   return [{ title: "The Remix Store | Home" }];
 };
@@ -34,7 +36,7 @@ async function loadCriticalData({ context }: LoaderFunctionArgs) {
     FEATURED_COLLECTION_QUERY,
     {
       variables: {
-        handle: context.featuredCollection,
+        handle: FEATURED_COLLECTION_HANDLE,
       },
     },
   );
@@ -78,7 +80,7 @@ export default function Homepage() {
           }
           image={featuredCollection.image}
           title={featuredCollection.title}
-          subtitle={featuredCollection.description}
+          subtitle={featuredCollection.featuredDescription?.value}
           href={{
             text: "shop collection",
             to: `/collections/${featuredCollection.handle}`,
@@ -109,11 +111,10 @@ function RecommendedProducts({
 
 export const FEATURED_COLLECTION_QUERY = `#graphql
   ${COLLECTION_VIDEO_FRAGMENT}
-  query FeaturedCollection($country: CountryCode, $language: LanguageCode, $handle: String!)
+  query FeaturedCollection($handle: String!, $country: CountryCode, $language: LanguageCode)
     @inContext(country: $country, language: $language) {
     featuredCollection: collection(handle: $handle) {
       title
-      description
       handle
       image {
         ...ProductImage
@@ -126,6 +127,9 @@ export const FEATURED_COLLECTION_QUERY = `#graphql
             ...CollectionVideo
           }
         }
+      }
+      featuredDescription: metafield(key: "featured_description", namespace: "custom") {
+        value
       }
     }
   }

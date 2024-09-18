@@ -4,59 +4,48 @@ import type { LoaderFunctionArgs } from "@remix-run/server-runtime";
 import { useLoaderData } from "@remix-run/react";
 import { FEATURED_COLLECTION_QUERY } from "./($locale)._index";
 
-const imageData = {
-  url: "https://cdn.shopify.com/s/files/1/0655/4127/5819/files/shirt-hanging.png?v=1726259004",
-  width: 1200,
-  height: 1200,
-  altText: "Remix t-shirt hanging from a rack",
-};
-
 export async function loader({ context }: LoaderFunctionArgs) {
-  const { collection } = await context.storefront.query(
+  const { featuredCollection } = await context.storefront.query(
     FEATURED_COLLECTION_QUERY,
-    {
-      variables: {
-        handle: context.featuredCollection,
-      },
-    },
   );
 
-  return { collection };
+  return { featuredCollection };
 }
 
 export default function Buttons() {
-  const { collection } = useLoaderData<typeof loader>();
+  const { featuredCollection } = useLoaderData<typeof loader>();
 
-  if (!collection) {
+  if (!featuredCollection) {
     return <h1>No collection found</h1>;
   }
+  const { title, description, handle, image, video } = featuredCollection;
 
   return (
     <div className="-mx-9 bg-neutral-100 dark:bg-neutral-700">
       <Section title="Hero component -- video, title, subtitle, link">
         <Hero
-          title={collection.title}
-          subtitle={collection.description}
-          image={imageData}
+          title={title}
+          subtitle={description}
+          image={image}
           video={
-            collection.video?.reference?.__typename === "Video"
-              ? collection.video?.reference
+            video?.reference?.__typename === "Video"
+              ? video?.reference
               : undefined
           }
           href={{
             text: "shop collection",
-            to: `/collections/${collection.handle}`,
+            to: `/collections/${handle}`,
           }}
         />
       </Section>
       <Section title="Hero component -- image, title, subtitle, link">
         <Hero
-          title={collection.title}
-          subtitle={collection.description}
-          image={imageData}
+          title={title}
+          subtitle={description}
+          image={image}
           href={{
             text: "shop collection",
-            to: `/collections/${collection.handle}`,
+            to: `/collections/${handle}`,
           }}
         />
       </Section>
@@ -65,12 +54,8 @@ export default function Buttons() {
         title="Hero component -- with/without subtitle, no link"
         className="space-y-8"
       >
-        <Hero
-          title={collection.title}
-          subtitle={collection.description}
-          image={imageData}
-        />
-        <Hero title={collection.title} image={imageData} />
+        <Hero title={title} subtitle={description} image={image} />
+        <Hero title={title} image={image} />
       </Section>
       <Section title="Hero component -- Title only">
         <div />

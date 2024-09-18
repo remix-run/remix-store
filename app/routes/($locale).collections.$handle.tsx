@@ -36,8 +36,6 @@ export async function loader(args: LoaderFunctionArgs) {
   return defer({
     ...deferredData,
     ...criticalData,
-    isFeaturedCollection:
-      args.context.featuredCollection === args.params.handle,
   });
 }
 
@@ -88,15 +86,13 @@ function loadDeferredData({ context }: LoaderFunctionArgs) {
 }
 
 export default function Collection() {
-  const { collection, isFeaturedCollection } = useLoaderData<typeof loader>();
+  const { collection } = useLoaderData<typeof loader>();
 
   return (
     <div>
       <Hero
         title={collection.title}
-        subtitle={
-          isFeaturedCollection ? "featured collection" : collection.description
-        }
+        subtitle={collection.description}
         image={collection.image}
       />
       <FiltersToolbar />

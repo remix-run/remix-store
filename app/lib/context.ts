@@ -38,7 +38,5 @@ export async function createAppLoadContext(
 
   return {
     ...hydrogenContext,
-    // TODO: What's the best way to determine the featured collection from the Shopify Storefront API?
-    featuredCollection: "remix-logo-apparel",
   };
 }
