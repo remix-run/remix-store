@@ -11,7 +11,7 @@ import {
 import { CollectionGrid } from "~/components/collection-grid";
 import type { RecommendedProductsQuery } from "storefrontapi.generated";
 
-const FEATURED_COLLECTION_HANDLE = "remix-logo-apparel";
+export const FEATURED_COLLECTION_HANDLE = "remix-logo-apparel";
 
 export const meta: MetaFunction = () => {
   return [{ title: "The Remix Store | Home" }];
