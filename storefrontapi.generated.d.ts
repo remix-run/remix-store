@@ -471,7 +471,7 @@ export type FeaturedCollectionQueryVariables = StorefrontAPI.Exact<{
 }>;
 
 export type FeaturedCollectionQuery = {
-  collection?: StorefrontAPI.Maybe<
+  featuredCollection?: StorefrontAPI.Maybe<
     Pick<StorefrontAPI.Collection, 'title' | 'description' | 'handle'> & {
       image?: StorefrontAPI.Maybe<
         Pick<StorefrontAPI.Image, 'id' | 'altText' | 'url' | 'width' | 'height'>
@@ -1135,7 +1135,7 @@ interface GeneratedQueryTypes {
     return: SitemapQuery;
     variables: SitemapQueryVariables;
   };
-  '#graphql\n  #graphql\n  #graphql\n  fragment ProductImage on Image {\n    id\n    altText\n    url\n    width\n    height\n  }\n\n  fragment CollectionVideo on Video {\n    id\n    previewImage {\n      ...ProductImage\n    }\n    sources {\n      url\n      format\n      width\n      height\n      mimeType\n    }\n  }\n\n  query FeaturedCollection($country: CountryCode, $language: LanguageCode, $handle: String!)\n    @inContext(country: $country, language: $language) {\n    collection(handle: $handle) {\n      title\n      description\n      handle\n      image {\n        ...ProductImage\n      }\n      video: metafield(key: "featured_video", namespace: "custom") {\n        id\n        reference {\n          __typename\n          ... on Video {\n            ...CollectionVideo\n          }\n        }\n      }\n    }\n  }\n': {
+  '#graphql\n  #graphql\n  #graphql\n  fragment ProductImage on Image {\n    id\n    altText\n    url\n    width\n    height\n  }\n\n  fragment CollectionVideo on Video {\n    id\n    previewImage {\n      ...ProductImage\n    }\n    sources {\n      url\n      format\n      width\n      height\n      mimeType\n    }\n  }\n\n  query FeaturedCollection($country: CountryCode, $language: LanguageCode, $handle: String!)\n    @inContext(country: $country, language: $language) {\n    featuredCollection: collection(handle: $handle) {\n      title\n      description\n      handle\n      image {\n        ...ProductImage\n      }\n      video: metafield(key: "featured_video", namespace: "custom") {\n        id\n        reference {\n          __typename\n          ... on Video {\n            ...CollectionVideo\n          }\n        }\n      }\n    }\n  }\n': {
     return: FeaturedCollectionQuery;
     variables: FeaturedCollectionQueryVariables;
   };

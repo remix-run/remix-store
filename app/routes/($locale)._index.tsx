@@ -30,17 +30,17 @@ export async function loader(args: LoaderFunctionArgs) {
  * needed to render the page. If it's unavailable, the whole page should 400 or 500 error.
  */
 async function loadCriticalData({ context }: LoaderFunctionArgs) {
-  const [collectionData] = await Promise.all([
-    context.storefront.query(FEATURED_COLLECTION_QUERY, {
+  const { featuredCollection } = await context.storefront.query(
+    FEATURED_COLLECTION_QUERY,
+    {
       variables: {
         handle: context.featuredCollection,
       },
-    }),
-    // Add other queries here, so that they are loaded in parallel
-  ]);
+    },
+  );
 
   return {
-    featuredCollection: collectionData.collection,
+    featuredCollection,
   };
 }
 
@@ -111,7 +111,7 @@ export const FEATURED_COLLECTION_QUERY = `#graphql
   ${COLLECTION_VIDEO_FRAGMENT}
   query FeaturedCollection($country: CountryCode, $language: LanguageCode, $handle: String!)
     @inContext(country: $country, language: $language) {
-    collection(handle: $handle) {
+    featuredCollection: collection(handle: $handle) {
       title
       description
       handle
