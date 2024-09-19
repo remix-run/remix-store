@@ -133,7 +133,9 @@ function loadDeferredData({ context, params }: LoaderFunctionArgs) {
 }
 
 function Carousel({ images, gradientColors }) {
-  return <div className="relative -mx-3 flex md:hidden">CAROUSEL</div>;
+  return (
+    <div className="relative -mx-4 mb-[18px] flex md:hidden">CAROUSEL</div>
+  );
 }
 
 export default function Product() {
@@ -146,7 +148,7 @@ export default function Product() {
   }
 
   return (
-    <div className="lg mx-auto max-w-[theme(screens.xl)] gap-[18px] md:flex">
+    <div className="lg mx-auto max-w-[theme(screens.xl)] md:flex md:gap-[18px]">
       <Carousel
         images={product?.images.nodes || []}
         gradientColors={product.gradientColors}
@@ -235,8 +237,9 @@ function ProductMain({
   variants: Promise<ProductVariantsQuery | null>;
 }) {
   const { title, vendor, description, specs, fullDescription } = product;
+
   const cardCss =
-    "flex flex-col gap-6 md:gap-8 rounded-3xl bg-neutral-100 p-6 lg:p-9 dark:bg-neutral-700";
+    "flex flex-col gap-6 md:gap-8 rounded-3xl bg-neutral-100 py-7 px-[24px] lg:p-9 dark:bg-neutral-700";
 
   return (
     <div>
@@ -252,7 +255,7 @@ function ProductMain({
 
           <p>{description}</p>
 
-          <div className="flex flex-col gap-[18px]">
+          <div className="flex flex-col gap-[18px] md:gap-8">
             <Suspense
               fallback={
                 <ProductForm
@@ -277,8 +280,9 @@ function ProductMain({
             </Suspense>
           </div>
         </div>
+
         <div className={cardCss}>
-          <Accordion type="multiple" className="lg:-m-6">
+          <Accordion type="multiple" className="-m-4 md:-m-6">
             {fullDescription ? (
               <AccordionItem value="description">
                 <AccordionTrigger>Description</AccordionTrigger>
@@ -332,17 +336,17 @@ function ProductHeader({
     : 0;
 
   return (
-    <div className="flex flex-col gap-[18px]">
+    <div className="flex flex-col gap-4 md:gap-[18px]">
       {(displayVendor || isOnSale) && (
-        <div className="flex justify-between text-2xl/6">
+        <div className="flex justify-between text-base leading-4 md:text-2xl/6">
           {displayVendor && <div>{vendor}</div>}
         </div>
       )}
-      <h1 className="font-sans text-[2rem] font-bold tracking-[-0.32px] sm:text-3xl sm:leading-[1.875rem]">
+      <h1 className="font-sans text-2xl font-bold leading-6 tracking-[-0.32px] md:text-4xl md:leading-[1.875rem]">
         {title}
       </h1>
 
-      <div className="flex gap-3 font-mono text-2xl tracking-[-0.48px]">
+      <div className="flex gap-3 font-mono text-base leading-4 tracking-[-0.48px] md:text-2xl/6 md:leading-6">
         <Money data={selectedVariant?.price!} withoutTrailingZeros />
         {isOnSale && (
           <>
@@ -396,7 +400,7 @@ function ProductForm({
       >
         {({ option }) => <ProductOptions key={option.name} option={option} />}
       </VariantSelector>
-      <div className="mt-8 flex flex-col gap-3">
+      <div className="flex flex-col gap-2 md:gap-3">
         <AddToCartButton
           disabled={!selectedVariant || !isAvailable}
           onClick={() => {
@@ -448,7 +452,7 @@ function ProductOptions({ option }: { option: VariantOption }) {
   return (
     <div
       key={option.name}
-      className={"grid grid-flow-col justify-stretch gap-1 lg:gap-4"}
+      className={"grid grid-flow-col justify-stretch gap-2 lg:gap-4"}
     >
       {option.values.map(({ value, isAvailable, isActive, to }) => {
         return (

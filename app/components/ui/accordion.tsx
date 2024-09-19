@@ -31,7 +31,7 @@ const AccordionItem = React.forwardRef<
 AccordionItem.displayName = "AccordionItem";
 
 const accordionTriggerVariants = cva(
-  "flex flex-1 items-center justify-between rounded-2xl p-6 font-medium transition-all hover:bg-neutral-50 dark:hover:bg-neutral-500",
+  "flex flex-1 items-center justify-between rounded-2xl p-4 md:p-6 font-medium transition-all hover:bg-neutral-50 dark:hover:bg-neutral-500",
   {
     variants: {
       icon: {
@@ -51,7 +51,7 @@ const AccordionTrigger = React.forwardRef<
   }
 >(({ className, children, icon = "x", ...props }, ref) => (
   <AccordionPrimitive.Header
-    className="flex text-2xl font-medium leading-4 tracking-normal"
+    className="flex text-xl font-medium leading-4 tracking-normal md:text-2xl"
     asChild
   >
     {/* Note: h2 is probably not right in all cases, probably should make configurable */}
@@ -78,7 +78,7 @@ const AccordionContent = React.forwardRef<
 >(({ className, children, ...props }, ref) => (
   <AccordionPrimitive.Content
     ref={ref}
-    className="overflow-hidden px-6 transition-all data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down"
+    className="overflow-hidden px-4 transition-all data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down md:px-6"
     {...props}
   >
     <div className={cn("mt-6", className)}>{children}</div>
