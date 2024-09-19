@@ -32,7 +32,11 @@ export function Image(props: ImageProps) {
     gradientHover = false,
     ...rest
   } = props;
-  if (!gradient) return <HydrogenImage {...rest} />;
+
+  const imgClassName =
+    "pointer-events-none absolute left-1/2 top-1/2 max-h-full max-w-full -translate-x-1/2 -translate-y-1/2 transform object-contain";
+
+  if (!gradient) return <HydrogenImage {...rest} className={imgClassName} />;
 
   const gradients = {
     // https://doodad.dev/gradient-generator?share=radial-90-200-158-31-35-6_21-74dfeaff_100-5a67d8ff__linear-161-50-50-50-50-7_1-8bdabcff_26-73dee9ff_71-67a0e6ff_100-4c51bf00
