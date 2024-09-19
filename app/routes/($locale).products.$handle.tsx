@@ -1,5 +1,9 @@
 import { Suspense } from "react";
-import { defer, type LoaderFunctionArgs } from "@shopify/remix-oxygen";
+import {
+  defer,
+  type LinksFunction,
+  type LoaderFunctionArgs,
+} from "@shopify/remix-oxygen";
 import {
   Await,
   Link,
@@ -42,8 +46,25 @@ import {
 } from "~/components/ui/accordion";
 import Icon from "~/components/icon";
 
+import emblaStyles from "~/styles/embla.css?url";
+import useEmblaCarousel from "embla-carousel-react";
+import {
+  DotButton,
+  useDotButton,
+} from "~/components/carousel/EmblaCarouselDotButton";
+import {
+  NextButton,
+  PrevButton,
+  usePrevNextButtons,
+} from "~/components/carousel/EmblaCarouselArrowButtons";
+import { cn } from "~/lib";
+
 /** The default vendor, which we hide because nobody cares */
 const DEFAULT_VENDOR = "Remix Swag Store";
+
+export const links: LinksFunction = () => [
+  { rel: "stylesheet", href: emblaStyles },
+];
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
   return [{ title: `The Remix Store | ${data?.product.title ?? ""}` }];
@@ -132,9 +153,57 @@ function loadDeferredData({ context, params }: LoaderFunctionArgs) {
   };
 }
 
-function Carousel({ images, gradientColors }) {
+function Carousel({
+  imagesWithGradients,
+}: {
+  imagesWithGradients: Array<{
+    image: ProductVariantFragment["image"];
+    gradient: ImageGradientColors;
+  }>;
+}) {
+  const [emblaRef, emblaApi] = useEmblaCarousel();
+
+  const { selectedIndex, scrollSnaps, onDotButtonClick } =
+    useDotButton(emblaApi);
+
+  const {
+    prevBtnDisabled,
+    nextBtnDisabled,
+    onPrevButtonClick,
+    onNextButtonClick,
+  } = usePrevNextButtons(emblaApi);
+
   return (
-    <div className="relative -mx-4 mb-[18px] flex md:hidden">CAROUSEL</div>
+    <section className="embla relative -mx-4 mb-[18px] md:hidden">
+      <div className="embla__viewport" ref={emblaRef}>
+        <div className="embla__container">
+          {imagesWithGradients.map(({ image, gradient }) => {
+            if (!image) return null;
+            return (
+              <div className="embla__slide" key={image.id}>
+                <ProductImage image={image} gradient={gradient} />
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="absolute bottom-0 z-10 flex h-1/4 w-full items-center justify-between p-4">
+        <PrevButton onClick={onPrevButtonClick} disabled={prevBtnDisabled} />
+        <div className="flex space-x-2">
+          {scrollSnaps.map((btnIndex) => (
+            <DotButton
+              key={btnIndex}
+              onClick={() => onDotButtonClick(btnIndex)}
+              className={cn("h-2 w-2 rounded-full bg-white", {
+                "bg-opacity-50": btnIndex !== selectedIndex,
+              })}
+            ></DotButton>
+          ))}
+        </div>
+        <NextButton onClick={onNextButtonClick} disabled={nextBtnDisabled} />
+      </div>
+    </section>
   );
 }
 
@@ -147,16 +216,18 @@ export default function Product() {
     selectedVariant = product.variants.nodes[0];
   }
 
+  const gradients = parseGradientColors(product.gradientColors);
+  const imagesWithGradients = product?.images.nodes.map((image) => {
+    return {
+      image,
+      gradient: gradients.shift() ?? "random",
+    };
+  });
+
   return (
     <div className="lg mx-auto max-w-[theme(screens.xl)] md:flex md:gap-[18px]">
-      <Carousel
-        images={product?.images.nodes || []}
-        gradientColors={product.gradientColors}
-      />
-      <ImageGrid
-        images={product?.images.nodes || []}
-        gradientColors={product.gradientColors}
-      />
+      <Carousel imagesWithGradients={imagesWithGradients} />
+      <ImageGrid imagesWithGradients={imagesWithGradients} />
       <ProductMain
         selectedVariant={selectedVariant}
         product={product}
@@ -182,18 +253,17 @@ export default function Product() {
 }
 
 function ImageGrid({
-  images,
-  gradientColors,
+  imagesWithGradients,
 }: {
-  images: Array<ProductVariantFragment["image"]>;
-  gradientColors: ProductFragment["gradientColors"];
+  imagesWithGradients: Array<{
+    image: ProductVariantFragment["image"];
+    gradient: ImageGradientColors;
+  }>;
 }) {
-  const gradients = parseGradientColors(gradientColors);
   return (
     <div className="hidden flex-shrink-0 flex-col gap-[18px] md:flex">
-      {images.map((image) => {
+      {imagesWithGradients.map(({ image, gradient }) => {
         if (!image) return null;
-        const gradient = gradients.shift() ?? "random";
         return (
           <ProductImage key={image.id} image={image} gradient={gradient} />
         );
@@ -213,7 +283,7 @@ function ProductImage({
     return null;
   }
   return (
-    <div className="overflow-hidden rounded-3xl">
+    <div className="md:overflow-hidden md:rounded-3xl">
       <Image
         alt={image.altText || "Product Image"}
         aspectRatio="1/1"

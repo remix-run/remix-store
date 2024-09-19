@@ -70,9 +70,7 @@ export function Image(props: ImageProps) {
 
   return (
     <div
-      className={clx(
-        "relative isolate min-h-full min-w-full overflow-hidden rounded-lg",
-      )}
+      className={clx("relative isolate min-h-full min-w-full overflow-hidden")}
     >
       {/* Color gradient layer */}
       <div
