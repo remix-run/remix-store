@@ -70,7 +70,6 @@ function FiltersAside() {
             method="get"
             preventScrollReset
           >
-            {/* TODO: clean up accordion padding */}
             <Accordion
               type="multiple"
               className="gap-0"

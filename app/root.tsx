@@ -178,13 +178,7 @@ export function Layout({ children }: { children?: React.ReactNode }) {
         <Meta />
         <Links />
       </head>
-      <body
-        className={clsx(
-          // I don't like this min width, I think it's wrong. Right now it's here to fix when you open the dropdown if you have scroll bars set to always be visible
-          "min-w-[100vw]",
-          "min-h-screen overflow-x-hidden bg-neutral-200 antialiased dark:bg-neutral-800",
-        )}
-      >
+      <body className="min-h-screen overflow-x-hidden bg-neutral-200 antialiased dark:bg-neutral-800">
         {data ? (
           <Analytics.Provider
             cart={data.cart}

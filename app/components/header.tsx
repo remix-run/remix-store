@@ -22,16 +22,23 @@ import {
   useAside,
 } from "~/components/ui/aside";
 import { CartMain } from "~/components/cart";
+import clsx from "clsx";
 
 interface HeaderProps {
   menu: NonNullable<HeaderQuery["menu"]>;
   cart: Promise<CartApiQueryFragment | null>;
   isLoggedIn: Promise<boolean>;
+  className?: string;
 }
 
-export function Header({ menu, cart }: HeaderProps) {
+export function Header({ menu, cart, className }: HeaderProps) {
   return (
-    <header className="sticky top-0 z-10 mx-auto flex h-[var(--header-height)] max-w-[theme(screens.xl)] items-center justify-between bg-neutral-200 dark:bg-neutral-800">
+    <header
+      className={clsx(
+        "sticky top-0 z-10 mx-auto flex h-[var(--header-height)] items-center justify-between bg-neutral-200 dark:bg-neutral-800",
+        className,
+      )}
+    >
       <HeaderMenu menu={menu} />
       <NavLink prefetch="intent" to="/" className="flex-1 text-center" end>
         <TitleLogo />

@@ -21,13 +21,19 @@ export function PageLayout({
   header,
   isLoggedIn,
 }: PageLayoutProps) {
+  const padding = "px-[var(--main-padding)]";
   return (
     <>
       {header.menu && (
-        <Header menu={header.menu} cart={cart} isLoggedIn={isLoggedIn} />
+        <Header
+          className={padding}
+          menu={header.menu}
+          cart={cart}
+          isLoggedIn={isLoggedIn}
+        />
       )}
-      <main className="px-3 sm:px-9">{children}</main>
-      <Footer footer={footer} />
+      <main className={padding}>{children}</main>
+      <Footer className={padding} footer={footer} />
     </>
   );
 }

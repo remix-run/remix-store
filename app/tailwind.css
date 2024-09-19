@@ -41,6 +41,11 @@
     --aside-summary-height: 280px;
     --yamaha-shadow-color: theme(colors.neutral.50);
     --header-height: 84px;
+    --main-padding: theme(spacing.3);
+
+    @screen md {
+      --main-padding: theme(spacing.9);
+    }
 
     @screen sm {
       --header-height: 110px;

@@ -6,11 +6,12 @@ import { useRelativeUrl } from "~/ui/primitives/utils";
 
 interface FooterProps {
   footer: Promise<FooterQuery | null>;
+  className?: string;
 }
 
-export function Footer({ footer: footerPromise }: FooterProps) {
+export function Footer({ footer: footerPromise, className }: FooterProps) {
   return (
-    <footer className="min-h-24 py-12">
+    <footer className={clsx("min-h-24 py-12", className)}>
       <Suspense>
         <Await resolve={footerPromise}>
           {(footer) => {

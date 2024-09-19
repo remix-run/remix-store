@@ -42,8 +42,7 @@ export function Hero({
       className={cn(
         "relative grid [&>*]:[grid-area:1/1]",
         heightClasses,
-        // Temporary solution until we fix margins in https://github.com/remix-run/remix-store/issues/75
-        "-mx-9",
+        "-mx-[var(--main-padding)]",
         className,
       )}
     >
