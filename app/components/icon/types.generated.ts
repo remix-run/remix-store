@@ -15,6 +15,8 @@ export const iconNames = [
   "filter",
   "computer",
   "chevron-up",
+  "chevron-right",
+  "chevron-left",
   "chevron-down",
   "check",
   "bag",

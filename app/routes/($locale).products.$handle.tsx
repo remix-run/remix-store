@@ -132,6 +132,10 @@ function loadDeferredData({ context, params }: LoaderFunctionArgs) {
   };
 }
 
+function Carousel({ images, gradientColors }) {
+  return <div className="relative -mx-3 flex md:hidden">CAROUSEL</div>;
+}
+
 export default function Product() {
   const { product, variants } = useLoaderData<typeof loader>();
   let { selectedVariant } = product;
@@ -142,8 +146,12 @@ export default function Product() {
   }
 
   return (
-    <div className="lg mx-auto grid max-w-[theme(screens.xl)] gap-4 md:grid-cols-2">
-      <ProductImages
+    <div className="lg mx-auto max-w-[theme(screens.xl)] gap-[18px] md:flex">
+      <Carousel
+        images={product?.images.nodes || []}
+        gradientColors={product.gradientColors}
+      />
+      <ImageGrid
         images={product?.images.nodes || []}
         gradientColors={product.gradientColors}
       />
@@ -171,7 +179,7 @@ export default function Product() {
   );
 }
 
-function ProductImages({
+function ImageGrid({
   images,
   gradientColors,
 }: {
@@ -180,7 +188,7 @@ function ProductImages({
 }) {
   const gradients = parseGradientColors(gradientColors);
   return (
-    <div className="flex flex-col gap-3">
+    <div className="hidden flex-shrink-0 flex-col gap-[18px] md:flex">
       {images.map((image) => {
         if (!image) return null;
         const gradient = gradients.shift() ?? "random";
@@ -203,7 +211,7 @@ function ProductImage({
     return null;
   }
   return (
-    <div className="aspect-ratio relative isolate overflow-hidden rounded-3xl">
+    <div className="overflow-hidden rounded-3xl">
       <Image
         alt={image.altText || "Product Image"}
         aspectRatio="1/1"
@@ -232,7 +240,7 @@ function ProductMain({
 
   return (
     <div>
-      <div className="sticky top-[var(--header-height)] flex flex-col gap-3">
+      <div className="sticky top-[var(--header-height)] flex flex-col gap-[18px]">
         <div className={cardCss}>
           <div className="flex flex-col gap-6">
             <ProductHeader
@@ -244,7 +252,7 @@ function ProductMain({
 
           <p>{description}</p>
 
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-[18px]">
             <Suspense
               fallback={
                 <ProductForm
