@@ -397,7 +397,9 @@ function ProductOptions({ option }: { option: VariantOption }) {
   return (
     <div
       key={option.name}
-      className={"grid grid-flow-col justify-stretch gap-2 lg:gap-4"}
+      className={
+        "grid grid-flow-col justify-stretch gap-2 lg:gap-4 [&>*]:min-w-12"
+      }
     >
       {option.values.map(({ value, isAvailable, isActive, to }) => {
         return (
