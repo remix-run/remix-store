@@ -108,6 +108,7 @@ function Carousel({
         </div>
       </div>
 
+      {/* Only show the carousel controls if there's more than one image */}
       {images.length > 1 && (
         <div className="absolute bottom-0 z-10 flex w-full items-center justify-between bg-gradient-to-t from-black/40 p-6 pt-12 text-white">
           <PrevButton

@@ -39,7 +39,6 @@ import {
   AccordionTrigger,
 } from "~/components/ui/accordion";
 import Icon from "~/components/icon";
-
 import ProductImages from "~/components/product-images";
 
 /** The default vendor, which we hide because nobody cares */
