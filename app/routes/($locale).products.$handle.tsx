@@ -138,7 +138,7 @@ export default function Product() {
   }
 
   return (
-    <div className="lg mx-auto max-w-[theme(screens.xl)] md:flex md:gap-[18px]">
+    <div className="mx-auto max-w-[theme(screens.xl)] md:flex md:justify-center md:gap-[18px]">
       <ProductImages
         images={product?.images.nodes}
         gradientColors={product.gradientColors}
@@ -282,7 +282,7 @@ function ProductHeader({
           {displayVendor && <div>{vendor}</div>}
         </div>
       )}
-      <h1 className="font-sans text-2xl font-bold leading-6 tracking-[-0.32px] md:text-4xl md:leading-[1.875rem]">
+      <h1 className="min-w-max font-sans text-2xl font-bold leading-6 tracking-[-0.32px] md:text-4xl md:leading-[1.875rem]">
         {title}
       </h1>
 
@@ -390,12 +390,7 @@ export function ShopPayButton() {
 
 function ProductOptions({ option }: { option: VariantOption }) {
   return (
-    <div
-      key={option.name}
-      className={
-        "grid grid-flow-col justify-stretch gap-2 lg:gap-4 [&>*]:min-w-12"
-      }
-    >
+    <div className="grid grid-cols-[repeat(auto-fit,minmax(theme(spacing.12),1fr))] gap-2 lg:gap-4">
       {option.values.map(({ value, isAvailable, isActive, to }) => {
         return (
           <Button

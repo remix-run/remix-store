@@ -1,5 +1,6 @@
 import { parseGradientColors } from "~/lib/metafields";
 import { Image, type ImageGradientColors } from "./image";
+
 import useEmblaCarousel from "embla-carousel-react";
 import { DotButton, useDotButton } from "~/components/carousel/dot-button";
 import {
@@ -46,17 +47,20 @@ function ImageGrid({
   }>;
 }) {
   return (
-    <div className="hidden flex-shrink-0 flex-col gap-[18px] md:flex">
-      {images.map(({ image, gradient }) => {
+    <div className="hidden size-full max-w-[800px] flex-col gap-[18px] md:flex">
+      {images.slice(0, 3).map(({ image, gradient }) => {
         if (!image) return null;
+
         return (
-          <div key={image.id} className="overflow-hidden rounded-3xl">
+          <div
+            key={image.id}
+            className="aspect-square overflow-hidden rounded-3xl"
+          >
             <Image
               alt={image.altText || "Product Image"}
-              aspectRatio="1/1"
               data={image}
               gradient={gradient}
-              gradientFade={true}
+              gradientFade
               sizes="(min-width: 45em) 50vw, 100vw"
             />
           </div>
@@ -96,7 +100,6 @@ function Carousel({
               <div className="flex w-full shrink-0" key={image.id}>
                 <Image
                   alt={image.altText || "Product Image"}
-                  aspectRatio="1/1"
                   data={image}
                   gradient={gradient}
                   gradientFade={true}

@@ -1,5 +1,5 @@
 import { Image as HydrogenImage } from "@shopify/hydrogen";
-import clx from "clsx";
+import { cn } from "~/lib";
 
 export type HydrogenImageProps = Parameters<typeof HydrogenImage>[0];
 
@@ -13,7 +13,7 @@ export type ImageGradientColors =
   | "pinkPurple"
   | "random";
 
-export type ImageProps = HydrogenImageProps & {
+export type ImageProps = Omit<HydrogenImageProps, "width" | "height"> & {
   /** (optional) Gradient background color/pattern */
   gradient?: ImageGradientColors;
   /** If true, the gradient will fade out to white or dark at the bottom based on color-scheme*/
@@ -62,43 +62,39 @@ export function Image(props: ImageProps) {
     const randomGradientName = Object.keys(gradients)[
       Math.floor(Math.random() * Object.keys(gradients).length)
     ] as keyof typeof gradients;
-
     activeGradient = gradients[randomGradientName];
   } else {
     activeGradient = gradients[gradient];
   }
 
   return (
-    <div
-      className={clx("relative isolate min-h-full min-w-full overflow-hidden")}
-    >
+    <div className="isolate grid min-h-full min-w-full overflow-hidden [&>*]:[grid-area:1/1]">
       {/* Color gradient layer */}
       <div
-        className={clx(
-          "absolute left-0 top-0 z-0 h-full w-full",
+        className={cn(
+          "z-[-2] h-full w-full",
           gradientHover &&
             "cursor-pointer opacity-0 transition-opacity duration-300 hover:opacity-100",
         )}
-        style={{
-          zIndex: -2,
-          backgroundImage: activeGradient,
-        }}
+        style={{ backgroundImage: activeGradient }}
         suppressHydrationWarning={gradient === "random"}
       />
 
       {gradientFade && (
         <div
-          className="absolute left-0 top-0 z-0 h-full w-full"
-          style={{
-            zIndex: -1,
-            backgroundImage: fadeGradient,
-          }}
+          className="left-0 top-0 z-[-1] h-full w-full"
+          style={{ backgroundImage: fadeGradient }}
         />
       )}
 
       <HydrogenImage
         {...rest}
-        className="pointer-events-none min-h-full min-w-full"
+        width={rest.data?.width ?? undefined}
+        height={rest.data?.height ?? undefined}
+        className={cn(
+          "pointer-events-none size-auto self-center justify-self-center",
+          rest.className,
+        )}
       />
     </div>
   );
