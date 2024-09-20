@@ -108,42 +108,44 @@ function Carousel({
         </div>
       </div>
 
-      <div className="absolute bottom-0 z-10 flex w-full items-center justify-between bg-gradient-to-t from-black/40 p-6 pt-12 text-white">
-        <PrevButton
-          onClick={onPrevButtonClick}
-          disabled={prevBtnDisabled}
-          className="h-6 w-6"
-          aria-label="Previous image"
-        >
-          <svg viewBox="0 0 10 10" className="mx-auto">
-            <use href="/sprite.svg#chevron-left"></use>
-          </svg>
-        </PrevButton>
-        <div className="flex space-x-4">
-          {scrollSnaps.map((btnIndex, index) => {
-            return (
-              <DotButton
-                key={btnIndex}
-                onClick={() => onDotButtonClick(index)}
-                className={cn("h-2 w-2 rounded-full bg-white", {
-                  "bg-opacity-50": index !== selectedIndex,
-                })}
-                aria-label={`Skip to image ${index + 1}`}
-              ></DotButton>
-            );
-          })}
+      {images.length > 1 && (
+        <div className="absolute bottom-0 z-10 flex w-full items-center justify-between bg-gradient-to-t from-black/40 p-6 pt-12 text-white">
+          <PrevButton
+            onClick={onPrevButtonClick}
+            disabled={prevBtnDisabled}
+            className="h-6 w-6"
+            aria-label="Previous image"
+          >
+            <svg viewBox="0 0 10 10" className="mx-auto">
+              <use href="/sprite.svg#chevron-left"></use>
+            </svg>
+          </PrevButton>
+          <div className="flex space-x-4">
+            {scrollSnaps.map((btnIndex, index) => {
+              return (
+                <DotButton
+                  key={btnIndex}
+                  onClick={() => onDotButtonClick(index)}
+                  className={cn("h-2 w-2 rounded-full bg-white", {
+                    "bg-opacity-50": index !== selectedIndex,
+                  })}
+                  aria-label={`Skip to image ${index + 1}`}
+                ></DotButton>
+              );
+            })}
+          </div>
+          <NextButton
+            onClick={onNextButtonClick}
+            disabled={nextBtnDisabled}
+            className="h-6 w-6"
+            aria-label="Next image"
+          >
+            <svg viewBox="0 0 10 10" className="mx-auto">
+              <use href="/sprite.svg#chevron-right"></use>
+            </svg>
+          </NextButton>
         </div>
-        <NextButton
-          onClick={onNextButtonClick}
-          disabled={nextBtnDisabled}
-          className="h-6 w-6"
-          aria-label="Next image"
-        >
-          <svg viewBox="0 0 10 10" className="mx-auto">
-            <use href="/sprite.svg#chevron-right"></use>
-          </svg>
-        </NextButton>
-      </div>
+      )}
     </section>
   );
 }
