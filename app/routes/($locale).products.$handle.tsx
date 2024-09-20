@@ -1,9 +1,5 @@
 import { Suspense } from "react";
-import {
-  defer,
-  type LinksFunction,
-  type LoaderFunctionArgs,
-} from "@shopify/remix-oxygen";
+import { defer, type LoaderFunctionArgs } from "@shopify/remix-oxygen";
 import {
   Await,
   Link,
