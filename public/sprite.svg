@@ -55,10 +55,10 @@
 <path d="M7 14.5834L12.0008 10L17 14.5834" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
 </symbol>
 <symbol viewBox="0 0 24 24" fill="none" id="chevron-right">
-<path d="M10 7L15 12L10 17" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+<path d="M10 7L15 12L10 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
 </symbol>
 <symbol viewBox="0 0 24 24" fill="none" id="chevron-left">
-<path d="M15 17L10 12L15 7" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+<path d="M15 17L10 12L15 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
 </symbol>
 <symbol viewBox="0 0 24 24" fill="none" id="chevron-down">
 <path d="M7 10L12.0008 14.58L17 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>

@@ -17,7 +17,6 @@ import type {
   ProductVariantsQuery,
   ProductVariantFragment,
 } from "storefrontapi.generated";
-import { Image, type ImageGradientColors } from "~/components/image";
 import {
   type OptimisticCartLineInput,
   Money,
@@ -32,7 +31,6 @@ import {
 } from "@shopify/hydrogen";
 import type { SelectedOption } from "@shopify/hydrogen/storefront-api-types";
 import { useAside } from "~/components/ui/aside";
-import { parseGradientColors } from "~/lib/metafields";
 import {
   PRODUCT_DETAIL_FRAGMENT,
   PRODUCT_VARIANT_FRAGMENT,
@@ -46,25 +44,10 @@ import {
 } from "~/components/ui/accordion";
 import Icon from "~/components/icon";
 
-import emblaStyles from "~/styles/embla.css?url";
-import useEmblaCarousel from "embla-carousel-react";
-import {
-  DotButton,
-  useDotButton,
-} from "~/components/carousel/EmblaCarouselDotButton";
-import {
-  NextButton,
-  PrevButton,
-  usePrevNextButtons,
-} from "~/components/carousel/EmblaCarouselArrowButtons";
-import { cn } from "~/lib";
+import ProductImages from "~/components/product-images";
 
 /** The default vendor, which we hide because nobody cares */
 const DEFAULT_VENDOR = "Remix Swag Store";
-
-export const links: LinksFunction = () => [
-  { rel: "stylesheet", href: emblaStyles },
-];
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
   return [{ title: `The Remix Store | ${data?.product.title ?? ""}` }];
@@ -96,15 +79,12 @@ async function loadCriticalData({
     throw new Error("Expected product handle to be defined");
   }
 
-  const [{ product }] = await Promise.all([
-    storefront.query(PRODUCT_QUERY, {
-      variables: {
-        handle,
-        selectedOptions: getSelectedProductOptions(request),
-      },
-    }),
-    // Add other queries here, so that they are loaded in parallel
-  ]);
+  const { product } = await storefront.query(PRODUCT_QUERY, {
+    variables: {
+      handle,
+      selectedOptions: getSelectedProductOptions(request),
+    },
+  });
 
   if (!product?.id) {
     throw new Response("Product not found", { status: 404 });
@@ -153,60 +133,6 @@ function loadDeferredData({ context, params }: LoaderFunctionArgs) {
   };
 }
 
-function Carousel({
-  imagesWithGradients,
-}: {
-  imagesWithGradients: Array<{
-    image: ProductVariantFragment["image"];
-    gradient: ImageGradientColors;
-  }>;
-}) {
-  const [emblaRef, emblaApi] = useEmblaCarousel();
-
-  const { selectedIndex, scrollSnaps, onDotButtonClick } =
-    useDotButton(emblaApi);
-
-  const {
-    prevBtnDisabled,
-    nextBtnDisabled,
-    onPrevButtonClick,
-    onNextButtonClick,
-  } = usePrevNextButtons(emblaApi);
-
-  return (
-    <section className="embla relative -mx-4 mb-[18px] md:hidden">
-      <div className="embla__viewport" ref={emblaRef}>
-        <div className="embla__container">
-          {imagesWithGradients.map(({ image, gradient }) => {
-            if (!image) return null;
-            return (
-              <div className="embla__slide" key={image.id}>
-                <ProductImage image={image} gradient={gradient} />
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      <div className="absolute bottom-0 z-10 flex h-1/4 w-full items-center justify-between p-4">
-        <PrevButton onClick={onPrevButtonClick} disabled={prevBtnDisabled} />
-        <div className="flex space-x-2">
-          {scrollSnaps.map((btnIndex) => (
-            <DotButton
-              key={btnIndex}
-              onClick={() => onDotButtonClick(btnIndex)}
-              className={cn("h-2 w-2 rounded-full bg-white", {
-                "bg-opacity-50": btnIndex !== selectedIndex,
-              })}
-            ></DotButton>
-          ))}
-        </div>
-        <NextButton onClick={onNextButtonClick} disabled={nextBtnDisabled} />
-      </div>
-    </section>
-  );
-}
-
 export default function Product() {
   const { product, variants } = useLoaderData<typeof loader>();
   let { selectedVariant } = product;
@@ -216,18 +142,12 @@ export default function Product() {
     selectedVariant = product.variants.nodes[0];
   }
 
-  const gradients = parseGradientColors(product.gradientColors);
-  const imagesWithGradients = product?.images.nodes.map((image) => {
-    return {
-      image,
-      gradient: gradients.shift() ?? "random",
-    };
-  });
-
   return (
     <div className="lg mx-auto max-w-[theme(screens.xl)] md:flex md:gap-[18px]">
-      <Carousel imagesWithGradients={imagesWithGradients} />
-      <ImageGrid imagesWithGradients={imagesWithGradients} />
+      <ProductImages
+        images={product?.images.nodes}
+        gradientColors={product.gradientColors}
+      />
       <ProductMain
         selectedVariant={selectedVariant}
         product={product}
@@ -247,51 +167,6 @@ export default function Product() {
             },
           ],
         }}
-      />
-    </div>
-  );
-}
-
-function ImageGrid({
-  imagesWithGradients,
-}: {
-  imagesWithGradients: Array<{
-    image: ProductVariantFragment["image"];
-    gradient: ImageGradientColors;
-  }>;
-}) {
-  return (
-    <div className="hidden flex-shrink-0 flex-col gap-[18px] md:flex">
-      {imagesWithGradients.map(({ image, gradient }) => {
-        if (!image) return null;
-        return (
-          <ProductImage key={image.id} image={image} gradient={gradient} />
-        );
-      })}
-    </div>
-  );
-}
-
-function ProductImage({
-  image,
-  gradient,
-}: {
-  image: ProductVariantFragment["image"];
-  gradient?: ImageGradientColors;
-}) {
-  if (!image) {
-    return null;
-  }
-  return (
-    <div className="md:overflow-hidden md:rounded-3xl">
-      <Image
-        alt={image.altText || "Product Image"}
-        aspectRatio="1/1"
-        data={image}
-        key={image.id}
-        gradient={gradient}
-        gradientFade={true}
-        sizes="(min-width: 45em) 50vw, 100vw"
       />
     </div>
   );

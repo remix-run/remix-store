@@ -1,0 +1,149 @@
+import { parseGradientColors } from "~/lib/metafields";
+import { Image, type ImageGradientColors } from "./image";
+import useEmblaCarousel from "embla-carousel-react";
+import { DotButton, useDotButton } from "~/components/carousel/dot-button";
+import {
+  NextButton,
+  PrevButton,
+  usePrevNextButtons,
+} from "~/components/carousel/arrow-buttons";
+import { cn } from "~/lib";
+
+import type {
+  ProductFragment,
+  ProductVariantFragment,
+} from "storefrontapi.generated";
+
+export default function ProductImages({
+  images,
+  gradientColors,
+}: {
+  images: Array<ProductVariantFragment["image"]>;
+  gradientColors: ProductFragment["gradientColors"];
+}) {
+  const gradients = parseGradientColors(gradientColors);
+
+  const processedImages = images.map((image) => ({
+    image,
+    gradient: gradients.shift() ?? "random",
+  }));
+
+  return (
+    <>
+      {/* Maybe we should do a mobile check here instead of hide/show with Tailwind? */}
+      <ImageGrid images={processedImages} />
+      <Carousel images={processedImages} />
+    </>
+  );
+}
+
+function ImageGrid({
+  images,
+}: {
+  images: Array<{
+    image: ProductVariantFragment["image"];
+    gradient: ImageGradientColors;
+  }>;
+}) {
+  return (
+    <div className="hidden flex-shrink-0 flex-col gap-[18px] md:flex">
+      {images.map(({ image, gradient }) => {
+        if (!image) return null;
+        return (
+          <div key={image.id} className="overflow-hidden rounded-3xl">
+            <Image
+              alt={image.altText || "Product Image"}
+              aspectRatio="1/1"
+              data={image}
+              gradient={gradient}
+              gradientFade={true}
+              sizes="(min-width: 45em) 50vw, 100vw"
+            />
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function Carousel({
+  images,
+}: {
+  images: Array<{
+    image: ProductVariantFragment["image"];
+    gradient: ImageGradientColors;
+  }>;
+}) {
+  const [emblaRef, emblaApi] = useEmblaCarousel();
+
+  const { selectedIndex, scrollSnaps, onDotButtonClick } =
+    useDotButton(emblaApi);
+
+  const {
+    prevBtnDisabled,
+    nextBtnDisabled,
+    onPrevButtonClick,
+    onNextButtonClick,
+  } = usePrevNextButtons(emblaApi);
+
+  return (
+    <section className="relative -mx-4 mb-[18px] md:hidden">
+      <div className="overflow-hidden" ref={emblaRef}>
+        <div className="pinch-zoom flex touch-pan-y">
+          {images.map(({ image, gradient }, index) => {
+            if (!image) return null;
+            return (
+              <div className="flex w-full shrink-0" key={image.id}>
+                <Image
+                  alt={image.altText || "Product Image"}
+                  aspectRatio="1/1"
+                  data={image}
+                  gradient={gradient}
+                  gradientFade={true}
+                  sizes="(min-width: 45em) 50vw, 100vw"
+                />
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="absolute bottom-0 z-10 flex w-full items-center justify-between bg-gradient-to-t from-black/40 p-6 pt-12 text-white">
+        <PrevButton
+          onClick={onPrevButtonClick}
+          disabled={prevBtnDisabled}
+          className="h-6 w-6"
+          aria-label="Previous image"
+        >
+          <svg viewBox="0 0 10 10" className="mx-auto">
+            <use href="/sprite.svg#chevron-left"></use>
+          </svg>
+        </PrevButton>
+        <div className="flex space-x-4">
+          {scrollSnaps.map((btnIndex, index) => {
+            return (
+              <DotButton
+                key={btnIndex}
+                onClick={() => onDotButtonClick(index)}
+                className={cn("h-2 w-2 rounded-full bg-white", {
+                  "bg-opacity-50": index !== selectedIndex,
+                })}
+                aria-label={`Skip to image ${index + 1}`}
+              ></DotButton>
+            );
+          })}
+        </div>
+        <NextButton
+          onClick={onNextButtonClick}
+          disabled={nextBtnDisabled}
+          className="h-6 w-6"
+          aria-label="Next image"
+        >
+          <svg viewBox="0 0 10 10" className="mx-auto">
+            <use href="/sprite.svg#chevron-right"></use>
+          </svg>
+        </NextButton>
+      </div>
+    </section>
+  );
+}
