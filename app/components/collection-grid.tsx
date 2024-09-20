@@ -65,7 +65,6 @@ export function CollectionItem({ product }: CollectionItemProps) {
         )}
       >
         <Image
-          aspectRatio="1/1"
           data={product.images.nodes[0]}
           gradient={gradients[0]}
           gradientHover={true}
