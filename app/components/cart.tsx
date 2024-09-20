@@ -156,11 +156,8 @@ function CartLineItem({
         <div className="h-[148px] w-[148px]">
           <Image
             alt={title}
-            aspectRatio="1/1"
             data={image}
-            height={100}
             loading="lazy"
-            width={100}
             gradient={gradients[0]}
             gradientFade
           />

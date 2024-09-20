@@ -62,7 +62,6 @@ function ImageGrid({
               gradient={gradient}
               gradientFade
               sizes="(min-width: 45em) 50vw, 100vw"
-              className="size-auto"
             />
           </div>
         );

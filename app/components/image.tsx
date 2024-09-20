@@ -1,5 +1,5 @@
 import { Image as HydrogenImage } from "@shopify/hydrogen";
-import clsx from "clsx";
+import { cn } from "~/lib";
 
 export type HydrogenImageProps = Parameters<typeof HydrogenImage>[0];
 
@@ -71,7 +71,7 @@ export function Image(props: ImageProps) {
     <div className="isolate grid min-h-full min-w-full overflow-hidden [&>*]:[grid-area:1/1]">
       {/* Color gradient layer */}
       <div
-        className={clsx(
+        className={cn(
           "z-[-2] h-full w-full",
           gradientHover &&
             "cursor-pointer opacity-0 transition-opacity duration-300 hover:opacity-100",
@@ -91,8 +91,8 @@ export function Image(props: ImageProps) {
         {...rest}
         width={rest.data?.width ?? undefined}
         height={rest.data?.height ?? undefined}
-        className={clsx(
-          "pointer-events-none self-center justify-self-center",
+        className={cn(
+          "pointer-events-none size-auto self-center justify-self-center",
           rest.className,
         )}
       />
