@@ -7,6 +7,8 @@ import {
   type MetaFunction,
   type FetcherWithComponents,
   useSearchParams,
+  Form,
+  useSubmit,
 } from "@remix-run/react";
 import type {
   ProductFragment,
@@ -31,13 +33,20 @@ import {
   PRODUCT_DETAIL_FRAGMENT,
   PRODUCT_VARIANT_FRAGMENT,
 } from "~/lib/fragments";
-import { Button } from "~/components/ui/button";
+import { Button, ButtonWithWellText } from "~/components/ui/button";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "~/components/ui/accordion";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "~/components/ui/dropdown-menu";
+import * as RadioGroup from "@radix-ui/react-radio-group";
 import Icon from "~/components/icon";
 import ProductImages from "~/components/product-images";
 
@@ -314,6 +323,7 @@ function ProductForm({
   variants: Array<ProductVariantFragment>;
 }) {
   const { open } = useAside();
+  const submit = useSubmit();
   const { publish, shop, cart, prevCart } = useAnalytics();
   const isAvailable = !!selectedVariant?.availableForSale;
   const [searchParams] = useSearchParams();
@@ -333,13 +343,23 @@ function ProductForm({
 
   return (
     <>
-      <VariantSelector
-        handle={product.handle}
-        options={product.options.filter((option) => option.values.length > 1)}
-        variants={variants}
+      <Form
+        // This form automatically submits any time any of the filter controls change
+        onChange={(e) => {
+          submit(e.currentTarget, { preventScrollReset: true });
+        }}
+        method="get"
+        preventScrollReset
+        className="flex flex-col gap-6 md:gap-9"
       >
-        {({ option }) => <ProductOptions key={option.name} option={option} />}
-      </VariantSelector>
+        <VariantSelector
+          handle={product.handle}
+          options={product.options.filter((option) => option.values.length > 1)}
+          variants={variants}
+        >
+          {({ option }) => <ProductOptions key={option.name} option={option} />}
+        </VariantSelector>
+      </Form>
       <div className="flex flex-col gap-2 md:gap-3">
         <AddToCartButton
           disabled={!selectedVariant || !isAvailable}
@@ -389,32 +409,123 @@ export function ShopPayButton() {
 }
 
 function ProductOptions({ option }: { option: VariantOption }) {
+  const [searchParams] = useSearchParams();
+  // let availability: string | undefined =
+  //   searchParams.get("availability") || undefined;
+  // if (availability !== "in-stock" && availability !== "out-of-stock") {
+  //   availability = undefined;
+  // }
+
   return (
-    <div className="grid grid-cols-[repeat(auto-fit,minmax(theme(spacing.12),1fr))] gap-2 lg:gap-4">
-      {option.values.map(({ value, isAvailable, isActive, to }) => {
-        return (
+    <RadioGroup.Root
+      className="grid grid-cols-[repeat(auto-fit,minmax(theme(spacing.12),1fr))] gap-2 lg:gap-4"
+      aria-label="select availability"
+      name={option.name}
+      defaultValue={option.value}
+    >
+      {option.values.map(({ value, isAvailable, isActive, to }) => (
+        <RadioGroup.Item
+          value={value}
+          key={option.name + value}
+          id={value}
+          disabled={!isAvailable}
+          asChild
+        >
+          <Button
+            className="flex justify-center text-center uppercase"
+            intent={isActive ? "primary" : "secondary"}
+          >
+            {value}
+          </Button>
+        </RadioGroup.Item>
+      ))}
+    </RadioGroup.Root>
+  );
+
+  // Size (XS, S, M, L, etc) should render buttons
+  if (option.name.toLowerCase() === "size") {
+    return (
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(theme(spacing.12),1fr))] gap-2 lg:gap-4">
+        {option.values.map(({ value, isAvailable, isActive, to }) => (
           <Button
             asChild
             key={option.name + value}
             size="sm"
             type="submit"
+            value={value}
             intent={isActive ? "primary" : "secondary"}
             disabled={!isAvailable}
             className="px-0 text-center"
           >
-            {isAvailable ? (
-              <Link prefetch="intent" preventScrollReset replace to={to}>
-                {value}
-              </Link>
-            ) : (
-              <span>{value}</span>
-            )}
+            <span>{value}</span>
           </Button>
-        );
-      })}
+        ))}
+      </div>
+    );
+  }
+
+  // Al other otions should render a dropdown
+  const selectedOption = searchParams.get(option.name);
+  return (
+    <div>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <ButtonWithWellText
+            size="icon"
+            wellPrefix={selectedOption ? selectedOption : `${option.name}`}
+          >
+            <Icon name="chevron-down" />
+          </ButtonWithWellText>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-fit md:w-[280px]">
+          {option.values.map(({ value, isAvailable, isActive, to }) => (
+            <DropdownMenuItem
+              asChild
+              className="justify-between"
+              key={option.name + value}
+            >
+              <Button
+                asChild
+                size="sm"
+                type="submit"
+                intent={isActive ? "primary" : "secondary"}
+                disabled={!isAvailable}
+                className="w-full px-0 text-center"
+              >
+                {isAvailable ? (
+                  <Link prefetch="intent" preventScrollReset replace to={to}>
+                    {value}
+                  </Link>
+                ) : (
+                  <span>{value}</span>
+                )}
+              </Button>
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
     </div>
   );
 }
+
+// <DropdownMenuItem asChild className="justify-between">
+//   <button value={value} name="sort">
+//     {children}
+//     {selected ? <Icon name="check" /> : null}
+//   </button>
+// </DropdownMenuItem>;
+
+// <Form method="get" className="flex flex-col gap-1" preventScrollReset>
+//   {sortOptions.map((option) => (
+//     <SortButton
+//       key={option.value}
+//       value={option.value}
+//       selected={currentSort === option.value}
+//     >
+//       {option.label}
+//     </SortButton>
+//   ))}
+// </Form>;
 
 function AddToCartButton({
   analytics,
