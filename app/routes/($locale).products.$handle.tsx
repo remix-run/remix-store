@@ -46,7 +46,6 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
 } from "~/components/ui/dropdown-menu";
-import * as RadioGroup from "@radix-ui/react-radio-group";
 import Icon from "~/components/icon";
 import ProductImages from "~/components/product-images";
 
@@ -77,7 +76,7 @@ async function loadCriticalData({
   request,
 }: LoaderFunctionArgs) {
   const { handle } = params;
-  const { storefront } = context;
+  const { storefront, env } = context;
 
   if (!handle) {
     throw new Error("Expected product handle to be defined");
@@ -107,6 +106,7 @@ async function loadCriticalData({
   }
 
   return {
+    checkoutDomain: env.PUBLIC_CHECKOUT_DOMAIN,
     product,
   };
 }
@@ -138,7 +138,7 @@ function loadDeferredData({ context, params }: LoaderFunctionArgs) {
 }
 
 export default function Product() {
-  const { product, variants } = useLoaderData<typeof loader>();
+  const { product, variants, checkoutDomain } = useLoaderData<typeof loader>();
   let { selectedVariant } = product;
 
   // If a variant isn't selected, use the first variant for price, analytics, etc
@@ -156,6 +156,7 @@ export default function Product() {
         selectedVariant={selectedVariant}
         product={product}
         variants={variants}
+        checkoutDomain={checkoutDomain}
       />
       <Analytics.ProductView
         data={{
@@ -180,10 +181,12 @@ function ProductMain({
   selectedVariant,
   product,
   variants,
+  checkoutDomain,
 }: {
   product: ProductFragment;
   selectedVariant: ProductFragment["selectedVariant"];
   variants: Promise<ProductVariantsQuery | null>;
+  checkoutDomain: string;
 }) {
   const { title, vendor, description, specs, fullDescription } = product;
 
@@ -211,6 +214,7 @@ function ProductMain({
                   product={product}
                   selectedVariant={selectedVariant}
                   variants={[]}
+                  checkoutDomain={checkoutDomain}
                 />
               }
             >
@@ -223,6 +227,7 @@ function ProductMain({
                     product={product}
                     selectedVariant={selectedVariant}
                     variants={data?.product?.variants.nodes || []}
+                    checkoutDomain={checkoutDomain}
                   />
                 )}
               </Await>
@@ -317,13 +322,14 @@ function ProductForm({
   product,
   selectedVariant,
   variants,
+  checkoutDomain,
 }: {
   product: ProductFragment;
   selectedVariant: ProductFragment["selectedVariant"];
   variants: Array<ProductVariantFragment>;
+  checkoutDomain: string;
 }) {
   const { open } = useAside();
-  const submit = useSubmit();
   const { publish, shop, cart, prevCart } = useAnalytics();
   const isAvailable = !!selectedVariant?.availableForSale;
   const [searchParams] = useSearchParams();
@@ -343,23 +349,13 @@ function ProductForm({
 
   return (
     <>
-      <Form
-        // This form automatically submits any time any of the filter controls change
-        onChange={(e) => {
-          submit(e.currentTarget, { preventScrollReset: true });
-        }}
-        method="get"
-        preventScrollReset
-        className="flex flex-col gap-6 md:gap-9"
+      <VariantSelector
+        handle={product.handle}
+        options={product.options.filter((option) => option.values.length > 1)}
+        variants={variants}
       >
-        <VariantSelector
-          handle={product.handle}
-          options={product.options.filter((option) => option.values.length > 1)}
-          variants={variants}
-        >
-          {({ option }) => <ProductOptions key={option.name} option={option} />}
-        </VariantSelector>
-      </Form>
+        {({ option }) => <ProductOptions key={option.name} option={option} />}
+      </VariantSelector>
       <div className="flex flex-col gap-2 md:gap-3">
         <AddToCartButton
           disabled={!selectedVariant || !isAvailable}
@@ -388,59 +384,43 @@ function ProductForm({
           {product.availableForSale ? addToCartText : "Sold out"}
         </AddToCartButton>
 
-        {isAvailable ? <ShopPayButton /> : null}
+        {isAvailable ? (
+          <ShopPayButton
+            selectedVariant={selectedVariant}
+            checkoutDomain={`https://${checkoutDomain}`}
+          />
+        ) : null}
       </div>
     </>
   );
 }
 
 // ShopPayButton -- if reused pull out into a component
-export function ShopPayButton() {
+export function ShopPayButton({
+  selectedVariant,
+  checkoutDomain,
+}: {
+  selectedVariant: ProductFragment["selectedVariant"];
+  checkoutDomain: string;
+}) {
   return (
     <Button
       className="flex justify-center bg-shop-pay py-6 [--yamaha-shadow-color:theme(colors.shop-pay)]"
       intent="primary"
       size="lg"
-      // TODO: Add link to immediate checkout
     >
-      <Icon name="shop-pay" className="h-6 w-auto max-w-full" />
+      <Link
+        to={`${checkoutDomain}/cart/${selectedVariant?.id.split("ProductVariant/")[1]}:1?payment=shop_pay&channel=hydrogen`}
+      >
+        <Icon name="shop-pay" className="h-6 w-auto max-w-full" />
+      </Link>
     </Button>
   );
 }
 
 function ProductOptions({ option }: { option: VariantOption }) {
   const [searchParams] = useSearchParams();
-  // let availability: string | undefined =
-  //   searchParams.get("availability") || undefined;
-  // if (availability !== "in-stock" && availability !== "out-of-stock") {
-  //   availability = undefined;
-  // }
-
-  return (
-    <RadioGroup.Root
-      className="grid grid-cols-[repeat(auto-fit,minmax(theme(spacing.12),1fr))] gap-2 lg:gap-4"
-      aria-label="select availability"
-      name={option.name}
-      defaultValue={option.value}
-    >
-      {option.values.map(({ value, isAvailable, isActive, to }) => (
-        <RadioGroup.Item
-          value={value}
-          key={option.name + value}
-          id={value}
-          disabled={!isAvailable}
-          asChild
-        >
-          <Button
-            className="flex justify-center text-center uppercase"
-            intent={isActive ? "primary" : "secondary"}
-          >
-            {value}
-          </Button>
-        </RadioGroup.Item>
-      ))}
-    </RadioGroup.Root>
-  );
+  const selectedOption = searchParams.get(option.name);
 
   // Size (XS, S, M, L, etc) should render buttons
   if (option.name.toLowerCase() === "size") {
@@ -452,12 +432,17 @@ function ProductOptions({ option }: { option: VariantOption }) {
             key={option.name + value}
             size="sm"
             type="submit"
-            value={value}
             intent={isActive ? "primary" : "secondary"}
             disabled={!isAvailable}
             className="px-0 text-center"
           >
-            <span>{value}</span>
+            {isAvailable ? (
+              <Link prefetch="intent" preventScrollReset replace to={to}>
+                {value}
+              </Link>
+            ) : (
+              <span>{value}</span>
+            )}
           </Button>
         ))}
       </div>
@@ -465,7 +450,6 @@ function ProductOptions({ option }: { option: VariantOption }) {
   }
 
   // Al other otions should render a dropdown
-  const selectedOption = searchParams.get(option.name);
   return (
     <div>
       <DropdownMenu>
@@ -484,22 +468,20 @@ function ProductOptions({ option }: { option: VariantOption }) {
               className="justify-between"
               key={option.name + value}
             >
-              <Button
-                asChild
-                size="sm"
-                type="submit"
-                intent={isActive ? "primary" : "secondary"}
-                disabled={!isAvailable}
-                className="w-full px-0 text-center"
-              >
-                {isAvailable ? (
-                  <Link prefetch="intent" preventScrollReset replace to={to}>
-                    {value}
-                  </Link>
-                ) : (
-                  <span>{value}</span>
-                )}
-              </Button>
+              {isAvailable ? (
+                <Link
+                  prefetch="intent"
+                  preventScrollReset
+                  replace
+                  to={to}
+                  className="cursor-pointer no-underline"
+                >
+                  {value}
+                  {isActive ? <Icon name="check" /> : null}
+                </Link>
+              ) : (
+                <span className="cursor-not-allowed opacity-35">{value}</span>
+              )}
             </DropdownMenuItem>
           ))}
         </DropdownMenuContent>
@@ -507,25 +489,6 @@ function ProductOptions({ option }: { option: VariantOption }) {
     </div>
   );
 }
-
-// <DropdownMenuItem asChild className="justify-between">
-//   <button value={value} name="sort">
-//     {children}
-//     {selected ? <Icon name="check" /> : null}
-//   </button>
-// </DropdownMenuItem>;
-
-// <Form method="get" className="flex flex-col gap-1" preventScrollReset>
-//   {sortOptions.map((option) => (
-//     <SortButton
-//       key={option.value}
-//       value={option.value}
-//       selected={currentSort === option.value}
-//     >
-//       {option.label}
-//     </SortButton>
-//   ))}
-// </Form>;
 
 function AddToCartButton({
   analytics,
