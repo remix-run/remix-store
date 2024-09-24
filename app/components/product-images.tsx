@@ -97,7 +97,10 @@ function Carousel({
           {images.map(({ image, gradient }, index) => {
             if (!image) return null;
             return (
-              <div className="flex w-full shrink-0" key={image.id}>
+              <div
+                className="flex aspect-square w-full shrink-0"
+                key={image.id}
+              >
                 <Image
                   alt={image.altText || "Product Image"}
                   data={image}
