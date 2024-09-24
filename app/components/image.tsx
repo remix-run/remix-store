@@ -24,25 +24,19 @@ export type ImageProps = Omit<HydrogenImageProps, "width" | "height"> & {
 
 /**
  * Image component with multiple gradient backgrounds options
+ * If no gradient is provided, the image will displayed with a random gradient
  */
 export function Image(props: ImageProps) {
   const {
-    gradient = null,
+    gradient = "random",
     gradientFade = false,
     gradientHover = false,
     ...rest
   } = props;
 
-  const imgClassName =
-    "pointer-events-none absolute left-1/2 top-1/2 max-h-full max-w-full -translate-x-1/2 -translate-y-1/2 transform object-contain";
-
-  if (!gradient) return <HydrogenImage {...rest} className={imgClassName} />;
-
-  const isRandom = gradient === "random";
-
   let activeGradient;
 
-  if (isRandom) {
+  if (gradient === "random") {
     const randomGradientName = Object.keys(gradients)[
       Math.floor(Math.random() * Object.keys(gradients).length)
     ] as keyof typeof gradients;

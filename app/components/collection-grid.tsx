@@ -3,7 +3,6 @@ import { Money } from "@shopify/hydrogen";
 import type { RecommendedProductsQuery } from "storefrontapi.generated";
 import { Image } from "~/components/image";
 import { parseGradientColors } from "~/lib/metafields";
-import clsx from "clsx";
 import { cva } from "class-variance-authority";
 
 interface CollectionGridProps {
@@ -14,14 +13,7 @@ export function CollectionGrid({ products }: CollectionGridProps) {
   if (!products) return null;
 
   return (
-    <div
-      // TODO: validate with design these breakpoints/the in-between states. For example, the desktop is at 1440px
-      className={clsx(
-        "grid grid-cols-2 gap-x-3 gap-y-6",
-        "md:grid-cols-3 md:gap-x-[18px] md:gap-y-9",
-        "lg:grid-cols-4",
-      )}
-    >
+    <div className="sm grid grid-cols-2 gap-x-3 gap-y-6 md:grid-cols-3 md:gap-x-[18px] md:gap-y-9 lg:grid-cols-4">
       {products.map((product) => (
         <CollectionItem product={product} key={product.id} />
       ))}
@@ -59,11 +51,7 @@ export function CollectionItem({ product }: CollectionItemProps) {
       prefetch="intent"
       to={`/products/${handle}`}
     >
-      <div
-        className={clsx(
-          "relative h-[160px] overflow-hidden rounded-[20px] bg-black bg-opacity-5 md:h-[240px] lg:h-[300px] xl:h-[400px] 2xl:h-[480px] dark:bg-opacity-20",
-        )}
-      >
+      <div className="relative h-[160px] overflow-hidden rounded-[20px] bg-black bg-opacity-5 md:h-[240px] lg:h-[300px] xl:h-[400px] 2xl:h-[480px] dark:bg-opacity-20">
         <Image
           data={product.images.nodes[0]}
           gradient={gradients[0] ?? "random"}
