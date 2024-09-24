@@ -55,7 +55,7 @@ export function CollectionItem({ product }: CollectionItemProps) {
 
   return (
     <Link
-      className=":text-inherit flex flex-col gap-3 no-underline md:gap-[18px]"
+      className="flex flex-col gap-3 no-underline md:gap-[18px]"
       prefetch="intent"
       to={`/products/${handle}`}
     >
@@ -69,8 +69,8 @@ export function CollectionItem({ product }: CollectionItemProps) {
           gradient={gradients[0]}
           gradientHover={true}
           sizes="(min-width: 45em) 20vw, 50vw"
+          className="max-h-full max-w-full overflow-hidden"
         />
-
         <Tag status={status} />
       </div>
       <h3 className="text-sm font-semibold leading-[1.2rem] tracking-[-0.28px] text-black sm:text-base sm:leading-none sm:tracking-[-0.32px] md:text-xl md:tracking-[-0.4px] lg:text-2xl lg:tracking-[-0.48px] dark:text-white">
