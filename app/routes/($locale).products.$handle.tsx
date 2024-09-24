@@ -478,7 +478,9 @@ function ProductOptions({ option }: { option: VariantOption }) {
                   {isActive ? <Icon name="check" /> : null}
                 </Link>
               ) : (
-                <span className="cursor-not-allowed opacity-35">{value}</span>
+                <span className="cursor-not-allowed opacity-35">
+                  {value} (Sold Out)
+                </span>
               )}
             </DropdownMenuItem>
           ))}
