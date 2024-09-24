@@ -385,7 +385,7 @@ function ProductForm({
         {isAvailable ? (
           <ShopPayButton
             selectedVariant={selectedVariant}
-            checkoutDomain={`https://${checkoutDomain}`}
+            checkoutDomain={checkoutDomain}
           />
         ) : null}
       </div>
@@ -403,7 +403,7 @@ export function ShopPayButton({
 }) {
   return (
     <Link
-      to={`${checkoutDomain}/cart/${selectedVariant?.id.split("ProductVariant/")[1]}:1?payment=shop_pay&channel=hydrogen`}
+      to={`https://${checkoutDomain}/cart/${selectedVariant?.id.split("ProductVariant/")[1]}:1?payment=shop_pay&channel=hydrogen`}
     >
       <Button
         className="flex justify-center bg-shop-pay py-6 [--yamaha-shadow-color:theme(colors.shop-pay)]"
