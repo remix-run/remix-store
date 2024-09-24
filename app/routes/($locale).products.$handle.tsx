@@ -7,8 +7,6 @@ import {
   type MetaFunction,
   type FetcherWithComponents,
   useSearchParams,
-  Form,
-  useSubmit,
 } from "@remix-run/react";
 import type {
   ProductFragment,
@@ -404,17 +402,17 @@ export function ShopPayButton({
   checkoutDomain: string;
 }) {
   return (
-    <Button
-      className="flex justify-center bg-shop-pay py-6 [--yamaha-shadow-color:theme(colors.shop-pay)]"
-      intent="primary"
-      size="lg"
+    <Link
+      to={`${checkoutDomain}/cart/${selectedVariant?.id.split("ProductVariant/")[1]}:1?payment=shop_pay&channel=hydrogen`}
     >
-      <Link
-        to={`${checkoutDomain}/cart/${selectedVariant?.id.split("ProductVariant/")[1]}:1?payment=shop_pay&channel=hydrogen`}
+      <Button
+        className="flex justify-center bg-shop-pay py-6 [--yamaha-shadow-color:theme(colors.shop-pay)]"
+        intent="primary"
+        size="lg"
       >
         <Icon name="shop-pay" className="h-6 w-auto max-w-full" />
-      </Link>
-    </Button>
+      </Button>
+    </Link>
   );
 }
 
