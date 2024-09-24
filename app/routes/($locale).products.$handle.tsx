@@ -337,7 +337,7 @@ function ProductForm({
   let addToCartText = "Add to cart";
 
   // If the product has options (like size, color, etc), check whether each option has been selected
-  if (options.length > 0) {
+  if (variants.length > 1) {
     for (const option of options) {
       const selectedOption = searchParams.get(option.name);
       if (!selectedOption) {
