@@ -61,12 +61,12 @@ export function CollectionItem({ product }: CollectionItemProps) {
     >
       <div
         className={clsx(
-          "relative h-[160px] overflow-hidden rounded-[20px] bg-black bg-opacity-5 sm:h-[240px] md:h-[300px] lg:h-[400px] xl:h-[400px] 2xl:h-[480px] dark:bg-opacity-20",
+          "relative h-[160px] overflow-hidden rounded-[20px] bg-black bg-opacity-5 md:h-[240px] lg:h-[300px] xl:h-[400px] 2xl:h-[480px] dark:bg-opacity-20",
         )}
       >
         <Image
           data={product.images.nodes[0]}
-          gradient={gradients[0]}
+          gradient={gradients[0] ?? "random"}
           gradientHover={true}
           sizes="(min-width: 45em) 20vw, 50vw"
           className="max-h-full max-w-full overflow-hidden"
@@ -95,19 +95,19 @@ interface TagProps {
 }
 
 const statusText = {
-  soldOut: "SOLD OUT",
-  onSale: "SALE",
-  new: "NEW",
+  soldOut: "sold out",
+  onSale: "sale",
+  new: "new",
 };
 
 const tagStyles = cva(
-  "absolute left-4 top-4 md:left-6 md:top-6 p-3 text-sm font-bold rounded-[10px] bg-neutral-200 dark:bg-neutral-800",
+  "absolute text-[0.625rem] left-2 top-2 md:left-4 md:top-4 p-2 md:p-3 md:text-base font-bold rounded-[10px] bg-neutral-200 dark:bg-neutral-800 uppercase",
   {
     variants: {
       status: {
         soldOut: "text-neutral-600 dark:text-neutral-300",
         onSale: "text-red-brand",
-        new: "text-neutral-600 dark:text-neutral-300",
+        new: "text-blue-brand ",
       },
     },
   },
