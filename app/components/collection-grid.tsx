@@ -68,7 +68,7 @@ export function CollectionItem({ product }: CollectionItemProps) {
       <h3 className="text-sm font-semibold leading-[1.2rem] tracking-[-0.28px] text-black sm:text-base sm:leading-none sm:tracking-[-0.32px] md:text-xl md:tracking-[-0.4px] lg:text-2xl lg:tracking-[-0.48px] dark:text-white">
         {title}
       </h3>
-      <small className="text-dark flex gap-2 font-mono text-xs font-medium leading-none sm:text-base dark:text-white">
+      <small className="text-dark flex gap-2 font-mono text-xs font-medium leading-none sm:text-base sm:leading-none dark:text-white">
         <Money data={price} withoutTrailingZeros />
         {isOnSale && (
           <Money
