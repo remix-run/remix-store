@@ -4,6 +4,7 @@ import type { RecommendedProductsQuery } from "storefrontapi.generated";
 import { Image } from "~/components/image";
 import { parseGradientColors } from "~/lib/metafields";
 import { cva } from "class-variance-authority";
+import clsx from "clsx";
 
 interface CollectionGridProps {
   products?: RecommendedProductsQuery["products"]["nodes"];
@@ -57,7 +58,10 @@ export function CollectionItem({ product }: CollectionItemProps) {
           gradient={gradients[0] ?? "random"}
           gradientHover={true}
           sizes="(min-width: 45em) 20vw, 50vw"
-          className="max-h-full max-w-full overflow-hidden"
+          className={clsx(
+            "max-h-full max-w-full overflow-hidden",
+            status === "soldOut" && "opacity-30",
+          )}
         />
         <Tag status={status} />
       </div>
