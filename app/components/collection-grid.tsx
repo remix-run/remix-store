@@ -48,7 +48,7 @@ export function CollectionItem({ product }: CollectionItemProps) {
 
   return (
     <Link
-      className="flex flex-col gap-1 no-underline md:gap-2"
+      className="flex flex-col gap-1 no-underline"
       prefetch="intent"
       to={`/products/${handle}`}
     >
