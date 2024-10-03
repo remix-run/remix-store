@@ -6,7 +6,7 @@ export function TitleLogo() {
       height="24"
       viewBox="0 0 262 24"
       fill="none"
-      className="mx-auto h-6 text-neutral-700 dark:text-neutral-300"
+      className="h-6 max-w-full text-neutral-700 dark:text-neutral-300"
       aria-label="The Remix Store"
     >
       <g filter="url(#filter0_ii_1374_3964)">

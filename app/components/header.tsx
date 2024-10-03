@@ -40,7 +40,7 @@ export function Header({ menu, cart, className }: HeaderProps) {
       )}
     >
       <HeaderMenu menu={menu} />
-      <NavLink prefetch="intent" to="/" className="flex-1 text-center" end>
+      <NavLink prefetch="intent" to="/" className="mx-4 text-center" end>
         <TitleLogo />
       </NavLink>
       <HeaderCartActions cart={cart} />
@@ -180,7 +180,7 @@ function HeaderCartActions({ cart }: Pick<HeaderProps, "cart">) {
           <Icon name="globe" aria-label="change currency" />
         </ButtonWithWellText>
       </div>
-      <div className="ml-auto md:ml-0">
+      <div className="ml-auto flex md:ml-0">
         <Suspense fallback={<CartBadge count={0} />}>
           <Await resolve={cart}>
             {(cart) => {
