@@ -3,7 +3,12 @@ import {
   redirect,
   type LoaderFunctionArgs,
 } from "@shopify/remix-oxygen";
-import { useLoaderData, type MetaFunction } from "@remix-run/react";
+import {
+  Link,
+  useLoaderData,
+  useNavigate,
+  type MetaFunction,
+} from "@remix-run/react";
 import {
   Pagination,
   getPaginationVariables,
@@ -13,6 +18,14 @@ import { PRODUCT_ITEM_FRAGMENT } from "~/lib/fragments";
 import { CollectionGrid } from "~/components/collection-grid";
 import { Hero } from "~/components/hero";
 import { FiltersToolbar } from "~/components/filters";
+import { useEffect } from "react";
+import { PageInfo } from "@shopify/hydrogen/customer-account-api-types";
+import { CollectionQuery, ProductItemFragment } from "storefrontapi.generated";
+
+// TODO:
+// - load 8 items synchronously
+// - load remaining items in parallel
+// - consider loading state/skeleton
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
   let title = `The Remix Store`;
@@ -51,8 +64,10 @@ async function loadCriticalData({
   const { handle } = params;
   const { storefront } = context;
   const paginationVariables = getPaginationVariables(request, {
-    pageBy: 8,
+    pageBy: 250,
   });
+
+  console.log("paginationVariables", paginationVariables);
 
   if (!handle) {
     throw redirect("/collections");
@@ -70,6 +85,8 @@ async function loadCriticalData({
       status: 404,
     });
   }
+
+  console.log("pageInfo", collection.products.pageInfo);
 
   return {
     collection,
@@ -97,18 +114,21 @@ export default function Collection() {
       />
       <FiltersToolbar />
       <Pagination connection={collection.products}>
-        {({ nodes, isLoading, PreviousLink, NextLink }) => (
-          <>
-            <PreviousLink>
-              {isLoading ? "Loading..." : <span>↑ Load previous</span>}
-            </PreviousLink>
-            <CollectionGrid products={nodes} />
-            <br />
-            <NextLink>
-              {isLoading ? "Loading..." : <span>Load more ↓</span>}
-            </NextLink>
-          </>
-        )}
+        {({ nodes, isLoading, PreviousLink, NextLink, state }) => {
+          console.log("state", state);
+          return (
+            <>
+              <PreviousLink>
+                {isLoading ? "Loading..." : <span>↑ Load previous</span>}
+              </PreviousLink>
+              <CollectionGrid products={nodes} />
+              <br />
+              <NextLink>
+                {isLoading ? "Loading..." : <span>Load more ↓</span>}
+              </NextLink>
+            </>
+          );
+        }}
       </Pagination>
       <Analytics.CollectionView
         data={{
