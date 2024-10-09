@@ -1,31 +1,15 @@
+import { Suspense } from "react";
 import {
   defer,
   redirect,
   type LoaderFunctionArgs,
 } from "@shopify/remix-oxygen";
-import {
-  Link,
-  useLoaderData,
-  useNavigate,
-  type MetaFunction,
-} from "@remix-run/react";
-import {
-  Pagination,
-  getPaginationVariables,
-  Analytics,
-} from "@shopify/hydrogen";
+import { Await, useLoaderData, type MetaFunction } from "@remix-run/react";
+import { Analytics } from "@shopify/hydrogen";
 import { PRODUCT_ITEM_FRAGMENT } from "~/lib/fragments";
 import { CollectionGrid } from "~/components/collection-grid";
 import { Hero } from "~/components/hero";
 import { FiltersToolbar } from "~/components/filters";
-import { useEffect } from "react";
-import { PageInfo } from "@shopify/hydrogen/customer-account-api-types";
-import { CollectionQuery, ProductItemFragment } from "storefrontapi.generated";
-
-// TODO:
-// - load 8 items synchronously
-// - load remaining items in parallel
-// - consider loading state/skeleton
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
   let title = `The Remix Store`;
@@ -39,71 +23,53 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
   return [{ title }];
 };
 
-export async function loader(args: LoaderFunctionArgs) {
-  // Start fetching non-critical data without blocking time to first byte
-  const deferredData = loadDeferredData(args);
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-  // Await the critical data required to render initial state of the page
-  const criticalData = await loadCriticalData(args);
-
-  return defer({
-    ...deferredData,
-    ...criticalData,
-  });
-}
-
-/**
- * Load data necessary for rendering content above the fold. This is the critical data
- * needed to render the page. If it's unavailable, the whole page should 400 or 500 error.
- */
-async function loadCriticalData({
-  context,
-  params,
-  request,
-}: LoaderFunctionArgs) {
+export async function loader({ context, params }: LoaderFunctionArgs) {
   const { handle } = params;
   const { storefront } = context;
-  const paginationVariables = getPaginationVariables(request, {
-    pageBy: 250,
-  });
-
-  console.log("paginationVariables", paginationVariables);
 
   if (!handle) {
     throw redirect("/collections");
   }
 
-  const [{ collection }] = await Promise.all([
-    storefront.query(COLLECTION_QUERY, {
-      variables: { handle, ...paginationVariables },
-      // Add other queries here, so that they are loaded in parallel
-    }),
-  ]);
+  // load the initial products we want to SSR
+  const { collection } = await storefront.query(COLLECTION_QUERY, {
+    variables: { handle, first: 8 },
+    // Add other queries here, so that they are loaded in parallel
+  });
 
   if (!collection) {
     throw new Response("Collection not found", {
       status: 404,
     });
   }
+  const { hasNextPage, endCursor } = collection.products.pageInfo;
 
-  console.log("pageInfo", collection.products.pageInfo);
+  // lazy load the remaing products if any
+  if (hasNextPage) {
+    const remainingProducts = storefront
+      .query(COLLECTION_QUERY, {
+        // if we ever have more than 258 products, we need to figure out a
+        // different strategy. Honestly, before that point we'll need to
+        // paginate, but loading all is fine for now
+        variables: { handle, endCursor, first: 250 },
+        // Add other queries here, so that they are loaded in parallel
+      })
+      .then(async (result) => {
+        await sleep(2000);
+        return result;
+      })
+      .then(({ collection }) => collection?.products.nodes);
 
-  return {
-    collection,
-  };
-}
+    return defer({ collection, remainingProducts });
+  }
 
-/**
- * Load data for rendering content below the fold. This data is deferred and will be
- * fetched after the initial page load. If it's unavailable, the page should still 200.
- * Make sure to not throw any errors here, as it will cause the page to 500.
- */
-function loadDeferredData({ context }: LoaderFunctionArgs) {
-  return {};
+  return defer({ collection, remainingProducts: null });
 }
 
 export default function Collection() {
-  const { collection } = useLoaderData<typeof loader>();
+  const { collection, remainingProducts } = useLoaderData<typeof loader>();
 
   return (
     <div>
@@ -113,23 +79,30 @@ export default function Collection() {
         image={collection.image}
       />
       <FiltersToolbar />
-      <Pagination connection={collection.products}>
-        {({ nodes, isLoading, PreviousLink, NextLink, state }) => {
-          console.log("state", state);
-          return (
-            <>
-              <PreviousLink>
-                {isLoading ? "Loading..." : <span>↑ Load previous</span>}
-              </PreviousLink>
-              <CollectionGrid products={nodes} />
-              <br />
-              <NextLink>
-                {isLoading ? "Loading..." : <span>Load more ↓</span>}
-              </NextLink>
-            </>
-          );
-        }}
-      </Pagination>
+
+      {!remainingProducts ? (
+        <CollectionGrid products={collection.products.nodes} />
+      ) : (
+        <Suspense
+          fallback={
+            <CollectionGrid
+              products={collection.products.nodes}
+              loadingCount={4}
+            />
+          }
+        >
+          <Await resolve={remainingProducts}>
+            {(remainingProducts) => {
+              const products = [
+                ...collection.products.nodes,
+                ...remainingProducts,
+              ];
+              return <CollectionGrid products={products} />;
+            }}
+          </Await>
+        </Suspense>
+      )}
+
       <Analytics.CollectionView
         data={{
           collection: {

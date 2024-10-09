@@ -8,9 +8,13 @@ import clsx from "clsx";
 
 interface CollectionGridProps {
   products?: RecommendedProductsQuery["products"]["nodes"];
+  loadingCount?: number;
 }
 
-export function CollectionGrid({ products }: CollectionGridProps) {
+export function CollectionGrid({
+  products,
+  loadingCount,
+}: CollectionGridProps) {
   if (!products) return null;
 
   return (
@@ -18,6 +22,12 @@ export function CollectionGrid({ products }: CollectionGridProps) {
       {products.map((product) => (
         <CollectionItem product={product} key={product.id} />
       ))}
+      {loadingCount
+        ? [...Array(loadingCount)].map((_, index) => (
+            // eslint-disable-next-line react/no-array-index-key -- chill, it's fine
+            <CollectionItemSkeleton key={index} />
+          ))
+        : null}
     </div>
   );
 }
@@ -26,7 +36,7 @@ interface CollectionItemProps {
   product: RecommendedProductsQuery["products"]["nodes"][0];
 }
 
-export function CollectionItem({ product }: CollectionItemProps) {
+function CollectionItem({ product }: CollectionItemProps) {
   const { handle, title, variants, availableForSale, tags } = product;
 
   const firstVariant = variants.nodes[0];
@@ -79,6 +89,23 @@ export function CollectionItem({ product }: CollectionItemProps) {
         )}
       </small>
     </Link>
+  );
+}
+
+function CollectionItemSkeleton() {
+  return (
+    <div className="flex flex-col gap-1 no-underline">
+      <div className="relative h-[160px] overflow-hidden rounded-[20px] bg-black bg-opacity-5 md:h-[240px] lg:h-[300px] xl:h-[400px] 2xl:h-[480px] dark:bg-opacity-20" />
+      <h3 className="text-sm font-semibold leading-[1.2rem] tracking-[-0.28px] text-black sm:text-base sm:leading-none sm:tracking-[-0.32px] md:text-xl md:tracking-[-0.4px] lg:text-2xl lg:tracking-[-0.48px] dark:text-white">
+        loading...
+      </h3>
+      {/* <small className="text-dark flex gap-2 font-mono text-xs font-medium leading-none sm:text-base sm:leading-none dark:text-white">
+        <Money
+          data={{ amount: "0", currencyCode: "USD" }}
+          withoutTrailingZeros
+        />
+      </small> */}
+    </div>
   );
 }
 
