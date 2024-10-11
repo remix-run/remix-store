@@ -23,8 +23,6 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
   return [{ title }];
 };
 
-const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-
 export async function loader({ context, params }: LoaderFunctionArgs) {
   const { handle } = params;
   const { storefront } = context;
@@ -55,10 +53,6 @@ export async function loader({ context, params }: LoaderFunctionArgs) {
         // paginate, but loading all is fine for now
         variables: { handle, endCursor, first: 250 },
         // Add other queries here, so that they are loaded in parallel
-      })
-      .then(async (result) => {
-        await sleep(2000);
-        return result;
       })
       .then(({ collection }) => collection?.products.nodes);
 
