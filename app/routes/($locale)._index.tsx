@@ -1,7 +1,6 @@
-import { Suspense } from "react";
 import type { LoaderFunctionArgs } from "@shopify/remix-oxygen";
 import { defer } from "@shopify/remix-oxygen";
-import { Await, useLoaderData, type MetaFunction } from "@remix-run/react";
+import { useLoaderData, type MetaFunction } from "@remix-run/react";
 import { Hero } from "~/components/hero";
 import { FiltersToolbar } from "~/components/filters";
 import {
@@ -9,7 +8,6 @@ import {
   PRODUCT_ITEM_FRAGMENT,
 } from "~/lib/fragments";
 import { CollectionGrid } from "~/components/collection-grid";
-import type { RecommendedProductsQuery } from "storefrontapi.generated";
 
 export const FEATURED_COLLECTION_HANDLE = "remix-logo-apparel";
 
@@ -18,56 +16,27 @@ export const meta: MetaFunction = () => {
 };
 
 export async function loader(args: LoaderFunctionArgs) {
-  // Start fetching non-critical data without blocking time to first byte
-  const deferredData = loadDeferredData(args);
-
-  // Await the critical data required to render initial state of the page
-  const criticalData = await loadCriticalData(args);
-
-  return defer({ ...deferredData, ...criticalData });
-}
-
-/**
- * Load data necessary for rendering content above the fold. This is the critical data
- * needed to render the page. If it's unavailable, the whole page should 400 or 500 error.
- */
-async function loadCriticalData({ context }: LoaderFunctionArgs) {
-  const { featuredCollection } = await context.storefront.query(
-    FEATURED_COLLECTION_QUERY,
-    {
-      variables: {
-        handle: FEATURED_COLLECTION_HANDLE,
-      },
+  const { context } = args;
+  const featuredQuery = context.storefront.query(FEATURED_COLLECTION_QUERY, {
+    variables: {
+      handle: FEATURED_COLLECTION_HANDLE,
     },
+  });
+  const recommendedQuery = context.storefront.query(
+    RECOMMENDED_PRODUCTS_QUERY,
+    { variables: { first: 8 } },
   );
 
-  return {
-    featuredCollection,
-  };
-}
+  const [{ featuredCollection }, { products }] = await Promise.all([
+    featuredQuery,
+    recommendedQuery,
+  ]);
 
-/**
- * Load data for rendering content below the fold. This data is deferred and will be
- * fetched after the initial page load. If it's unavailable, the page should still 200.
- * Make sure to not throw any errors here, as it will cause the page to 500.
- */
-function loadDeferredData({ context }: LoaderFunctionArgs) {
-  const recommendedProducts = context.storefront
-    .query(RECOMMENDED_PRODUCTS_QUERY)
-    .catch((error) => {
-      // Log query errors, but don't throw them so the page can still render
-      console.error(error);
-      return null;
-    });
-
-  return {
-    recommendedProducts,
-  };
+  return defer({ featuredCollection, products });
 }
 
 export default function Homepage() {
-  const { featuredCollection, recommendedProducts } =
-    useLoaderData<typeof loader>();
+  const { featuredCollection, products } = useLoaderData<typeof loader>();
 
   return (
     <>
@@ -88,23 +57,7 @@ export default function Homepage() {
         />
       ) : null}
       <FiltersToolbar />
-      <RecommendedProducts products={recommendedProducts} />
-    </>
-  );
-}
-
-function RecommendedProducts({
-  products,
-}: {
-  products: Promise<RecommendedProductsQuery | null>;
-}) {
-  return (
-    <>
-      <Suspense fallback={<div>Loading...</div>}>
-        <Await resolve={products}>
-          {(response) => <CollectionGrid products={response?.products.nodes} />}
-        </Await>
-      </Suspense>
+      <CollectionGrid products={products.nodes} />;
     </>
   );
 }
@@ -128,18 +81,19 @@ export const FEATURED_COLLECTION_QUERY = `#graphql
           }
         }
       }
-      featuredDescription: metafield(key: "featured_description", namespace: "custom") {
+      featuredDescription: metafield(key: "featured_description", namespace:  "custom") {
         value
       }
     }
   }
 ` as const;
 
+// TODO: do we want to make this a little more curated?
 const RECOMMENDED_PRODUCTS_QUERY = `#graphql
   ${PRODUCT_ITEM_FRAGMENT}
-  query RecommendedProducts ($country: CountryCode, $language: LanguageCode)
+  query RecommendedProducts ($country: CountryCode, $language: LanguageCode, $first: Int)
     @inContext(country: $country, language: $language) {
-    products(first: 6, sortKey: UPDATED_AT, reverse: true) {
+    products(first: $first, sortKey: UPDATED_AT, reverse: true) {
       nodes {
         ...ProductItem
       }
