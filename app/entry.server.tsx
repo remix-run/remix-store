@@ -7,9 +7,9 @@ import { createContentSecurityPolicy } from "@shopify/hydrogen";
 export default async function handleRequest(
   request: Request,
   responseStatusCode: number,
-  responseHeaders: Headers,
+    responseHeaders: Headers,
   remixContext: EntryContext,
-  context: AppLoadContext,
+  context: AppLoadContext
 ) {
   const { nonce, header, NonceProvider } = createContentSecurityPolicy({
     fontSrc: ["'self'", "https://cdn.shopify.com"],
