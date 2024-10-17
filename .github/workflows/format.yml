@@ -2,7 +2,11 @@ name: 💅 Format
 on:
   push:
     branches:
-      - main
+      - gh-action-format
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   format:
