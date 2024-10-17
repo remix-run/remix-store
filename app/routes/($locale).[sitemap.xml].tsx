@@ -99,19 +99,7 @@ function generateSitemap({
       };
     });
 
-  const pages = flattenConnection(data.pages)
-    .filter((page) => page.onlineStoreUrl)
-    .map((page) => {
-      const url = `${baseUrl}/pages/${page.handle}`;
-
-      return {
-        url,
-        lastMod: page.updatedAt,
-        changeFreq: "weekly",
-      };
-    });
-
-  const urls = [...products, ...collections, ...pages];
+  const urls = [...products, ...collections];
 
   return `
     <urlset
@@ -163,13 +151,6 @@ const SITEMAP_QUERY = `#graphql
       first: $urlLimits
       query: "published_status:'online_store:visible'"
     ) {
-      nodes {
-        updatedAt
-        handle
-        onlineStoreUrl
-      }
-    }
-    pages(first: $urlLimits, query: "published_status:'published'") {
       nodes {
         updatedAt
         handle
