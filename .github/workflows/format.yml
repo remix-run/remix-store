@@ -2,7 +2,7 @@ name: 💅 Format
 on:
   push:
     branches:
-      - gh-action-format
+      - main
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
