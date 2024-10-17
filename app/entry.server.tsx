@@ -6,10 +6,10 @@ import { createContentSecurityPolicy } from "@shopify/hydrogen";
 
 export default async function handleRequest(
   request: Request,
-      responseStatusCode: number,
+  responseStatusCode: number,
   responseHeaders: Headers,
   remixContext: EntryContext,
-  context: AppLoadContext
+  context: AppLoadContext,
 ) {
   const { nonce, header, NonceProvider } = createContentSecurityPolicy({
     fontSrc: ["'self'", "https://cdn.shopify.com"],
@@ -35,7 +35,7 @@ export default async function handleRequest(
         console.error(error);
         responseStatusCode = 500;
       },
-    }
+    },
   );
 
   if (isbot(request.headers.get("user-agent"))) {
