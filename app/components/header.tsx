@@ -1,6 +1,5 @@
-import { Suspense } from "react";
 import type { NavLinkProps } from "@remix-run/react";
-import { Await, NavLink } from "@remix-run/react";
+import { NavLink } from "@remix-run/react";
 import { type CartViewPayload, useAnalytics } from "@shopify/hydrogen";
 import type {
   HeaderQuery,
@@ -27,7 +26,7 @@ import clsx from "clsx";
 
 interface HeaderProps {
   menu: NonNullable<HeaderQuery["menu"]>;
-  cart: Promise<CartApiQueryFragment | null>;
+  cart: CartApiQueryFragment | null;
   className?: string;
 }
 
@@ -172,6 +171,8 @@ function HeaderCartActions({ cart }: Pick<HeaderProps, "cart">) {
   // needs to be a controlled component so we can trigger it from add to cart buttons
   const aside = useAside();
 
+  const count = cart?.totalQuantity || 0;
+
   return (
     <div className="flex flex-1 gap-3" role="navigation">
       <div className="ml-auto hidden md:block md:w-[150px]">
@@ -181,31 +182,22 @@ function HeaderCartActions({ cart }: Pick<HeaderProps, "cart">) {
         </ButtonWithWellText>
       </div>
       <div className="ml-auto flex md:ml-0">
-        <Suspense fallback={<CartBadge count={0} />}>
-          <Await resolve={cart}>
-            {(cart) => {
-              const count = cart?.totalQuantity || 0;
-              return (
-                <Aside
-                  open={aside.type === "cart"}
-                  onOpenChange={(open) => aside.open(open ? "cart" : "none")}
-                >
-                  <AsideTrigger>
-                    <CartBadge count={count} />
-                  </AsideTrigger>
-                  <AsideContent>
-                    <AsideHeader>
-                      <AsideTitle>Your Cart</AsideTitle>
-                    </AsideHeader>
-                    <AsideBody>
-                      <CartMain cart={cart!} layout="aside" />
-                    </AsideBody>
-                  </AsideContent>
-                </Aside>
-              );
-            }}
-          </Await>
-        </Suspense>
+        <Aside
+          open={aside.type === "cart"}
+          onOpenChange={(open) => aside.open(open ? "cart" : "none")}
+        >
+          <AsideTrigger>
+            <CartBadge count={count} />
+          </AsideTrigger>
+          <AsideContent>
+            <AsideHeader>
+              <AsideTitle>Your Cart</AsideTitle>
+            </AsideHeader>
+            <AsideBody>
+              <CartMain cart={cart!} layout="aside" />
+            </AsideBody>
+          </AsideContent>
+        </Aside>
       </div>
     </div>
   );
