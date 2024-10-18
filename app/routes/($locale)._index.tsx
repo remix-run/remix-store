@@ -57,7 +57,7 @@ export default function Homepage() {
         />
       ) : null}
       <FiltersToolbar />
-      <CollectionGrid products={products.nodes} />;
+      <CollectionGrid products={products.nodes} />
     </>
   );
 }

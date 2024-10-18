@@ -438,7 +438,7 @@ function ProductOptions({ option }: { option: VariantOption }) {
     );
   }
 
-  // Al other otions should render a dropdown
+  // All other options should render a dropdown
   return (
     <div>
       <DropdownMenu>

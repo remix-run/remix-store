@@ -97,6 +97,8 @@ export const Button = forwardRef(
       intent = "secondary",
       size = "sm",
       disabled = false,
+      children,
+      className,
       ...props
     }: ButtonProps,
     ref: React.Ref<HTMLButtonElement>,
@@ -108,9 +110,11 @@ export const Button = forwardRef(
         <Comp
           ref={ref}
           {...props}
-          className={cn(button({ intent, size, disabled }), props.className)}
+          className={cn(button({ intent, size, disabled }), className)}
           disabled={disabled}
-        />
+        >
+          {children}
+        </Comp>
       </div>
     );
   },
@@ -153,32 +157,37 @@ export const ButtonWithWellText = forwardRef(
     const Comp = asChild ? Slot : "button";
 
     return (
-      <div
-        className={cn(well({ size }), "flex min-w-fit max-w-full items-center")}
+      <Comp
+        ref={ref}
+        className={cn(
+          well({ size }),
+          "flex w-full min-w-fit max-w-full items-center",
+        )}
+        disabled={disabled}
+        {...props}
       >
-        {wellPrefix ? (
-          <div className={cn(buttonText({ side: "left" }), "mr-auto")}>
-            {wellPrefix}
-          </div>
-        ) : null}
-        <Comp
-          {...props}
-          ref={ref}
-          className={cn(
-            button({ intent, size, disabled }),
-            "before:absolute before:inset-0 before:size-full",
-            className,
-          )}
-          disabled={disabled}
-        >
-          {children}
-        </Comp>
-        {wellPostfix ? (
-          <div className={cn(buttonText({ side: "right" }), "ml-auto")}>
-            {wellPostfix}
-          </div>
-        ) : null}
-      </div>
+        <>
+          {wellPrefix ? (
+            <div className={cn(buttonText({ side: "left" }), "mr-auto")}>
+              {wellPrefix}
+            </div>
+          ) : null}
+          <span
+            className={cn(
+              button({ intent, size, disabled }),
+              "before:absolute before:inset-0 before:size-full",
+              className,
+            )}
+          >
+            {children}
+          </span>
+          {wellPostfix ? (
+            <div className={cn(buttonText({ side: "right" }), "ml-auto")}>
+              {wellPostfix}
+            </div>
+          ) : null}
+        </>
+      </Comp>
     );
   },
 );
