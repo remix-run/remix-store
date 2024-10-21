@@ -50,11 +50,6 @@ export function Header({ menu, cart, className }: HeaderProps) {
 type HeaderMenuProps = Pick<HeaderProps, "menu">;
 
 function HeaderMenu({ menu }: HeaderMenuProps) {
-  function closeAside(event: React.MouseEvent<HTMLAnchorElement>) {
-    event.preventDefault();
-    window.location.href = event.currentTarget.href;
-  }
-
   return (
     <>
       <div className="flex-1 md:hidden">
@@ -64,12 +59,7 @@ function HeaderMenu({ menu }: HeaderMenuProps) {
         {menu.items.map((item) => {
           if (!item.url) return null;
           return (
-            <HeaderMenuLink
-              key={item.id}
-              title={item.title}
-              url={item.url}
-              onClick={closeAside}
-            />
+            <HeaderMenuLink key={item.id} title={item.title} url={item.url} />
           );
         })}
         <ThemeToggle display="icon" />
