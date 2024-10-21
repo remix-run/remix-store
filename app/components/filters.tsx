@@ -125,35 +125,35 @@ function FilterAccordionItem({
 
 function FilterProductStock() {
   const [searchParams] = useSearchParams();
-  let availability: string | undefined =
-    searchParams.get("availability") || undefined;
-  if (availability !== "in-stock" && availability !== "out-of-stock") {
-    availability = undefined;
+  let available: string | undefined =
+    searchParams.get("available") || undefined;
+  if (available !== "true" && available !== "false") {
+    available = undefined;
   }
 
   return (
     <RadioGroup.Root
       className="flex w-[300px] flex-col gap-3"
       aria-label="select availability"
-      name="availability"
-      defaultValue={availability}
+      name="available"
+      defaultValue={available}
     >
-      <RadioGroup.Item value="in-stock" id="in-stock" asChild>
+      <RadioGroup.Item value="true" id="true" asChild>
         <Button
           className="flex justify-between text-left uppercase"
-          intent={availability === "in-stock" ? "primary" : "secondary"}
+          intent={available === "true" ? "primary" : "secondary"}
         >
           In Stock
-          {availability === "in-stock" ? <Icon name="check" /> : null}
+          {available === "true" ? <Icon name="check" /> : null}
         </Button>
       </RadioGroup.Item>
-      <RadioGroup.Item value="out-of-stock" id="out-of-stock" asChild>
+      <RadioGroup.Item value="false" id="false" asChild>
         <Button
           className="flex justify-between text-left uppercase"
-          intent={availability === "out-of-stock" ? "primary" : "secondary"}
+          intent={available === "false" ? "primary" : "secondary"}
         >
           Out of Stock
-          {availability === "out-of-stock" ? <Icon name="check" /> : null}
+          {available === "false" ? <Icon name="check" /> : null}
         </Button>
       </RadioGroup.Item>
     </RadioGroup.Root>
@@ -163,8 +163,8 @@ function FilterProductStock() {
 // TODO: need some client-side validation and probably want to throttle submitting the form
 function FilterPriceRange() {
   const [searchParams] = useSearchParams();
-  const min = searchParams.get("min") || "";
-  const max = searchParams.get("max") || "";
+  const min = searchParams.get("price.min") || "";
+  const max = searchParams.get("price.max") || "";
 
   return (
     <div className="flex items-center gap-3 font-bold">
@@ -173,7 +173,7 @@ function FilterPriceRange() {
       </label>
       <PriceInput
         id="from"
-        name="min"
+        name="price.min"
         placeholder="0"
         defaultValue={min}
         min={0}
@@ -184,7 +184,7 @@ function FilterPriceRange() {
       </label>
       <PriceInput
         id="to"
-        name="max"
+        name="price.max"
         placeholder="1000"
         defaultValue={max}
         min={min}

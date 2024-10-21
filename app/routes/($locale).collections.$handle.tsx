@@ -11,6 +11,7 @@ import { CollectionGrid } from "~/components/collection-grid";
 import { Hero } from "~/components/hero";
 import { FiltersToolbar } from "~/components/filters";
 import { type CollectionQueryVariables } from "storefrontapi.generated";
+import { type ProductFilter } from "@shopify/hydrogen/storefront-api-types";
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
   let title = `The Remix Store`;
@@ -23,6 +24,11 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
 
   return [{ title }];
 };
+
+function parsePrice(value: string | null | undefined) {
+  const price = Number(value);
+  return isNaN(price) ? undefined : price;
+}
 
 function getQueryVariables(
   searchParams: URLSearchParams,
@@ -52,10 +58,31 @@ function getQueryVariables(
       break;
     }
   }
+  const filters: ProductFilter[] = [];
+
+  if (searchParams.get("available") === "true") {
+    filters.push({ available: true });
+  } else if (searchParams.get("available") === "false") {
+    filters.push({ available: false });
+  }
+
+  const minPrice = parsePrice(searchParams.get("price.min"));
+  const maxPrice = parsePrice(searchParams.get("price.max"));
+  const price: ProductFilter["price"] = {};
+  if (minPrice || maxPrice) {
+    if (minPrice) {
+      price.min = minPrice;
+    }
+    if (maxPrice) {
+      price.max = maxPrice;
+    }
+    filters.push({ price });
+  }
 
   return {
     reverse,
     sortKey,
+    filters,
   };
 }
 
@@ -73,7 +100,10 @@ export async function loader({ context, params, request }: LoaderFunctionArgs) {
 
   // load the initial products we want to SSR
   const { collection } = await storefront.query(COLLECTION_QUERY, {
-    variables: { ...variables, first: 8 },
+    variables: {
+      ...variables,
+      first: 8,
+    },
   });
 
   if (!collection) {
@@ -179,6 +209,7 @@ const COLLECTION_QUERY = `#graphql
     $endCursor: String
     $sortKey: ProductCollectionSortKeys
     $reverse: Boolean
+    $filters: [ProductFilter!]
   ) @inContext(country: $country, language: $language) {
     collection(handle: $handle) {
       id
@@ -198,6 +229,7 @@ const COLLECTION_QUERY = `#graphql
         after: $endCursor
         sortKey: $sortKey
         reverse: $reverse
+        filters: $filters
       ) {
         nodes {
           ...ProductItem
