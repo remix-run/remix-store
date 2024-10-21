@@ -26,16 +26,20 @@ import clsx from "clsx";
 import * as RadioGroup from "@radix-ui/react-radio-group";
 import * as Checkbox from "@radix-ui/react-checkbox";
 
-export function FiltersToolbar() {
+type FiltersToolbarProps = {
+  itemCount?: number;
+};
+
+export function FiltersToolbar({ itemCount }: FiltersToolbarProps) {
   return (
     <div className="flex h-[var(--header-height)] items-center justify-between">
-      <FiltersAside />
+      <FiltersAside itemCount={itemCount} />
       <SortDropdown />
     </div>
   );
 }
 
-function FiltersAside() {
+function FiltersAside({ itemCount }: FiltersToolbarProps) {
   const submit = useSubmit();
 
   return (
@@ -48,9 +52,11 @@ function FiltersAside() {
         </AsideTrigger>
       </div>
       <div className="hidden w-[250px] md:block">
-        {/* TODO: This trigger isn't picking up the :before pseudo-element */}
         <AsideTrigger asChild>
-          <ButtonWithWellText size="icon" wellPostfix="Showing 6 items">
+          <ButtonWithWellText
+            size="icon"
+            wellPostfix={`Showing ${itemCount} items`}
+          >
             <Icon name="filter" />
           </ButtonWithWellText>
         </AsideTrigger>

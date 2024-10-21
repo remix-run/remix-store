@@ -10,6 +10,7 @@ import { PRODUCT_ITEM_FRAGMENT } from "~/lib/fragments";
 import { CollectionGrid } from "~/components/collection-grid";
 import { Hero } from "~/components/hero";
 import { FiltersToolbar } from "~/components/filters";
+import { type CollectionQueryVariables } from "storefrontapi.generated";
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
   let title = `The Remix Store`;
@@ -23,7 +24,42 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
   return [{ title }];
 };
 
-export async function loader({ context, params }: LoaderFunctionArgs) {
+function getQueryVariables(
+  searchParams: URLSearchParams,
+): Omit<CollectionQueryVariables, "handle"> {
+  const sort = searchParams.get("sort");
+  let reverse = false;
+  let sortKey: CollectionQueryVariables["sortKey"];
+
+  switch (sort) {
+    case "price-high-to-low": {
+      reverse = true;
+      sortKey = "PRICE";
+      break;
+    }
+    case "price-low-to-high": {
+      reverse = false;
+      sortKey = "PRICE";
+      break;
+    }
+    case "newest": {
+      sortKey = "CREATED";
+      reverse = true;
+      break;
+    }
+    case "best-selling": {
+      sortKey = "BEST_SELLING";
+      break;
+    }
+  }
+
+  return {
+    reverse,
+    sortKey,
+  };
+}
+
+export async function loader({ context, params, request }: LoaderFunctionArgs) {
   const { handle } = params;
   const { storefront } = context;
 
@@ -31,10 +67,13 @@ export async function loader({ context, params }: LoaderFunctionArgs) {
     throw redirect("/collections");
   }
 
+  const url = new URL(request.url);
+  const searchParams = url.searchParams;
+  const variables = { handle, ...getQueryVariables(searchParams) };
+
   // load the initial products we want to SSR
   const { collection } = await storefront.query(COLLECTION_QUERY, {
-    variables: { handle, first: 8 },
-    // Add other queries here, so that they are loaded in parallel
+    variables: { ...variables, first: 8 },
   });
 
   if (!collection) {
@@ -42,18 +81,26 @@ export async function loader({ context, params }: LoaderFunctionArgs) {
       status: 404,
     });
   }
+
   const { hasNextPage, endCursor } = collection.products.pageInfo;
 
-  // lazy load the remaing products if any
+  // lazy load the remaining products if any
   if (hasNextPage) {
     const remainingProducts = storefront
       .query(COLLECTION_QUERY, {
         // if we ever have more than 258 products, we need to figure out a
         // different strategy. Honestly, before that point we'll need to
         // paginate, but loading all is fine for now
-        variables: { handle, endCursor, first: 250 },
-        // Add other queries here, so that they are loaded in parallel
+        variables: {
+          ...variables,
+          endCursor,
+          first: 250,
+        },
       })
+      // artificial 2 second delay to test loading state
+      .then((data) =>
+        new Promise((resolve) => setTimeout(resolve, 2000)).then(() => data),
+      )
       .then(({ collection }) => collection?.products.nodes);
 
     return defer({ collection, remainingProducts });
@@ -72,17 +119,22 @@ export default function Collection() {
         subtitle={collection.description}
         image={collection.image}
       />
-      <FiltersToolbar />
 
       {!remainingProducts ? (
-        <CollectionGrid products={collection.products.nodes} />
+        <>
+          <FiltersToolbar itemCount={collection.products.nodes.length} />
+          <CollectionGrid products={collection.products.nodes} />
+        </>
       ) : (
         <Suspense
           fallback={
-            <CollectionGrid
-              products={collection.products.nodes}
-              loadingCount={4}
-            />
+            <>
+              <FiltersToolbar itemCount={0} />
+              <CollectionGrid
+                products={collection.products.nodes}
+                loadingProductCount={4}
+              />
+            </>
           }
         >
           <Await resolve={remainingProducts}>
@@ -91,7 +143,12 @@ export default function Collection() {
                 ...collection.products.nodes,
                 ...remainingProducts,
               ];
-              return <CollectionGrid products={products} />;
+              return (
+                <>
+                  <FiltersToolbar itemCount={products.length} />
+                  <CollectionGrid products={products} />
+                </>
+              );
             }}
           </Await>
         </Suspense>
@@ -120,6 +177,8 @@ const COLLECTION_QUERY = `#graphql
     $last: Int
     $startCursor: String
     $endCursor: String
+    $sortKey: ProductCollectionSortKeys
+    $reverse: Boolean
   ) @inContext(country: $country, language: $language) {
     collection(handle: $handle) {
       id
@@ -137,6 +196,8 @@ const COLLECTION_QUERY = `#graphql
         last: $last,
         before: $startCursor,
         after: $endCursor
+        sortKey: $sortKey
+        reverse: $reverse
       ) {
         nodes {
           ...ProductItem

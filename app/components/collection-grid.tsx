@@ -8,12 +8,12 @@ import clsx from "clsx";
 
 interface CollectionGridProps {
   products?: RecommendedProductsQuery["products"]["nodes"];
-  loadingCount?: number;
+  loadingProductCount?: number;
 }
 
 export function CollectionGrid({
   products,
-  loadingCount,
+  loadingProductCount: loadingCount,
 }: CollectionGridProps) {
   if (!products) return null;
 
