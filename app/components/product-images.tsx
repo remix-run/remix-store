@@ -48,7 +48,7 @@ function ImageGrid({
 }) {
   return (
     <div className="hidden size-full max-w-[800px] flex-col gap-[18px] md:flex">
-      {images.slice(0, 3).map(({ image, gradient }) => {
+      {images.map(({ image, gradient }) => {
         if (!image) return null;
 
         return (
@@ -61,7 +61,8 @@ function ImageGrid({
               data={image}
               gradient={gradient}
               gradientFade
-              sizes="(min-width: 45em) 50vw, 100vw"
+              sizes="(min-width: 800px) 50vw, 100vw"
+              loading="lazy"
             />
           </div>
         );
@@ -103,10 +104,11 @@ function Carousel({
               >
                 <Image
                   alt={image.altText || "Product Image"}
+                  sizes="100vw"
                   data={image}
                   gradient={gradient}
                   gradientFade={true}
-                  sizes="(min-width: 45em) 50vw, 100vw"
+                  loading="lazy"
                 />
               </div>
             );
@@ -137,7 +139,7 @@ function Carousel({
                     "bg-opacity-50": index !== selectedIndex,
                   })}
                   aria-label={`Skip to image ${index + 1}`}
-                ></DotButton>
+                />
               );
             })}
           </div>

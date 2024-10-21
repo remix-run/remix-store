@@ -67,12 +67,13 @@ export function Image(props: ImageProps) {
 
       <HydrogenImage
         {...rest}
-        width={rest.data?.width ?? undefined}
-        height={rest.data?.height ?? undefined}
         className={cn(
-          "pointer-events-none size-auto self-center justify-self-center",
+          "pointer-events-none size-auto select-none self-center justify-self-center",
           rest.className,
         )}
+        style={{
+          width: "auto",
+        }}
       />
     </div>
   );

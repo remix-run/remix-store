@@ -68,7 +68,7 @@ export function Hero({
             )}
             data={image ?? DEFAULT_IMAGE}
             sizes="100vw"
-            loading="eager"
+            loading="lazy"
           />
         </>
       ) : (
