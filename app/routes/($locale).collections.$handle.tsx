@@ -79,6 +79,14 @@ function getQueryVariables(
     filters.push({ price });
   }
 
+  if (searchParams.has("product-type")) {
+    // TODO: validate product-type
+    const productTypes = searchParams.getAll("product-type");
+    productTypes.forEach((productType) => {
+      filters.push({ productType });
+    });
+  }
+
   return {
     reverse,
     sortKey,
@@ -128,9 +136,9 @@ export async function loader({ context, params, request }: LoaderFunctionArgs) {
         },
       })
       // artificial 2 second delay to test loading state
-      .then((data) =>
-        new Promise((resolve) => setTimeout(resolve, 2000)).then(() => data),
-      )
+      // .then((data) =>
+      //   new Promise((resolve) => setTimeout(resolve, 3000)).then(() => data),
+      // )
       .then(({ collection }) => collection?.products.nodes);
 
     return defer({ collection, remainingProducts });
@@ -159,7 +167,8 @@ export default function Collection() {
         <Suspense
           fallback={
             <>
-              <FiltersToolbar itemCount={0} />
+              {/* TODO: handle the fact that this remounts and closes the Aside once the data finishes streaming */}
+              <FiltersToolbar itemCount={collection.products.nodes.length} />
               <CollectionGrid
                 products={collection.products.nodes}
                 loadingProductCount={4}
