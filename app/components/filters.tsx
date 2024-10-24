@@ -41,12 +41,21 @@ export function FiltersToolbar({ itemCount }: FiltersToolbarProps) {
 
 function FiltersAside({ itemCount }: FiltersToolbarProps) {
   const submit = useSubmit();
+  const [searchParams] = useSearchParams();
+
+  const filtersApplied = [
+    "available",
+    "price.min",
+    "price.max",
+    "product-type",
+  ].some((key) => searchParams.has(key));
+  const intent = filtersApplied ? "primary" : "secondary";
 
   return (
     <Aside>
       <div className="md:hidden">
         <AsideTrigger asChild>
-          <Button size="icon">
+          <Button intent={intent} size="icon">
             <Icon name="filter" />
           </Button>
         </AsideTrigger>
@@ -54,6 +63,7 @@ function FiltersAside({ itemCount }: FiltersToolbarProps) {
       <div className="hidden w-[250px] md:block">
         <AsideTrigger asChild>
           <ButtonWithWellText
+            intent={intent}
             size="icon"
             wellPostfix={
               itemCount ? `Showing ${itemCount} items` : "Loading items"
