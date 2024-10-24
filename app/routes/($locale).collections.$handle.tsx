@@ -135,10 +135,6 @@ export async function loader({ context, params, request }: LoaderFunctionArgs) {
           first: 250,
         },
       })
-      // artificial 2 second delay to test loading state
-      // .then((data) =>
-      //   new Promise((resolve) => setTimeout(resolve, 3000)).then(() => data),
-      // )
       .then(({ collection }) => collection?.products.nodes);
 
     return defer({ collection, remainingProducts });
@@ -168,7 +164,7 @@ export default function Collection() {
           fallback={
             <>
               {/* TODO: handle the fact that this remounts and closes the Aside once the data finishes streaming */}
-              <FiltersToolbar itemCount={collection.products.nodes.length} />
+              <FiltersToolbar />
               <CollectionGrid
                 products={collection.products.nodes}
                 loadingProductCount={4}

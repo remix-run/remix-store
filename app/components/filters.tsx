@@ -55,7 +55,9 @@ function FiltersAside({ itemCount }: FiltersToolbarProps) {
         <AsideTrigger asChild>
           <ButtonWithWellText
             size="icon"
-            wellPostfix={`Showing ${itemCount} items`}
+            wellPostfix={
+              itemCount ? `Showing ${itemCount} items` : "Loading items"
+            }
           >
             <Icon name="filter" />
           </ButtonWithWellText>
@@ -75,7 +77,10 @@ function FiltersAside({ itemCount }: FiltersToolbarProps) {
             }}
             method="get"
             preventScrollReset
+            replace
           >
+            <HiddenFilterInputs keys={["sort"]} include />
+
             <Accordion
               type="multiple"
               className="gap-0"
@@ -166,6 +171,7 @@ function FilterPriceRange() {
   const min = searchParams.get("price.min") || "";
   const max = searchParams.get("price.max") || "";
 
+  // TODO: purge these if there are no values
   return (
     <div className="flex items-center gap-3 font-bold">
       <label htmlFor="from">
@@ -286,7 +292,13 @@ export function SortDropdown() {
         </DropdownMenuTrigger>
       </div>
       <DropdownMenuContent className="w-fit md:w-[280px]" align="end">
-        <Form method="get" className="flex flex-col gap-1" preventScrollReset>
+        <Form
+          method="get"
+          className="flex flex-col gap-1"
+          preventScrollReset
+          replace
+        >
+          <HiddenFilterInputs keys={["sort"]} include={false} />
           {sortOptions.map((option) => (
             <SortButton
               key={option.value}
@@ -300,6 +312,39 @@ export function SortDropdown() {
       </DropdownMenuContent>
     </DropdownMenu>
   );
+}
+
+type FilterKey =
+  | "available"
+  | "price.min"
+  | "price.max"
+  | "product-type"
+  | "sort";
+
+/**
+ * Add hidden inputs for all filters set in the query params
+ * Takes an array of keys to include or exclude from the search params
+ */
+function HiddenFilterInputs({
+  keys = [],
+  include = true,
+}: {
+  keys: FilterKey[];
+  include?: boolean;
+}) {
+  const [searchParams] = useSearchParams();
+  const keysToIncludeSet = new Set(keys);
+
+  return Array.from(searchParams.entries()).map(([key, value]) => {
+    if (include && !keysToIncludeSet.has(key)) {
+      return null;
+    }
+    if (!include && keysToIncludeSet.has(key)) {
+      return null;
+    }
+
+    return <input key={key} type="hidden" name={key} value={value} />;
+  });
 }
 
 function SortButton({
