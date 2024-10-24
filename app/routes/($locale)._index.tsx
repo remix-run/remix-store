@@ -3,12 +3,11 @@ import { defer } from "@shopify/remix-oxygen";
 import { Link, useLoaderData, type MetaFunction } from "@remix-run/react";
 import { Hero } from "~/components/hero";
 import { FiltersToolbar } from "~/components/filters";
-import {
-  COLLECTION_VIDEO_FRAGMENT,
-  PRODUCT_ITEM_FRAGMENT,
-} from "~/lib/fragments";
+import { COLLECTION_VIDEO_FRAGMENT } from "~/lib/fragments";
 import { CollectionGrid } from "~/components/collection-grid";
 import { Button } from "~/components/ui/button";
+import { COLLECTION_QUERY } from "~/lib/queries";
+import { getQueryVariables } from "./($locale).collections.$handle";
 
 export const FEATURED_COLLECTION_HANDLE = "remix-logo-apparel";
 
@@ -16,22 +15,33 @@ export const meta: MetaFunction = () => {
   return [{ title: "The Remix Store | Home" }];
 };
 
-export async function loader(args: LoaderFunctionArgs) {
-  const { context } = args;
-  const featuredQuery = context.storefront.query(FEATURED_COLLECTION_QUERY, {
+export async function loader({ request, context }: LoaderFunctionArgs) {
+  const { storefront } = context;
+  const featuredQuery = storefront.query(FEATURED_COLLECTION_QUERY, {
     variables: {
       handle: FEATURED_COLLECTION_HANDLE,
     },
   });
-  const recommendedQuery = context.storefront.query(
-    RECOMMENDED_PRODUCTS_QUERY,
-    { variables: { first: 8 } },
-  );
 
-  const [{ featuredCollection }, { products }] = await Promise.all([
+  const url = new URL(request.url);
+  const { searchParams } = url;
+  const variables = {
+    handle: "all",
+    first: 8,
+    ...getQueryVariables(searchParams),
+  };
+
+  const top8Query = storefront.query(COLLECTION_QUERY, { variables });
+
+  const [{ featuredCollection }, { collection }] = await Promise.all([
     featuredQuery,
-    recommendedQuery,
+    top8Query,
   ]);
+
+  const products = collection?.products;
+  if (!products) {
+    throw new Response("Something went wrong", { status: 500 });
+  }
 
   return defer({ featuredCollection, products });
 }
@@ -89,19 +99,6 @@ export const FEATURED_COLLECTION_QUERY = `#graphql
       }
       featuredDescription: metafield(key: "featured_description", namespace:  "custom") {
         value
-      }
-    }
-  }
-` as const;
-
-// TODO: do we want to make this a little more curated?
-const RECOMMENDED_PRODUCTS_QUERY = `#graphql
-  ${PRODUCT_ITEM_FRAGMENT}
-  query RecommendedProducts ($country: CountryCode, $language: LanguageCode, $first: Int)
-    @inContext(country: $country, language: $language) {
-    products(first: $first, sortKey: UPDATED_AT, reverse: true) {
-      nodes {
-        ...ProductItem
       }
     }
   }

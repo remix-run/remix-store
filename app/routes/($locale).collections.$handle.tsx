@@ -6,12 +6,12 @@ import {
 } from "@shopify/remix-oxygen";
 import { Await, useLoaderData, type MetaFunction } from "@remix-run/react";
 import { Analytics } from "@shopify/hydrogen";
-import { PRODUCT_ITEM_FRAGMENT } from "~/lib/fragments";
 import { CollectionGrid } from "~/components/collection-grid";
 import { Hero } from "~/components/hero";
 import { FiltersToolbar } from "~/components/filters";
 import { type CollectionQueryVariables } from "storefrontapi.generated";
 import { type ProductFilter } from "@shopify/hydrogen/storefront-api-types";
+import { COLLECTION_QUERY } from "~/lib/queries";
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
   let title = `The Remix Store`;
@@ -30,7 +30,8 @@ function parsePrice(value: string | null | undefined) {
   return isNaN(price) ? undefined : price;
 }
 
-function getQueryVariables(
+// TODO: export this somewhere else
+export function getQueryVariables(
   searchParams: URLSearchParams,
 ): Omit<CollectionQueryVariables, "handle"> {
   const sort = searchParams.get("sort");
@@ -94,7 +95,7 @@ function getQueryVariables(
   };
 }
 
-export async function loader({ context, params, request }: LoaderFunctionArgs) {
+export async function loader({ params, request, context }: LoaderFunctionArgs) {
   const { handle } = params;
   const { storefront } = context;
 
@@ -103,7 +104,7 @@ export async function loader({ context, params, request }: LoaderFunctionArgs) {
   }
 
   const url = new URL(request.url);
-  const searchParams = url.searchParams;
+  const { searchParams } = url;
   const variables = { handle, ...getQueryVariables(searchParams) };
 
   // load the initial products we want to SSR
@@ -200,52 +201,3 @@ export default function Collection() {
     </div>
   );
 }
-
-// NOTE: https://shopify.dev/docs/api/storefront/2022-04/objects/collection
-const COLLECTION_QUERY = `#graphql
-  ${PRODUCT_ITEM_FRAGMENT}
-  query Collection(
-    $handle: String!
-    $country: CountryCode
-    $language: LanguageCode
-    $first: Int
-    $last: Int
-    $startCursor: String
-    $endCursor: String
-    $sortKey: ProductCollectionSortKeys
-    $reverse: Boolean
-    $filters: [ProductFilter!]
-  ) @inContext(country: $country, language: $language) {
-    collection(handle: $handle) {
-      id
-      handle
-      title
-      description
-      image {
-        ...ProductImage
-      }
-      seo {
-        title
-      }
-      products(
-        first: $first,
-        last: $last,
-        before: $startCursor,
-        after: $endCursor
-        sortKey: $sortKey
-        reverse: $reverse
-        filters: $filters
-      ) {
-        nodes {
-          ...ProductItem
-        }
-        pageInfo {
-          hasPreviousPage
-          hasNextPage
-          endCursor
-          startCursor
-        }
-      }
-    }
-  }
-` as const;
