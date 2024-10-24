@@ -236,7 +236,7 @@ export function ErrorBoundary() {
         </p>
         <div className="w-[340px]">
           <Button size="lg" asChild>
-            <Link to="/">Back to shop</Link>
+            <Link to="/collections/all">Back to shop</Link>
           </Button>
         </div>
       </div>

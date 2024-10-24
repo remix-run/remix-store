@@ -1,6 +1,6 @@
 import type { LoaderFunctionArgs } from "@shopify/remix-oxygen";
 import { defer } from "@shopify/remix-oxygen";
-import { useLoaderData, type MetaFunction } from "@remix-run/react";
+import { Link, useLoaderData, type MetaFunction } from "@remix-run/react";
 import { Hero } from "~/components/hero";
 import { FiltersToolbar } from "~/components/filters";
 import {
@@ -8,6 +8,7 @@ import {
   PRODUCT_ITEM_FRAGMENT,
 } from "~/lib/fragments";
 import { CollectionGrid } from "~/components/collection-grid";
+import { Button } from "~/components/ui/button";
 
 export const FEATURED_COLLECTION_HANDLE = "remix-logo-apparel";
 
@@ -56,8 +57,13 @@ export default function Homepage() {
           }}
         />
       ) : null}
-      <FiltersToolbar />
+      <FiltersToolbar itemCount={products.nodes.length} />
       <CollectionGrid products={products.nodes} />
+      <div className="mx-auto mt-12 w-[340px]">
+        <Button size="lg" asChild>
+          <Link to="/collections/all">Shop all items</Link>
+        </Button>
+      </div>
     </>
   );
 }

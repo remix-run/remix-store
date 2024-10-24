@@ -257,16 +257,15 @@ function FilterProductType() {
 }
 
 const sortOptions = [
-  { value: "featured", label: "Featured" },
+  { value: "best-selling", label: "Best Selling" },
   { value: "price-high-to-low", label: "Price: High To Low" },
   { value: "price-low-to-high", label: "Price: Low To High" },
-  { value: "best-selling", label: "Best Selling" },
   { value: "newest", label: "Newest" },
 ];
 
 export function SortDropdown() {
   const [searchParams] = useSearchParams();
-  const currentSort = searchParams.get("sort") || "featured";
+  const currentSort = searchParams.get("sort") || sortOptions[0].value;
 
   const currentSortLabel =
     sortOptions.find((option) => option.value === currentSort)?.label || "Sort";
