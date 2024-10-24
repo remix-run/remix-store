@@ -57,9 +57,9 @@ export default function Homepage() {
           }}
         />
       ) : null}
-      <FiltersToolbar itemCount={products.nodes.length} />
+      <FiltersToolbar />
       <CollectionGrid products={products.nodes} />
-      <div className="mx-auto mt-12 w-[340px]">
+      <div className="mx-auto mb-12 mt-20 w-[340px]">
         <Button size="lg" asChild>
           <Link to="/collections/all">Shop all items</Link>
         </Button>
