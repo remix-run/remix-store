@@ -67,7 +67,7 @@ export default function Homepage() {
           }}
         />
       ) : null}
-      <FiltersToolbar />
+      <FiltersToolbar itemCount={products.nodes.length} />
       <CollectionGrid products={products.nodes} />
       <div className="mx-auto mb-12 mt-20 w-[340px]">
         <Button size="lg" asChild>

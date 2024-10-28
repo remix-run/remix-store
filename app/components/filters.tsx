@@ -25,6 +25,18 @@ import {
 import clsx from "clsx";
 import * as RadioGroup from "@radix-ui/react-radio-group";
 import * as Checkbox from "@radix-ui/react-checkbox";
+import {
+  type FilterKey,
+  SORT_KEY,
+  SORT_OPTIONS,
+  PRODUCT_TYPES,
+  useCurrentSort,
+  useCurrentProductTypes,
+  FILTER,
+  useIsFilterApplied,
+  useIsAvailable,
+  usePrice,
+} from "~/lib/filters";
 
 type FiltersToolbarProps = {
   itemCount?: number;
@@ -41,15 +53,8 @@ export function FiltersToolbar({ itemCount }: FiltersToolbarProps) {
 
 function FiltersAside({ itemCount }: FiltersToolbarProps) {
   const submit = useSubmit();
-  const [searchParams] = useSearchParams();
-
-  const filtersApplied = [
-    "available",
-    "price.min",
-    "price.max",
-    "product-type",
-  ].some((key) => searchParams.has(key));
-  const intent = filtersApplied ? "primary" : "secondary";
+  const isFilterApplied = useIsFilterApplied();
+  const intent = isFilterApplied ? "primary" : "secondary";
 
   return (
     <Aside>
@@ -89,8 +94,7 @@ function FiltersAside({ itemCount }: FiltersToolbarProps) {
             preventScrollReset
             replace
           >
-            <HiddenFilterInputs keys={["sort"]} include />
-
+            <HiddenFilterInputs keys={[SORT_KEY]} include />
             <Accordion
               type="multiple"
               className="gap-0"
@@ -139,18 +143,13 @@ function FilterAccordionItem({
 }
 
 function FilterProductStock() {
-  const [searchParams] = useSearchParams();
-  let available: string | undefined =
-    searchParams.get("available") || undefined;
-  if (available !== "true" && available !== "false") {
-    available = undefined;
-  }
+  const available = useIsAvailable();
 
   return (
     <RadioGroup.Root
       className="flex w-[300px] flex-col gap-3"
       aria-label="select availability"
-      name="available"
+      name={FILTER.AVAILABLE}
       defaultValue={available}
     >
       <RadioGroup.Item value="true" id="true" asChild>
@@ -177,9 +176,7 @@ function FilterProductStock() {
 
 // TODO: need some client-side validation and probably want to throttle submitting the form
 function FilterPriceRange() {
-  const [searchParams] = useSearchParams();
-  const min = searchParams.get("price.min") || "";
-  const max = searchParams.get("price.max") || "";
+  const { min, max } = usePrice();
 
   // TODO: purge these if there are no values
   return (
@@ -189,7 +186,7 @@ function FilterPriceRange() {
       </label>
       <PriceInput
         id="from"
-        name="price.min"
+        name={FILTER.PRICE_MIN}
         placeholder="0"
         defaultValue={min}
         min={0}
@@ -200,7 +197,7 @@ function FilterPriceRange() {
       </label>
       <PriceInput
         id="to"
-        name="price.max"
+        name={FILTER.PRICE_MAX}
         placeholder="1000"
         defaultValue={max}
         min={min}
@@ -237,29 +234,18 @@ function PriceInput({
   );
 }
 
-// TODO: get this from the storefront API
-const productTypes = [
-  "apparel",
-  "accessories",
-  "stationary",
-  "stickers",
-  "toys",
-];
-
 function FilterProductType() {
-  const [searchParams] = useSearchParams();
-
-  const selectedProductTypes = new Set(searchParams.getAll("product-type"));
+  const selectedProductTypes = useCurrentProductTypes();
 
   return (
     <div className="flex flex-wrap gap-3">
-      {productTypes.map((productType) => {
+      {PRODUCT_TYPES.map((productType) => {
         const checked = selectedProductTypes.has(productType);
         return (
           <Checkbox.Root
             key={productType}
             className="CheckboxRoot"
-            name="product-type"
+            name={FILTER.PRODUCT_TYPE}
             value={productType}
             defaultChecked={checked}
             asChild
@@ -278,25 +264,14 @@ function FilterProductType() {
   );
 }
 
-const sortOptions = [
-  { value: "best-selling", label: "Best Selling" },
-  { value: "price-high-to-low", label: "Price: High To Low" },
-  { value: "price-low-to-high", label: "Price: Low To High" },
-  { value: "newest", label: "Newest" },
-];
-
 export function SortDropdown() {
-  const [searchParams] = useSearchParams();
-  const currentSort = searchParams.get("sort") || sortOptions[0].value;
-
-  const currentSortLabel =
-    sortOptions.find((option) => option.value === currentSort)?.label || "Sort";
+  const currentSort = useCurrentSort();
 
   return (
     <DropdownMenu>
       <div className="w-fit md:w-[280px]">
         <DropdownMenuTrigger asChild>
-          <ButtonWithWellText size="icon" wellPrefix={currentSortLabel}>
+          <ButtonWithWellText size="icon" wellPrefix={currentSort?.label}>
             <Icon name="chevron-down" />
           </ButtonWithWellText>
         </DropdownMenuTrigger>
@@ -308,12 +283,12 @@ export function SortDropdown() {
           preventScrollReset
           replace
         >
-          <HiddenFilterInputs keys={["sort"]} include={false} />
-          {sortOptions.map((option) => (
+          <HiddenFilterInputs keys={[SORT_KEY]} include={false} />
+          {SORT_OPTIONS.map((option) => (
             <SortButton
               key={option.value}
               value={option.value}
-              selected={currentSort === option.value}
+              selected={currentSort.value === option.value}
             >
               {option.label}
             </SortButton>
@@ -324,22 +299,15 @@ export function SortDropdown() {
   );
 }
 
-type FilterKey =
-  | "available"
-  | "price.min"
-  | "price.max"
-  | "product-type"
-  | "sort";
-
 /**
  * Add hidden inputs for all filters set in the query params
  * Takes an array of keys to include or exclude from the search params
  */
-function HiddenFilterInputs({
+export function HiddenFilterInputs({
   keys = [],
   include = true,
 }: {
-  keys: FilterKey[];
+  keys: Array<FilterKey | typeof SORT_KEY>;
   include?: boolean;
 }) {
   const [searchParams] = useSearchParams();
@@ -368,7 +336,7 @@ function SortButton({
 }) {
   return (
     <DropdownMenuItem asChild className="justify-between">
-      <button value={value} name="sort">
+      <button value={value} name={SORT_KEY}>
         {children}
         {selected ? <Icon name="check" /> : null}
       </button>
