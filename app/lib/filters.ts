@@ -1,6 +1,6 @@
 // client-side validation of search params
 
-import { useSearchParams } from "@remix-run/react";
+import { useNavigation, useSearchParams, useSubmit } from "@remix-run/react";
 
 export const SORT_KEY = "sort";
 
@@ -17,8 +17,20 @@ export const SORT_OPTIONS = [
   { value: "newest", label: "Newest" },
 ] satisfies { value: SortKey; label: string }[];
 
+function usePendingSearchParams() {
+  let [searchParams] = useSearchParams();
+
+  const navigation = useNavigation();
+  if (navigation.state === "loading") {
+    searchParams = new URLSearchParams(navigation.location.search);
+  }
+
+  return searchParams;
+}
+
 export function useCurrentSort() {
-  const [searchParams] = useSearchParams();
+  const searchParams = usePendingSearchParams();
+
   const sortKey = searchParams.get("sort");
   let sortOption;
 
@@ -37,8 +49,31 @@ export const FILTER = {
 
 export type FilterKey = (typeof FILTER)[keyof typeof FILTER];
 
+/**
+ * A submit function for filters form that automatically removes filters
+ * with no values
+ */
+export function useFiltersSubmit() {
+  const submit = useSubmit();
+
+  return (e: React.FormEvent<HTMLFormElement>) => {
+    const formData = new FormData(e.currentTarget);
+    for (const key of formData.keys()) {
+      if (formData.get(key) === "") {
+        formData.delete(key);
+      }
+    }
+
+    submit(formData, {
+      preventScrollReset: true,
+      replace: true,
+      method: "get",
+    });
+  };
+}
+
 export function useIsFilterApplied() {
-  const [searchParams] = useSearchParams();
+  const searchParams = usePendingSearchParams();
 
   const isFilterApplied = Object.values(FILTER).some((key) =>
     searchParams.has(key),
@@ -48,7 +83,8 @@ export function useIsFilterApplied() {
 }
 
 export function useIsAvailable() {
-  const [searchParams] = useSearchParams();
+  const searchParams = usePendingSearchParams();
+
   let available: string | undefined =
     searchParams.get("available") || undefined;
   if (available !== "true" && available !== "false") {
@@ -80,9 +116,23 @@ export const PRODUCT_TYPES = [
 ] as const;
 
 export function useCurrentProductTypes() {
-  const [searchParams] = useSearchParams();
-  const productTypes = searchParams.getAll(FILTER.PRODUCT_TYPE);
+  const searchParams = usePendingSearchParams();
+
+  const productTypes = validateProductTypes(searchParams);
+
   return new Set(productTypes);
 }
 
+const productTypesSet = new Set(PRODUCT_TYPES);
+export function validateProductTypes(searchParams: URLSearchParams) {
+  const productTypes = searchParams.getAll(FILTER.PRODUCT_TYPE);
+  return productTypes.filter((productType) => productTypesSet.has(productType));
+}
+
 // server-side validation and transformation of search params
+
+// Next up:
+// - Validate filters/sort server-side (remove invalid filter values)
+// - Fix filter bar closing after data comes in
+// - Add the ability to deselect availability
+// - Debounce min/max price change

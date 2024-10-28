@@ -1,4 +1,4 @@
-import { Form, useSearchParams, useSubmit } from "@remix-run/react";
+import { Form, useSearchParams } from "@remix-run/react";
 import Icon from "~/components/icon";
 import { Button, ButtonWithWellText } from "~/components/ui/button";
 import {
@@ -36,6 +36,7 @@ import {
   useIsFilterApplied,
   useIsAvailable,
   usePrice,
+  useFiltersSubmit,
 } from "~/lib/filters";
 
 type FiltersToolbarProps = {
@@ -52,7 +53,7 @@ export function FiltersToolbar({ itemCount }: FiltersToolbarProps) {
 }
 
 function FiltersAside({ itemCount }: FiltersToolbarProps) {
-  const submit = useSubmit();
+  const submit = useFiltersSubmit();
   const isFilterApplied = useIsFilterApplied();
   const intent = isFilterApplied ? "primary" : "secondary";
 
@@ -87,12 +88,7 @@ function FiltersAside({ itemCount }: FiltersToolbarProps) {
         <AsideBody>
           <Form
             // This form automatically submits any time any of the filter controls change
-            onChange={(e) => {
-              submit(e.currentTarget, { preventScrollReset: true });
-            }}
-            method="get"
-            preventScrollReset
-            replace
+            onChange={submit}
           >
             <HiddenFilterInputs keys={[SORT_KEY]} include />
             <Accordion
@@ -174,11 +170,9 @@ function FilterProductStock() {
   );
 }
 
-// TODO: need some client-side validation and probably want to throttle submitting the form
 function FilterPriceRange() {
   const { min, max } = usePrice();
 
-  // TODO: purge these if there are no values
   return (
     <div className="flex items-center gap-3 font-bold">
       <label htmlFor="from">
