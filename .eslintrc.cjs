@@ -30,6 +30,7 @@ module.exports = {
       },
     ],
     "jest/no-deprecated-functions": "off",
+    "jest/expect-expect": "off", // TODO: fix this to use the eslint rules for testing library
   },
   settings: {
     react: {
