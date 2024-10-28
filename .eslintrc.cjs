@@ -17,5 +17,6 @@ module.exports = {
     "no-console": ["warn", { allow: ["warn", "error"] }],
     "prettier/prettier": "off",
     "no-unused-vars": "warn",
+    "jest/no-deprecated-functions": "off",
   },
 };
