@@ -11,7 +11,10 @@
     "lint": "eslint --no-error-on-unmatched-pattern --ext .js,.ts,.jsx,.tsx .",
     "typecheck": "tsc --noEmit",
     "codegen": "shopify hydrogen codegen",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "coverage": "vitest run --coverage"
   },
   "dependencies": {
     "@radix-ui/react-accordion": "^1.2.1",
@@ -45,14 +48,20 @@
     "@shopify/mini-oxygen": "^3.0.6",
     "@shopify/oxygen-workers-types": "^4.1.4",
     "@shopify/prettier-config": "^1.1.2",
+    "@testing-library/jest-dom": "^6.6.2",
+    "@testing-library/react": "^16.0.1",
+    "@testing-library/user-event": "^14.5.2",
     "@total-typescript/ts-reset": "^0.6.1",
     "@types/eslint": "^9.6.1",
     "@types/react": "^18.3.11",
     "@types/react-dom": "^18.3.1",
+    "@vitest/coverage-v8": "^2.1.4",
+    "@vitest/ui": "^2.1.4",
     "autoprefixer": "^10.4.20",
     "eslint": "^8.57.0",
     "eslint-plugin-hydrogen": "0.12.3",
     "eslint-plugin-prettier": "^5.2.1",
+    "happy-dom": "^15.7.4",
     "postcss": "^8.4.47",
     "prettier": "^3.3.3",
     "prettier-plugin-tailwindcss": "^0.6.8",
@@ -60,7 +69,8 @@
     "typescript": "^5.6.3",
     "vite": "^5.4.9",
     "vite-plugin-icons-spritesheet": "^2.2.1",
-    "vite-tsconfig-paths": "^4.3.2"
+    "vite-tsconfig-paths": "^4.3.2",
+    "vitest": "^2.1.4"
   },
   "engines": {
     "node": ">=20.0.0"
