@@ -3,7 +3,10 @@
  */
 module.exports = {
   extends: [
-    "@remix-run/eslint-config",
+    "eslint:recommended",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:react/recommended",
+    "plugin:react-hooks/recommended",
     "plugin:hydrogen/recommended",
     "plugin:hydrogen/typescript",
   ],
@@ -16,7 +19,21 @@ module.exports = {
     "no-case-declarations": "off",
     "no-console": ["warn", { allow: ["warn", "error"] }],
     "prettier/prettier": "off",
-    "no-unused-vars": "warn",
+    "no-unused-vars": "off",
+    "@typescript-eslint/no-unused-vars": [
+      "warn",
+      {
+        argsIgnorePattern: "^_",
+        varsIgnorePattern: "^_",
+        ignoreRestSiblings: true,
+        args: "none", // Ignore all args in type definitions
+      },
+    ],
     "jest/no-deprecated-functions": "off",
+  },
+  settings: {
+    react: {
+      version: "detect",
+    },
   },
 };
