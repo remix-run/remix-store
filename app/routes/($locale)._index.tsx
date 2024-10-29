@@ -2,7 +2,7 @@ import type { LoaderFunctionArgs } from "@shopify/remix-oxygen";
 import { defer } from "@shopify/remix-oxygen";
 import { Link, useLoaderData, type MetaFunction } from "@remix-run/react";
 import { Hero } from "~/components/hero";
-import { FiltersToolbar } from "~/components/filters";
+import { FiltersAside, FiltersToolbar } from "~/components/filters";
 import { COLLECTION_VIDEO_FRAGMENT } from "~/lib/fragments";
 import { CollectionGrid } from "~/components/collection-grid";
 import { Button } from "~/components/ui/button";
@@ -67,7 +67,9 @@ export default function Homepage() {
           }}
         />
       ) : null}
-      <FiltersToolbar itemCount={products.nodes.length} />
+      <FiltersAside>
+        <FiltersToolbar itemCount={products.nodes.length} />
+      </FiltersAside>
       <CollectionGrid products={products.nodes} />
       <div className="mx-auto mb-12 mt-20 w-[340px]">
         <Button size="lg" asChild>

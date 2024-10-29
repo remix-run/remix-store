@@ -133,6 +133,5 @@ export function validateProductTypes(searchParams: URLSearchParams) {
 
 // Next up:
 // - Validate filters/sort server-side (remove invalid filter values)
-// - Fix filter bar closing after data comes in
 // - Add the ability to deselect availability
 // - Debounce min/max price change

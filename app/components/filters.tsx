@@ -38,6 +38,7 @@ import {
   usePrice,
   useFiltersSubmit,
 } from "~/lib/filters";
+import { createContext, useContext } from "react";
 
 type FiltersToolbarProps = {
   itemCount?: number;
@@ -46,19 +47,27 @@ type FiltersToolbarProps = {
 export function FiltersToolbar({ itemCount }: FiltersToolbarProps) {
   return (
     <div className="flex h-[var(--header-height)] items-center justify-between">
-      <FiltersAside itemCount={itemCount} />
+      <FiltersTrigger itemCount={itemCount} />
       <SortDropdown />
     </div>
   );
 }
 
-function FiltersAside({ itemCount }: FiltersToolbarProps) {
-  const submit = useFiltersSubmit();
+/**
+ * Trigger and label for the filters aside
+ */
+function FiltersTrigger({ itemCount }: FiltersToolbarProps) {
   const isFilterApplied = useIsFilterApplied();
   const intent = isFilterApplied ? "primary" : "secondary";
 
+  const isRenderedWithinAside = useContext(filtersAsideCheckContext);
+
+  if (!isRenderedWithinAside) {
+    throw new Error("FiltersTrigger must be used within a FiltersAside");
+  }
+
   return (
-    <Aside>
+    <>
       <div className="md:hidden">
         <AsideTrigger asChild>
           <Button intent={intent} size="icon">
@@ -79,6 +88,26 @@ function FiltersAside({ itemCount }: FiltersToolbarProps) {
           </ButtonWithWellText>
         </AsideTrigger>
       </div>
+    </>
+  );
+}
+
+const filtersAsideCheckContext = createContext(false);
+
+/**
+ * Aside that contains the filters and the form for submitting them
+ *
+ * Note: This must be rendered above any Suspense boundaries, otherwise it'll
+ * it'll be remounted and close when the data finishes loading
+ */
+export function FiltersAside({ children }: { children: React.ReactNode }) {
+  const submit = useFiltersSubmit();
+
+  return (
+    <Aside>
+      <filtersAsideCheckContext.Provider value={true}>
+        {children}
+      </filtersAsideCheckContext.Provider>
 
       <AsideContent side="left">
         <AsideHeader>

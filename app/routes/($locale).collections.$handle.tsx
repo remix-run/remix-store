@@ -8,7 +8,7 @@ import { Await, useLoaderData, type MetaFunction } from "@remix-run/react";
 import { Analytics } from "@shopify/hydrogen";
 import { CollectionGrid } from "~/components/collection-grid";
 import { Hero } from "~/components/hero";
-import { FiltersToolbar } from "~/components/filters";
+import { FiltersAside, FiltersToolbar } from "~/components/filters";
 import { type CollectionQueryVariables } from "storefrontapi.generated";
 import { type ProductFilter } from "@shopify/hydrogen/storefront-api-types";
 import { COLLECTION_QUERY } from "~/lib/queries";
@@ -155,40 +155,42 @@ export default function Collection() {
         image={collection.image}
       />
 
-      {!remainingProducts ? (
-        <>
-          <FiltersToolbar itemCount={collection.products.nodes.length} />
-          <CollectionGrid products={collection.products.nodes} />
-        </>
-      ) : (
-        <Suspense
-          fallback={
-            <>
-              {/* TODO: handle the fact that this remounts and closes the Aside once the data finishes streaming */}
-              <FiltersToolbar />
-              <CollectionGrid
-                products={collection.products.nodes}
-                loadingProductCount={4}
-              />
-            </>
-          }
-        >
-          <Await resolve={remainingProducts}>
-            {(remainingProducts) => {
-              const products = [
-                ...collection.products.nodes,
-                ...remainingProducts,
-              ];
-              return (
-                <>
-                  <FiltersToolbar itemCount={products.length} />
-                  <CollectionGrid products={products} />
-                </>
-              );
-            }}
-          </Await>
-        </Suspense>
-      )}
+      <FiltersAside>
+        {!remainingProducts ? (
+          <>
+            <FiltersToolbar itemCount={collection.products.nodes.length} />
+            <CollectionGrid products={collection.products.nodes} />
+          </>
+        ) : (
+          <Suspense
+            fallback={
+              <>
+                {/* TODO: handle the fact that this remounts and closes the Aside once the data finishes streaming */}
+                <FiltersToolbar />
+                <CollectionGrid
+                  products={collection.products.nodes}
+                  loadingProductCount={4}
+                />
+              </>
+            }
+          >
+            <Await resolve={remainingProducts}>
+              {(remainingProducts) => {
+                const products = [
+                  ...collection.products.nodes,
+                  ...remainingProducts,
+                ];
+                return (
+                  <>
+                    <FiltersToolbar itemCount={products.length} />
+                    <CollectionGrid products={products} />
+                  </>
+                );
+              }}
+            </Await>
+          </Suspense>
+        )}
+      </FiltersAside>
 
       <Analytics.CollectionView
         data={{
