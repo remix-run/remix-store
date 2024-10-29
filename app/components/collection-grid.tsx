@@ -1,13 +1,13 @@
 import { Link } from "@remix-run/react";
 import { Money } from "@shopify/hydrogen";
-import type { RecommendedProductsQuery } from "storefrontapi.generated";
+import type { ProductItemFragment } from "storefrontapi.generated";
 import { Image } from "~/components/ui/image";
 import { parseGradientColors } from "~/lib/metafields";
 import { cva } from "class-variance-authority";
 import clsx from "clsx";
 
 interface CollectionGridProps {
-  products?: RecommendedProductsQuery["products"]["nodes"];
+  products?: ProductItemFragment[];
   loadingProductCount?: number;
 }
 
@@ -33,7 +33,7 @@ export function CollectionGrid({
 }
 
 interface CollectionItemProps {
-  product: RecommendedProductsQuery["products"]["nodes"][0];
+  product: ProductItemFragment;
 }
 
 function CollectionItem({ product }: CollectionItemProps) {
