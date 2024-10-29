@@ -1,3 +1,5 @@
+import { createContext, useContext, useRef, useState } from "react";
+import { flushSync } from "react-dom";
 import { Form, useSearchParams } from "@remix-run/react";
 import Icon from "~/components/icon";
 import { Button, ButtonWithWellText } from "~/components/ui/button";
@@ -38,7 +40,6 @@ import {
   usePrice,
   useFiltersSubmit,
 } from "~/lib/filters";
-import { createContext, useContext } from "react";
 
 type FiltersToolbarProps = {
   itemCount?: number;
@@ -101,7 +102,7 @@ const filtersAsideCheckContext = createContext(false);
  * it'll be remounted and close when the data finishes loading
  */
 export function FiltersAside({ children }: { children: React.ReactNode }) {
-  const submit = useFiltersSubmit();
+  const [formRef, submitForm] = useFiltersSubmit();
 
   return (
     <Aside>
@@ -115,10 +116,7 @@ export function FiltersAside({ children }: { children: React.ReactNode }) {
         </AsideHeader>
         <AsideDescription className="sr-only">filter products</AsideDescription>
         <AsideBody>
-          <Form
-            // This form automatically submits any time any of the filter controls change
-            onChange={submit}
-          >
+          <Form ref={formRef}>
             <HiddenFilterInputs keys={[SORT_KEY]} include />
             <Accordion
               type="multiple"
@@ -126,13 +124,13 @@ export function FiltersAside({ children }: { children: React.ReactNode }) {
               defaultValue={["availability", "price", "product-type"]}
             >
               <FilterAccordionItem title="Availability" value="availability">
-                <FilterProductStock />
+                <FilterProductStock submitForm={submitForm} />
               </FilterAccordionItem>
               <FilterAccordionItem title="Price" value="price">
-                <FilterPriceRange />
+                <FilterPriceRange submitForm={submitForm} />
               </FilterAccordionItem>
               <FilterAccordionItem title="Product Type" value="product-type">
-                <FilterProductType />
+                <FilterProductType submitForm={submitForm} />
               </FilterAccordionItem>
             </Accordion>
           </Form>
@@ -167,43 +165,93 @@ function FilterAccordionItem({
   );
 }
 
-function FilterProductStock() {
+type FilterControlsProps = {
+  submitForm: ReturnType<typeof useFiltersSubmit>[1];
+};
+
+/**
+ * Acts like a radio button, however if you re-select the same value it'll
+ * remove it from the form data
+ */
+function FilterProductStock({ submitForm }: FilterControlsProps) {
   const available = useIsAvailable();
+  const [value, setValue] = useState(available);
 
   return (
     <RadioGroup.Root
       className="flex w-[300px] flex-col gap-3"
       aria-label="select availability"
       name={FILTER.AVAILABLE}
-      defaultValue={available}
+      value={value}
+      onValueChange={setValue}
     >
-      <RadioGroup.Item value="true" id="true" asChild>
+      <RadioGroup.Item
+        value="true"
+        id="true"
+        asChild
+        checked={value === "true"}
+      >
         <Button
-          className="flex justify-between text-left uppercase"
-          intent={available === "true" ? "primary" : "secondary"}
+          className="flex justify-between text-left uppercase data-[state=checked]:border-2 data-[state=checked]:border-red-brand"
+          intent={value === "true" ? "primary" : "secondary"}
+          onClick={(e) => {
+            // remove the value from the form if it's already set
+            flushSync(() => {
+              setValue(value === "true" ? undefined : "true");
+            });
+            submitForm();
+          }}
         >
           In Stock
-          {available === "true" ? <Icon name="check" /> : null}
+          {value === "true" ? <Icon name="check" /> : null}
         </Button>
       </RadioGroup.Item>
-      <RadioGroup.Item value="false" id="false" asChild>
+      <RadioGroup.Item
+        value="false"
+        id="false"
+        asChild
+        checked={value === "false"}
+      >
         <Button
-          className="flex justify-between text-left uppercase"
-          intent={available === "false" ? "primary" : "secondary"}
+          className="flex justify-between text-left uppercase data-[state=checked]:border-2 data-[state=checked]:border-red-brand"
+          intent={value === "false" ? "primary" : "secondary"}
+          onClick={() => {
+            // remove the value from the form if it's already set
+            flushSync(() => {
+              setValue(value === "false" ? undefined : "false");
+            });
+            submitForm();
+          }}
         >
           Out of Stock
-          {available === "false" ? <Icon name="check" /> : null}
+          {value === "false" ? <Icon name="check" /> : null}
         </Button>
       </RadioGroup.Item>
     </RadioGroup.Root>
   );
 }
 
-function FilterPriceRange() {
+function FilterPriceRange({ submitForm }: FilterControlsProps) {
   const { min, max } = usePrice();
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const debouncedSubmit = () => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+    timeoutRef.current = setTimeout(() => {
+      submitForm();
+      timeoutRef.current = null;
+    }, 500);
+  };
 
   return (
-    <div className="flex items-center gap-3 font-bold">
+    <fieldset
+      className="flex items-center gap-3 font-bold"
+      onChange={() => {
+        debouncedSubmit();
+      }}
+    >
       <label htmlFor="from">
         From <span className="sr-only">minimum price</span>
       </label>
@@ -226,7 +274,7 @@ function FilterPriceRange() {
         min={min}
         max={1000}
       />
-    </div>
+    </fieldset>
   );
 }
 
@@ -257,11 +305,16 @@ function PriceInput({
   );
 }
 
-function FilterProductType() {
+function FilterProductType({ submitForm }: FilterControlsProps) {
   const selectedProductTypes = useCurrentProductTypes();
 
   return (
-    <div className="flex flex-wrap gap-3">
+    <fieldset
+      className="flex flex-wrap gap-3"
+      onChange={() => {
+        submitForm();
+      }}
+    >
       {PRODUCT_TYPES.map((productType) => {
         const checked = selectedProductTypes.has(productType);
         return (
@@ -283,7 +336,7 @@ function FilterProductType() {
           </Checkbox.Root>
         );
       })}
-    </div>
+    </fieldset>
   );
 }
 

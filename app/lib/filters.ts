@@ -1,6 +1,7 @@
-// client-side validation of search params
-
+import { useRef } from "react";
 import { useNavigation, useSearchParams, useSubmit } from "@remix-run/react";
+
+// client-side validation of search params
 
 export const SORT_KEY = "sort";
 
@@ -49,17 +50,23 @@ export const FILTER = {
 
 export type FilterKey = (typeof FILTER)[keyof typeof FILTER];
 
-/**
- * A submit function for filters form that automatically removes filters
- * with no values
- */
 export function useFiltersSubmit() {
+  const formRef = useRef<HTMLFormElement>(null);
   const submit = useSubmit();
 
-  return (e: React.FormEvent<HTMLFormElement>) => {
-    const formData = new FormData(e.currentTarget);
-    for (const key of formData.keys()) {
-      if (formData.get(key) === "") {
+  const submitForm = () => {
+    const formNode = formRef.current;
+    if (!formNode) {
+      throw new Error("formRef must be attached to a form element");
+    }
+
+    const formData = new FormData(formNode);
+
+    const keys = [...formData.keys()];
+
+    for (const key of keys) {
+      const value = formData.get(key);
+      if (value === "") {
         formData.delete(key);
       }
     }
@@ -70,6 +77,8 @@ export function useFiltersSubmit() {
       method: "get",
     });
   };
+
+  return [formRef, submitForm] as const;
 }
 
 export function useIsFilterApplied() {
@@ -133,5 +142,3 @@ export function validateProductTypes(searchParams: URLSearchParams) {
 
 // Next up:
 // - Validate filters/sort server-side (remove invalid filter values)
-// - Add the ability to deselect availability
-// - Debounce min/max price change
