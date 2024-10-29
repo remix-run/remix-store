@@ -192,7 +192,7 @@ function FilterProductStock({ submitForm }: FilterControlsProps) {
         checked={value === "true"}
       >
         <Button
-          className="flex justify-between text-left uppercase data-[state=checked]:border-2 data-[state=checked]:border-red-brand"
+          className="flex justify-between text-left uppercase"
           intent={value === "true" ? "primary" : "secondary"}
           onClick={(e) => {
             // remove the value from the form if it's already set
@@ -213,7 +213,7 @@ function FilterProductStock({ submitForm }: FilterControlsProps) {
         checked={value === "false"}
       >
         <Button
-          className="flex justify-between text-left uppercase data-[state=checked]:border-2 data-[state=checked]:border-red-brand"
+          className="flex justify-between text-left uppercase"
           intent={value === "false" ? "primary" : "secondary"}
           onClick={() => {
             // remove the value from the form if it's already set
