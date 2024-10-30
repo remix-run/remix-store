@@ -1,14 +1,5 @@
 import { useRef } from "react";
-import {
-  redirect,
-  useNavigation,
-  useSearchParams,
-  useSubmit,
-} from "@remix-run/react";
-import { type CollectionQueryVariables } from "storefrontapi.generated";
-import { type ProductFilter } from "@shopify/hydrogen/storefront-api-types";
-
-// client-side validation of search params
+import { useNavigation, useSearchParams, useSubmit } from "@remix-run/react";
 
 function usePendingSearchParams() {
   let [searchParams] = useSearchParams();
@@ -23,7 +14,7 @@ function usePendingSearchParams() {
 
 export const SORT_KEY = "sort";
 
-type SortKey =
+export type SortKey =
   | "best-selling"
   | "price-high-to-low"
   | "price-low-to-high"
@@ -51,7 +42,7 @@ export function useCurrentSort() {
  * Get the sort key from the search params if it exists
  * If the sort key is invalid, returns `{ sort: undefined, valid: false }`
  */
-function getSort(searchParams: URLSearchParams): {
+export function getSort(searchParams: URLSearchParams): {
   sort: SortKey | undefined;
   valid: boolean;
 } {
@@ -137,7 +128,7 @@ export function useIsAvailable(): "true" | "false" | undefined {
  * Get the available from the search params if it exists
  * If available is invalid, returns `{ available: undefined, valid: false }`
  */
-function getAvailable(searchParams: URLSearchParams): {
+export function getAvailable(searchParams: URLSearchParams): {
   available: boolean | undefined;
   valid: boolean;
 } {
@@ -162,7 +153,7 @@ export function usePrice() {
  * Get price.min from the search params if it exists
  * If price.min is invalid, returns `{ min: undefined, valid: false }`
  */
-function getMinPrice(searchParams: URLSearchParams): {
+export function getMinPrice(searchParams: URLSearchParams): {
   min: number | undefined;
   valid: boolean;
 } {
@@ -180,7 +171,7 @@ function getMinPrice(searchParams: URLSearchParams): {
  * Get price.max from the search params if it exists
  * If price.max is invalid, returns `{ max: undefined, valid: false }`
  */
-function getMaxPrice(searchParams: URLSearchParams): {
+export function getMaxPrice(searchParams: URLSearchParams): {
   max: number | undefined;
   valid: boolean;
 } {
@@ -245,86 +236,3 @@ const productTypesSet = new Set(PRODUCT_TYPES);
 function isValidProductType(productType: string): productType is ProductType {
   return productTypesSet.has(productType);
 }
-
-// server-side validation and transformation of search params
-
-/**
- * Parses the search params, redirecting if invalid
- * If the search params are valid, returns filters as query variables for the
- * collection query
- */
-export function getFilterQueryVariables(
-  searchParams: URLSearchParams,
-): Omit<CollectionQueryVariables, "handle"> {
-  let valid = true;
-  let searchParamsCopy = new URLSearchParams(searchParams);
-  const parsedSort = getSort(searchParams);
-  if (!parsedSort.valid) {
-    valid = false;
-    searchParamsCopy.delete(SORT_KEY);
-  }
-  const parsedAvailable = getAvailable(searchParams);
-  if (!parsedAvailable.valid) {
-    valid = false;
-    searchParamsCopy.delete(FILTER.AVAILABLE);
-  }
-  const parsedMinPrice = getMinPrice(searchParams);
-  if (!parsedMinPrice.valid) {
-    valid = false;
-    searchParamsCopy.delete(FILTER.PRICE_MIN);
-  }
-  const parsedMaxPrice = getMaxPrice(searchParams);
-  if (!parsedMaxPrice.valid) {
-    valid = false;
-    searchParamsCopy.delete(FILTER.PRICE_MAX);
-  }
-  const parsedProductTypes = getProductTypes(searchParams);
-  if (!parsedProductTypes.valid) {
-    valid = false;
-    searchParamsCopy.delete(FILTER.PRODUCT_TYPE);
-    for (const productType of parsedProductTypes.productTypes) {
-      searchParamsCopy.append(FILTER.PRODUCT_TYPE, productType);
-    }
-  }
-
-  if (!valid) {
-    throw redirect(`?${searchParamsCopy.toString()}`);
-  }
-
-  const filters: ProductFilter[] = [];
-  if (typeof parsedAvailable.available === "boolean") {
-    filters.push({ available: parsedAvailable.available });
-  }
-
-  const price: ProductFilter["price"] = {};
-  const min = parsedMinPrice.min;
-  const max = parsedMaxPrice.max;
-  if (typeof min === "number" || typeof max === "number") {
-    if (typeof min === "number") {
-      price.min = min;
-    }
-    if (typeof max === "number") {
-      price.max = max;
-    }
-    filters.push({ price });
-  }
-
-  parsedProductTypes.productTypes.forEach((productType) => {
-    filters.push({ productType });
-  });
-
-  return {
-    ...(parsedSort.sort ? sortMap.get(parsedSort.sort) : {}),
-    filters,
-  };
-}
-
-const sortMap = new Map<
-  SortKey,
-  Pick<CollectionQueryVariables, "sortKey" | "reverse">
->([
-  ["price-high-to-low", { sortKey: "PRICE", reverse: true }],
-  ["price-low-to-high", { sortKey: "PRICE", reverse: false }],
-  ["newest", { sortKey: "CREATED", reverse: true }],
-  ["best-selling", { sortKey: "BEST_SELLING", reverse: false }],
-]);

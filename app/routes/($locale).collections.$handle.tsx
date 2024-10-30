@@ -11,7 +11,7 @@ import { Hero } from "~/components/hero";
 import { FiltersAside, FiltersToolbar } from "~/components/filters";
 
 import { COLLECTION_QUERY } from "~/lib/queries";
-import { getFilterQueryVariables } from "~/lib/filters";
+import { getFilterQueryVariables } from "~/lib/filters/query-variables.server";
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
   let title = `The Remix Store`;
@@ -95,7 +95,6 @@ export default function Collection() {
           <Suspense
             fallback={
               <>
-                {/* TODO: handle the fact that this remounts and closes the Aside once the data finishes streaming */}
                 <FiltersToolbar />
                 <CollectionGrid
                   products={collection.products.nodes}

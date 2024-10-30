@@ -7,7 +7,7 @@ import { COLLECTION_VIDEO_FRAGMENT } from "~/lib/fragments";
 import { CollectionGrid } from "~/components/collection-grid";
 import { Button } from "~/components/ui/button";
 import { COLLECTION_QUERY } from "~/lib/queries";
-import { getFilterQueryVariables } from "~/lib/filters";
+import { getFilterQueryVariables } from "~/lib/filters/query-variables.server";
 
 export const FEATURED_COLLECTION_HANDLE = "remix-logo-apparel";
 

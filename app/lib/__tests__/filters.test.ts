@@ -1,5 +1,5 @@
 import { redirect } from "@remix-run/react";
-import { getFilterQueryVariables } from "~/lib/filters";
+import { getFilterQueryVariables } from "~/lib/filters/query-variables.server";
 
 describe("filters", () => {
   it("gets the correct filters from the search params", () => {
