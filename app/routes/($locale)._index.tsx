@@ -7,7 +7,7 @@ import { COLLECTION_VIDEO_FRAGMENT } from "~/lib/fragments";
 import { CollectionGrid } from "~/components/collection-grid";
 import { Button } from "~/components/ui/button";
 import { COLLECTION_QUERY } from "~/lib/queries";
-import { getQueryVariables } from "./($locale).collections.$handle";
+import { getFilterQueryVariables } from "~/lib/filters";
 
 export const FEATURED_COLLECTION_HANDLE = "remix-logo-apparel";
 
@@ -28,7 +28,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
   const variables = {
     handle: "all",
     first: 8,
-    ...getQueryVariables(searchParams),
+    ...getFilterQueryVariables(searchParams),
   };
 
   const top8Query = storefront.query(COLLECTION_QUERY, { variables });

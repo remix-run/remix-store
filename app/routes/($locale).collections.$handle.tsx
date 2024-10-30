@@ -9,9 +9,9 @@ import { Analytics } from "@shopify/hydrogen";
 import { CollectionGrid } from "~/components/collection-grid";
 import { Hero } from "~/components/hero";
 import { FiltersAside, FiltersToolbar } from "~/components/filters";
-import { type CollectionQueryVariables } from "storefrontapi.generated";
-import { type ProductFilter } from "@shopify/hydrogen/storefront-api-types";
+
 import { COLLECTION_QUERY } from "~/lib/queries";
+import { getFilterQueryVariables } from "~/lib/filters";
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
   let title = `The Remix Store`;
@@ -25,76 +25,6 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
   return [{ title }];
 };
 
-function parsePrice(value: string | null | undefined) {
-  const price = Number(value);
-  return isNaN(price) ? undefined : price;
-}
-
-// TODO: export this somewhere else
-export function getQueryVariables(
-  searchParams: URLSearchParams,
-): Omit<CollectionQueryVariables, "handle"> {
-  const sort = searchParams.get("sort");
-  let reverse = false;
-  let sortKey: CollectionQueryVariables["sortKey"];
-
-  switch (sort) {
-    case "price-high-to-low": {
-      reverse = true;
-      sortKey = "PRICE";
-      break;
-    }
-    case "price-low-to-high": {
-      reverse = false;
-      sortKey = "PRICE";
-      break;
-    }
-    case "newest": {
-      sortKey = "CREATED";
-      reverse = true;
-      break;
-    }
-    case "best-selling": {
-      sortKey = "BEST_SELLING";
-      break;
-    }
-  }
-  const filters: ProductFilter[] = [];
-
-  if (searchParams.get("available") === "true") {
-    filters.push({ available: true });
-  } else if (searchParams.get("available") === "false") {
-    filters.push({ available: false });
-  }
-
-  const minPrice = parsePrice(searchParams.get("price.min"));
-  const maxPrice = parsePrice(searchParams.get("price.max"));
-  const price: ProductFilter["price"] = {};
-  if (minPrice || maxPrice) {
-    if (minPrice) {
-      price.min = minPrice;
-    }
-    if (maxPrice) {
-      price.max = maxPrice;
-    }
-    filters.push({ price });
-  }
-
-  if (searchParams.has("product-type")) {
-    // TODO: validate product-type
-    const productTypes = searchParams.getAll("product-type");
-    productTypes.forEach((productType) => {
-      filters.push({ productType });
-    });
-  }
-
-  return {
-    reverse,
-    sortKey,
-    filters,
-  };
-}
-
 export async function loader({ params, request, context }: LoaderFunctionArgs) {
   const { handle } = params;
   const { storefront } = context;
@@ -105,7 +35,7 @@ export async function loader({ params, request, context }: LoaderFunctionArgs) {
 
   const url = new URL(request.url);
   const { searchParams } = url;
-  const variables = { handle, ...getQueryVariables(searchParams) };
+  const variables = { handle, ...getFilterQueryVariables(searchParams) };
 
   // load the initial products we want to SSR
   const { collection } = await storefront.query(COLLECTION_QUERY, {

@@ -20,6 +20,7 @@ module.exports = {
     "no-console": ["warn", { allow: ["warn", "error"] }],
     "prettier/prettier": "off",
     "no-unused-vars": "off",
+    "prefer-const": "off",
     "@typescript-eslint/no-unused-vars": [
       "warn",
       {
