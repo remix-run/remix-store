@@ -7,8 +7,7 @@ import {
   FILTER,
   getSort,
   getAvailable,
-  getMinPrice,
-  getMaxPrice,
+  getPrice,
   getProductTypes,
 } from ".";
 
@@ -20,49 +19,52 @@ import {
 export function getFilterQueryVariables(
   searchParams: URLSearchParams,
 ): Omit<CollectionQueryVariables, "handle"> {
-  let valid = true;
+  // Get the valid values from the search params, redirecting if invalid
+  let isValid = true;
   let searchParamsCopy = new URLSearchParams(searchParams);
-  const parsedSort = getSort(searchParams);
-  if (!parsedSort.valid) {
-    valid = false;
+  const sort = getSort(searchParams);
+  if (!sort.isValid) {
+    isValid = false;
     searchParamsCopy.delete(SORT_KEY);
   }
-  const parsedAvailable = getAvailable(searchParams);
-  if (!parsedAvailable.valid) {
-    valid = false;
+  const available = getAvailable(searchParams);
+  if (!available.isValid) {
+    isValid = false;
     searchParamsCopy.delete(FILTER.AVAILABLE);
   }
-  const parsedMinPrice = getMinPrice(searchParams);
-  if (!parsedMinPrice.valid) {
-    valid = false;
+  const minPrice = getPrice(searchParams, FILTER.PRICE_MIN);
+  if (!minPrice.isValid) {
+    isValid = false;
     searchParamsCopy.delete(FILTER.PRICE_MIN);
   }
-  const parsedMaxPrice = getMaxPrice(searchParams);
-  if (!parsedMaxPrice.valid) {
-    valid = false;
+  const maxPrice = getPrice(searchParams, FILTER.PRICE_MAX);
+  if (!maxPrice.isValid) {
+    isValid = false;
     searchParamsCopy.delete(FILTER.PRICE_MAX);
   }
-  const parsedProductTypes = getProductTypes(searchParams);
-  if (!parsedProductTypes.valid) {
-    valid = false;
+  const productTypes = getProductTypes(searchParams);
+  if (!productTypes.isValid) {
+    isValid = false;
     searchParamsCopy.delete(FILTER.PRODUCT_TYPE);
-    for (const productType of parsedProductTypes.productTypes) {
+    for (const productType of productTypes.value) {
       searchParamsCopy.append(FILTER.PRODUCT_TYPE, productType);
     }
   }
 
-  if (!valid) {
+  if (!isValid) {
     throw redirect(`?${searchParamsCopy.toString()}`);
   }
 
+  // Build the filters object for the collection query
+
   const filters: ProductFilter[] = [];
-  if (typeof parsedAvailable.available === "boolean") {
-    filters.push({ available: parsedAvailable.available });
+  if (typeof available.value === "boolean") {
+    filters.push({ available: available.value });
   }
 
   const price: ProductFilter["price"] = {};
-  const min = parsedMinPrice.min;
-  const max = parsedMaxPrice.max;
+  const min = minPrice.value;
+  const max = maxPrice.value;
   if (typeof min === "number" || typeof max === "number") {
     if (typeof min === "number") {
       price.min = min;
@@ -73,12 +75,12 @@ export function getFilterQueryVariables(
     filters.push({ price });
   }
 
-  parsedProductTypes.productTypes.forEach((productType) => {
+  productTypes.value.forEach((productType) => {
     filters.push({ productType });
   });
 
   return {
-    ...(parsedSort.sort ? sortMap.get(parsedSort.sort) : {}),
+    ...(sort.value ? sortMap.get(sort.value) : {}),
     filters,
   };
 }
