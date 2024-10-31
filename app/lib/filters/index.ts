@@ -17,7 +17,7 @@ export type SortKey =
 export const PRODUCT_TYPES = [
   "apparel",
   "accessories",
-  "stationary",
+  "stationery",
   "stickers",
   "toys",
 ] as const;

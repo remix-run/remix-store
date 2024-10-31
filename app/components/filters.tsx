@@ -25,7 +25,7 @@ import {
   AccordionContent,
 } from "~/components/ui/accordion";
 import clsx from "clsx";
-import * as RadioGroup from "@radix-ui/react-radio-group";
+import * as ToggleGroup from "@radix-ui/react-toggle-group";
 import * as Checkbox from "@radix-ui/react-checkbox";
 import {
   type FilterKey,
@@ -177,23 +177,20 @@ function FilterProductStock({ submitForm }: FilterControlsProps) {
   const available = useIsAvailable();
   const [value, setValue] = useState(available);
 
+  // Note: theoretically we can remove `flushSync` here and drive the state via
+  // `onValueChange`: https://x.com/BrooksLybrand/status/1851984020411687409
   return (
-    <RadioGroup.Root
+    <ToggleGroup.Root
       className="flex w-[300px] flex-col gap-3"
-      aria-label="select availability"
-      name={FILTER.AVAILABLE}
+      type="single"
       value={value}
+      aria-label="select availability"
     >
-      <RadioGroup.Item
-        value="true"
-        id="true"
-        asChild
-        checked={value === "true"}
-      >
+      <ToggleGroup.Item value="true" asChild>
         <Button
           className="flex justify-between text-left uppercase"
           intent={value === "true" ? "primary" : "secondary"}
-          onClick={(e) => {
+          onClick={() => {
             // remove the value from the form if it's already set
             flushSync(() => {
               setValue(value === "true" ? undefined : "true");
@@ -204,13 +201,19 @@ function FilterProductStock({ submitForm }: FilterControlsProps) {
           In Stock
           {value === "true" ? <Icon name="check" /> : null}
         </Button>
-      </RadioGroup.Item>
-      <RadioGroup.Item
-        value="false"
-        id="false"
-        asChild
-        checked={value === "false"}
-      >
+      </ToggleGroup.Item>
+      <input
+        type="checkbox"
+        name={FILTER.AVAILABLE}
+        value="true"
+        checked={value === "true"}
+        tabIndex={-1}
+        aria-hidden="true"
+        readOnly
+        className="sr-only"
+      />
+
+      <ToggleGroup.Item value="false" asChild>
         <Button
           className="flex justify-between text-left uppercase"
           intent={value === "false" ? "primary" : "secondary"}
@@ -225,8 +228,18 @@ function FilterProductStock({ submitForm }: FilterControlsProps) {
           Out of Stock
           {value === "false" ? <Icon name="check" /> : null}
         </Button>
-      </RadioGroup.Item>
-    </RadioGroup.Root>
+      </ToggleGroup.Item>
+      <input
+        type="checkbox"
+        name={FILTER.AVAILABLE}
+        value="false"
+        checked={value === "false"}
+        tabIndex={-1}
+        aria-hidden="true"
+        readOnly
+        className="sr-only"
+      />
+    </ToggleGroup.Root>
   );
 }
 
