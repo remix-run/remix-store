@@ -83,7 +83,7 @@ function useIsFiltersPending(itemCount?: number) {
     isPending = true;
   }
 
-  return useSpinDelay(isPending, { delay: 100, minDuration: 200, ssr: true });
+  return useSpinDelay(isPending, { delay: 200, minDuration: 200, ssr: true });
 }
 
 /**
