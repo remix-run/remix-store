@@ -86,12 +86,7 @@ export default function Collection() {
       />
 
       <FiltersAside>
-        {!remainingProducts ? (
-          <>
-            <FiltersToolbar itemCount={collection.products.nodes.length} />
-            <CollectionGrid products={collection.products.nodes} />
-          </>
-        ) : (
+        {remainingProducts ? (
           <Suspense
             fallback={
               <>
@@ -118,6 +113,11 @@ export default function Collection() {
               }}
             </Await>
           </Suspense>
+        ) : (
+          <>
+            <FiltersToolbar itemCount={collection.products.nodes.length} />
+            <CollectionGrid products={collection.products.nodes} />
+          </>
         )}
       </FiltersAside>
 

@@ -36,6 +36,7 @@
     "isbot": "^4.4.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "spin-delay": "^2.0.1",
     "tailwind-merge": "^2.5.4",
     "tailwindcss-animate": "^1.0.7"
   },
@@ -44,7 +45,7 @@
     "@remix-run/dev": "^2.13.1",
     "@remix-run/eslint-config": "^2.13.1",
     "@remix-run/testing": "^2.13.1",
-    "@shopify/cli": "^3.68.1",
+    "@shopify/cli": "^3.70.0",
     "@shopify/hydrogen-codegen": "^0.3.1",
     "@shopify/mini-oxygen": "^3.0.6",
     "@shopify/oxygen-workers-types": "^4.1.4",

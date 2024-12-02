@@ -1,6 +1,11 @@
 import { createContext, useContext, useRef, useState } from "react";
 import { flushSync } from "react-dom";
-import { Form, useSearchParams } from "@remix-run/react";
+import {
+  Form,
+  useLocation,
+  useNavigation,
+  useSearchParams,
+} from "@remix-run/react";
 import Icon from "~/components/icon";
 import { Button, ButtonWithWellText } from "~/components/ui/button";
 import {
@@ -40,8 +45,13 @@ import {
   usePrice,
   useFiltersSubmit,
 } from "~/lib/filters";
+import { useSpinDelay } from "spin-delay";
 
 type FiltersToolbarProps = {
+  /**
+   * The number of items to display in the toolbar, if undefined indicates
+   * that the number of items is still pending
+   */
   itemCount?: number;
 };
 
@@ -55,17 +65,39 @@ export function FiltersToolbar({ itemCount }: FiltersToolbarProps) {
 }
 
 /**
+ * Returns true if the filters are still pending
+ */
+function useIsFiltersPending(itemCount?: number) {
+  const location = useLocation();
+  const navigation = useNavigation();
+
+  let isPending = false;
+
+  if (itemCount === undefined) {
+    isPending = true;
+  } else if (
+    navigation.state === "loading" &&
+    // navigating to the same page indicates the filters changed
+    location.pathname === navigation.location.pathname
+  ) {
+    isPending = true;
+  }
+
+  return useSpinDelay(isPending, { delay: 100, minDuration: 200, ssr: true });
+}
+
+/**
  * Trigger and label for the filters aside
  */
 function FiltersTrigger({ itemCount }: FiltersToolbarProps) {
+  if (!useContext(filtersAsideCheckContext)) {
+    throw new Error("FiltersTrigger must be used within a FiltersAside");
+  }
+
   const isFilterApplied = useIsFilterApplied();
   const intent = isFilterApplied ? "primary" : "secondary";
 
-  const isRenderedWithinAside = useContext(filtersAsideCheckContext);
-
-  if (!isRenderedWithinAside) {
-    throw new Error("FiltersTrigger must be used within a FiltersAside");
-  }
+  const isPending = useIsFiltersPending(itemCount);
 
   return (
     <>
@@ -82,7 +114,14 @@ function FiltersTrigger({ itemCount }: FiltersToolbarProps) {
             intent={intent}
             size="icon"
             wellPostfix={
-              itemCount ? `Showing ${itemCount} items` : "Loading items"
+              isPending ? (
+                <div className="flex items-center gap-2">
+                  <span>Loading items</span>
+                  <div className="h-5 w-3 animate-blink bg-neutral-400" />
+                </div>
+              ) : (
+                `Showing ${itemCount} items`
+              )
             }
           >
             <Icon name="filter" />
