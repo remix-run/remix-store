@@ -1,9 +1,5 @@
 import { Suspense } from "react";
-import {
-  defer,
-  redirect,
-  type LoaderFunctionArgs,
-} from "@shopify/remix-oxygen";
+import { data, redirect, type LoaderFunctionArgs } from "@shopify/remix-oxygen";
 import { Await, useLoaderData, type MetaFunction } from "@remix-run/react";
 import { Analytics } from "@shopify/hydrogen";
 import { CollectionGrid } from "~/components/collection-grid";
@@ -68,10 +64,10 @@ export async function loader({ params, request, context }: LoaderFunctionArgs) {
       })
       .then(({ collection }) => collection?.products.nodes);
 
-    return defer({ collection, remainingProducts });
+    return data({ collection, remainingProducts });
   }
 
-  return defer({ collection, remainingProducts: null });
+  return data({ collection, remainingProducts: null });
 }
 
 export default function Collection() {
@@ -102,7 +98,7 @@ export default function Collection() {
               {(remainingProducts) => {
                 const products = [
                   ...collection.products.nodes,
-                  ...remainingProducts,
+                  ...(remainingProducts || []),
                 ];
                 return (
                   <>

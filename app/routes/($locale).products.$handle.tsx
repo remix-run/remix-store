@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { defer, type LoaderFunctionArgs } from "@shopify/remix-oxygen";
+import { data, type LoaderFunctionArgs } from "@shopify/remix-oxygen";
 import {
   Await,
   Link,
@@ -61,7 +61,7 @@ export async function loader(args: LoaderFunctionArgs) {
   // Await the critical data required to render initial state of the page
   const criticalData = await loadCriticalData(args);
 
-  return defer({ ...deferredData, ...criticalData });
+  return data({ ...deferredData, ...criticalData });
 }
 
 async function loadCriticalData({

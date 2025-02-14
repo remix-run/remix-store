@@ -1,4 +1,4 @@
-import { json, redirect, type LoaderFunctionArgs } from "@shopify/remix-oxygen";
+import { data, redirect, type LoaderFunctionArgs } from "@shopify/remix-oxygen";
 import { useLoaderData } from "@remix-run/react";
 import { Hero } from "~/components/hero";
 
@@ -18,7 +18,7 @@ export async function loader({ params, context }: LoaderFunctionArgs) {
     (_: unknown, m1: string) => m1.toUpperCase(),
   ) as "privacyPolicy" | "termsOfService";
 
-  const data = await context.storefront.query(POLICY_QUERY, {
+  const policies = await context.storefront.query(POLICY_QUERY, {
     variables: {
       privacyPolicy: false,
       termsOfService: false,
@@ -27,13 +27,13 @@ export async function loader({ params, context }: LoaderFunctionArgs) {
     },
   });
 
-  const policy = data.shop?.[policyName];
+  const policy = policies.shop?.[policyName];
 
   if (!policy) {
     throw new Response("Could not find the policy", { status: 404 });
   }
 
-  return json({ policy });
+  return data({ policy });
 }
 export default function Policies() {
   const { policy } = useLoaderData<typeof loader>();

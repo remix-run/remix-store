@@ -1,5 +1,5 @@
 import type { LoaderFunctionArgs } from "@shopify/remix-oxygen";
-import { defer } from "@shopify/remix-oxygen";
+import { data } from "@shopify/remix-oxygen";
 import { Link, useLoaderData, type MetaFunction } from "@remix-run/react";
 import { Hero } from "~/components/hero";
 import { FiltersAside, FiltersToolbar } from "~/components/filters";
@@ -43,7 +43,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
     throw new Response("Something went wrong", { status: 500 });
   }
 
-  return defer({ featuredCollection, products });
+  return data({ featuredCollection, products });
 }
 
 export default function Homepage() {
