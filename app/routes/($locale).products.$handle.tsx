@@ -290,12 +290,12 @@ function ProductHeader({
       </h1>
 
       <div className="flex gap-3 font-mono text-base leading-4 tracking-[-0.48px] md:text-2xl/6 md:leading-6">
-        <Money data={selectedVariant?.price} withoutTrailingZeros />
+        <Money data={selectedVariant?.price!} withoutTrailingZeros />
         {isOnSale && (
           <>
             <s className="line-through opacity-50">
               <Money
-                data={selectedVariant?.compareAtPrice}
+                data={selectedVariant?.compareAtPrice!}
                 withoutTrailingZeros
               />
             </s>
