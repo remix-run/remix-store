@@ -82,19 +82,19 @@ export function Hero({
       <div className="flex w-full flex-col items-center gap-6 self-end justify-self-center p-6 text-white sm:p-9 md:flex-row md:items-end md:justify-between md:gap-0 md:justify-self-start">
         <div className="flex flex-col items-center gap-[18px] text-center md:items-start">
           {subtitle && (
-            <p className="font-mono text-xs font-semibold uppercase leading-none tracking-[0.8px]">
+            <p className="font-mono text-xs leading-none font-semibold tracking-[0.8px] uppercase">
               {subtitle}
             </p>
           )}
 
-          <h1 className="text-4xl font-bold capitalize leading-none md:text-5xl md:tracking-[-1.44px] lg:text-6xl lg:tracking-[-1.92px]">
+          <h1 className="text-4xl leading-none font-bold capitalize md:text-5xl md:tracking-[-1.44px] lg:text-6xl lg:tracking-[-1.92px]">
             {title}
           </h1>
         </div>
 
         {href && (
           <Link
-            className="flex h-12 min-w-fit items-center rounded-xl border-2 border-white p-4 font-bold uppercase tracking-[0.8px] no-underline before:absolute before:inset-0 before:size-full hover:border-blue-brand hover:bg-blue-brand hover:text-white"
+            className="hover:border-blue-brand hover:bg-blue-brand flex h-12 min-w-fit items-center rounded-xl border-2 border-white p-4 font-bold tracking-[0.8px] uppercase no-underline before:absolute before:inset-0 before:size-full hover:text-white"
             to={href.to}
           >
             {href.text}

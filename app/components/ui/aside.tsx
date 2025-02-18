@@ -40,7 +40,7 @@ const AsideOverlay = forwardRef<
 >(({ className, ...props }, ref) => (
   <DialogPrimitive.Overlay
     className={cn(
-      "data-[state=open]:fade-in-0bg-black/50 fixed inset-0 z-50 backdrop-blur-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0",
+      "data-[state=open]:fade-in-0bg-black/50 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 fixed inset-0 z-50 backdrop-blur-md",
       className,
     )}
     {...props}
@@ -101,7 +101,7 @@ const AsideHeader = ({
     {...props}
   >
     {children}
-    <AsideClose className="m-0 rounded-xs ring-offset-neutral-200 hover:text-black focus:outline-hidden focus:ring-2 focus:ring-neutral-600 focus:ring-offset-2 dark:ring-offset-neutral-700 dark:hover:text-white dark:focus:ring-neutral-300">
+    <AsideClose className="m-0 rounded-xs ring-offset-neutral-200 hover:text-black focus:ring-2 focus:ring-neutral-600 focus:ring-offset-2 focus:outline-hidden dark:ring-offset-neutral-700 dark:hover:text-white dark:focus:ring-neutral-300">
       <Icon name="x" className="size-6" />
       <span className="sr-only">Close</span>
     </AsideClose>
@@ -130,7 +130,7 @@ const AsideTitle = forwardRef<
   <DialogPrimitive.Title
     ref={ref}
     className={cn(
-      "font-sans text-2xl font-bold leading-none sm:text-4xl sm:tracking-[-1.08px]",
+      "font-sans text-2xl leading-none font-bold sm:text-4xl sm:tracking-[-1.08px]",
       className,
     )}
     {...props}

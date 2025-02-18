@@ -285,7 +285,7 @@ function ProductHeader({
           {displayVendor && <div>{vendor}</div>}
         </div>
       )}
-      <h1 className="min-w-max font-sans text-2xl font-bold leading-6 tracking-[-0.32px] md:text-4xl md:leading-[1.875rem]">
+      <h1 className="min-w-max font-sans text-2xl leading-6 font-bold tracking-[-0.32px] md:text-4xl md:leading-[1.875rem]">
         {title}
       </h1>
 
@@ -404,7 +404,7 @@ export function ShopPayButton({
       to={`https://${checkoutDomain}/cart/${selectedVariant?.id.split("ProductVariant/")[1]}:1?payment=shop_pay&channel=hydrogen`}
     >
       <Button
-        className="flex justify-center bg-shop-pay py-6 [--yamaha-shadow-color:var(--color-shop-pay)]"
+        className="bg-shop-pay flex justify-center py-6 [--yamaha-shadow-color:var(--color-shop-pay)]"
         intent="primary"
         size="lg"
       >

@@ -276,7 +276,7 @@ function CartLineQuantity({ line }: { line: CartLine }) {
   const nextQuantity = Number((quantity + 1).toFixed(0));
 
   return (
-    <div className="mt-3 flex w-[194px] rounded-input bg-neutral-50 p-[1px] dark:bg-neutral-900">
+    <div className="rounded-input mt-3 flex w-[194px] bg-neutral-50 p-[1px] dark:bg-neutral-900">
       <div className="flex items-center justify-between px-5">
         <CartLineUpdateButton lines={[{ id: lineId, quantity: prevQuantity }]}>
           <button
@@ -357,11 +357,11 @@ function CartDiscounts({
   const codeEnteredInvalid = codeEntered && !codeApplied;
 
   return (
-    <div className={clsx(codeEnteredInvalid ? "pb-2 pt-8" : "py-8")}>
+    <div className={clsx(codeEnteredInvalid ? "pt-8 pb-2" : "py-8")}>
       {/* Have existing discount, display it with a remove option */}
       {Boolean(codes.length) && (
         <div className="flex justify-between">
-          <p className="w-full rounded-input bg-neutral-200 p-5 leading-5 text-blue-brand dark:bg-neutral-800">
+          <p className="rounded-input text-blue-brand w-full bg-neutral-200 p-5 leading-5 dark:bg-neutral-800">
             Promo code applied
           </p>
         </div>
@@ -370,20 +370,20 @@ function CartDiscounts({
       {/* Show an input to apply a discount */}
       {!codes.length && (
         <UpdateDiscountForm discountCodes={codes}>
-          <div className="flex h-[60px] w-full justify-between rounded-input bg-neutral-200 pl-5 dark:bg-neutral-800">
+          <div className="rounded-input flex h-[60px] w-full justify-between bg-neutral-200 pl-5 dark:bg-neutral-800">
             <input
               type="text"
               ref={inputRef}
               name="discountCode"
               placeholder="Enter promo code"
               className={clsx(
-                "font-sm lh-5 my-5 bg-neutral-200 font-mono font-bold uppercase leading-5 dark:bg-neutral-800",
-                "focus:border-transparent focus:outline-hidden focus:ring-0",
+                "font-sm lh-5 my-5 bg-neutral-200 font-mono leading-5 font-bold uppercase dark:bg-neutral-800",
+                "focus:border-transparent focus:ring-0 focus:outline-hidden",
                 "placeholder:font-thin placeholder:normal-case",
                 "w-full",
               )}
             />
-            <div className="pr-[1px] pt-[1px]">
+            <div className="pt-[1px] pr-[1px]">
               <Button type="submit" className="w-max uppercase">
                 apply code
               </Button>
@@ -394,7 +394,7 @@ function CartDiscounts({
 
       <span
         className={clsx(
-          "mt-2 text-sm text-red-brand",
+          "text-red-brand mt-2 text-sm",
           codeEnteredInvalid ? "visible" : "hidden",
         )}
       >

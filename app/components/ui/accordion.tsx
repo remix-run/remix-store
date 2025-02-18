@@ -51,7 +51,7 @@ const AccordionTrigger = React.forwardRef<
   }
 >(({ className, children, icon = "x", ...props }, ref) => (
   <AccordionPrimitive.Header
-    className="flex text-xl font-medium leading-4 tracking-normal md:text-2xl"
+    className="flex text-xl leading-4 font-medium tracking-normal md:text-2xl"
     asChild
   >
     {/* Note: h2 is probably not right in all cases, probably should make configurable */}
@@ -78,7 +78,7 @@ const AccordionContent = React.forwardRef<
 >(({ className, children, ...props }, ref) => (
   <AccordionPrimitive.Content
     ref={ref}
-    className="overflow-hidden px-4 transition-all data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down md:px-6"
+    className="data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down overflow-hidden px-4 transition-all md:px-6"
     {...props}
   >
     <div className={cn("mt-6", className)}>{children}</div>
