@@ -136,7 +136,7 @@ export default function Product() {
   }
 
   return (
-    <div className="mx-auto max-w-[theme(screens.xl)] md:flex md:justify-center md:gap-[18px]">
+    <div className="mx-auto max-w-(--breakpoint-xl) md:flex md:justify-center md:gap-[18px]">
       <ProductImages
         images={product?.images.nodes}
         gradientColors={product.gradientColors}
@@ -404,7 +404,7 @@ export function ShopPayButton({
       to={`https://${checkoutDomain}/cart/${selectedVariant?.id.split("ProductVariant/")[1]}:1?payment=shop_pay&channel=hydrogen`}
     >
       <Button
-        className="flex justify-center bg-shop-pay py-6 [--yamaha-shadow-color:theme(colors.shop-pay)]"
+        className="flex justify-center bg-shop-pay py-6 [--yamaha-shadow-color:var(--color-shop-pay)]"
         intent="primary"
         size="lg"
       >
@@ -421,7 +421,7 @@ function ProductOptions({ option }: { option: VariantOption }) {
   // Size (XS, S, M, L, etc) should render buttons
   if (option.name.toLowerCase() === "size") {
     return (
-      <div className="grid grid-cols-[repeat(auto-fit,minmax(theme(spacing.12),1fr))] gap-2 lg:gap-4">
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(--spacing(12),1fr))] gap-2 lg:gap-4">
         {option.values.map(({ value, isAvailable, isActive, to }) => (
           <Button
             asChild

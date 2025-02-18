@@ -24,7 +24,7 @@ const button = cva(["block no-underline"], {
     },
     disabled: {
       false: [
-        "hover:bg-gradient-to-b hover:from-white/20 hover:to-white/20 active:translate-y-0.5",
+        "hover:bg-linear-to-b hover:from-white/20 hover:to-white/20 active:translate-y-0.5",
       ],
       true: [
         "cursor-not-allowed bg-transparent dark:bg-transparent text-neutral-600 shadow-none dark:text-neutral-300",
@@ -36,7 +36,7 @@ const button = cva(["block no-underline"], {
       intent: "primary",
       disabled: false,
       className: [
-        "shadow-yamaha-primary [--yamaha-shadow-color:theme(colors.blue.brand)]",
+        "shadow-yamaha-primary [--yamaha-shadow-color:var(--color-blue-brand)]",
       ],
     },
     {
@@ -56,7 +56,7 @@ const button = cva(["block no-underline"], {
       size: "sm",
       disabled: true,
       className: [
-        "text-opacity-35 hover:text-opacity-35 dark:hover:text-opacity-35 dark:text-opacity-35",
+        "text-neutral-600/35 hover:text-neutral-600/35 dark:text-neutral-300/35 dark:hover:text-neutral-300/35",
       ],
     },
   ],
@@ -68,9 +68,7 @@ const button = cva(["block no-underline"], {
 });
 
 const well = cva(
-  [
-    "overflow-hidden relative select-none bg-black bg-opacity-5 dark:bg-opacity-20",
-  ],
+  ["overflow-hidden relative select-none bg-black/5 dark:bg-black/20"],
   {
     variants: {
       size: {
@@ -161,7 +159,7 @@ export const ButtonWithWellText = forwardRef(
         ref={ref}
         className={cn(
           well({ size }),
-          "flex w-full min-w-fit max-w-full items-center",
+          "flex w-full max-w-full min-w-fit items-center",
         )}
         disabled={disabled}
         {...props}

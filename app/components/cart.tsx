@@ -122,7 +122,7 @@ function CartLines({
 
   // This ungodly height calculation is:
   // 100vh - cart header - cart summary - line item count - padding
-  const cartLinesHeight = `h-[calc(100vh_-_var(--aside-header-height)_-_var(--aside-summary-height)_-_theme(spacing[14])_-_theme(spacing[9]))]`;
+  const cartLinesHeight = `h-[calc(100vh-var(--aside-header-height)-var(--aside-summary-height)-(--spacing(14))-(--spacing(9)))]`;
 
   return (
     <div
@@ -378,7 +378,7 @@ function CartDiscounts({
               placeholder="Enter promo code"
               className={clsx(
                 "font-sm lh-5 my-5 bg-neutral-200 font-mono font-bold uppercase leading-5 dark:bg-neutral-800",
-                "focus:border-transparent focus:outline-none focus:ring-0",
+                "focus:border-transparent focus:outline-hidden focus:ring-0",
                 "placeholder:font-thin placeholder:normal-case",
                 "w-full",
               )}

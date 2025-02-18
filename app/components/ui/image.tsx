@@ -46,7 +46,7 @@ export function Image(props: ImageProps) {
   }
 
   return (
-    <div className="isolate grid size-full overflow-hidden [&>*]:[grid-area:1/1]">
+    <div className="isolate grid size-full overflow-hidden *:[grid-area:1/1]">
       {/* Color gradient layer */}
       <div
         className={cn(
@@ -60,7 +60,7 @@ export function Image(props: ImageProps) {
 
       {gradientFade && (
         <div
-          className="left-0 top-0 z-[-1] h-full w-full"
+          className="top-0 left-0 z-[-1] h-full w-full"
           style={{ backgroundImage: fadeGradient }}
         />
       )}
@@ -68,7 +68,7 @@ export function Image(props: ImageProps) {
       <HydrogenImage
         {...rest}
         className={cn(
-          "pointer-events-none size-auto select-none self-center justify-self-center",
+          "pointer-events-none size-auto self-center justify-self-center select-none",
           rest.className,
         )}
         style={{

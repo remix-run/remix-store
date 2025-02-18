@@ -1,6 +1,218 @@
 @import "tailwindcss";
 @config "../tailwind.config.ts";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-*: initial;
+  --font-sans:
+    "Inter", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
+    "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-mono:
+    "Source Code Pro", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    "Liberation Mono", "Courier New", monospace;
+
+  --breakpoint-*: initial;
+  --breakpoint-sm: 430px;
+  --breakpoint-md: 800px;
+  --breakpoint-lg: 1200px;
+  --breakpoint-xl: 1600px;
+  --breakpoint-2xl: 1920px;
+
+  --color-*: initial;
+  --color-inherit: inherit;
+  --color-current: currentColor;
+  --color-transparent: transparent;
+
+  --color-cyan-brand: #3defe9;
+
+  --color-blue-brand: #3992ff;
+  --color-blue-led: #c8dfea;
+
+  --color-green-brand: #6bd968;
+
+  --color-yellow-brand: #fecc1b;
+
+  --color-magenta-brand: #d83bd2;
+
+  --color-red-brand: #f44250;
+
+  --color-black: #000000;
+  --color-white: #ffffff;
+
+  --color-neutral-50: #f1f1ec;
+  --color-neutral-100: #eaeae4;
+  --color-neutral-200: #e3e2dd;
+  --color-neutral-300: #dadada;
+  --color-neutral-400: #808080;
+  --color-neutral-500: #59585c;
+  --color-neutral-600: #434343;
+  --color-neutral-700: #343436;
+  --color-neutral-800: #242426;
+  --color-neutral-900: #1d1d1e;
+
+  --color-shop-pay: #5a31f4;
+
+  --text-*: initial;
+  --text-xs: 0.75rem;
+  --text-xs--line-height: 1rem;
+  --text-sm: 0.875rem;
+  --text-sm--line-height: 1.25rem;
+  --text-base: 1rem;
+  --text-base--line-height: 1.4rem;
+  --text-lg: 1.125rem;
+  --text-lg--line-height: 1.75rem;
+  --text-xl: 1.25rem;
+  --text-xl--line-height: 1.75rem;
+  --text-2xl: 1.5rem;
+  --text-2xl--line-height: 2rem;
+  --text-3xl: 1.875rem;
+  --text-3xl--line-height: 2.25rem;
+  --text-4xl: 2.25rem;
+  --text-4xl--line-height: 2.5rem;
+  --text-5xl: 3rem;
+  --text-5xl--line-height: 1;
+  --text-6xl: 4rem;
+  --text-6xl--line-height: 1;
+  --text-7xl: 4.5rem;
+  --text-7xl--line-height: 1;
+  --text-8xl: 5.25rem;
+  --text-8xl--line-height: 1;
+  --text-9xl: 8rem;
+  --text-9xl--line-height: 1;
+
+  --radius-input: 14px;
+
+  --tracking-tightest: -1.92px;
+
+  --animate-accordion-down: accordion-down 0.2s ease-out;
+  --animate-accordion-up: accordion-up 0.2s ease-out;
+  --animate-blink: blink 1s step-end infinite;
+
+  --shadow-yamaha-primary:
+    0px 2px 1px 0px rgba(255, 255, 255, 0.1) inset,
+    0px 4px 20px 8px rgba(248, 248, 248, 0.1) inset,
+    0px 6px 2px 0px rgba(0, 0, 0, 0.15),
+    0px 4px 0px 0px var(--yamaha-shadow-color);
+  --shadow-yamaha-secondary:
+    0px 2px 2px 0px rgba(255, 255, 255, 0.1) inset,
+    0px 4px 20px 8px rgba(248, 248, 248, 0.1) inset,
+    0px 6px 2px 0px rgba(0, 0, 0, 0.1),
+    0px 4px 0px 0px var(--yamaha-shadow-color);
+  --shadow-dropdown-menu:
+    0px 2px 5px 0px rgba(0, 0, 0, 0.1), 0px 24px 32px 0px rgba(0, 0, 0, 0.15);
+
+  @keyframes accordion-down {
+    from {
+      height: 0;
+    }
+    to {
+      height: var(--radix-accordion-content-height);
+    }
+  }
+  @keyframes accordion-up {
+    from {
+      height: var(--radix-accordion-content-height);
+    }
+    to {
+      height: 0;
+    }
+  }
+  @keyframes blink {
+    50% {
+      opacity: 0;
+    }
+  }
+}
+
+@utility container {
+  margin-inline: auto;
+  padding-inline: 2rem;
+  @media (width >= --theme(--breakpoint-sm)) {
+    max-width: none;
+  }
+  @media (width >= 1400px) {
+    max-width: 1400px;
+  }
+}
+
+/*
+  The default border color has changed to `currentColor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentColor);
+  }
+}
+
+@utility policy-container {
+  & h2 {
+    @apply text-2xl font-bold tracking-[-0.48px];
+  }
+}
+
+@utility hero-frame {
+  background: linear-gradient(
+    90deg,
+    #000 0%,
+    #000002 4.03%,
+    #2f2f2e 22.5%,
+    #5b5d63 40.35%,
+    #696b6e 55.69%,
+    #595a5e 63.06%,
+    #2d2d31 79.31%,
+    #000003 96.74%,
+    #111113 100%
+  );
+  box-shadow:
+    0px -8px 12px 0px rgba(0, 0, 0, 0.25) inset,
+    0px 17px 16px 0px rgba(0, 0, 0, 0.3) inset,
+    0px 4px 5px 0px rgba(0, 0, 0, 0.5) inset,
+    0px -4px 0px 0px rgba(0, 0, 0, 0.15),
+    0px 4px 0px 0px rgba(255, 255, 255, 0.05);
+}
+
+@utility hero-gradient-mask {
+  box-shadow:
+    0px 2px 0px 0px #6a98a7,
+    0px 4px 6px 0px rgba(85, 164, 175, 0.5) inset,
+    0px -2px 1px 0px rgba(172, 255, 252, 0.3) inset,
+    0px 3px 2px 0px rgba(105, 255, 249, 0.2) inset,
+    0px 0px 30px 0px rgba(105, 255, 249, 0.5) inset,
+    0px 1px 1px 0px rgba(0, 0, 0, 0.4),
+    0px 5px 2px 0px rgba(255, 255, 255, 0.1);
+  background: linear-gradient(
+    90deg,
+    rgba(0, 0, 0, 0.5) 0%,
+    rgba(0, 0, 2, 0.5) 4.03%,
+    rgba(47, 47, 46, 0.5) 22.5%,
+    rgba(91, 93, 99, 0.5) 40.35%,
+    rgba(105, 107, 110, 0.5) 55.69%,
+    rgba(89, 90, 94, 0.5) 63.06%,
+    rgba(45, 45, 49, 0.5) 79.31%,
+    rgba(0, 0, 3, 0.5) 96.74%,
+    rgba(17, 17, 19, 0.5) 100%
+  );
+  mix-blend-mode: screen;
+}
+
+@utility text-shadow-hero {
+  text-shadow:
+    4px 0px 4px rgba(0, 102, 255, 0.2),
+    -4px 0px 4px rgba(255, 0, 0, 0.2),
+    0px 0px 3px rgba(0, 0, 0, 0.4),
+    0px 0px 24px rgba(40, 166, 159, 0.4);
+}
+
 @layer base {
   @font-face {
     font-family: "Inter";
@@ -38,21 +250,21 @@
     --aside-width: 586px;
     --aside-header-height: 110px;
     --aside-summary-height: 280px;
-    --yamaha-shadow-color: theme(colors.neutral.50);
+    --yamaha-shadow-color: var(--color-neutral-50);
     --header-height: 84px;
-    --main-padding: theme(spacing.3);
+    --main-padding: --spacing(3);
 
-    @screen md {
-      --main-padding: theme(spacing.9);
+    @media (width >= theme(--breakpoint-md)) {
+      --main-padding: --spacing(9);
     }
 
-    @screen sm {
+    @media (width >= theme(--breakpoint-sm)) {
       --header-height: 110px;
     }
   }
 
   .dark:root {
-    --yamaha-shadow-color: theme(colors.neutral.500);
+    --yamaha-shadow-color: var(--color-neutral-500);
   }
 
   .dark {
@@ -66,66 +278,5 @@
 
   a {
     @apply hover:text-blue-brand underline;
-  }
-}
-
-@layer components {
-  .policy-container h2 {
-    @apply text-2xl font-bold tracking-[-0.48px];
-  }
-
-  .hero-frame {
-    background: linear-gradient(
-      90deg,
-      #000 0%,
-      #000002 4.03%,
-      #2f2f2e 22.5%,
-      #5b5d63 40.35%,
-      #696b6e 55.69%,
-      #595a5e 63.06%,
-      #2d2d31 79.31%,
-      #000003 96.74%,
-      #111113 100%
-    );
-    box-shadow:
-      0px -8px 12px 0px rgba(0, 0, 0, 0.25) inset,
-      0px 17px 16px 0px rgba(0, 0, 0, 0.3) inset,
-      0px 4px 5px 0px rgba(0, 0, 0, 0.5) inset,
-      0px -4px 0px 0px rgba(0, 0, 0, 0.15),
-      0px 4px 0px 0px rgba(255, 255, 255, 0.05);
-  }
-
-  .hero-gradient-mask {
-    box-shadow:
-      0px 2px 0px 0px #6a98a7,
-      0px 4px 6px 0px rgba(85, 164, 175, 0.5) inset,
-      0px -2px 1px 0px rgba(172, 255, 252, 0.3) inset,
-      0px 3px 2px 0px rgba(105, 255, 249, 0.2) inset,
-      0px 0px 30px 0px rgba(105, 255, 249, 0.5) inset,
-      0px 1px 1px 0px rgba(0, 0, 0, 0.4),
-      0px 5px 2px 0px rgba(255, 255, 255, 0.1);
-    background: linear-gradient(
-      90deg,
-      rgba(0, 0, 0, 0.5) 0%,
-      rgba(0, 0, 2, 0.5) 4.03%,
-      rgba(47, 47, 46, 0.5) 22.5%,
-      rgba(91, 93, 99, 0.5) 40.35%,
-      rgba(105, 107, 110, 0.5) 55.69%,
-      rgba(89, 90, 94, 0.5) 63.06%,
-      rgba(45, 45, 49, 0.5) 79.31%,
-      rgba(0, 0, 3, 0.5) 96.74%,
-      rgba(17, 17, 19, 0.5) 100%
-    );
-    mix-blend-mode: screen;
-  }
-}
-
-@layer utilities {
-  .text-shadow-hero {
-    text-shadow:
-      4px 0px 4px rgba(0, 102, 255, 0.2),
-      -4px 0px 4px rgba(255, 0, 0, 0.2),
-      0px 0px 3px rgba(0, 0, 0, 0.4),
-      0px 0px 24px rgba(40, 166, 159, 0.4);
   }
 }

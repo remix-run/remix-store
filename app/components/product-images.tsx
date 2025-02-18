@@ -118,7 +118,7 @@ function Carousel({
 
       {/* Only show the carousel controls if there's more than one image */}
       {images.length > 1 && (
-        <div className="absolute bottom-0 z-10 flex w-full items-center justify-between bg-gradient-to-t from-black/40 p-6 pt-12 text-white">
+        <div className="absolute bottom-0 z-10 flex w-full items-center justify-between bg-linear-to-t from-black/40 p-6 pt-12 text-white">
           <PrevButton
             onClick={onPrevButtonClick}
             disabled={prevBtnDisabled}
@@ -136,7 +136,7 @@ function Carousel({
                   key={btnIndex}
                   onClick={() => onDotButtonClick(index)}
                   className={cn("h-2 w-2 rounded-full bg-white", {
-                    "bg-opacity-50": index !== selectedIndex,
+                    "bg-white/50": index !== selectedIndex,
                   })}
                   aria-label={`Skip to image ${index + 1}`}
                 />

@@ -40,7 +40,7 @@ export function Hero({
     <div
       // a neat trick taken from the Wes Bos: https://x.com/wesbos/status/1834640452865101907
       className={cn(
-        "relative grid [&>*]:[grid-area:1/1]",
+        "relative grid *:[grid-area:1/1]",
         heightClasses,
         "-mx-[var(--main-padding)]",
         className,

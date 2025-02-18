@@ -101,7 +101,7 @@ const AsideHeader = ({
     {...props}
   >
     {children}
-    <AsideClose className="m-0 rounded-sm ring-offset-neutral-200 hover:text-black focus:outline-none focus:ring-2 focus:ring-neutral-600 focus:ring-offset-2 dark:ring-offset-neutral-700 dark:hover:text-white dark:focus:ring-neutral-300">
+    <AsideClose className="m-0 rounded-xs ring-offset-neutral-200 hover:text-black focus:outline-hidden focus:ring-2 focus:ring-neutral-600 focus:ring-offset-2 dark:ring-offset-neutral-700 dark:hover:text-white dark:focus:ring-neutral-300">
       <Icon name="x" className="size-6" />
       <span className="sr-only">Close</span>
     </AsideClose>

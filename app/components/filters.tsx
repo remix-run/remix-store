@@ -117,7 +117,7 @@ function FiltersTrigger({ itemCount }: FiltersToolbarProps) {
               isPending ? (
                 <div className="flex items-center gap-2">
                   <span>Loading items</span>
-                  <div className="h-5 w-3 animate-blink bg-neutral-400" />
+                  <div className="animate-blink h-5 w-3 bg-neutral-400" />
                 </div>
               ) : (
                 `Showing ${itemCount} items`
@@ -194,7 +194,7 @@ function FilterAccordionItem({
     <AccordionItem
       value={value}
       className={clsx(
-        "-mx-6 border-b border-b-neutral-400 border-opacity-15 py-3 dark:border-opacity-20 [&[data-state=open]]:pb-9",
+        "-mx-6 border-b border-b-neutral-400/15 py-3 data-[state=open]:pb-9 dark:border-b-neutral-400/20",
         className,
       )}
     >
@@ -339,11 +339,11 @@ function PriceInput({
 }: React.InputHTMLAttributes<HTMLInputElement>) {
   return (
     <div className="relative font-normal">
-      <span className="absolute left-3 top-1/2 -translate-y-1/2 select-none">
+      <span className="absolute top-1/2 left-3 -translate-y-1/2 select-none">
         $
       </span>
       <input
-        className="h-[58px] w-[120px] rounded-[14px] bg-black bg-opacity-5 p-[10px] pl-7 font-mono text-blue-brand placeholder:text-neutral-600 placeholder:text-opacity-30 dark:bg-opacity-20 dark:placeholder:text-neutral-300 dark:placeholder:text-opacity-20"
+        className="text-blue-brand h-[58px] w-[120px] rounded-[14px] bg-black/5 p-[10px] pl-7 font-mono placeholder:text-neutral-600/30 dark:bg-black/20 dark:placeholder:text-neutral-300/20"
         type="number"
         id={id}
         name={name}

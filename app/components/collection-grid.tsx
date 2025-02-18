@@ -62,7 +62,7 @@ function CollectionItem({ product }: CollectionItemProps) {
       prefetch="intent"
       to={`/products/${handle}`}
     >
-      <div className="relative h-[160px] overflow-hidden rounded-[20px] bg-black bg-opacity-5 md:h-[240px] lg:h-[300px] xl:h-[400px] 2xl:h-[480px] dark:bg-opacity-20">
+      <div className="relative h-[160px] overflow-hidden rounded-[20px] bg-black/5 md:h-[240px] lg:h-[300px] xl:h-[400px] 2xl:h-[480px] dark:bg-black/20">
         <Image
           data={product.images.nodes[0]}
           gradient={gradients[0] ?? "random"}
@@ -76,16 +76,16 @@ function CollectionItem({ product }: CollectionItemProps) {
         />
         <Tag status={status} />
       </div>
-      <h3 className="text-sm font-semibold leading-[1.2rem] tracking-[-0.28px] text-black sm:text-base sm:leading-none sm:tracking-[-0.32px] md:text-xl md:tracking-[-0.4px] lg:text-2xl lg:tracking-[-0.48px] dark:text-white">
+      <h3 className="text-sm leading-[1.2rem] font-semibold tracking-[-0.28px] text-black sm:text-base sm:leading-none sm:tracking-[-0.32px] md:text-xl md:tracking-[-0.4px] lg:text-2xl lg:tracking-[-0.48px] dark:text-white">
         {title}
       </h3>
-      <small className="text-dark flex gap-2 font-mono text-xs font-medium leading-none sm:text-base sm:leading-none dark:text-white">
+      <small className="text-dark flex gap-2 font-mono text-xs leading-none font-medium sm:text-base sm:leading-none dark:text-white">
         <Money data={price} withoutTrailingZeros />
         {isOnSale && (
           <Money
             data={compareAtPrice}
             withoutTrailingZeros
-            className="text-neutral-600 text-opacity-35 line-through dark:text-neutral-300 dark:text-opacity-35"
+            className="text-neutral-600/35 line-through dark:text-neutral-300/35"
           />
         )}
       </small>
@@ -96,8 +96,8 @@ function CollectionItem({ product }: CollectionItemProps) {
 function CollectionItemSkeleton() {
   return (
     <div className="flex flex-col gap-1 no-underline">
-      <div className="relative h-[160px] overflow-hidden rounded-[20px] bg-black bg-opacity-5 md:h-[240px] lg:h-[300px] xl:h-[400px] 2xl:h-[480px] dark:bg-opacity-20" />
-      <h3 className="text-sm font-semibold leading-[1.2rem] tracking-[-0.28px] text-black sm:text-base sm:leading-none sm:tracking-[-0.32px] md:text-xl md:tracking-[-0.4px] lg:text-2xl lg:tracking-[-0.48px] dark:text-white">
+      <div className="relative h-[160px] overflow-hidden rounded-[20px] bg-black/5 md:h-[240px] lg:h-[300px] xl:h-[400px] 2xl:h-[480px] dark:bg-black/20" />
+      <h3 className="text-sm leading-[1.2rem] font-semibold tracking-[-0.28px] text-black sm:text-base sm:leading-none sm:tracking-[-0.32px] md:text-xl md:tracking-[-0.4px] lg:text-2xl lg:tracking-[-0.48px] dark:text-white">
         loading...
       </h3>
     </div>
