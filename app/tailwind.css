@@ -1,6 +1,5 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@config "../tailwind.config.ts";
 
 @layer base {
   @font-face {
@@ -66,7 +65,7 @@
   }
 
   a {
-    @apply underline hover:text-blue-brand;
+    @apply hover:text-blue-brand underline;
   }
 }
 

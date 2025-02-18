@@ -1,6 +1,7 @@
 import { defineConfig } from "vite";
 import { hydrogen } from "@shopify/hydrogen/vite";
 import { oxygen } from "@shopify/mini-oxygen/vite";
+import tailwindcss from "@tailwindcss/vite";
 import { iconsSpritesheet } from "vite-plugin-icons-spritesheet";
 import { vitePlugin as remix } from "@remix-run/dev";
 import tsconfigPaths from "vite-tsconfig-paths";
@@ -15,6 +16,7 @@ export default defineConfig({
   plugins: [
     hydrogen(),
     oxygen(),
+    tailwindcss(),
     iconsSpritesheet({
       inputDir: "app/assets/icons",
       outputDir: "public",
