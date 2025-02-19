@@ -15,36 +15,43 @@ import {
   type LookbookEntry as LookbookEntryProps,
 } from "~/lib/lookbook.server";
 
-export const FEATURED_COLLECTION_HANDLE = "remix-logo-apparel";
+export let FEATURED_COLLECTION_HANDLE = "remix-logo-apparel";
 
-export const meta: MetaFunction = () => {
+let loadRunnerImage = {
+  altText: "Silhouette of a runner made of white circles",
+  height: 1081,
+  width: 1081,
+  url: "https://cdn.shopify.com/s/files/1/0655/4127/5819/files/load_runner.gif?v=1739987429",
+};
+
+export let meta: MetaFunction = () => {
   return [{ title: "The Remix Store | Home" }];
 };
 
 export async function loader({ request, context }: LoaderFunctionArgs) {
-  const { storefront } = context;
-  const featuredQuery = storefront.query(FEATURED_COLLECTION_QUERY, {
+  let { storefront } = context;
+  let featuredQuery = storefront.query(FEATURED_COLLECTION_QUERY, {
     variables: {
       handle: FEATURED_COLLECTION_HANDLE,
     },
   });
 
-  const url = new URL(request.url);
-  const { searchParams } = url;
-  const variables = {
+  let url = new URL(request.url);
+  let { searchParams } = url;
+  let variables = {
     handle: "all",
     first: 8,
     ...getFilterQueryVariables(searchParams),
   };
 
-  const top8Query = storefront.query(COLLECTION_QUERY, { variables });
+  let top8Query = storefront.query(COLLECTION_QUERY, { variables });
 
-  const lookbookEntriesQuery = getLookbookEntries(storefront);
+  let lookbookEntriesQuery = getLookbookEntries(storefront);
 
-  const [{ featuredCollection }, { collection }, lookbookEntries] =
+  let [{ featuredCollection }, { collection }, lookbookEntries] =
     await Promise.all([featuredQuery, top8Query, lookbookEntriesQuery]);
 
-  const products = collection?.products;
+  let products = collection?.products;
   if (!products) {
     throw new Response("Something went wrong", { status: 500 });
   }
@@ -57,8 +64,10 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
 }
 
 export default function Homepage() {
-  const { featuredCollection, products, lookbookEntries } =
+  let { featuredCollection, products, lookbookEntries } =
     useLoaderData<typeof loader>();
+
+  let [firstEntry, ...restEntries] = lookbookEntries;
 
   return (
     <>
@@ -78,7 +87,19 @@ export default function Homepage() {
           }}
         />
       ) : null} */}
-      {lookbookEntries.map((entry) => (
+      {firstEntry && (
+        <LookbookEntry key={firstEntry.image.id} {...firstEntry} />
+      )}
+      <div className="flex h-[800px] items-center justify-center gap-4 bg-[#1E1EC4]">
+        <div className="w-[65%]">
+          <Image
+            className="h-full w-full"
+            sizes="calc(100vw * 0.65)"
+            data={loadRunnerImage}
+          />
+        </div>
+      </div>
+      {restEntries.map((entry) => (
         <LookbookEntry key={entry.image.id} {...entry} />
       ))}
       {/* <FiltersAside>
@@ -99,6 +120,7 @@ function LookbookEntry({ image, product }: LookbookEntryProps) {
     <div className="relative h-[1400px]">
       <div className="absolute inset-0">
         <Image
+          sizes="100vw"
           className="h-full w-full object-cover object-center"
           data={image}
         />
@@ -115,7 +137,7 @@ function LookbookEntry({ image, product }: LookbookEntryProps) {
   );
 }
 
-export const FEATURED_COLLECTION_QUERY = `#graphql
+export let FEATURED_COLLECTION_QUERY = `#graphql
   ${COLLECTION_VIDEO_FRAGMENT}
   query FeaturedCollection($handle: String!, $country: CountryCode, $language: LanguageCode)
     @inContext(country: $country, language: $language) {
