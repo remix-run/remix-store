@@ -60,11 +60,9 @@ export default function Homepage() {
   const { featuredCollection, products, lookbookEntries } =
     useLoaderData<typeof loader>();
 
-  console.log(lookbookEntries);
-
   return (
     <>
-      {featuredCollection ? (
+      {/* {featuredCollection ? (
         <Hero
           video={
             featuredCollection.video?.reference?.__typename === "Video"
@@ -79,8 +77,8 @@ export default function Homepage() {
             to: `/collections/${featuredCollection.handle}`,
           }}
         />
-      ) : null}
-      {lookbookEntries.slice(0, 1).map((entry) => (
+      ) : null} */}
+      {lookbookEntries.map((entry) => (
         <LookbookEntry key={entry.image.id} {...entry} />
       ))}
       {/* <FiltersAside>
@@ -97,7 +95,24 @@ export default function Homepage() {
 }
 
 function LookbookEntry({ image, product }: LookbookEntryProps) {
-  return <Image data={image} />;
+  return (
+    <div className="relative h-[1400px]">
+      <div className="absolute inset-0">
+        <Image
+          className="h-full w-full object-cover object-center"
+          data={image}
+        />
+      </div>
+      {product && (
+        <Link
+          className="absolute bottom-9 left-9 min-w-fit rounded-[54px] bg-white px-6 py-4 text-center text-xl font-bold no-underline"
+          to={`/products/${product.handle}`}
+        >
+          Shop · ${Math.floor(Number(product.price.amount))}
+        </Link>
+      )}
+    </div>
+  );
 }
 
 export const FEATURED_COLLECTION_QUERY = `#graphql
