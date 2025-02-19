@@ -8,6 +8,12 @@ import { CollectionGrid } from "~/components/collection-grid";
 import { Button } from "~/components/ui/button";
 import { COLLECTION_QUERY } from "~/lib/queries";
 import { getFilterQueryVariables } from "~/lib/filters/query-variables.server";
+import type { LookbookImagesQuery } from "storefrontapi.generated";
+import { Image } from "@shopify/hydrogen";
+import {
+  getLookbookEntries,
+  type LookbookEntry as LookbookEntryProps,
+} from "~/lib/lookbook.server";
 
 export const FEATURED_COLLECTION_HANDLE = "remix-logo-apparel";
 
@@ -33,21 +39,28 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
 
   const top8Query = storefront.query(COLLECTION_QUERY, { variables });
 
-  const [{ featuredCollection }, { collection }] = await Promise.all([
-    featuredQuery,
-    top8Query,
-  ]);
+  const lookbookEntriesQuery = getLookbookEntries(storefront);
+
+  const [{ featuredCollection }, { collection }, lookbookEntries] =
+    await Promise.all([featuredQuery, top8Query, lookbookEntriesQuery]);
 
   const products = collection?.products;
   if (!products) {
     throw new Response("Something went wrong", { status: 500 });
   }
 
-  return data({ featuredCollection, products });
+  return data({
+    featuredCollection,
+    products,
+    lookbookEntries,
+  });
 }
 
 export default function Homepage() {
-  const { featuredCollection, products } = useLoaderData<typeof loader>();
+  const { featuredCollection, products, lookbookEntries } =
+    useLoaderData<typeof loader>();
+
+  console.log(lookbookEntries);
 
   return (
     <>
@@ -67,7 +80,10 @@ export default function Homepage() {
           }}
         />
       ) : null}
-      <FiltersAside>
+      {lookbookEntries.slice(0, 1).map((entry) => (
+        <LookbookEntry key={entry.image.id} {...entry} />
+      ))}
+      {/* <FiltersAside>
         <FiltersToolbar itemCount={products.nodes.length} />
       </FiltersAside>
       <CollectionGrid products={products.nodes} />
@@ -75,9 +91,13 @@ export default function Homepage() {
         <Button size="lg" asChild>
           <Link to="/collections/all">Shop all items</Link>
         </Button>
-      </div>
+      </div> */}
     </>
   );
+}
+
+function LookbookEntry({ image, product }: LookbookEntryProps) {
+  return <Image data={image} />;
 }
 
 export const FEATURED_COLLECTION_QUERY = `#graphql

@@ -522,6 +522,58 @@ export type CollectionQuery = {
   >;
 };
 
+export type LookbookImagesQueryVariables = StorefrontAPI.Exact<{
+  country?: StorefrontAPI.InputMaybe<StorefrontAPI.CountryCode>;
+  language?: StorefrontAPI.InputMaybe<StorefrontAPI.LanguageCode>;
+}>;
+
+export type LookbookImagesQuery = {
+  lookbookEntries: {
+    nodes: Array<
+      Pick<StorefrontAPI.Metaobject, 'handle'> & {
+        fields: Array<
+          {__typename: 'MetaobjectField'} & {
+            reference?: StorefrontAPI.Maybe<
+              | {
+                  __typename:
+                    | 'Collection'
+                    | 'GenericFile'
+                    | 'Metaobject'
+                    | 'Model3d'
+                    | 'Page'
+                    | 'ProductVariant'
+                    | 'Video';
+                }
+              | ({__typename: 'MediaImage'} & Pick<
+                  StorefrontAPI.MediaImage,
+                  'id' | 'alt'
+                > & {
+                    image?: StorefrontAPI.Maybe<
+                      Pick<
+                        StorefrontAPI.Image,
+                        'id' | 'altText' | 'url' | 'width' | 'height'
+                      >
+                    >;
+                  })
+              | ({__typename: 'Product'} & Pick<
+                  StorefrontAPI.Product,
+                  'id' | 'handle'
+                > & {
+                    priceRange: {
+                      minVariantPrice: Pick<
+                        StorefrontAPI.MoneyV2,
+                        'amount' | 'currencyCode'
+                      >;
+                    };
+                  })
+            >;
+          }
+        >;
+      }
+    >;
+  };
+};
+
 export type FeaturedCollectionQueryVariables = StorefrontAPI.Exact<{
   handle: StorefrontAPI.Scalars['String']['input'];
   country?: StorefrontAPI.InputMaybe<StorefrontAPI.CountryCode>;
@@ -797,6 +849,10 @@ interface GeneratedQueryTypes {
   '#graphql\n  #graphql\n  fragment MoneyProductItem on MoneyV2 {\n    amount\n    currencyCode\n  }\n  fragment ProductItem on Product {\n    id\n    handle\n    title\n    tags\n    availableForSale\n    featuredImage {\n      ...ProductImage\n    }\n    priceRange {\n      minVariantPrice {\n        ...MoneyProductItem\n      }\n      maxVariantPrice {\n        ...MoneyProductItem\n      }\n    }\n    images(first: 1) {\n      nodes {\n        ...ProductImage\n      }\n    }\n    variants(first: 1) {\n      nodes {\n        selectedOptions {\n          name\n          value\n        }\n        price {\n          amount\n          currencyCode\n        }\n        compareAtPrice {\n          amount\n          currencyCode\n        }\n      }\n    }\n    gradientColors: metafield(key: "images_gradient_background", namespace: "custom") {\n      value\n    }\n  }\n  #graphql\n  fragment ProductImage on Image {\n    id\n    altText\n    url\n    width\n    height\n  }\n\n\n  query Collection(\n    $handle: String!\n    $country: CountryCode\n    $language: LanguageCode\n    $first: Int\n    $last: Int\n    $startCursor: String\n    $endCursor: String\n    $sortKey: ProductCollectionSortKeys\n    $reverse: Boolean\n    $filters: [ProductFilter!]\n  ) @inContext(country: $country, language: $language) {\n    collection(handle: $handle) {\n      id\n      handle\n      title\n      description\n      image {\n        ...ProductImage\n      }\n      seo {\n        title\n      }\n      products(\n        first: $first,\n        last: $last,\n        before: $startCursor,\n        after: $endCursor\n        sortKey: $sortKey\n        reverse: $reverse\n        filters: $filters\n      ) {\n        nodes {\n          ...ProductItem\n        }\n        pageInfo {\n          hasPreviousPage\n          hasNextPage\n          endCursor\n          startCursor\n        }\n      }\n    }\n  }\n': {
     return: CollectionQuery;
     variables: CollectionQueryVariables;
+  };
+  '#graphql\n  #graphql\n  fragment ProductImage on Image {\n    id\n    altText\n    url\n    width\n    height\n  }\n\n  query LookbookImages (\n    $country: CountryCode\n    $language: LanguageCode\n  ) @inContext(country: $country, language: $language) {\n    lookbookEntries: metaobjects(type: "lookbook_entry", first: 5) {\n      nodes {\n        handle\n        fields {\n          __typename\n          reference {\n            __typename\n            ... on MediaImage {\n              id\n              alt\n              image {\n                ...ProductImage\n              }\n            }\n            ... on Product {\n              id\n              handle\n              priceRange {\n                minVariantPrice {\n                  amount\n                  currencyCode\n                }\n              }\n            }\n          }\n        }\n      }\n    }\n  }\n': {
+    return: LookbookImagesQuery;
+    variables: LookbookImagesQueryVariables;
   };
   '#graphql\n  #graphql\n  #graphql\n  fragment ProductImage on Image {\n    id\n    altText\n    url\n    width\n    height\n  }\n\n  fragment CollectionVideo on Video {\n    id\n    previewImage {\n      ...ProductImage\n    }\n    sources {\n      url\n      format\n      width\n      height\n      mimeType\n    }\n  }\n\n  query FeaturedCollection($handle: String!, $country: CountryCode, $language: LanguageCode)\n    @inContext(country: $country, language: $language) {\n    featuredCollection: collection(handle: $handle) {\n      title\n      handle\n      image {\n        ...ProductImage\n      }\n      video: metafield(key: "featured_video", namespace: "custom") {\n        id\n        reference {\n          __typename\n          ... on Video {\n            ...CollectionVideo\n          }\n        }\n      }\n      featuredDescription: metafield(key: "featured_description", namespace:  "custom") {\n        value\n      }\n    }\n  }\n': {
     return: FeaturedCollectionQuery;
