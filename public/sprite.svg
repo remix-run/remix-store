@@ -48,6 +48,9 @@
 <symbol viewBox="0 0 24 24" fill="none" id="filter">
 <path d="M2.40002 4.80002L12 4.80002M2.40002 12H12M12 12V14.4M12 12V9.60002M2.40002 19.2H7.20002M12 19.2L21.6 19.2M16.8 12H21.6M16.8 4.80002L21.6 4.80003M16.8 4.80002V7.20002M16.8 4.80002V2.40002M7.80002 21.6V16.8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
 </symbol>
+<symbol viewBox="0 0 24 24" id="fast-forward">
+<path d="M4.55 16.96l6.2-4.13c.59-.4.59-1.27 0-1.66l-6.2-4.13C3.89 6.59 3 7.07 3 7.87v8.26c0 .8.89 1.28 1.55.83zM13 7.87v8.26c0 .8.89 1.28 1.55.83l6.2-4.13c.59-.4.59-1.27 0-1.66l-6.2-4.13c-.66-.45-1.55.03-1.55.83z"></path>
+</symbol>
 <symbol viewBox="0 0 24 24" fill="none" id="computer">
 <path d="M12.0004 16.7996V19.1996M8.40039 20.3996H15.6004M4.80039 16.7996H19.2004C20.5259 16.7996 21.6004 15.7251 21.6004 14.3996V5.99961C21.6004 4.67413 20.5259 3.59961 19.2004 3.59961H4.80039C3.47491 3.59961 2.40039 4.67413 2.40039 5.99961V14.3996C2.40039 15.7251 3.47491 16.7996 4.80039 16.7996Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
 </symbol>

@@ -8,12 +8,14 @@ import { CollectionGrid } from "~/components/collection-grid";
 import { Button } from "~/components/ui/button";
 import { COLLECTION_QUERY } from "~/lib/queries";
 import { getFilterQueryVariables } from "~/lib/filters/query-variables.server";
-import type { LookbookImagesQuery } from "storefrontapi.generated";
 import { Image } from "@shopify/hydrogen";
 import {
   getLookbookEntries,
   type LookbookEntry as LookbookEntryProps,
 } from "~/lib/lookbook.server";
+import Icon from "~/components/icon";
+
+// TODO: Add icons for buttons
 
 export let FEATURED_COLLECTION_HANDLE = "remix-logo-apparel";
 
@@ -127,10 +129,17 @@ function LookbookEntry({ image, product }: LookbookEntryProps) {
       </div>
       {product && (
         <Link
-          className="absolute bottom-9 left-9 min-w-fit rounded-[54px] bg-white px-6 py-4 text-center text-xl font-bold no-underline"
+          className="group absolute bottom-9 left-9 flex h-16 items-center justify-center gap-2.5 rounded-[54px] bg-white px-6 py-4 text-center text-xl font-semibold text-black no-underline"
           to={`/products/${product.handle}`}
         >
-          Shop · ${Math.floor(Number(product.price.amount))}
+          <Icon
+            name="fast-forward"
+            className="icon-animation -ml-2.5 size-8 max-w-0 opacity-0 group-hover:ml-0 group-hover:max-w-[32px] group-hover:opacity-100"
+            aria-hidden="true"
+          />
+          <span>Shop</span>
+          <span className="text-[28px]">·</span>
+          <span>${Math.floor(Number(product.price.amount))}</span>
         </Link>
       )}
     </div>

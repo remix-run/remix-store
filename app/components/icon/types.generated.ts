@@ -13,6 +13,7 @@ export const iconNames = [
   "info",
   "globe",
   "filter",
+  "fast-forward",
   "computer",
   "chevron-up",
   "chevron-right",
