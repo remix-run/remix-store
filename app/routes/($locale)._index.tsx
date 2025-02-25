@@ -14,6 +14,7 @@ import {
   type LookbookEntry as LookbookEntryProps,
 } from "~/lib/lookbook.server";
 import Icon from "~/components/icon";
+import type { IconName } from "~/components/icon/types.generated";
 
 // TODO: Add icons for buttons
 
@@ -127,22 +128,44 @@ function LookbookEntry({ image, product }: LookbookEntryProps) {
           data={image}
         />
       </div>
-      {product && (
-        <Link
-          className="group absolute bottom-9 left-9 flex h-16 items-center justify-center gap-2.5 rounded-[54px] bg-white px-6 py-4 text-center text-xl font-semibold text-black no-underline"
-          to={`/products/${product.handle}`}
-        >
-          <Icon
-            name="fast-forward"
-            className="icon-animation -ml-2.5 size-8 max-w-0 opacity-0 group-hover:ml-0 group-hover:max-w-[32px] group-hover:opacity-100"
-            aria-hidden="true"
-          />
+      {product ? (
+        <IconLink iconName="fast-forward" to={`/products/${product.handle}`}>
           <span>Shop</span>
           <span className="text-[28px]">·</span>
           <span>${Math.floor(Number(product.price.amount))}</span>
-        </Link>
+        </IconLink>
+      ) : (
+        <IconLink
+          iconName="mail"
+          // TODO: Add proper signup link
+          to="https://rmx.as/newsletter"
+        >
+          Coming Soon
+        </IconLink>
       )}
     </div>
+  );
+}
+
+type IconLinkProps = {
+  to: string;
+  iconName: IconName;
+  children: React.ReactNode;
+};
+
+function IconLink({ to, iconName, children }: IconLinkProps) {
+  return (
+    <Link
+      className="group absolute bottom-9 left-9 flex h-16 items-center justify-center gap-2.5 rounded-[54px] bg-white px-6 py-4 text-center text-xl font-semibold text-black no-underline"
+      to={to}
+    >
+      <Icon
+        name={iconName}
+        className="icon-animation -ml-2.5 size-8 max-w-0 scale-75 opacity-0 group-hover:ml-0 group-hover:max-w-[32px] group-hover:scale-100 group-hover:opacity-100"
+        aria-hidden="true"
+      />
+      {children}
+    </Link>
   );
 }
 
