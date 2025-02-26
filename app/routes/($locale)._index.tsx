@@ -16,16 +16,7 @@ import {
 import Icon from "~/components/icon";
 import type { IconName } from "~/components/icon/types.generated";
 
-// TODO: Add icons for buttons
-
 export let FEATURED_COLLECTION_HANDLE = "remix-logo-apparel";
-
-let loadRunnerImage = {
-  altText: "Silhouette of a runner made of white circles",
-  height: 1081,
-  width: 1081,
-  url: "https://cdn.shopify.com/s/files/1/0655/4127/5819/files/load_runner.gif?v=1739987429",
-};
 
 export let meta: MetaFunction = () => {
   return [{ title: "The Remix Store | Home" }];
@@ -93,15 +84,7 @@ export default function Homepage() {
       {firstEntry && (
         <LookbookEntry key={firstEntry.image.id} {...firstEntry} />
       )}
-      <div className="flex h-[800px] items-center justify-center gap-4 bg-[#1E1EC4]">
-        <div className="w-[65%]">
-          <Image
-            className="h-full w-full"
-            sizes="calc(100vw * 0.65)"
-            data={loadRunnerImage}
-          />
-        </div>
-      </div>
+      <LoadRunner />
       {restEntries.map((entry) => (
         <LookbookEntry key={entry.image.id} {...entry} />
       ))}
@@ -143,6 +126,24 @@ function LookbookEntry({ image, product }: LookbookEntryProps) {
           Coming Soon
         </IconLink>
       )}
+    </div>
+  );
+}
+
+// not sure if this is something we should be loading from the storefront
+let loadRunnerImage = {
+  altText: "Silhouette of a runner made of white circles",
+  height: 1081,
+  width: 1081,
+  url: "https://cdn.shopify.com/s/files/1/0655/4127/5819/files/load_runner.gif?v=1739987429",
+};
+
+function LoadRunner() {
+  return (
+    <div className="flex h-[800px] items-center justify-center gap-4 bg-[#1E1EC4]">
+      <div className="w-[65%]">
+        <Image className="h-full w-full" sizes="65vw" data={loadRunnerImage} />
+      </div>
     </div>
   );
 }

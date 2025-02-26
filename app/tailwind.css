@@ -281,20 +281,18 @@
   }
 }
 
-@layer utilities {
-  .icon-animation {
-    --icon-duration: 200ms;
-    --icon-delay: 150ms;
-    --icon-timing: cubic-bezier(0.13, 0.74, 0.41, 0.92);
+@utility icon-animation {
+  --icon-duration: 200ms;
+  --icon-delay: 150ms;
+  --icon-timing: cubic-bezier(0.13, 0.74, 0.41, 0.92);
 
-    transition:
-      max-width var(--icon-duration) var(--icon-timing) var(--icon-delay),
-      margin var(--icon-duration) var(--icon-timing) var(--icon-delay),
-      scale var(--icon-duration) var(--icon-timing),
-      opacity var(--icon-duration) var(--icon-timing);
-  }
+  transition:
+    max-width var(--icon-duration) var(--icon-timing) var(--icon-delay),
+    margin var(--icon-duration) var(--icon-timing) var(--icon-delay),
+    scale var(--icon-duration) var(--icon-timing),
+    opacity var(--icon-duration) var(--icon-timing);
 
-  .group:hover .icon-animation {
+  @variant group-hover {
     transition:
       max-width var(--icon-duration) var(--icon-timing),
       margin var(--icon-duration) var(--icon-timing),

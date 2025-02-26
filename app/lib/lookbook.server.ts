@@ -14,7 +14,7 @@ export type LookbookEntry = {
 export async function getLookbookEntries(
   storefront: Storefront,
 ): Promise<LookbookEntry[]> {
-  const { lookbookEntries, errors } = await storefront.query(LOOKBOOK_QUERY, {
+  let { lookbookEntries, errors } = await storefront.query(LOOKBOOK_QUERY, {
     cache: storefront.CacheLong(),
   });
 
@@ -28,7 +28,7 @@ export async function getLookbookEntries(
   return lookbookEntries.nodes
     .sort((a, b) => a.handle.localeCompare(b.handle))
     .map((entry) => {
-      const lookbookImage = entry.fields.find(
+      let lookbookImage = entry.fields.find(
         (field) => field.reference?.__typename === "MediaImage",
       )?.reference;
 
@@ -36,7 +36,7 @@ export async function getLookbookEntries(
         throw new Response("Lookbook image not found", { status: 500 });
       }
 
-      const product = entry.fields.find(
+      let product = entry.fields.find(
         (field) => field.reference?.__typename === "Product",
       )?.reference;
 
@@ -52,7 +52,7 @@ export async function getLookbookEntries(
     });
 }
 
-export const LOOKBOOK_QUERY = `#graphql
+export let LOOKBOOK_QUERY = `#graphql
   ${PRODUCT_IMAGE_FRAGMENT}
   query LookbookImages (
     $country: CountryCode
