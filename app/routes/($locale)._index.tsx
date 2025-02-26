@@ -1,7 +1,6 @@
 import type { LoaderFunctionArgs } from "@shopify/remix-oxygen";
 import { data } from "@shopify/remix-oxygen";
 import { Link, useLoaderData, type MetaFunction } from "@remix-run/react";
-import { Hero } from "~/components/hero";
 import { FiltersAside, FiltersToolbar } from "~/components/filters";
 import { COLLECTION_VIDEO_FRAGMENT } from "~/lib/fragments";
 import { CollectionGrid } from "~/components/collection-grid";
@@ -13,9 +12,9 @@ import {
   getLookbookEntries,
   type LookbookEntry as LookbookEntryProps,
 } from "~/lib/lookbook.server";
+import { getHeroData, type HeroData as HeroDataProps } from "~/lib/hero.server";
 import Icon from "~/components/icon";
 import type { IconName } from "~/components/icon/types.generated";
-
 export let FEATURED_COLLECTION_HANDLE = "remix-logo-apparel";
 
 export let meta: MetaFunction = () => {
@@ -41,9 +40,14 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
   let top8Query = storefront.query(COLLECTION_QUERY, { variables });
 
   let lookbookEntriesQuery = getLookbookEntries(storefront);
-
-  let [{ featuredCollection }, { collection }, lookbookEntries] =
-    await Promise.all([featuredQuery, top8Query, lookbookEntriesQuery]);
+  let heroQuery = getHeroData(storefront);
+  let [hero, lookbookEntries, { featuredCollection }, { collection }] =
+    await Promise.all([
+      heroQuery,
+      lookbookEntriesQuery,
+      featuredQuery,
+      top8Query,
+    ]);
 
   let products = collection?.products;
   if (!products) {
@@ -51,14 +55,15 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
   }
 
   return data({
+    hero,
+    lookbookEntries,
     featuredCollection,
     products,
-    lookbookEntries,
   });
 }
 
 export default function Homepage() {
-  let { featuredCollection, products, lookbookEntries } =
+  let { hero, lookbookEntries, featuredCollection, products } =
     useLoaderData<typeof loader>();
 
   let [firstEntry, ...restEntries] = lookbookEntries;
@@ -81,6 +86,7 @@ export default function Homepage() {
           }}
         />
       ) : null} */}
+      <Hero {...hero} />
       {firstEntry && (
         <LookbookEntry key={firstEntry.image.id} {...firstEntry} />
       )}
@@ -98,6 +104,50 @@ export default function Homepage() {
         </Button>
       </div> */}
     </>
+  );
+}
+
+function Hero({ masthead, assetImages, product }: HeroDataProps) {
+  return (
+    <div className="relative flex h-[1600px] flex-col items-center gap-[200px] bg-gradient-to-b from-[#000000] to-[#27273B] pt-[116px]">
+      <Image
+        sizes="86vw"
+        className="h-auto max-w-[86%] object-cover object-center"
+        data={masthead}
+      />
+
+      {/* TODO: add better mobile support */}
+      <h1 className="flex max-h-min w-full flex-nowrap items-center justify-center gap-[140px] text-8xl font-extrabold text-white">
+        <span className="sr-only">Remix</span>
+        <span className="uppercase">
+          software
+          <br />
+          for
+          <br />
+          better
+          <br />
+          websites
+        </span>
+        <span className="uppercase opacity-10">
+          software
+          <br />
+          for
+          <br />
+          engineers
+          <br />
+          of all kinds
+        </span>
+      </h1>
+
+      <Link to={`/products/${product.handle}`} className="absolute pt-20">
+        <Image
+          key={assetImages[0].image.id}
+          sizes="100vw"
+          className="h-full w-full scale-110 object-cover object-center"
+          data={assetImages[0].image}
+        />
+      </Link>
+    </div>
   );
 }
 
