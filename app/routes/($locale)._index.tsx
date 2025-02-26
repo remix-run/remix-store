@@ -1,3 +1,4 @@
+import { useLayoutEffect, useState } from "react";
 import type { LoaderFunctionArgs } from "@shopify/remix-oxygen";
 import { data } from "@shopify/remix-oxygen";
 import { Link, useLoaderData, type MetaFunction } from "@remix-run/react";
@@ -15,6 +16,7 @@ import {
 import { getHeroData, type HeroData as HeroDataProps } from "~/lib/hero.server";
 import Icon from "~/components/icon";
 import type { IconName } from "~/components/icon/types.generated";
+import { clsx } from "clsx";
 export let FEATURED_COLLECTION_HANDLE = "remix-logo-apparel";
 
 export let meta: MetaFunction = () => {
@@ -107,48 +109,141 @@ export default function Homepage() {
   );
 }
 
+// TODO:
+// - Add hoodie scale effect
+// - Add hoodie image cycling effect
+
+let heroHeight = 1600;
+
 function Hero({ masthead, assetImages, product }: HeroDataProps) {
+  let scrollPercentage = useScrollPercentage(heroHeight);
+
+  let translateY = heroHeight * scrollPercentage * 0.5;
+  let opacity = Math.max(0, 1 - scrollPercentage * 8);
+
+  let highlightSwitch = heroHeight * scrollPercentage > 470;
+
   return (
-    <div className="relative flex h-[1600px] flex-col items-center gap-[200px] bg-gradient-to-b from-[#000000] to-[#27273B] pt-[116px]">
-      <Image
-        sizes="86vw"
-        className="h-auto max-w-[86%] object-cover object-center"
-        data={masthead}
-      />
+    <div
+      className={clsx(
+        // "bg-gradient-to-b from-black to-[#27273B]",
+        "bg-linear-[180deg,var(--color-black),#27273B]",
+        "relative pt-[116px]",
+      )}
+    >
+      <div
+        className="flex flex-col items-center gap-[200px]"
+        style={{
+          height: `${heroHeight}px`,
+          transform: `translateY(${translateY}px)`,
+        }}
+      >
+        <Image
+          sizes="86vw"
+          className="h-auto max-w-[86%] object-cover object-center"
+          data={masthead}
+          style={{
+            opacity,
+          }}
+        />
 
-      {/* TODO: add better mobile support */}
-      <h1 className="flex max-h-min w-full flex-nowrap items-center justify-center gap-[140px] text-8xl font-extrabold text-white">
-        <span className="sr-only">Remix</span>
-        <span className="uppercase">
-          software
-          <br />
-          for
-          <br />
-          better
-          <br />
-          websites
-        </span>
-        <span className="uppercase opacity-10">
-          software
-          <br />
-          for
-          <br />
-          engineers
-          <br />
-          of all kinds
-        </span>
-      </h1>
+        {/* TODO: add better mobile support */}
+        <h1 className="flex max-h-min w-full flex-nowrap items-start justify-center gap-[140px] text-8xl font-extrabold text-white">
+          <span className="sr-only">Remix</span>
+          <HeroText highlight={!highlightSwitch}>
+            software
+            <br />
+            for
+            <br />
+            better
+            <br />
+            websites
+          </HeroText>
+          <HeroText highlight={highlightSwitch}>
+            softwear
+            <br />
+            for
+            <br />
+            engineers
+            <br />
+            of all kinds
+          </HeroText>
+        </h1>
 
-      <Link to={`/products/${product.handle}`} className="absolute pt-20">
+        {/* <Link to={`/products/${product.handle}`} className="absolute top-0">
         <Image
           key={assetImages[0].image.id}
           sizes="100vw"
-          className="h-full w-full scale-110 object-cover object-center"
+          className="h-full w-full scale-60 object-cover object-center"
           data={assetImages[0].image}
         />
-      </Link>
+      </Link> */}
+      </div>
     </div>
   );
+}
+
+function HeroText({
+  children,
+  highlight,
+}: {
+  children: React.ReactNode;
+  highlight: boolean;
+}) {
+  return (
+    <span
+      className={clsx(
+        "text-nowrap uppercase transition-opacity duration-200",
+        highlight ? "opacity-100" : "opacity-10",
+      )}
+    >
+      {children}
+    </span>
+  );
+}
+
+/**
+ * Simplified hook that calculates what percentage of an element at the top of the page has been scrolled past
+ * @param height - The height of the element (default: 1600)
+ * @returns A number between 0 and 1 representing the percentage scrolled past
+ */
+function useScrollPercentage(height = 1600) {
+  let [scrollPercentage, setScrollPercentage] = useState(0);
+
+  useLayoutEffect(() => {
+    let rafId: number;
+
+    let calculateVisibility = () => {
+      rafId = requestAnimationFrame(() => {
+        let scrollY = window.scrollY;
+
+        // If we've scrolled past the element, it's 0% visible
+        if (scrollY >= height) {
+          return;
+        }
+
+        let percentage =
+          1 - Math.max(0, Math.min(1, (height - scrollY) / height));
+        setScrollPercentage(percentage);
+      });
+    };
+
+    // Calculate initial visibility
+    calculateVisibility();
+
+    // Set up scroll listener
+    window.addEventListener("scroll", calculateVisibility, { passive: true });
+    // Only need resize if window height affects calculations
+    window.addEventListener("resize", calculateVisibility);
+
+    return () => {
+      window.removeEventListener("scroll", calculateVisibility);
+      window.removeEventListener("resize", calculateVisibility);
+      cancelAnimationFrame(rafId);
+    };
+  }, [height]);
+
+  return scrollPercentage;
 }
 
 function LookbookEntry({ image, product }: LookbookEntryProps) {
