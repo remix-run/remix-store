@@ -1,4 +1,4 @@
-import { useLayoutEffect, useState } from "react";
+import { useLayoutEffect, useState, useRef } from "react";
 import type { LoaderFunctionArgs } from "@shopify/remix-oxygen";
 import { data } from "@shopify/remix-oxygen";
 import { Link, useLoaderData, type MetaFunction } from "@remix-run/react";
@@ -123,10 +123,15 @@ function Hero({ masthead, assetImages, product }: HeroDataProps) {
 
   let highlightSwitch = heroHeight * scrollPercentage > 470;
 
+  // Calculate which frame to show based on scroll percentage
+  const frameIndex = Math.min(
+    Math.floor(scrollPercentage * 1.5 * assetImages.length),
+    assetImages.length - 1,
+  );
+
   return (
     <div
       className={clsx(
-        // "bg-gradient-to-b from-black to-[#27273B]",
         "bg-linear-[180deg,var(--color-black),#27273B]",
         "relative pt-[116px]",
       )}
@@ -170,16 +175,43 @@ function Hero({ masthead, assetImages, product }: HeroDataProps) {
           </HeroText>
         </h1>
 
-        {/* <Link to={`/products/${product.handle}`} className="absolute top-0">
-        <Image
-          key={assetImages[0].image.id}
-          sizes="100vw"
-          className="h-full w-full scale-60 object-cover object-center"
-          data={assetImages[0].image}
-        />
-      </Link> */}
+        <Link
+          to={`/products/${product.handle}`}
+          className="absolute top-0 h-full w-full translate-y-[-25%] scale-50 transition-transform duration-200 hover:scale-55"
+        >
+          {assetImages.map((asset, index) => (
+            <ProductImage
+              key={asset.image.id}
+              asset={asset}
+              isVisible={frameIndex === index}
+            />
+          ))}
+        </Link>
       </div>
     </div>
+  );
+}
+
+function ProductImage({
+  asset,
+  isVisible,
+}: {
+  asset: HeroDataProps["assetImages"][0];
+  isVisible: boolean;
+}) {
+  const imageRef = useRef<HTMLImageElement>(null);
+
+  return (
+    <Image
+      sizes="100vw"
+      className={clsx(
+        "absolute inset-0 h-full w-full overflow-visible object-cover object-center",
+        isVisible ? "visible" : "hidden",
+      )}
+      data={asset.image}
+      ref={imageRef}
+      loading="eager"
+    />
   );
 }
 
@@ -204,6 +236,7 @@ function HeroText({
 
 /**
  * Simplified hook that calculates what percentage of an element at the top of the page has been scrolled past
+ * Respects prefers-reduced-motion setting
  * @param height - The height of the element (default: 1600)
  * @returns A number between 0 and 1 representing the percentage scrolled past
  */
@@ -211,6 +244,16 @@ function useScrollPercentage(height = 1600) {
   let [scrollPercentage, setScrollPercentage] = useState(0);
 
   useLayoutEffect(() => {
+    // Check if user prefers reduced motion
+    const prefersReducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+
+    // If user prefers reduced motion, don't update scroll percentage
+    if (prefersReducedMotion) {
+      return;
+    }
+
     let rafId: number;
 
     let calculateVisibility = () => {

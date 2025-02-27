@@ -80,7 +80,7 @@ export let HERO_QUERY = `#graphql
         }
       }
       assetImages: field(key: "asset_images") {
-        references(first: 2) {
+        references(first: 100) {
           nodes {
             __typename
             ... on MediaImage {
