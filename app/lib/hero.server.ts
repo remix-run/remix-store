@@ -48,7 +48,10 @@ export async function getHeroData(storefront: Storefront): Promise<HeroData> {
     if (node.__typename !== "MediaImage" || !node.image) {
       throw new Response("Hero asset image not found", { status: 500 });
     }
-    return { image: node.image };
+
+    let url = `${node.image.url}?width=1600&height=900&crop=center`;
+
+    return { image: { ...node.image, url } };
   });
 
   return {

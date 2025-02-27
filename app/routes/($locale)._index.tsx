@@ -1,4 +1,4 @@
-import { useLayoutEffect, useState, useRef } from "react";
+import { useLayoutEffect, useState, useEffect } from "react";
 import type { LoaderFunctionArgs } from "@shopify/remix-oxygen";
 import { data } from "@shopify/remix-oxygen";
 import { Link, useLoaderData, type MetaFunction } from "@remix-run/react";
@@ -8,7 +8,7 @@ import { CollectionGrid } from "~/components/collection-grid";
 import { Button } from "~/components/ui/button";
 import { COLLECTION_QUERY } from "~/lib/queries";
 import { getFilterQueryVariables } from "~/lib/filters/query-variables.server";
-import { Image } from "@shopify/hydrogen";
+import { Image as HydrogenImage } from "@shopify/hydrogen";
 import {
   getLookbookEntries,
   type LookbookEntry as LookbookEntryProps,
@@ -125,7 +125,7 @@ function Hero({ masthead, assetImages, product }: HeroDataProps) {
 
   // Calculate which frame to show based on scroll percentage
   const frameIndex = Math.min(
-    Math.floor(scrollPercentage * 1.5 * assetImages.length),
+    Math.floor(scrollPercentage * 1.7 * assetImages.length),
     assetImages.length - 1,
   );
 
@@ -143,7 +143,7 @@ function Hero({ masthead, assetImages, product }: HeroDataProps) {
           transform: `translateY(${translateY}px)`,
         }}
       >
-        <Image
+        <HydrogenImage
           sizes="86vw"
           className="h-auto max-w-[86%] object-cover object-center"
           data={masthead}
@@ -177,15 +177,12 @@ function Hero({ masthead, assetImages, product }: HeroDataProps) {
 
         <Link
           to={`/products/${product.handle}`}
-          className="absolute top-0 h-full w-full translate-y-[-25%] scale-50 transition-transform duration-200 hover:scale-55"
+          className={clsx(
+            "absolute top-0 h-full w-full transition-transform duration-200 select-none",
+            "-translate-y-1/3 scale-25 hover:scale-30 md:-translate-y-3/10 md:scale-40 md:hover:scale-45 lg:-translate-y-1/6 lg:scale-50 lg:hover:scale-55",
+          )}
         >
-          {assetImages.map((asset, index) => (
-            <ProductImage
-              key={asset.image.id}
-              asset={asset}
-              isVisible={frameIndex === index}
-            />
-          ))}
+          <ProductImage assets={assetImages} frameIndex={frameIndex} />
         </Link>
       </div>
     </div>
@@ -193,24 +190,46 @@ function Hero({ masthead, assetImages, product }: HeroDataProps) {
 }
 
 function ProductImage({
-  asset,
-  isVisible,
+  assets,
+  frameIndex,
 }: {
-  asset: HeroDataProps["assetImages"][0];
-  isVisible: boolean;
+  assets: HeroDataProps["assetImages"];
+  frameIndex: number;
 }) {
-  const imageRef = useRef<HTMLImageElement>(null);
+  let [imagesLoaded, setImagesLoaded] = useState<
+    "idle" | "pending" | "loaded" | "error"
+  >("idle");
+
+  useEffect(() => {
+    if (imagesLoaded !== "idle") return;
+
+    setImagesLoaded("pending");
+    let imagePromises = assets.map((image) => {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve(image.image.url);
+        img.onerror = () => reject(image.image.url);
+        img.src = image.image.url;
+      });
+    });
+
+    Promise.all(imagePromises)
+      .then(() => setImagesLoaded("loaded"))
+      .catch(() => setImagesLoaded("error"));
+  }, [assets, imagesLoaded]);
+
+  let image = assets[frameIndex].image;
+
+  console.log({ imagesLoaded });
 
   return (
-    <Image
-      sizes="100vw"
-      className={clsx(
-        "absolute inset-0 h-full w-full overflow-visible object-cover object-center",
-        isVisible ? "visible" : "hidden",
-      )}
-      data={asset.image}
-      ref={imageRef}
-      loading="eager"
+    // TODO: try removing h-full and w-full
+    <img
+      className="relative inset-0 h-full w-full object-cover object-center"
+      // width={image.width ?? undefined}
+      // height={image.height ?? undefined}
+      src={image.url}
+      alt=""
     />
   );
 }
@@ -291,9 +310,9 @@ function useScrollPercentage(height = 1600) {
 
 function LookbookEntry({ image, product }: LookbookEntryProps) {
   return (
-    <div className="relative h-[1400px]">
+    <div className="relative h-[90vh]">
       <div className="absolute inset-0">
-        <Image
+        <HydrogenImage
           sizes="100vw"
           className="h-full w-full object-cover object-center"
           data={image}
@@ -330,7 +349,11 @@ function LoadRunner() {
   return (
     <div className="flex h-[800px] items-center justify-center gap-4 bg-[#1E1EC4]">
       <div className="w-[65%]">
-        <Image className="h-full w-full" sizes="65vw" data={loadRunnerImage} />
+        <HydrogenImage
+          className="h-full w-full"
+          sizes="65vw"
+          data={loadRunnerImage}
+        />
       </div>
     </div>
   );
