@@ -131,7 +131,7 @@ function Hero({ masthead, assetImages, product }: HeroDataProps) {
       <div
         style={{
           height: `${heroHeight}px`,
-          transform: `translateY(${translateY}px)`,
+          transform: `translate3d(0, ${translateY}px, 0)`,
         }}
       >
         <HydrogenImage
@@ -221,13 +221,13 @@ let RotatingProduct = memo(
     return (
       <Link
         to={`/products/${product.handle}`}
-        className="absolute top-0 flex w-full translate-y-10 scale-120 items-center justify-center transition-transform duration-200 select-none hover:scale-125 md:translate-y-18 lg:scale-100 lg:hover:scale-105 xl:scale-90 xl:hover:scale-95 2xl:translate-y-24 2xl:scale-80 2xl:hover:scale-85"
+        className="absolute top-0 w-full translate-y-10 scale-120 transition-transform duration-200 select-none hover:scale-125 md:translate-y-18 lg:scale-100 lg:hover:scale-105 xl:scale-90 xl:hover:scale-95 2xl:translate-y-24 2xl:scale-80 2xl:hover:scale-85"
       >
         <span className="sr-only">{product.title}</span>
         {assetImages.map((asset, index) => (
           <img
             key={asset.image.url}
-            className="absolute inset-0 object-cover object-center"
+            className="absolute inset-0 mx-auto object-cover object-center"
             src={asset.image.url}
             alt=""
             aria-disabled={"true"}
