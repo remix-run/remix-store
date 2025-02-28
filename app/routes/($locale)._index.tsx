@@ -118,7 +118,7 @@ function Hero({ masthead, assetImages, product }: HeroDataProps) {
   let translateY = Math.floor(heroHeight * scrollPercentage * 0.5);
   let opacity = Math.max(0, 1 - scrollPercentage * 4);
 
-  let highlightSwitch = heroHeight * scrollPercentage > 470;
+  let highlightSwitch = scrollPercentage > 0.6;
 
   // Calculate which frame to show based on scroll percentage
   let frameIndex = Math.min(
