@@ -1,4 +1,4 @@
-import { useLayoutEffect, useState, useEffect, useCallback, memo } from "react";
+import { useState, useEffect, memo } from "react";
 import type { LoaderFunctionArgs } from "@shopify/remix-oxygen";
 import { data } from "@shopify/remix-oxygen";
 import { Link, useLoaderData, type MetaFunction } from "@remix-run/react";
@@ -18,6 +18,7 @@ import Icon from "~/components/icon";
 import type { IconName } from "~/components/icon/types.generated";
 import { clsx } from "clsx";
 import { usePrefersReducedMotion } from "~/lib/hooks";
+import { useLayoutEffect } from "~/lib/use-layout-effect";
 export let FEATURED_COLLECTION_HANDLE = "remix-logo-apparel";
 
 export let meta: MetaFunction = () => {
@@ -315,7 +316,12 @@ function LookbookEntry({ image, product }: LookbookEntryProps) {
       <div className="absolute inset-0">
         <HydrogenImage
           sizes="100vw"
-          className="h-full w-full object-cover object-center"
+          className="h-full w-full object-cover"
+          style={{
+            objectPosition: image.focalPoint
+              ? `${100 * image.focalPoint.x}% ${100 * image.focalPoint.y}%`
+              : "center",
+          }}
           data={image}
         />
       </div>

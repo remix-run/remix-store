@@ -2,7 +2,7 @@
  * A collection of custom hooks, they can get moved out if it becomes unwieldy
  */
 
-import { useLayoutEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 function getMediaQuery() {
   if (typeof window === "undefined") return undefined;
@@ -14,7 +14,7 @@ export function usePrefersReducedMotion() {
     Boolean(getMediaQuery()?.matches),
   );
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     // Set initial value
     let mediaQuery = getMediaQuery();
     if (!mediaQuery) return;

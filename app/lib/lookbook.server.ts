@@ -4,7 +4,7 @@ import type { MoneyV2 } from "@shopify/hydrogen/customer-account-api-types";
 import { PRODUCT_IMAGE_FRAGMENT } from "./fragments";
 
 export type LookbookEntry = {
-  image: ProductImageFragment;
+  image: ProductImageFragment & { focalPoint?: { x: number; y: number } };
   product?: {
     handle: string;
     price: MoneyV2;
@@ -40,8 +40,13 @@ export async function getLookbookEntries(
         (field) => field.reference?.__typename === "Product",
       )?.reference;
 
+      let focalPoint = getFocalPoint(lookbookImage.presentation?.asJson);
+
       return {
-        image: lookbookImage.image,
+        image: {
+          ...lookbookImage.image,
+          focalPoint,
+        },
         ...(product?.__typename === "Product" && {
           product: {
             handle: product.handle,
@@ -50,6 +55,36 @@ export async function getLookbookEntries(
         }),
       };
     });
+}
+
+function getFocalPoint(
+  presentation: unknown,
+): { x: number; y: number } | undefined {
+  if (typeof presentation !== "object" || presentation === null) {
+    return undefined;
+  }
+
+  if (!("focalPoint" in presentation)) {
+    return undefined;
+  }
+
+  const focalPoint = presentation.focalPoint;
+  if (typeof focalPoint !== "object" || focalPoint === null) {
+    return undefined;
+  }
+
+  if (!("x" in focalPoint) || !("y" in focalPoint)) {
+    return undefined;
+  }
+
+  const x = Number(focalPoint.x);
+  const y = Number(focalPoint.y);
+
+  if (isNaN(x) || isNaN(y)) {
+    return undefined;
+  }
+
+  return { x, y };
 }
 
 export let LOOKBOOK_QUERY = `#graphql
@@ -68,6 +103,10 @@ export let LOOKBOOK_QUERY = `#graphql
             ... on MediaImage {
               id
               alt
+              presentation {
+                id
+                asJson(format: IMAGE)
+              }
               image {
                 ...ProductImage
               }
