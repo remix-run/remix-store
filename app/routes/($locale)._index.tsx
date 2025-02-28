@@ -1,4 +1,4 @@
-import { useLayoutEffect, useState, useEffect } from "react";
+import { useLayoutEffect, useState, useEffect, useCallback, memo } from "react";
 import type { LoaderFunctionArgs } from "@shopify/remix-oxygen";
 import { data } from "@shopify/remix-oxygen";
 import { Link, useLoaderData, type MetaFunction } from "@remix-run/react";
@@ -17,6 +17,7 @@ import { getHeroData, type HeroData as HeroDataProps } from "~/lib/hero.server";
 import Icon from "~/components/icon";
 import type { IconName } from "~/components/icon/types.generated";
 import { clsx } from "clsx";
+import { usePrefersReducedMotion } from "~/lib/hooks";
 export let FEATURED_COLLECTION_HANDLE = "remix-logo-apparel";
 
 export let meta: MetaFunction = () => {
@@ -109,33 +110,24 @@ export default function Homepage() {
   );
 }
 
-// TODO:
-// - Add hoodie scale effect
-// - Add hoodie image cycling effect
-
 let heroHeight = 1600;
 
 function Hero({ masthead, assetImages, product }: HeroDataProps) {
   let scrollPercentage = useScrollPercentage(heroHeight);
 
-  let translateY = heroHeight * scrollPercentage * 0.5;
+  let translateY = Math.floor(heroHeight * scrollPercentage * 0.5);
   let opacity = Math.max(0, 1 - scrollPercentage * 8);
 
   let highlightSwitch = heroHeight * scrollPercentage > 470;
 
   // Calculate which frame to show based on scroll percentage
-  const frameIndex = Math.min(
-    Math.floor(scrollPercentage * 1.7 * assetImages.length),
+  let frameIndex = Math.min(
+    Math.floor(scrollPercentage * 1.5 * assetImages.length),
     assetImages.length - 1,
   );
 
   return (
-    <div
-      className={clsx(
-        "bg-linear-[180deg,var(--color-black),#27273B]",
-        "relative pt-[116px]",
-      )}
-    >
+    <div className="relative overflow-hidden bg-linear-[180deg,var(--color-black),#27273B] pt-[116px]">
       <div
         className="flex flex-col items-center gap-[200px]"
         style={{
@@ -175,64 +167,80 @@ function Hero({ masthead, assetImages, product }: HeroDataProps) {
           </HeroText>
         </h1>
 
-        <Link
+        <RotatingProduct
           to={`/products/${product.handle}`}
-          className={clsx(
-            "absolute top-0 h-full w-full transition-transform duration-200 select-none",
-            "-translate-y-1/3 scale-25 hover:scale-30 md:-translate-y-3/10 md:scale-40 md:hover:scale-45 lg:-translate-y-1/6 lg:scale-50 lg:hover:scale-55",
-          )}
-        >
-          <ProductImage assets={assetImages} frameIndex={frameIndex} />
-        </Link>
+          assets={assetImages}
+          frameIndex={frameIndex}
+        />
       </div>
     </div>
   );
 }
 
-function ProductImage({
-  assets,
-  frameIndex,
-}: {
+type RotatingProductProps = {
+  to: string;
   assets: HeroDataProps["assetImages"];
   frameIndex: number;
-}) {
-  let [imagesLoaded, setImagesLoaded] = useState<
-    "idle" | "pending" | "loaded" | "error"
-  >("idle");
+};
 
-  useEffect(() => {
-    if (imagesLoaded !== "idle") return;
+type LoadingState = "idle" | "pending" | "loaded" | "error";
 
-    setImagesLoaded("pending");
-    let imagePromises = assets.map((image) => {
-      return new Promise((resolve, reject) => {
-        const img = new Image();
-        img.onload = () => resolve(image.image.url);
-        img.onerror = () => reject(image.image.url);
-        img.src = image.image.url;
+let RotatingProduct = memo(
+  ({ to, assets, frameIndex }: RotatingProductProps) => {
+    let [imagesLoaded, setImagesLoaded] = useState<LoadingState>("idle");
+    let prefersReducedMotion = usePrefersReducedMotion();
+
+    // If the images haven't finished loading, just show the first frame
+    if (prefersReducedMotion || imagesLoaded !== "loaded") {
+      frameIndex = 0;
+    }
+
+    useEffect(() => {
+      if (prefersReducedMotion) return;
+
+      if (imagesLoaded !== "idle") return;
+
+      setImagesLoaded("pending");
+
+      // Preload all images -- fire and forget
+      // we probably could handle canceling loading if the user navigates
+      // however they are probably going to see the home page eventually, even
+      // if they navigate away quickly, so probably still worth loading the all
+      // the images
+      let imagePromises = assets.map((asset) => {
+        return new Promise((resolve, reject) => {
+          let img = new Image();
+          img.addEventListener("load", () => resolve(img.src), { once: true });
+          img.addEventListener("error", () => reject(img.src), { once: true });
+          img.src = asset.image.url;
+        });
       });
-    });
 
-    Promise.all(imagePromises)
-      .then(() => setImagesLoaded("loaded"))
-      .catch(() => setImagesLoaded("error"));
-  }, [assets, imagesLoaded]);
+      Promise.all(imagePromises)
+        .then(() => setImagesLoaded("loaded"))
+        .catch(() => setImagesLoaded("error"));
+    }, [assets, imagesLoaded, prefersReducedMotion]);
 
-  let image = assets[frameIndex].image;
-
-  console.log({ imagesLoaded });
-
-  return (
-    // TODO: try removing h-full and w-full
-    <img
-      className="relative inset-0 h-full w-full object-cover object-center"
-      // width={image.width ?? undefined}
-      // height={image.height ?? undefined}
-      src={image.url}
-      alt=""
-    />
-  );
-}
+    return (
+      <Link
+        to={to}
+        className="absolute top-0 flex w-full translate-y-10 scale-120 items-center justify-center transition-transform duration-200 select-none hover:scale-125 md:translate-y-18 lg:scale-100 lg:hover:scale-105 xl:scale-90 xl:hover:scale-95 2xl:translate-y-24 2xl:scale-80 2xl:hover:scale-85"
+      >
+        {assets.map((asset, index) => (
+          <img
+            key={asset.image.url}
+            className="absolute inset-0 object-cover object-center"
+            src={asset.image.url}
+            alt=""
+            style={{
+              visibility: index === frameIndex ? "visible" : "hidden",
+            }}
+          />
+        ))}
+      </Link>
+    );
+  },
+);
 
 function HeroText({
   children,
@@ -261,17 +269,11 @@ function HeroText({
  */
 function useScrollPercentage(height = 1600) {
   let [scrollPercentage, setScrollPercentage] = useState(0);
+  let prefersReducedMotion = usePrefersReducedMotion();
 
   useLayoutEffect(() => {
-    // Check if user prefers reduced motion
-    const prefersReducedMotion = window.matchMedia(
-      "(prefers-reduced-motion: reduce)",
-    ).matches;
-
     // If user prefers reduced motion, don't update scroll percentage
-    if (prefersReducedMotion) {
-      return;
-    }
+    if (prefersReducedMotion) return;
 
     let rafId: number;
 
@@ -303,7 +305,7 @@ function useScrollPercentage(height = 1600) {
       window.removeEventListener("resize", calculateVisibility);
       cancelAnimationFrame(rafId);
     };
-  }, [height]);
+  }, [height, prefersReducedMotion]);
 
   return scrollPercentage;
 }
