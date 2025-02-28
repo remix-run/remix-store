@@ -9,6 +9,7 @@ export type HeroData = {
   }>;
   product: {
     handle: string;
+    title: string;
   };
 };
 
@@ -59,6 +60,7 @@ export async function getHeroData(storefront: Storefront): Promise<HeroData> {
     assetImages,
     product: {
       handle: product.handle,
+      title: product.title,
     },
   };
 }
@@ -101,6 +103,7 @@ export let HERO_QUERY = `#graphql
           __typename
           ... on Product {
             handle
+            title
           }
         }
       }

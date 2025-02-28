@@ -116,7 +116,7 @@ function Hero({ masthead, assetImages, product }: HeroDataProps) {
   let scrollPercentage = useScrollPercentage(heroHeight);
 
   let translateY = Math.floor(heroHeight * scrollPercentage * 0.5);
-  let opacity = Math.max(0, 1 - scrollPercentage * 8);
+  let opacity = Math.max(0, 1 - scrollPercentage * 4);
 
   let highlightSwitch = heroHeight * scrollPercentage > 470;
 
@@ -129,7 +129,6 @@ function Hero({ masthead, assetImages, product }: HeroDataProps) {
   return (
     <div className="relative overflow-hidden bg-linear-[180deg,var(--color-black),#27273B] pt-[116px]">
       <div
-        className="flex flex-col items-center gap-[200px]"
         style={{
           height: `${heroHeight}px`,
           transform: `translateY(${translateY}px)`,
@@ -137,7 +136,7 @@ function Hero({ masthead, assetImages, product }: HeroDataProps) {
       >
         <HydrogenImage
           sizes="86vw"
-          className="h-auto max-w-[86%] object-cover object-center"
+          className="mx-auto h-auto max-w-[86%] object-cover object-center"
           data={masthead}
           style={{
             opacity,
@@ -145,7 +144,7 @@ function Hero({ masthead, assetImages, product }: HeroDataProps) {
         />
 
         {/* TODO: add better mobile support */}
-        <h1 className="flex max-h-min w-full flex-nowrap items-start justify-center gap-[140px] text-8xl font-extrabold text-white">
+        <h1 className="mt-48 flex max-h-min w-full flex-nowrap items-start justify-between px-4 text-2xl font-extrabold text-white sm:px-9 sm:text-4xl md:mt-[300px] md:justify-center md:gap-52 md:text-5xl lg:text-7xl xl:text-8xl">
           <span className="sr-only">Remix</span>
           <HeroText highlight={!highlightSwitch}>
             software
@@ -157,7 +156,7 @@ function Hero({ masthead, assetImages, product }: HeroDataProps) {
             websites
           </HeroText>
           <HeroText highlight={highlightSwitch}>
-            softwear
+            soft wear
             <br />
             for
             <br />
@@ -168,8 +167,8 @@ function Hero({ masthead, assetImages, product }: HeroDataProps) {
         </h1>
 
         <RotatingProduct
-          to={`/products/${product.handle}`}
-          assets={assetImages}
+          product={product}
+          assetImages={assetImages}
           frameIndex={frameIndex}
         />
       </div>
@@ -177,16 +176,14 @@ function Hero({ masthead, assetImages, product }: HeroDataProps) {
   );
 }
 
-type RotatingProductProps = {
-  to: string;
-  assets: HeroDataProps["assetImages"];
+type RotatingProductProps = Pick<HeroDataProps, "product" | "assetImages"> & {
   frameIndex: number;
 };
 
 type LoadingState = "idle" | "pending" | "loaded" | "error";
 
 let RotatingProduct = memo(
-  ({ to, assets, frameIndex }: RotatingProductProps) => {
+  ({ product, assetImages, frameIndex }: RotatingProductProps) => {
     let [imagesLoaded, setImagesLoaded] = useState<LoadingState>("idle");
     let prefersReducedMotion = usePrefersReducedMotion();
 
@@ -207,7 +204,7 @@ let RotatingProduct = memo(
       // however they are probably going to see the home page eventually, even
       // if they navigate away quickly, so probably still worth loading the all
       // the images
-      let imagePromises = assets.map((asset) => {
+      let imagePromises = assetImages.map((asset) => {
         return new Promise((resolve, reject) => {
           let img = new Image();
           img.addEventListener("load", () => resolve(img.src), { once: true });
@@ -219,19 +216,21 @@ let RotatingProduct = memo(
       Promise.all(imagePromises)
         .then(() => setImagesLoaded("loaded"))
         .catch(() => setImagesLoaded("error"));
-    }, [assets, imagesLoaded, prefersReducedMotion]);
+    }, [assetImages, imagesLoaded, prefersReducedMotion]);
 
     return (
       <Link
-        to={to}
+        to={`/products/${product.handle}`}
         className="absolute top-0 flex w-full translate-y-10 scale-120 items-center justify-center transition-transform duration-200 select-none hover:scale-125 md:translate-y-18 lg:scale-100 lg:hover:scale-105 xl:scale-90 xl:hover:scale-95 2xl:translate-y-24 2xl:scale-80 2xl:hover:scale-85"
       >
-        {assets.map((asset, index) => (
+        <span className="sr-only">{product.title}</span>
+        {assetImages.map((asset, index) => (
           <img
             key={asset.image.url}
             className="absolute inset-0 object-cover object-center"
             src={asset.image.url}
             alt=""
+            aria-disabled={"true"}
             style={{
               visibility: index === frameIndex ? "visible" : "hidden",
             }}
