@@ -8,24 +8,24 @@ import type { IconName } from "~/components/icon/types.generated";
 let iconVariants = cva("size-8", {
   variants: {
     animate: {
-      true: "icon-animation max-w-0 scale-75 opacity-0 group-hover:max-w-[32px] group-hover:scale-100 group-hover:opacity-100",
+      true: "icon-animation max-w-0 scale-75 opacity-0 group-hover:max-w-[32px] group-focus:max-w-[32px] group-hover:scale-100 group-focus:scale-100 group-hover:opacity-100 group-focus:opacity-100 ",
       false: "max-w-[32px] scale-100 opacity-100",
     },
     position: {
-      left: "-ml-2.5",
-      right: "-mr-2.5",
+      left: "",
+      right: "",
     },
   },
   compoundVariants: [
     {
       animate: true,
       position: "left",
-      className: "group-hover:ml-0",
+      className: "-ml-2.5 group-hover:ml-0 group-focus:ml-0",
     },
     {
       animate: true,
       position: "right",
-      className: "group-hover:mr-0",
+      className: "-mr-2.5 group-hover:mr-0 group-focus:mr-0",
     },
   ],
   defaultVariants: {
@@ -100,7 +100,8 @@ export function AnimatedLink({
     text = (
       <span className="flex gap-1">
         <span>{children}</span>
-        <span className="max-w-0 overflow-hidden whitespace-nowrap transition-all duration-300 ease-in-out group-hover:max-w-xs">
+        {/* the max width is pretty arbitrary estimate */}
+        <span className="max-w-0 overflow-hidden whitespace-nowrap transition-all duration-300 ease-in-out group-hover:max-w-[10ch] group-focus:max-w-[10ch]">
           {expandedText}
         </span>
       </span>

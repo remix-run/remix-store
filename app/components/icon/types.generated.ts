@@ -6,6 +6,10 @@ export const iconNames = [
   "tag",
   "sun",
   "shop-pay",
+  "remix-r-white",
+  "remix-r-blue",
+  "remix-logo-full",
+  "remix-logo-emix",
   "plus",
   "moon",
   "minus",
@@ -21,6 +25,7 @@ export const iconNames = [
   "chevron-left",
   "chevron-down",
   "check",
+  "cart",
   "bag",
 ] as const
 

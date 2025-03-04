@@ -180,15 +180,10 @@ export function Layout({ children }: { children?: React.ReactNode }) {
             consent={data.consent}
           >
             <AsideProvider>
+              {data.header.menu && (
+                <Header menu={data.header.menu} cart={data.cart} />
+              )}
               <main>{children}</main>
-              {/* {data.header.menu && (
-                <Header
-                  className="px-[var(--main-padding)]"
-                  menu={data.header.menu}
-                  cart={data.cart}
-                />
-              )} */}
-              {/* <main className="px-[var(--main-padding)]">{children}</main> */}
               {/* <Footer
                 className="px-[var(--main-padding)]"
                 footer={data.footer}

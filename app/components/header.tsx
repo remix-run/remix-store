@@ -1,5 +1,5 @@
 import type { NavLinkProps } from "@remix-run/react";
-import { NavLink } from "@remix-run/react";
+import { Link, NavLink } from "@remix-run/react";
 import { type CartViewPayload, useAnalytics } from "@shopify/hydrogen";
 import type {
   HeaderQuery,
@@ -23,29 +23,73 @@ import {
 } from "~/components/ui/aside";
 import { CartMain } from "~/components/cart";
 import { clsx } from "clsx";
+import { AnimatedLink } from "~/components/ui/animated-link";
 
 interface HeaderProps {
   menu: NonNullable<HeaderQuery["menu"]>;
   cart: CartApiQueryFragment | null;
-  className?: string;
 }
 
-export function Header({ menu, cart, className }: HeaderProps) {
+export function Header({ menu, cart }: HeaderProps) {
   return (
-    <header
-      className={clsx(
-        "sticky top-0 z-10 mx-auto flex h-[var(--header-height)] items-center justify-between bg-neutral-200 dark:bg-neutral-800",
-        className,
-      )}
-    >
-      <HeaderMenu menu={menu} />
-      <NavLink prefetch="intent" to="/" className="mx-4 text-center" end>
-        <TitleLogo />
-      </NavLink>
-      <HeaderCartActions cart={cart} />
+    <header className="fixed top-0 z-10 grid w-full grid-cols-3 items-center p-9">
+      <Link to="/" className="flex justify-start">
+        <span className="sr-only">Home</span>
+        <Icon
+          name="remix-logo-full"
+          className="h-9 w-[140px]"
+          aria-hidden="true"
+        />
+      </Link>
+      <nav className="flex justify-center">
+        <ul className="flex flex-nowrap gap-9">
+          {[
+            { title: "Accessories", url: "/collections/accessories" },
+            { title: "Apparel", url: "/collections/apparel" },
+            { title: "Home & Office", url: "/collections/home-office" },
+          ].map((item) => (
+            <li key={item.url}>
+              <NavLink
+                className="hover:text-blue-brand text-base leading-tight font-semibold text-white no-underline"
+                to={item.url}
+              >
+                {item.title}
+              </NavLink>
+            </li>
+          ))}
+        </ul>
+      </nav>
+
+      <div className="flex justify-end">
+        <AnimatedLink
+          to="/collections/all"
+          iconName="cart"
+          animationType="text"
+          expandedText="All"
+        >
+          Shop
+        </AnimatedLink>
+      </div>
     </header>
   );
 }
+
+// export function Header({ menu, cart, className }: HeaderProps) {
+//   return (
+//     <header
+//       className={clsx(
+//         "sticky top-0 z-10 mx-auto flex h-[var(--header-height)] items-center justify-between bg-neutral-200 dark:bg-neutral-800",
+//         className,
+//       )}
+//     >
+//       <HeaderMenu menu={menu} />
+//       <NavLink prefetch="intent" to="/" className="mx-4 text-center" end>
+//         <TitleLogo />
+//       </NavLink>
+//       <HeaderCartActions cart={cart} />
+//     </header>
+//   );
+// }
 
 type HeaderMenuProps = Pick<HeaderProps, "menu">;
 
