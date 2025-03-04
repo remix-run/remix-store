@@ -85,6 +85,8 @@
 
   --tracking-tightest: -1.92px;
 
+  --ease-snap: cubic-bezier(0.13, 0.74, 0.41, 0.92);
+
   --animate-accordion-down: accordion-down 0.2s ease-out;
   --animate-accordion-up: accordion-up 0.2s ease-out;
   --animate-blink: blink 1s step-end infinite;
@@ -282,21 +284,24 @@
 }
 
 @utility icon-animation {
-  --icon-duration: 200ms;
-  --icon-delay: 150ms;
-  --icon-timing: cubic-bezier(0.13, 0.74, 0.41, 0.92);
+  --animated-link-duration: 200ms;
+  --animated-link-delay: 150ms;
 
   transition:
-    max-width var(--icon-duration) var(--icon-timing) var(--icon-delay),
-    margin var(--icon-duration) var(--icon-timing) var(--icon-delay),
-    scale var(--icon-duration) var(--icon-timing),
-    opacity var(--icon-duration) var(--icon-timing);
+    max-width var(--animated-link-duration) var(--ease-snap)
+      var(--animated-link-delay),
+    margin var(--animated-link-duration) var(--ease-snap)
+      var(--animated-link-delay),
+    scale var(--animated-link-duration) var(--ease-snap),
+    opacity var(--animated-link-duration) var(--ease-snap);
 
   @variant group-hover {
     transition:
-      max-width var(--icon-duration) var(--icon-timing),
-      margin var(--icon-duration) var(--icon-timing),
-      scale var(--icon-duration) var(--icon-timing) var(--icon-delay),
-      opacity var(--icon-duration) var(--icon-timing) var(--icon-delay);
+      max-width var(--animated-link-duration) var(--ease-snap),
+      margin var(--animated-link-duration) var(--ease-snap),
+      scale var(--animated-link-duration) var(--ease-snap)
+        var(--animated-link-delay),
+      opacity var(--animated-link-duration) var(--ease-snap)
+        var(--animated-link-delay);
   }
 }
