@@ -8,7 +8,6 @@ import type {
 } from "storefrontapi.generated";
 import { ThemeToggle } from "~/components/theme-toggle";
 import Icon from "~/components/icon";
-import { TitleLogo } from "~/components/title-logo";
 import { Button, ButtonWithWellText } from "~/components/ui/button";
 import { useRelativeUrl } from "~/lib/use-relative-url";
 import { useHydrated } from "~/lib/use-hydrated";
@@ -36,40 +35,55 @@ export function Header({ menu, cart }: HeaderProps) {
     <header className="fixed top-0 z-10 grid w-full grid-cols-3 items-center p-9">
       <Link to="/" className="flex justify-start">
         <span className="sr-only">Home</span>
-        {/* <Icon name="remix-logo-full" aria-hidden="true" /> */}
 
         <RemixLogo />
       </Link>
       <nav className="flex justify-center">
         <ul className="flex flex-nowrap gap-9">
-          {[
-            { title: "Accessories", url: "/collections/accessories" },
-            { title: "Apparel", url: "/collections/apparel" },
-            { title: "Home & Office", url: "/collections/home-office" },
-          ].map((item) => (
-            <li key={item.url}>
-              <NavLink
-                className="hover:text-blue-brand text-base leading-tight font-semibold text-white no-underline"
-                to={item.url}
-              >
-                {item.title}
-              </NavLink>
-            </li>
-          ))}
+          {menu.items.map((item) => {
+            if (!item.url) return null;
+            return (
+              <li key={item.url}>
+                <HeaderMenuLink title={item.title} url={item.url} />
+              </li>
+            );
+          })}
         </ul>
       </nav>
 
-      <div className="flex justify-end">
+      <CartLink cart={cart} />
+    </header>
+  );
+}
+
+function CartLink({ cart }: Pick<HeaderProps, "cart">) {
+  let totalQuantity = cart?.totalQuantity || 0;
+
+  return (
+    <div className="flex justify-end">
+      {totalQuantity > 0 ? (
+        <AnimatedLink
+          to="cart"
+          iconName="cart"
+          animationType="text"
+          expandedText={`Item${totalQuantity > 1 ? "s" : ""}`}
+          className="bg-blue-brand text-white"
+        >
+          {totalQuantity}
+          <span className="sr-only">in cart</span>
+        </AnimatedLink>
+      ) : (
         <AnimatedLink
           to="/collections/all"
           iconName="cart"
           animationType="text"
           expandedText="All"
+          className={clsx({ "bg-blue-brand text-white": totalQuantity > 0 })}
         >
           Shop
         </AnimatedLink>
-      </div>
-    </header>
+      )}
+    </div>
   );
 }
 
@@ -151,23 +165,6 @@ function RemixLogo() {
   );
 }
 
-// export function Header({ menu, cart, className }: HeaderProps) {
-//   return (
-//     <header
-//       className={clsx(
-//         "sticky top-0 z-10 mx-auto flex h-[var(--header-height)] items-center justify-between bg-neutral-200 dark:bg-neutral-800",
-//         className,
-//       )}
-//     >
-//       <HeaderMenu menu={menu} />
-//       <NavLink prefetch="intent" to="/" className="mx-4 text-center" end>
-//         <TitleLogo />
-//       </NavLink>
-//       <HeaderCartActions cart={cart} />
-//     </header>
-//   );
-// }
-
 type HeaderMenuProps = Pick<HeaderProps, "menu">;
 
 function HeaderMenu({ menu }: HeaderMenuProps) {
@@ -195,34 +192,15 @@ type HeaderMenuLinkProps = {
   onClick?: NavLinkProps["onClick"];
 };
 function HeaderMenuLink(props: HeaderMenuLinkProps) {
-  const { url } = useRelativeUrl(props.url);
-
-  // Not my favorite, honestly might be better to just hardcode this data
-  // and not get it as data from Shopify
-  let size;
-  let contents;
-  if (props.title.toLowerCase().startsWith("info")) {
-    contents = (
-      <Icon name="info" aria-label={props.title} className="text-inherit" />
-    );
-    size = "icon" as const;
-  } else {
-    size = "sm" as const;
-    contents = props.title.split(" ")[0];
-  }
+  let { url } = useRelativeUrl(props.url);
 
   return (
-    <Button asChild size={size}>
-      <NavLink
-        className="cursor-pointer uppercase"
-        end
-        onClick={props.onClick}
-        prefetch="intent"
-        to={url}
-      >
-        {contents}
-      </NavLink>
-    </Button>
+    <NavLink
+      className="hover:text-blue-brand text-base leading-tight font-semibold text-white no-underline"
+      to={url}
+    >
+      {props.title}
+    </NavLink>
   );
 }
 

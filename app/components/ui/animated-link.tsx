@@ -89,6 +89,7 @@ export function AnimatedLink({
           animate: animationType === "both" || animationType === "icon",
           position: iconPosition,
         })}
+        fill="currentColor"
         aria-hidden="true"
       />
     );
