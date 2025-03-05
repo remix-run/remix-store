@@ -184,10 +184,7 @@ export function Layout({ children }: { children?: React.ReactNode }) {
                 <Header menu={data.header.menu} cart={data.cart} />
               )}
               <main>{children}</main>
-              {/* <Footer
-                className="px-[var(--main-padding)]"
-                footer={data.footer}
-              /> */}
+              <Footer footer={data.footer} />
             </AsideProvider>
           </Analytics.Provider>
         ) : (

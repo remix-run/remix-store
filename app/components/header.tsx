@@ -34,9 +34,8 @@ interface HeaderProps {
 export function Header({ menu, cart }: HeaderProps) {
   return (
     <header className="fixed top-0 z-10 grid w-full grid-cols-3 items-center p-9">
-      <Link to="/" className="flex justify-start">
+      <Link to="/" className="flex max-w-fit justify-start">
         <span className="sr-only">Home</span>
-
         <RemixLogo animateOnScroll />
       </Link>
       <nav className="flex justify-center">
@@ -119,7 +118,7 @@ function HeaderMenuLink(props: HeaderMenuLinkProps) {
 
   return (
     <NavLink
-      className="hover:text-blue-brand text-base leading-tight font-semibold text-white no-underline"
+      className="text-base leading-tight font-semibold text-white no-underline hover:font-bold hover:text-white"
       to={url}
     >
       {props.title}
