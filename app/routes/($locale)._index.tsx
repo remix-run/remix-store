@@ -312,7 +312,7 @@ function useScrollPercentage(height = 1600) {
 
 function LookbookEntry({ image, product }: LookbookEntryProps) {
   return (
-    <div className="relative h-[1400px]">
+    <div className="relative h-[90vh]">
       <div className="absolute inset-0">
         <HydrogenImage
           sizes="100vw"
