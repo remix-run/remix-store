@@ -75,12 +75,25 @@ export function links() {
       href,
       crossOrigin: "anonymous",
     })),
-    ...[16, 32, 96, 128, 196].map((size) => ({
+    {
       rel: "icon",
-      type: "image/png",
-      href: `/favicon-${size}x${size}.png`,
-      sizes: `${size}x${size}`,
-    })),
+      type: "image/svg+xml",
+      href: "/favicon.svg",
+      media: "(prefers-color-scheme: light)",
+    },
+    {
+      rel: "icon",
+      type: "image/svg+xml",
+      href: "/favicon-dark.svg",
+      media: "(prefers-color-scheme: dark)",
+    },
+    { rel: "shortcut icon", type: "image/x-icon", href: "/favicon.ico" },
+    {
+      rel: "shortcut icon",
+      type: "image/x-icon",
+      href: "/favicon-dark.ico",
+      media: "(prefers-color-scheme: dark)",
+    },
   ];
 }
 
