@@ -1,5 +1,5 @@
 import { useState, useEffect, memo } from "react";
-import type { LoaderFunctionArgs } from "@shopify/remix-oxygen";
+import type { LoaderFunctionArgs, MetaArgs } from "@shopify/remix-oxygen";
 import { data } from "@shopify/remix-oxygen";
 import { Link, useLoaderData, type MetaFunction } from "@remix-run/react";
 import { FiltersAside, FiltersToolbar } from "~/components/filters";
@@ -19,11 +19,20 @@ import { clsx } from "clsx";
 import { usePrefersReducedMotion } from "~/lib/hooks";
 import { useLayoutEffect } from "~/lib/use-layout-effect";
 import { AnimatedLink } from "~/components/ui/animated-link";
+import { generateMeta } from "~/lib/meta";
+import type { RootLoader } from "~/root";
 export let FEATURED_COLLECTION_HANDLE = "remix-logo-apparel";
 
-export let meta: MetaFunction = () => {
-  return [{ title: "The Remix Store | Home" }];
-};
+export function meta({
+  data,
+  matches,
+}: MetaArgs<typeof loader, { root: RootLoader }>) {
+  const { siteUrl } = matches[0].data;
+  return generateMeta({
+    title: "The Remix Store | Home",
+    url: siteUrl,
+  });
+}
 
 export async function loader({ request, context }: LoaderFunctionArgs) {
   let { storefront } = context;
@@ -74,22 +83,6 @@ export default function Homepage() {
 
   return (
     <>
-      {/* {featuredCollection ? (
-        <Hero
-          video={
-            featuredCollection.video?.reference?.__typename === "Video"
-              ? featuredCollection.video?.reference
-              : undefined
-          }
-          image={featuredCollection.image}
-          title={featuredCollection.title}
-          subtitle={featuredCollection.featuredDescription?.value}
-          href={{
-            text: "shop collection",
-            to: `/collections/${featuredCollection.handle}`,
-          }}
-        />
-      ) : null} */}
       <Hero {...hero} />
       {firstEntry && (
         <LookbookEntry key={firstEntry.image.id} {...firstEntry} />

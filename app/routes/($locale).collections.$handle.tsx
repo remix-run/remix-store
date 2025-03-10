@@ -1,24 +1,39 @@
 import { Suspense } from "react";
 import { data, redirect, type LoaderFunctionArgs } from "@shopify/remix-oxygen";
-import { Await, useLoaderData, type MetaFunction } from "@remix-run/react";
+import { Await, useLoaderData, type MetaArgs } from "@remix-run/react";
 import { Analytics } from "@shopify/hydrogen";
 import { CollectionGrid } from "~/components/collection-grid";
 import { FiltersAside, FiltersToolbar } from "~/components/filters";
 
 import { COLLECTION_QUERY } from "~/lib/queries";
 import { getFilterQueryVariables } from "~/lib/filters/query-variables.server";
+import { generateMeta } from "~/lib/meta";
+import type { RootLoader } from "~/root";
 
-export const meta: MetaFunction<typeof loader> = ({ data }) => {
-  let title = `The Remix Store`;
+export function meta({
+  data,
+  matches,
+}: MetaArgs<typeof loader, { root: RootLoader }>) {
+  if (!data) return generateMeta();
 
-  if (data?.collection.seo?.title) {
-    title += ` | ${data.collection.seo.title}`;
-  } else if (data?.collection.title) {
-    title += ` | ${data.collection.title} Collection`;
+  const { collection } = data;
+  const { siteUrl } = matches[0].data;
+
+  let title = "The Remix Store";
+
+  if (collection.seo?.title) {
+    title += ` | ${collection.seo.title}`;
+  } else if (collection.title) {
+    title += ` | ${collection.title} Collection`;
   }
+  // Use collection image if available
+  const image = collection.image?.url ? collection.image.url : "/og_image.jpg";
 
-  return [{ title }];
-};
+  return generateMeta({
+    title,
+    url: siteUrl,
+  });
+}
 
 export async function loader({ params, request, context }: LoaderFunctionArgs) {
   const { handle } = params;

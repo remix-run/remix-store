@@ -105,11 +105,15 @@ export async function loader(args: LoaderFunctionArgs) {
 
   const { storefront, env } = args.context;
 
+  let requestUrl = new URL(args.request.url);
+  let siteUrl = requestUrl.protocol + "//" + requestUrl.host;
+
   return data(
     {
       ...deferredData,
       ...criticalData,
       publicStoreDomain: env.PUBLIC_STORE_DOMAIN,
+      siteUrl,
       shop: getShopAnalytics({
         storefront,
         publicStorefrontId: env.PUBLIC_STOREFRONT_ID,
