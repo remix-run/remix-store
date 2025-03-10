@@ -1,5 +1,5 @@
 import { Link, Outlet, useLoaderData } from "@remix-run/react";
-import type { LoaderFunctionArgs, MetaFunction } from "@remix-run/node";
+import type { LoaderFunctionArgs, MetaArgs } from "@remix-run/node";
 import { Button } from "~/components/ui/button";
 import {
   DropdownMenu,
@@ -8,20 +8,29 @@ import {
   DropdownMenuContent,
 } from "~/components/ui/dropdown-menu";
 import { cn } from "~/lib/cn";
+import { generateMeta } from "~/lib/meta";
+import type { RootLoader } from "~/root";
 
-export const meta: MetaFunction<typeof loader> = ({ data }) => {
+export function meta({
+  data,
+  matches,
+}: MetaArgs<typeof loader, { root: RootLoader }>) {
   const selectedComponent = data?.selectedComponent;
   const title = selectedComponent
     ? `${selectedComponent} | Component Library`
     : "Component Library";
-  return [
-    {
-      title: title.charAt(0).toUpperCase() + title.slice(1),
-    },
-  ];
-};
 
-export async function loader({ request }: LoaderFunctionArgs) {
+  // Try to get siteUrl from root data if available
+  const siteUrl = matches[0]?.data?.siteUrl;
+
+  return generateMeta({
+    title: title.charAt(0).toUpperCase() + title.slice(1),
+    description: "Component library for the Remix Store",
+    url: siteUrl,
+  });
+}
+
+export async function loader({ request, context }: LoaderFunctionArgs) {
   // TODO: turn this on only for the most prodest of environments
   // if (process.env.NODE_ENV === "production") {
   //   throw new Response("Not found", { status: 404 });
@@ -47,9 +56,11 @@ export default function Components() {
   const { componentRoutes, selectedComponent } = useLoaderData<typeof loader>();
 
   return (
-    <div>
-      <nav className="flex items-center justify-between">
-        <h1 className="font-sans text-8xl capitalize">{selectedComponent}</h1>
+    <div className="mt-32">
+      <nav className="flex items-center justify-between px-9">
+        <h1 className="mb-8 font-sans text-6xl font-bold text-white capitalize">
+          {selectedComponent || "Component Library"}
+        </h1>
         <div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

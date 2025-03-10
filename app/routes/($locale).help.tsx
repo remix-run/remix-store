@@ -1,6 +1,5 @@
 import { data, type LoaderFunctionArgs } from "@shopify/remix-oxygen";
 import { useLoaderData } from "@remix-run/react";
-import { Hero } from "~/components/hero";
 
 export async function loader({ context }: LoaderFunctionArgs) {
   const policies = await context.storefront.query(POLICIES_QUERY);
@@ -19,7 +18,6 @@ export default function Policies() {
 
   return (
     <div className="policy-container pb-12">
-      <Hero subtitle="resources" title="info & help" />
       <div className="mt-[26px] grid gap-3 md:gap-[18px] lg:grid-cols-2">
         <div className="rounded-3xl bg-neutral-100 p-12 dark:bg-neutral-700">
           <h2>{shippingPolicy.title}</h2>

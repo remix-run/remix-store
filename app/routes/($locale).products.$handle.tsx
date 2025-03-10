@@ -4,9 +4,9 @@ import {
   Await,
   Link,
   useLoaderData,
-  type MetaFunction,
   type FetcherWithComponents,
   useSearchParams,
+  type MetaArgs,
 } from "@remix-run/react";
 import type {
   ProductFragment,
@@ -46,13 +46,36 @@ import {
 } from "~/components/ui/dropdown-menu";
 import Icon from "~/components/icon";
 import ProductImages from "~/components/product-images";
+import { generateMeta } from "~/lib/meta";
+import type { RootLoader } from "~/root";
 
 /** The default vendor, which we hide because nobody cares */
 const DEFAULT_VENDOR = "Remix Swag Store";
 
-export const meta: MetaFunction<typeof loader> = ({ data }) => {
-  return [{ title: `The Remix Store | ${data?.product.title ?? ""}` }];
-};
+export function meta({
+  data,
+  matches,
+}: MetaArgs<typeof loader, { root: RootLoader }>) {
+  if (!data) return generateMeta();
+
+  const { product } = data;
+  const { siteUrl } = matches[0].data;
+
+  const title = `The Remix Store | ${product.title}`;
+  const description = product.seo?.description || product.description;
+
+  // Use product image if available
+  const image = product.images?.nodes[0]?.url
+    ? product.images.nodes[0].url
+    : "/og_image.jpg";
+
+  return generateMeta({
+    title,
+    description,
+    image,
+    url: siteUrl,
+  });
+}
 
 export async function loader(args: LoaderFunctionArgs) {
   // Start fetching non-critical data without blocking time to first byte

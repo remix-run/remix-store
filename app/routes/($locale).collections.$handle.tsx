@@ -1,25 +1,37 @@
 import { Suspense } from "react";
 import { data, redirect, type LoaderFunctionArgs } from "@shopify/remix-oxygen";
-import { Await, useLoaderData, type MetaFunction } from "@remix-run/react";
+import { Await, useLoaderData, type MetaArgs } from "@remix-run/react";
 import { Analytics } from "@shopify/hydrogen";
 import { CollectionGrid } from "~/components/collection-grid";
-import { Hero } from "~/components/hero";
 import { FiltersAside, FiltersToolbar } from "~/components/filters";
 
 import { COLLECTION_QUERY } from "~/lib/queries";
 import { getFilterQueryVariables } from "~/lib/filters/query-variables.server";
+import { generateMeta } from "~/lib/meta";
+import type { RootLoader } from "~/root";
 
-export const meta: MetaFunction<typeof loader> = ({ data }) => {
-  let title = `The Remix Store`;
+export function meta({
+  data,
+  matches,
+}: MetaArgs<typeof loader, { root: RootLoader }>) {
+  if (!data) return generateMeta();
 
-  if (data?.collection.seo?.title) {
-    title += ` | ${data.collection.seo.title}`;
-  } else if (data?.collection.title) {
-    title += ` | ${data.collection.title} Collection`;
+  const { collection } = data;
+  const { siteUrl } = matches[0].data;
+
+  let title = "The Remix Store";
+
+  if (collection.seo?.title) {
+    title += ` | ${collection.seo.title}`;
+  } else if (collection.title) {
+    title += ` | ${collection.title} Collection`;
   }
 
-  return [{ title }];
-};
+  return generateMeta({
+    title,
+    url: siteUrl,
+  });
+}
 
 export async function loader({ params, request, context }: LoaderFunctionArgs) {
   const { handle } = params;
@@ -53,9 +65,6 @@ export async function loader({ params, request, context }: LoaderFunctionArgs) {
   if (hasNextPage) {
     const remainingProducts = storefront
       .query(COLLECTION_QUERY, {
-        // if we ever have more than 258 products, we need to figure out a
-        // different strategy. Honestly, before that point we'll need to
-        // paginate, but loading all is fine for now
         variables: {
           ...variables,
           endCursor,
@@ -75,12 +84,6 @@ export default function Collection() {
 
   return (
     <div>
-      <Hero
-        title={collection.title}
-        subtitle={collection.description}
-        image={collection.image}
-      />
-
       <FiltersAside>
         {remainingProducts ? (
           <Suspense

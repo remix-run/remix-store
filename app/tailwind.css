@@ -162,59 +162,6 @@
   }
 }
 
-@utility hero-frame {
-  background: linear-gradient(
-    90deg,
-    #000 0%,
-    #000002 4.03%,
-    #2f2f2e 22.5%,
-    #5b5d63 40.35%,
-    #696b6e 55.69%,
-    #595a5e 63.06%,
-    #2d2d31 79.31%,
-    #000003 96.74%,
-    #111113 100%
-  );
-  box-shadow:
-    0px -8px 12px 0px rgba(0, 0, 0, 0.25) inset,
-    0px 17px 16px 0px rgba(0, 0, 0, 0.3) inset,
-    0px 4px 5px 0px rgba(0, 0, 0, 0.5) inset,
-    0px -4px 0px 0px rgba(0, 0, 0, 0.15),
-    0px 4px 0px 0px rgba(255, 255, 255, 0.05);
-}
-
-@utility hero-gradient-mask {
-  box-shadow:
-    0px 2px 0px 0px #6a98a7,
-    0px 4px 6px 0px rgba(85, 164, 175, 0.5) inset,
-    0px -2px 1px 0px rgba(172, 255, 252, 0.3) inset,
-    0px 3px 2px 0px rgba(105, 255, 249, 0.2) inset,
-    0px 0px 30px 0px rgba(105, 255, 249, 0.5) inset,
-    0px 1px 1px 0px rgba(0, 0, 0, 0.4),
-    0px 5px 2px 0px rgba(255, 255, 255, 0.1);
-  background: linear-gradient(
-    90deg,
-    rgba(0, 0, 0, 0.5) 0%,
-    rgba(0, 0, 2, 0.5) 4.03%,
-    rgba(47, 47, 46, 0.5) 22.5%,
-    rgba(91, 93, 99, 0.5) 40.35%,
-    rgba(105, 107, 110, 0.5) 55.69%,
-    rgba(89, 90, 94, 0.5) 63.06%,
-    rgba(45, 45, 49, 0.5) 79.31%,
-    rgba(0, 0, 3, 0.5) 96.74%,
-    rgba(17, 17, 19, 0.5) 100%
-  );
-  mix-blend-mode: screen;
-}
-
-@utility text-shadow-hero {
-  text-shadow:
-    4px 0px 4px rgba(0, 102, 255, 0.2),
-    -4px 0px 4px rgba(255, 0, 0, 0.2),
-    0px 0px 3px rgba(0, 0, 0, 0.4),
-    0px 0px 24px rgba(40, 166, 159, 0.4);
-}
-
 @layer base {
   @font-face {
     font-family: "Inter";
