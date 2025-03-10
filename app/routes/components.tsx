@@ -56,9 +56,11 @@ export default function Components() {
   const { componentRoutes, selectedComponent } = useLoaderData<typeof loader>();
 
   return (
-    <div>
-      <nav className="flex items-center justify-between">
-        <h1 className="font-sans text-8xl capitalize">{selectedComponent}</h1>
+    <div className="mt-32">
+      <nav className="flex items-center justify-between px-9">
+        <h1 className="mb-8 font-sans text-6xl font-bold text-white capitalize">
+          {selectedComponent || "Component Library"}
+        </h1>
         <div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
