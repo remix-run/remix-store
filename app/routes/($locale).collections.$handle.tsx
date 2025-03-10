@@ -26,8 +26,6 @@ export function meta({
   } else if (collection.title) {
     title += ` | ${collection.title} Collection`;
   }
-  // Use collection image if available
-  const image = collection.image?.url ? collection.image.url : "/og_image.jpg";
 
   return generateMeta({
     title,
@@ -67,9 +65,6 @@ export async function loader({ params, request, context }: LoaderFunctionArgs) {
   if (hasNextPage) {
     const remainingProducts = storefront
       .query(COLLECTION_QUERY, {
-        // if we ever have more than 258 products, we need to figure out a
-        // different strategy. Honestly, before that point we'll need to
-        // paginate, but loading all is fine for now
         variables: {
           ...variables,
           endCursor,
