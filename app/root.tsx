@@ -16,7 +16,6 @@ import { FOOTER_QUERY, HEADER_QUERY } from "~/lib/fragments";
 import { parseColorScheme } from "~/lib/color-scheme.server";
 import { clsx } from "clsx";
 import { ColorSchemeScript, useColorScheme } from "~/lib/color-scheme";
-import { Hero } from "~/components/hero";
 import { Button } from "~/components/ui/button";
 import { AsideProvider } from "~/components/ui/aside";
 import { Header } from "~/components/header";
@@ -227,27 +226,15 @@ export function ErrorBoundary() {
   }
 
   return (
-    <>
-      <Hero
-        subtitle={errorMessage}
-        title={`error ${errorStatus}`}
-        image={{
-          url: "https://cdn.shopify.com/s/files/1/0655/4127/5819/files/404-image.png?v=1726259004",
-          width: 1200,
-          height: 1200,
-          altText: "Suspended coat hanger with no clothes on it",
-        }}
-      />
-      <div className="my-[100px] flex flex-col items-center gap-6">
-        <p className="text-xl">
-          Please check to see if you have typed the URL correctly.
-        </p>
-        <div className="w-[340px]">
-          <Button size="lg" asChild>
-            <Link to="/collections/all">Back to shop</Link>
-          </Button>
-        </div>
+    <div className="my-[100px] flex flex-col items-center gap-6">
+      <p className="text-xl">
+        Please check to see if you have typed the URL correctly.
+      </p>
+      <div className="w-[340px]">
+        <Button size="lg" asChild>
+          <Link to="/collections/all">Back to shop</Link>
+        </Button>
       </div>
-    </>
+    </div>
   );
 }

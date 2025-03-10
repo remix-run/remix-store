@@ -3,7 +3,6 @@ import { data, redirect, type LoaderFunctionArgs } from "@shopify/remix-oxygen";
 import { Await, useLoaderData, type MetaFunction } from "@remix-run/react";
 import { Analytics } from "@shopify/hydrogen";
 import { CollectionGrid } from "~/components/collection-grid";
-import { Hero } from "~/components/hero";
 import { FiltersAside, FiltersToolbar } from "~/components/filters";
 
 import { COLLECTION_QUERY } from "~/lib/queries";
@@ -75,12 +74,6 @@ export default function Collection() {
 
   return (
     <div>
-      <Hero
-        title={collection.title}
-        subtitle={collection.description}
-        image={collection.image}
-      />
-
       <FiltersAside>
         {remainingProducts ? (
           <Suspense
