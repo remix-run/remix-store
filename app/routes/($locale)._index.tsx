@@ -113,7 +113,7 @@ function Hero({ masthead, assetImages, product }: HeroDataProps) {
   return (
     <div
       ref={heroRef}
-      className="relative h-screen max-h-[1200px] overflow-hidden bg-linear-[180deg,var(--color-black),#27273B] pt-[116px] lg:h-[1200px] xl:h-[1600px] xl:max-h-[1600px]"
+      className="relative h-screen max-h-[1200px] overflow-hidden bg-linear-[180deg,var(--color-black),#27273B] pt-[116px] md:h-[1200px] lg:h-[1600px] lg:max-h-[1600px]"
     >
       <div
         style={{
@@ -131,7 +131,7 @@ function Hero({ masthead, assetImages, product }: HeroDataProps) {
         />
 
         {/* TODO: add better mobile support */}
-        <h1 className="mt-48 flex max-h-min w-full flex-nowrap items-start justify-between px-4 text-2xl font-extrabold text-white sm:px-9 sm:text-4xl md:mt-[300px] md:justify-center md:gap-52 md:text-5xl lg:text-7xl xl:text-8xl">
+        <h1 className="mt-48 flex max-h-min w-full flex-nowrap items-start justify-center gap-8 px-4 text-2xl font-extrabold text-white md:mt-[300px] md:gap-20 md:px-9 md:text-5xl lg:gap-36 lg:text-8xl xl:text-8xl">
           <span className="sr-only">Remix</span>
           <HeroText highlight={!highlightSwitch}>
             software
