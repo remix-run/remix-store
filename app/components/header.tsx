@@ -33,17 +33,17 @@ interface HeaderProps {
 
 export function Header({ menu, cart }: HeaderProps) {
   return (
-    <header className="fixed top-0 z-10 grid w-full grid-cols-3 items-center p-9">
+    <header className="fixed top-0 z-10 grid w-full grid-cols-2 items-center p-4 md:grid-cols-3 md:p-9">
       <Link to="/" className="flex max-w-fit justify-start">
         <span className="sr-only">Home</span>
         <RemixLogo animateOnScroll />
       </Link>
-      <nav className="flex justify-center">
+      <nav className="hidden justify-center md:flex">
         <ul className="flex flex-nowrap gap-9">
           {menu.items.map((item) => {
             if (!item.url) return null;
             return (
-              <li key={item.url}>
+              <li key={item.url} className="text-nowrap">
                 <HeaderMenuLink title={item.title} url={item.url} />
               </li>
             );
