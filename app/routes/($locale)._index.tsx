@@ -113,7 +113,7 @@ function Hero({ masthead, assetImages, product }: HeroDataProps) {
   return (
     <div
       ref={heroRef}
-      className="relative h-screen max-h-[1200px] overflow-hidden bg-linear-[180deg,var(--color-black),#27273B] pt-[116px] md:h-[1200px] lg:h-[1600px] lg:max-h-[1600px]"
+      className="relative h-screen max-h-[1200px] overflow-hidden bg-linear-[180deg,var(--color-black),#27273B] pt-24 md:top-7 md:h-[1200px] lg:h-[1600px] lg:max-h-[1600px]"
     >
       <div
         style={{
@@ -122,8 +122,8 @@ function Hero({ masthead, assetImages, product }: HeroDataProps) {
         }}
       >
         <HydrogenImage
-          sizes="86vw"
-          className="mx-auto h-auto max-w-[86%] object-cover object-center"
+          sizes="140vw sm:140vw md:120vw lg:86vw"
+          className="relative left-1/2 h-auto min-w-[140%] -translate-x-1/2 object-cover object-center md:min-w-[120%] lg:max-w-[86%] lg:min-w-[86%]"
           data={masthead}
           style={{
             opacity,
@@ -208,7 +208,7 @@ let RotatingProduct = memo(
     return (
       <Link
         to={`/products/${product.handle}`}
-        className="3xl:scale-130 3xl:hover:scale-135 absolute top-0 w-full translate-y-4 scale-120 transition-transform duration-200 select-none hover:scale-125 md:translate-y-8 lg:scale-100 lg:hover:scale-105 xl:scale-100 xl:hover:scale-105 2xl:translate-y-24 2xl:scale-110 2xl:hover:scale-115"
+        className="3xl:scale-130 3xl:hover:scale-135 absolute top-0 w-full translate-y-0 scale-125 transition-transform duration-200 select-none hover:scale-130 md:translate-y-8 lg:scale-100 lg:hover:scale-105 xl:scale-100 xl:hover:scale-105 2xl:translate-y-24 2xl:scale-110 2xl:hover:scale-115"
       >
         <span className="sr-only">{product.title}</span>
         {assetImages.map((asset, index) => (
@@ -304,7 +304,7 @@ function useScrollPercentage(ref: React.RefObject<HTMLElement>) {
 
 function LookbookEntry({ image, product }: LookbookEntryProps) {
   return (
-    <div className="relative h-[90vh]">
+    <div className="relative h-[640px] md:h-[800px]">
       <div className="absolute inset-0">
         <HydrogenImage
           sizes="100vw"
@@ -354,7 +354,7 @@ let loadRunnerImage = {
 
 function LoadRunner() {
   return (
-    <div className="flex h-[800px] items-center justify-center gap-4 bg-[#1E1EC4]">
+    <div className="flex h-[390px] items-center justify-center gap-4 bg-[#1E1EC4] md:h-[480px] lg:h-[800px]">
       <div className="w-[65%]">
         <HydrogenImage
           className="h-full w-full"
