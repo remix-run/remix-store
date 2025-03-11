@@ -1,11 +1,8 @@
-import { useState, useEffect, memo } from "react";
+import { useState, useEffect, memo, useRef } from "react";
 import type { LoaderFunctionArgs, MetaArgs } from "@shopify/remix-oxygen";
 import { data } from "@shopify/remix-oxygen";
 import { Link, useLoaderData, type MetaFunction } from "@remix-run/react";
-import { FiltersAside, FiltersToolbar } from "~/components/filters";
 import { COLLECTION_VIDEO_FRAGMENT } from "~/lib/fragments";
-import { CollectionGrid } from "~/components/collection-grid";
-import { Button } from "~/components/ui/button";
 import { COLLECTION_QUERY } from "~/lib/queries";
 import { getFilterQueryVariables } from "~/lib/filters/query-variables.server";
 import { Image as HydrogenImage } from "@shopify/hydrogen";
@@ -14,7 +11,6 @@ import {
   type LookbookEntry as LookbookEntryProps,
 } from "~/lib/lookbook.server";
 import { getHeroData, type HeroData as HeroDataProps } from "~/lib/hero.server";
-import type { IconName } from "~/components/icon/types.generated";
 import { clsx } from "clsx";
 import { usePrefersReducedMotion } from "~/lib/hooks";
 import { useLayoutEffect } from "~/lib/use-layout-effect";
@@ -91,15 +87,6 @@ export default function Homepage() {
       {restEntries.map((entry) => (
         <LookbookEntry key={entry.image.id} {...entry} />
       ))}
-      {/* <FiltersAside>
-        <FiltersToolbar itemCount={products.nodes.length} />
-      </FiltersAside>
-      <CollectionGrid products={products.nodes} />
-      <div className="mx-auto mt-20 mb-12 w-[340px]">
-        <Button size="lg" asChild>
-          <Link to="/collections/all">Shop all items</Link>
-        </Button>
-      </div> */}
     </>
   );
 }
@@ -107,9 +94,12 @@ export default function Homepage() {
 let heroHeight = 1600;
 
 function Hero({ masthead, assetImages, product }: HeroDataProps) {
-  let scrollPercentage = useScrollPercentage(heroHeight);
+  const heroRef = useRef<HTMLDivElement>(null);
+  let scrollPercentage = useScrollPercentage(heroRef);
 
-  let translateY = Math.floor(heroHeight * scrollPercentage * 0.5);
+  let translateY = Math.floor(
+    (heroRef.current?.offsetHeight || 0) * scrollPercentage * 0.5,
+  );
   let opacity = Math.max(0, 1 - scrollPercentage * 4);
 
   let highlightSwitch = scrollPercentage > 0.6;
@@ -121,10 +111,13 @@ function Hero({ masthead, assetImages, product }: HeroDataProps) {
   );
 
   return (
-    <div className="relative overflow-hidden bg-linear-[180deg,var(--color-black),#27273B] pt-[116px]">
+    <div
+      ref={heroRef}
+      className="relative h-screen max-h-[1200px] overflow-hidden bg-linear-[180deg,var(--color-black),#27273B] pt-[116px] lg:h-[1200px] xl:h-[1600px] xl:max-h-[1600px]"
+    >
       <div
         style={{
-          height: `${heroHeight}px`,
+          height: `${heroRef.current?.offsetHeight || heroHeight}px`,
           transform: `translate3d(0, ${translateY}px, 0)`,
         }}
       >
@@ -215,7 +208,7 @@ let RotatingProduct = memo(
     return (
       <Link
         to={`/products/${product.handle}`}
-        className="absolute top-0 w-full translate-y-10 scale-120 transition-transform duration-200 select-none hover:scale-125 md:translate-y-18 lg:scale-100 lg:hover:scale-105 xl:scale-90 xl:hover:scale-95 2xl:translate-y-24 2xl:scale-80 2xl:hover:scale-85"
+        className="3xl:scale-130 3xl:hover:scale-135 absolute top-0 w-full translate-y-4 scale-120 transition-transform duration-200 select-none hover:scale-125 md:translate-y-8 lg:scale-100 lg:hover:scale-105 xl:scale-100 xl:hover:scale-105 2xl:translate-y-24 2xl:scale-110 2xl:hover:scale-115"
       >
         <span className="sr-only">{product.title}</span>
         {assetImages.map((asset, index) => (
@@ -255,12 +248,12 @@ function HeroText({
 }
 
 /**
- * Simplified hook that calculates what percentage of an element at the top of the page has been scrolled past
+ * Hook that calculates what percentage of an element has been scrolled past
  * Respects prefers-reduced-motion setting
- * @param height - The height of the element (default: 1600)
+ * @param ref - React ref to the element to measure
  * @returns A number between 0 and 1 representing the percentage scrolled past
  */
-function useScrollPercentage(height = 1600) {
+function useScrollPercentage(ref: React.RefObject<HTMLElement>) {
   let [scrollPercentage, setScrollPercentage] = useState(0);
   let prefersReducedMotion = usePrefersReducedMotion();
 
@@ -272,15 +265,21 @@ function useScrollPercentage(height = 1600) {
 
     let calculateVisibility = () => {
       rafId = requestAnimationFrame(() => {
-        let scrollY = window.scrollY;
+        if (!ref.current) return;
+
+        const height = ref.current.offsetHeight;
+        const rect = ref.current.getBoundingClientRect();
+        const scrollY = window.scrollY;
+        const elementTop = scrollY + rect.top;
 
         // If we've scrolled past the element, it's 0% visible
-        if (scrollY >= height) {
+        if (scrollY >= elementTop + height) {
           return;
         }
 
         let percentage =
-          1 - Math.max(0, Math.min(1, (height - scrollY) / height));
+          1 -
+          Math.max(0, Math.min(1, (elementTop + height - scrollY) / height));
         setScrollPercentage(percentage);
       });
     };
@@ -298,7 +297,7 @@ function useScrollPercentage(height = 1600) {
       window.removeEventListener("resize", calculateVisibility);
       cancelAnimationFrame(rafId);
     };
-  }, [height, prefersReducedMotion]);
+  }, [ref, prefersReducedMotion]);
 
   return scrollPercentage;
 }
@@ -366,12 +365,6 @@ function LoadRunner() {
     </div>
   );
 }
-
-type IconLinkProps = {
-  to: string;
-  iconName: IconName;
-  children: React.ReactNode;
-};
 
 export let FEATURED_COLLECTION_QUERY = `#graphql
   ${COLLECTION_VIDEO_FRAGMENT}
