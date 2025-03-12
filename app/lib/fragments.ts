@@ -319,7 +319,7 @@ export const PRODUCT_ITEM_FRAGMENT = `#graphql
         ...MoneyProductItem
       }
     }
-    images(first: 1) {
+    images(first: 2) {
       nodes {
         ...ProductImage
       }
