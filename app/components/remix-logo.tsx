@@ -10,11 +10,11 @@ export function RemixLogo({
   animateOnScroll = false,
   className = "",
 }: RemixLogoProps) {
-  const scrollDirection = useScrollDirection(animateOnScroll);
+  const logoState = useLogoState(animateOnScroll);
 
   const letterCss = clsx(
     "transform transition-all duration-300 ease-in-out",
-    animateOnScroll && scrollDirection === "down"
+    animateOnScroll && logoState === "partial"
       ? "translate-y-[-200px] opacity-0"
       : "translate-y-[0px] opacity-100",
   );
@@ -46,7 +46,7 @@ export function RemixLogo({
       <path
         className={clsx(
           "transition-color transform duration-300 ease-in-out",
-          animateOnScroll && scrollDirection === "down"
+          animateOnScroll && logoState === "partial"
             ? "fill-white"
             : "fill-blue-brand",
         )}
@@ -56,14 +56,17 @@ export function RemixLogo({
   );
 }
 
-// Custom hook for scroll direction
-function useScrollDirection(enableAnimation: boolean) {
-  // Start in up direction, as it shows the whole logo
-  const [scrollDirection, setScrollDirection] = useState<"up" | "down">("up");
+// Custom hook for how much of the logo is shown based on scroll position
+function useLogoState(enableAnimation: boolean) {
+  // Start in partial state, as it shows the whole logo
+  const [logoState, setLogoState] = useState<"partial" | "full">("partial");
   const lastScrollY = useRef(0);
 
   useEffect(() => {
     if (!enableAnimation) return;
+
+    // Set the last scroll position after the first render
+    lastScrollY.current = window.scrollY;
 
     let throttleTimeout: NodeJS.Timeout | null = null;
 
@@ -82,9 +85,9 @@ function useScrollDirection(enableAnimation: boolean) {
 
         let scrollOffset = 20;
         if (currentScrollY > lastScrollY.current + scrollOffset) {
-          setScrollDirection("down");
+          setLogoState("full");
         } else if (currentScrollY < lastScrollY.current - scrollOffset) {
-          setScrollDirection("up");
+          setLogoState("partial");
         }
 
         lastScrollY.current = currentScrollY;
@@ -101,5 +104,5 @@ function useScrollDirection(enableAnimation: boolean) {
     };
   }, [enableAnimation]);
 
-  return scrollDirection;
+  return logoState;
 }
