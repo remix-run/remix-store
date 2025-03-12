@@ -17,6 +17,7 @@ import { useLayoutEffect } from "~/lib/use-layout-effect";
 import { AnimatedLink } from "~/components/ui/animated-link";
 import { generateMeta } from "~/lib/meta";
 import type { RootLoader } from "~/root";
+import { ProductGrid } from "~/components/product-grid";
 export let FEATURED_COLLECTION_HANDLE = "remix-logo-apparel";
 
 export function meta({
@@ -41,7 +42,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
   let url = new URL(request.url);
   let { searchParams } = url;
   let variables = {
-    handle: "all",
+    handle: "remix-logo-apparel",
     first: 8,
     ...getFilterQueryVariables(searchParams),
   };
@@ -87,6 +88,9 @@ export default function Homepage() {
       {restEntries.map((entry) => (
         <LookbookEntry key={entry.image.id} {...entry} />
       ))}
+      <div className="bg-linear-[180deg,#2d2d38,var(--color-black)] py-9 md:py-12 lg:py-16">
+        <ProductGrid products={products.nodes} />
+      </div>
     </>
   );
 }
