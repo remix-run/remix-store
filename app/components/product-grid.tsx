@@ -6,10 +6,6 @@ import { Suspense } from "react";
 import type { ProductImageFragment } from "storefrontapi.generated";
 import type { CollectionProductData } from "~/lib/collection.server";
 
-// TODO:
-// - add product grid example to the docs
-// - add product grid for collection pages
-
 let defaultLoadingProductCount = 12;
 
 type ProductGridProps = {

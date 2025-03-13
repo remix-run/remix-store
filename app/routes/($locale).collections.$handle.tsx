@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import { data, redirect, type LoaderFunctionArgs } from "@shopify/remix-oxygen";
 import { Await, useLoaderData, type MetaArgs } from "@remix-run/react";
-import { Analytics } from "@shopify/hydrogen";
+import { Analytics, Image as HydrogenImage } from "@shopify/hydrogen";
 import { FiltersAside, FiltersToolbar } from "~/components/filters";
 
 import { getCollectionQuery } from "~/lib/collection.server";
@@ -80,8 +80,22 @@ export async function loader({ params, request, context }: LoaderFunctionArgs) {
 export default function Collection() {
   const { collection, remainingProducts } = useLoaderData<typeof loader>();
 
+  const { image } = collection;
+
   return (
     <div>
+      {image && (
+        <HydrogenImage
+          sizes="100vw"
+          className="h-[280px] w-full object-cover"
+          // style={{
+          //   objectPosition: image.focalPoint
+          //     ? `${100 * image.focalPoint.x}% ${100 * image.focalPoint.y}%`
+          //     : "center",
+          // }}
+          data={image}
+        />
+      )}
       <FiltersAside>
         {remainingProducts ? (
           <Suspense
