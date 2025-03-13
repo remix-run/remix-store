@@ -2,7 +2,6 @@ import { useState, useEffect, memo, useRef } from "react";
 import type { LoaderFunctionArgs, MetaArgs } from "@shopify/remix-oxygen";
 import { data } from "@shopify/remix-oxygen";
 import { Link, useLoaderData, type MetaFunction } from "@remix-run/react";
-import { COLLECTION_VIDEO_FRAGMENT } from "~/lib/fragments";
 import { COLLECTION_QUERY } from "~/lib/queries";
 import { getFilterQueryVariables } from "~/lib/filters/query-variables.server";
 import { Image as HydrogenImage } from "@shopify/hydrogen";
@@ -18,10 +17,10 @@ import { AnimatedLink } from "~/components/ui/animated-link";
 import { generateMeta } from "~/lib/meta";
 import type { RootLoader } from "~/root";
 import { ProductGrid } from "~/components/product-grid";
+
 export let FEATURED_COLLECTION_HANDLE = "remix-logo-apparel";
 
 export function meta({
-  data,
   matches,
 }: MetaArgs<typeof loader, { root: RootLoader }>) {
   const { siteUrl } = matches[0].data;
@@ -33,11 +32,6 @@ export function meta({
 
 export async function loader({ request, context }: LoaderFunctionArgs) {
   let { storefront } = context;
-  let featuredQuery = storefront.query(FEATURED_COLLECTION_QUERY, {
-    variables: {
-      handle: FEATURED_COLLECTION_HANDLE,
-    },
-  });
 
   let url = new URL(request.url);
   let { searchParams } = url;
@@ -47,34 +41,35 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
     ...getFilterQueryVariables(searchParams),
   };
 
-  let top8Query = storefront.query(COLLECTION_QUERY, { variables });
+  let products = storefront
+    .query(COLLECTION_QUERY, { variables })
+    .then(({ collection }) => {
+      if (!collection) {
+        return [];
+      }
+      return collection.products.nodes;
+    })
+    .catch((err) => {
+      console.error(err);
+      return [];
+    });
 
   let lookbookEntriesQuery = getLookbookEntries(storefront);
   let heroQuery = getHeroData(storefront);
-  let [hero, lookbookEntries, { featuredCollection }, { collection }] =
-    await Promise.all([
-      heroQuery,
-      lookbookEntriesQuery,
-      featuredQuery,
-      top8Query,
-    ]);
-
-  let products = collection?.products;
-  if (!products) {
-    throw new Response("Something went wrong", { status: 500 });
-  }
+  let [hero, lookbookEntries] = await Promise.all([
+    heroQuery,
+    lookbookEntriesQuery,
+  ]);
 
   return data({
     hero,
     lookbookEntries,
-    featuredCollection,
     products,
   });
 }
 
 export default function Homepage() {
-  let { hero, lookbookEntries, featuredCollection, products } =
-    useLoaderData<typeof loader>();
+  let { hero, lookbookEntries, products } = useLoaderData<typeof loader>();
 
   let [firstEntry, ...restEntries] = lookbookEntries;
 
@@ -89,7 +84,7 @@ export default function Homepage() {
         <LookbookEntry key={entry.image.id} {...entry} />
       ))}
       <div className="bg-linear-[180deg,#2d2d38,var(--color-black)] py-9 md:py-12 lg:py-16">
-        <ProductGrid products={products.nodes} />
+        <ProductGrid products={products} />
       </div>
     </>
   );
@@ -369,29 +364,3 @@ function LoadRunner() {
     </div>
   );
 }
-
-export let FEATURED_COLLECTION_QUERY = `#graphql
-  ${COLLECTION_VIDEO_FRAGMENT}
-  query FeaturedCollection($handle: String!, $country: CountryCode, $language: LanguageCode)
-    @inContext(country: $country, language: $language) {
-    featuredCollection: collection(handle: $handle) {
-      title
-      handle
-      image {
-        ...ProductImage
-      }
-      video: metafield(key: "featured_video", namespace: "custom") {
-        id
-        reference {
-          __typename
-          ... on Video {
-            ...CollectionVideo
-          }
-        }
-      }
-      featuredDescription: metafield(key: "featured_description", namespace:  "custom") {
-        value
-      }
-    }
-  }
-` as const;

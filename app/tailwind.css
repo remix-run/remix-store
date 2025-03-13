@@ -92,6 +92,8 @@
   --animate-accordion-up: accordion-up 0.2s ease-out;
   --animate-blink: blink 1s step-end infinite;
 
+  --animate-pulse-radial: pulse-radial 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+
   --shadow-yamaha-primary:
     0px 2px 1px 0px rgba(255, 255, 255, 0.1) inset,
     0px 4px 20px 8px rgba(248, 248, 248, 0.1) inset,
@@ -124,6 +126,16 @@
   @keyframes blink {
     50% {
       opacity: 0;
+    }
+  }
+
+  @keyframes pulse-radial {
+    0%,
+    100% {
+      background-size: 20% 20%;
+    }
+    50% {
+      background-size: 80% 80%;
     }
   }
 }

@@ -1,6 +1,7 @@
-import { Link } from "@remix-run/react";
+import { Await, Link } from "@remix-run/react";
 import { Image as HydrogenImage, Money } from "@shopify/hydrogen";
 import { clsx } from "clsx";
+import { Suspense } from "react";
 
 import type {
   ProductImageFragment,
@@ -8,39 +9,86 @@ import type {
 } from "storefrontapi.generated";
 
 // TODO:
-// - defer product loading
+
 // - add product grid example to the docs
 // - add product grid for collection pages
 // - remove old, unneeded code
-interface ProductGridProps {
-  products: ProductItemFragment[];
-}
+let defaultExpectedNumberOfProducts = 8;
 
-export function ProductGrid({ products }: ProductGridProps) {
-  if (!products?.length) return null;
+type ProductGridProps = {
+  products: ProductItemFragment[] | Promise<ProductItemFragment[]>;
+  // Defaults to 8, only useful if you're using deferred product data and triggering a skeleton
+  expectedNumberOfProducts?: number;
+};
 
+export function ProductGrid({
+  products,
+  expectedNumberOfProducts = defaultExpectedNumberOfProducts,
+}: ProductGridProps) {
   return (
     <div className="3xl:grid-cols-5 grid grid-cols-1 gap-y-9 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4">
-      {products.map((product) => (
-        <ProductGridItem key={product.id} product={product} />
-      ))}
+      {products instanceof Promise ? (
+        <Suspense
+          fallback={
+            <ProductGridSkeleton
+              expectedNumberOfProducts={expectedNumberOfProducts}
+            />
+          }
+        >
+          <Await
+            resolve={products}
+            errorElement={
+              // Should probably let the user know something went wrong loading the images
+              <div className="h-[1000px]" />
+            }
+          >
+            {(products) =>
+              products.map((product) => (
+                <ProductGridItem key={product.id} product={product} />
+              ))
+            }
+          </Await>
+        </Suspense>
+      ) : (
+        products.map((product) => (
+          <ProductGridItem key={product.id} product={product} />
+        ))
+      )}
     </div>
   );
 }
 
-interface ProductGridItemProps {
-  product: ProductItemFragment;
+function ProductGridSkeleton({
+  expectedNumberOfProducts = defaultExpectedNumberOfProducts,
+}: Pick<ProductGridProps, "expectedNumberOfProducts">) {
+  return Array.from({ length: expectedNumberOfProducts }).map((_, index) => (
+    // eslint-disable-next-line react/no-array-index-key -- all good, just a placeholder
+    <ProductGridItemLayout key={index}>
+      <ImageLayout>
+        <div
+          // TODO: revisit this, it's probably too subtle
+          className="animate-pulse-radial aspect-square w-full rounded-full bg-radial from-white/10 to-black/10 bg-center bg-no-repeat blur-lg"
+        />
+      </ImageLayout>
+      {/* Empty div to maintain spacing/layout where text will be */}
+      <div className="h-14" />
+    </ProductGridItemLayout>
+  ));
 }
 
-function ProductGridItem({ product }: ProductGridItemProps) {
-  const { handle, title, variants } = product;
+type ProductGridItemProps = {
+  product: ProductItemFragment;
+};
 
-  const { price } = variants.nodes[0];
+function ProductGridItem({ product }: ProductGridItemProps) {
+  let { handle, title, variants } = product;
+
+  let { price } = variants.nodes[0];
 
   return (
-    <div className="group relative flex flex-col items-center">
+    <ProductGridItemLayout className="group">
       <ProductImages images={product.images.nodes} />
-      <div className="flex flex-col items-center justify-center gap-2.5 py-2 text-base leading-none text-white">
+      <div className="flex h-14 flex-col items-center justify-center gap-2.5 text-base leading-none text-white">
         <Link
           prefetch="intent"
           to={`/products/${handle}`}
@@ -53,13 +101,13 @@ function ProductGridItem({ product }: ProductGridItemProps) {
           <Money className="text-white" data={price} withoutTrailingZeros />
         </div>
       </div>
-    </div>
+    </ProductGridItemLayout>
   );
 }
 
-interface ProductImagesProps {
+type ProductImagesProps = {
   images: ProductImageFragment[];
-}
+};
 
 function ProductImages({ images }: ProductImagesProps) {
   let firstImage = images[0];
@@ -71,7 +119,7 @@ function ProductImages({ images }: ProductImagesProps) {
   let baseCss = "max-h-[90%] object-cover object-center";
 
   return (
-    <div className="relative flex w-[70%] items-center justify-center transition-transform group-hover:scale-105">
+    <ImageLayout className="group-hover:scale-105">
       <HydrogenImage
         data={firstImage}
         sizes={sizes}
@@ -93,6 +141,32 @@ function ProductImages({ images }: ProductImagesProps) {
           loading="lazy"
         />
       )}
+    </ImageLayout>
+  );
+}
+
+type LayoutProps = {
+  children: React.ReactNode;
+  className?: string;
+};
+
+function ProductGridItemLayout({ children, className }: LayoutProps) {
+  return (
+    <div className={clsx("relative flex flex-col items-center", className)}>
+      {children}
+    </div>
+  );
+}
+
+function ImageLayout({ children, className }: LayoutProps) {
+  return (
+    <div
+      className={clsx(
+        "relative flex w-[70%] items-center justify-center transition-transform group-hover:scale-105",
+        className,
+      )}
+    >
+      {children}
     </div>
   );
 }
