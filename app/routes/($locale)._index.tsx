@@ -37,14 +37,14 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
   let { searchParams } = url;
 
   let expectedNumberOfProducts = 12;
-  let { products } = await getCollectionQuery(storefront, {
+  let products = getCollectionQuery(storefront, {
     variables: {
       handle: "remix-logo-apparel",
       first: expectedNumberOfProducts,
       // TODO: remove this for the homepage, just keeping here as an example for when I move the logic to other pages that account for filters
       ...getFilterQueryVariables(searchParams),
     },
-  });
+  }).then(({ products }) => products);
 
   let lookbookEntriesQuery = getLookbookEntries(storefront);
   let heroQuery = getHeroData(storefront);

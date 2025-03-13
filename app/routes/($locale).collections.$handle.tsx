@@ -84,18 +84,23 @@ export default function Collection() {
 
   return (
     <div>
-      {image && (
-        <HydrogenImage
-          sizes="100vw"
-          className="h-[280px] w-full object-cover"
-          // style={{
-          //   objectPosition: image.focalPoint
-          //     ? `${100 * image.focalPoint.x}% ${100 * image.focalPoint.y}%`
-          //     : "center",
-          // }}
-          data={image}
-        />
-      )}
+      <div className="relative">
+        {image && (
+          <HydrogenImage
+            sizes="100vw"
+            className="3xl:h-[540px] h-[280px] w-full object-cover opacity-50 xl:h-[400px]"
+            // style={{
+            //   objectPosition: image.focalPoint
+            //     ? `${100 * image.focalPoint.x}% ${100 * image.focalPoint.y}%`
+            //     : "center",
+            // }}
+            data={image}
+          />
+        )}
+        <h1 className="absolute inset-0 flex items-center justify-center text-3xl font-semibold text-white md:text-[56px] lg:text-8xl">
+          {collection.title}
+        </h1>
+      </div>
       <FiltersAside>
         {remainingProducts ? (
           <Suspense

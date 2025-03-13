@@ -20,7 +20,7 @@ export function ProductGrid({
 }: ProductGridProps) {
   return (
     <div className="3xl:grid-cols-5 grid grid-cols-1 gap-y-9 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4">
-      {products instanceof Promise ? (
+      {"then" in products ? (
         <Suspense
           fallback={
             <ProductGridSkeleton loadingProductCount={loadingProductCount} />
