@@ -3,36 +3,31 @@ import { Image as HydrogenImage, Money } from "@shopify/hydrogen";
 import { clsx } from "clsx";
 import { Suspense } from "react";
 
-import type {
-  ProductImageFragment,
-  ProductItemFragment,
-} from "storefrontapi.generated";
+import type { ProductImageFragment } from "storefrontapi.generated";
+import type { CollectionProductData } from "~/lib/collection.server";
 
 // TODO:
-
 // - add product grid example to the docs
 // - add product grid for collection pages
-// - remove old, unneeded code
-let defaultExpectedNumberOfProducts = 8;
+
+let defaultLoadingProductCount = 12;
 
 type ProductGridProps = {
-  products: ProductItemFragment[] | Promise<ProductItemFragment[]>;
-  // Defaults to 8, only useful if you're using deferred product data and triggering a skeleton
-  expectedNumberOfProducts?: number;
+  products: CollectionProductData[] | Promise<CollectionProductData[]>;
+  // Defaults to 12, only useful if you're using deferred product data and triggering a skeleton
+  loadingProductCount?: number;
 };
 
 export function ProductGrid({
   products,
-  expectedNumberOfProducts = defaultExpectedNumberOfProducts,
+  loadingProductCount = defaultLoadingProductCount,
 }: ProductGridProps) {
   return (
     <div className="3xl:grid-cols-5 grid grid-cols-1 gap-y-9 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4">
       {products instanceof Promise ? (
         <Suspense
           fallback={
-            <ProductGridSkeleton
-              expectedNumberOfProducts={expectedNumberOfProducts}
-            />
+            <ProductGridSkeleton loadingProductCount={loadingProductCount} />
           }
         >
           <Await
@@ -59,9 +54,9 @@ export function ProductGrid({
 }
 
 function ProductGridSkeleton({
-  expectedNumberOfProducts = defaultExpectedNumberOfProducts,
-}: Pick<ProductGridProps, "expectedNumberOfProducts">) {
-  return Array.from({ length: expectedNumberOfProducts }).map((_, index) => (
+  loadingProductCount = defaultLoadingProductCount,
+}: Pick<ProductGridProps, "loadingProductCount">) {
+  return Array.from({ length: loadingProductCount }).map((_, index) => (
     // eslint-disable-next-line react/no-array-index-key -- all good, just a placeholder
     <ProductGridItemLayout key={index}>
       <ImageLayout>
@@ -77,13 +72,11 @@ function ProductGridSkeleton({
 }
 
 type ProductGridItemProps = {
-  product: ProductItemFragment;
+  product: CollectionProductData;
 };
 
 function ProductGridItem({ product }: ProductGridItemProps) {
-  let { handle, title, variants } = product;
-
-  let { price } = variants.nodes[0];
+  let { handle, title, price } = product;
 
   return (
     <ProductGridItemLayout className="group">

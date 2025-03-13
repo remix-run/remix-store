@@ -1,8 +1,8 @@
 import { useState, useEffect, memo, useRef } from "react";
 import type { LoaderFunctionArgs, MetaArgs } from "@shopify/remix-oxygen";
 import { data } from "@shopify/remix-oxygen";
-import { Link, useLoaderData, type MetaFunction } from "@remix-run/react";
-import { COLLECTION_QUERY } from "~/lib/queries";
+import { Link, useLoaderData } from "@remix-run/react";
+import { getCollectionQuery } from "~/lib/collection.server";
 import { getFilterQueryVariables } from "~/lib/filters/query-variables.server";
 import { Image as HydrogenImage } from "@shopify/hydrogen";
 import {
@@ -35,24 +35,16 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
 
   let url = new URL(request.url);
   let { searchParams } = url;
-  let variables = {
-    handle: "remix-logo-apparel",
-    first: 8,
-    ...getFilterQueryVariables(searchParams),
-  };
 
-  let products = storefront
-    .query(COLLECTION_QUERY, { variables })
-    .then(({ collection }) => {
-      if (!collection) {
-        return [];
-      }
-      return collection.products.nodes;
-    })
-    .catch((err) => {
-      console.error(err);
-      return [];
-    });
+  let expectedNumberOfProducts = 12;
+  let { products } = await getCollectionQuery(storefront, {
+    variables: {
+      handle: "remix-logo-apparel",
+      first: expectedNumberOfProducts,
+      // TODO: remove this for the homepage, just keeping here as an example for when I move the logic to other pages that account for filters
+      ...getFilterQueryVariables(searchParams),
+    },
+  });
 
   let lookbookEntriesQuery = getLookbookEntries(storefront);
   let heroQuery = getHeroData(storefront);
@@ -64,12 +56,14 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
   return data({
     hero,
     lookbookEntries,
+    expectedNumberOfProducts,
     products,
   });
 }
 
 export default function Homepage() {
-  let { hero, lookbookEntries, products } = useLoaderData<typeof loader>();
+  let { hero, lookbookEntries, expectedNumberOfProducts, products } =
+    useLoaderData<typeof loader>();
 
   let [firstEntry, ...restEntries] = lookbookEntries;
 
@@ -84,8 +78,19 @@ export default function Homepage() {
         <LookbookEntry key={entry.image.id} {...entry} />
       ))}
       <div className="bg-linear-[180deg,#2d2d38,var(--color-black)] py-9 md:py-12 lg:py-16">
-        <ProductGrid products={products} />
+        <ProductGrid
+          products={products}
+          loadingProductCount={expectedNumberOfProducts}
+        />
       </div>
+      <button
+        className="bg-blue-brand hover:text-blue-brand w-full py-9 text-center text-xl font-bold text-white transition-colors hover:bg-white"
+        onClick={() => {
+          alert("This doesn't work yet! Complain to Brooks");
+        }}
+      >
+        <span>Load more</span>
+      </button>
     </>
   );
 }
