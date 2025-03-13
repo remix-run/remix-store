@@ -1,14 +1,14 @@
 import { Suspense } from "react";
 import { data, redirect, type LoaderFunctionArgs } from "@shopify/remix-oxygen";
 import { Await, useLoaderData, type MetaArgs } from "@remix-run/react";
-import { Analytics } from "@shopify/hydrogen";
-import { CollectionGrid } from "~/components/collection-grid";
+import { Analytics, Image as HydrogenImage } from "@shopify/hydrogen";
 import { FiltersAside, FiltersToolbar } from "~/components/filters";
 
-import { COLLECTION_QUERY } from "~/lib/queries";
+import { getCollectionQuery } from "~/lib/collection.server";
 import { getFilterQueryVariables } from "~/lib/filters/query-variables.server";
 import { generateMeta } from "~/lib/meta";
 import type { RootLoader } from "~/root";
+import { ProductGrid } from "~/components/product-grid";
 
 export function meta({
   data,
@@ -46,7 +46,7 @@ export async function loader({ params, request, context }: LoaderFunctionArgs) {
   const variables = { handle, ...getFilterQueryVariables(searchParams) };
 
   // load the initial products we want to SSR
-  const { collection } = await storefront.query(COLLECTION_QUERY, {
+  const collection = await getCollectionQuery(storefront, {
     variables: {
       ...variables,
       first: 8,
@@ -59,19 +59,17 @@ export async function loader({ params, request, context }: LoaderFunctionArgs) {
     });
   }
 
-  const { hasNextPage, endCursor } = collection.products.pageInfo;
+  const { hasNextPage, endCursor } = collection.productsPageInfo;
 
   // lazy load the remaining products if any
   if (hasNextPage) {
-    const remainingProducts = storefront
-      .query(COLLECTION_QUERY, {
-        variables: {
-          ...variables,
-          endCursor,
-          first: 250,
-        },
-      })
-      .then(({ collection }) => collection?.products.nodes);
+    let remainingProducts = getCollectionQuery(storefront, {
+      variables: {
+        ...variables,
+        endCursor,
+        first: 250,
+      },
+    });
 
     return data({ collection, remainingProducts });
   }
@@ -82,16 +80,35 @@ export async function loader({ params, request, context }: LoaderFunctionArgs) {
 export default function Collection() {
   const { collection, remainingProducts } = useLoaderData<typeof loader>();
 
+  const { image } = collection;
+
   return (
     <div>
+      <div className="relative">
+        {image && (
+          <HydrogenImage
+            sizes="100vw"
+            className="3xl:h-[540px] h-[280px] w-full object-cover opacity-50 xl:h-[400px]"
+            // style={{
+            //   objectPosition: image.focalPoint
+            //     ? `${100 * image.focalPoint.x}% ${100 * image.focalPoint.y}%`
+            //     : "center",
+            // }}
+            data={image}
+          />
+        )}
+        <h1 className="absolute inset-0 flex items-center justify-center text-3xl font-semibold text-white md:text-[56px] lg:text-8xl">
+          {collection.title}
+        </h1>
+      </div>
       <FiltersAside>
         {remainingProducts ? (
           <Suspense
             fallback={
               <>
                 <FiltersToolbar />
-                <CollectionGrid
-                  products={collection.products.nodes}
+                <ProductGrid
+                  products={collection.products}
                   loadingProductCount={4}
                 />
               </>
@@ -100,13 +117,13 @@ export default function Collection() {
             <Await resolve={remainingProducts}>
               {(remainingProducts) => {
                 const products = [
-                  ...collection.products.nodes,
-                  ...(remainingProducts || []),
+                  ...collection.products,
+                  ...remainingProducts.products,
                 ];
                 return (
                   <>
                     <FiltersToolbar itemCount={products.length} />
-                    <CollectionGrid products={products} />
+                    <ProductGrid products={products} />
                   </>
                 );
               }}
@@ -114,8 +131,8 @@ export default function Collection() {
           </Suspense>
         ) : (
           <>
-            <FiltersToolbar itemCount={collection.products.nodes.length} />
-            <CollectionGrid products={collection.products.nodes} />
+            <FiltersToolbar itemCount={collection.products.length} />
+            <ProductGrid products={collection.products} />
           </>
         )}
       </FiltersAside>
