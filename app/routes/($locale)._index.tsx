@@ -44,7 +44,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
       // TODO: remove this for the homepage, just keeping here as an example for when I move the logic to other pages that account for filters
       ...getFilterQueryVariables(searchParams),
     },
-  }).then(({ products }) => products);
+  }).then((response) => response?.products ?? []);
 
   let lookbookEntriesQuery = getLookbookEntries(storefront);
   let heroQuery = getHeroData(storefront);

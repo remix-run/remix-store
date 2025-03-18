@@ -89,6 +89,7 @@ export default function Collection() {
           <HydrogenImage
             sizes="100vw"
             className="3xl:h-[540px] h-[280px] w-full object-cover opacity-50 xl:h-[400px]"
+            // TODO: revisit focal point -- can't use the same as the lookbook, so might just have to duplicate image
             // style={{
             //   objectPosition: image.focalPoint
             //     ? `${100 * image.focalPoint.x}% ${100 * image.focalPoint.y}%`
@@ -116,6 +117,10 @@ export default function Collection() {
           >
             <Await resolve={remainingProducts}>
               {(remainingProducts) => {
+                if (!remainingProducts) {
+                  return null;
+                }
+
                 const products = [
                   ...collection.products,
                   ...remainingProducts.products,

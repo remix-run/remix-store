@@ -2,10 +2,10 @@ import type { Storefront } from "@shopify/hydrogen";
 import type { ProductImageFragment } from "storefrontapi.generated";
 import type { MoneyV2 } from "@shopify/hydrogen/customer-account-api-types";
 import { PRODUCT_IMAGE_FRAGMENT } from "./fragments";
-import { getFocalPoint } from "./image-utils";
+import { getFocalPoint, type FocalPoint } from "./image-utils";
 
 export type LookbookEntry = {
-  image: ProductImageFragment & { focalPoint?: { x: number; y: number } };
+  image: ProductImageFragment & { focalPoint?: FocalPoint };
   product?: {
     handle: string;
     price: MoneyV2;

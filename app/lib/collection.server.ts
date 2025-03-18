@@ -1,6 +1,6 @@
 import type { Storefront } from "@shopify/hydrogen";
 import { PRODUCT_IMAGE_FRAGMENT } from "./fragments";
-// import { getFocalPoint } from "./image-utils";
+import { getFocalPoint, type FocalPoint } from "./image-utils";
 
 import type {
   CollectionQueryVariables,
@@ -18,11 +18,9 @@ export type CollectionProductData = Pick<
 
 export type CollectionData = Pick<
   NonNullable<CollectionQuery["collection"]>,
-  "id" | "handle" | "title" | "description" | "seo" | "image"
+  "id" | "handle" | "title" | "description" | "seo"
 > & {
-  // image:
-  //   | (ProductImageFragment & { focalPoint?: { x: number; y: number } })
-  //   | null;
+  image: (ProductImageFragment & { focalPoint?: FocalPoint }) | null;
   productsPageInfo: PageInfo;
   products: CollectionProductData[];
 };
@@ -30,7 +28,7 @@ export type CollectionData = Pick<
 export async function getCollectionQuery(
   storefront: Storefront,
   { variables }: { variables: CollectionQueryVariables },
-): Promise<CollectionData> {
+): Promise<CollectionData | null> {
   try {
     let { collection } = await storefront.query(COLLECTION_QUERY, {
       variables,
@@ -42,17 +40,19 @@ export async function getCollectionQuery(
 
     let products = collection.products.nodes;
 
-    // Extract focal point from collection image if available
-    const collectionImage = collection.image
-      ? {
-          ...collection.image,
-          // focalPoint: getFocalPoint(collection.image.presentation?.asJson),
-        }
-      : null;
+    let imageReference = collection.image?.reference;
+    let image: CollectionData["image"] = null;
+    if (imageReference?.__typename === "MediaImage" && imageReference.image) {
+      image = {
+        ...imageReference.image,
+        // Extract focal point from collection image if available
+        focalPoint: getFocalPoint(imageReference.presentation?.asJson),
+      };
+    }
 
     return {
       ...collection,
-      image: collectionImage,
+      image,
       productsPageInfo: collection.products.pageInfo,
       products: products.map(({ priceRange, ...product }) => {
         return {
@@ -65,25 +65,7 @@ export async function getCollectionQuery(
       }),
     };
   } catch (error) {
-    console.error(error);
-    // TODO: handle errors/missing data better
-    return {
-      id: "",
-      handle: "",
-      title: "",
-      description: "",
-      products: [],
-      seo: {
-        title: "",
-      },
-      image: null,
-      productsPageInfo: {
-        hasPreviousPage: false,
-        hasNextPage: false,
-        endCursor: "",
-        startCursor: "",
-      },
-    };
+    throw new Error("Failed to fetch collection");
   }
 }
 
@@ -134,13 +116,19 @@ export const COLLECTION_QUERY = `#graphql
       handle
       title
       description
-      image {
-        ...ProductImage
-        # sadly this doesn't work, gotta figure out another way to get the focal point for collection images
-        # presentation {
-        #   id
-        #   asJson(format: IMAGE)
-        # }
+      image: metafield(key: "featured_photo", namespace: "custom") {
+        reference {
+          __typename
+          ... on MediaImage {
+            presentation {
+              id
+              asJson(format: IMAGE)
+            }
+            image {
+              ...ProductImage
+            }
+          }
+        }
       }
       seo {
         title

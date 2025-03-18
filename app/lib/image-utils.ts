@@ -1,9 +1,12 @@
+export type FocalPoint = {
+  x: number;
+  y: number;
+};
+
 /**
  * Extracts focal point coordinates from image presentation data
  */
-export function getFocalPoint(
-  presentation: unknown,
-): { x: number; y: number } | undefined {
+export function getFocalPoint(presentation: unknown): FocalPoint | undefined {
   if (typeof presentation !== "object" || presentation === null) {
     return undefined;
   }
