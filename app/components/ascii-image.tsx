@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Image as HydrogenImage } from "@shopify/hydrogen";
-import type { HydrogenImageProps } from "../ui/image";
+import type { HydrogenImageProps } from "./ui/image";
 
 type AsciiImageProps = {
   data: HydrogenImageProps["data"];

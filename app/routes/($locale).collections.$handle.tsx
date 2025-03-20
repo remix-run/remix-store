@@ -3,7 +3,7 @@ import { data, redirect, type LoaderFunctionArgs } from "@shopify/remix-oxygen";
 import { Await, useLoaderData, type MetaArgs } from "@remix-run/react";
 import { Analytics, Image as HydrogenImage } from "@shopify/hydrogen";
 import { FiltersAside, FiltersToolbar } from "~/components/filters";
-import { AsciiImage } from "~/components/ascii";
+import { AsciiImage } from "~/components/ascii-image";
 
 import { getCollectionQuery } from "~/lib/collection.server";
 import { getFilterQueryVariables } from "~/lib/filters/query-variables.server";
