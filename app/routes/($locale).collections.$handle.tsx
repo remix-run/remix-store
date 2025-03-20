@@ -3,6 +3,7 @@ import { data, redirect, type LoaderFunctionArgs } from "@shopify/remix-oxygen";
 import { Await, useLoaderData, type MetaArgs } from "@remix-run/react";
 import { Analytics, Image as HydrogenImage } from "@shopify/hydrogen";
 import { FiltersAside, FiltersToolbar } from "~/components/filters";
+import { AsciiImage } from "~/components/ascii";
 
 import { getCollectionQuery } from "~/lib/collection.server";
 import { getFilterQueryVariables } from "~/lib/filters/query-variables.server";
@@ -84,21 +85,19 @@ export default function Collection() {
 
   return (
     <div>
-      <div className="relative">
+      <div className="relative h-[280px] w-full overflow-hidden xl:h-[400px] 2xl:h-[540px]">
         {image && (
-          <HydrogenImage
-            sizes="100vw"
-            className="3xl:h-[540px] h-[280px] w-full object-cover opacity-50 xl:h-[400px]"
-            // TODO: revisit focal point -- can't use the same as the lookbook, so might just have to duplicate image
-            // style={{
-            //   objectPosition: image.focalPoint
-            //     ? `${100 * image.focalPoint.x}% ${100 * image.focalPoint.y}%`
-            //     : "center",
-            // }}
+          <AsciiImage
             data={image}
+            className=""
+            asciiDensity={0.3}
+            characters={["█", "▓", "▒", "░", " "]}
+            style={{
+              backgroundColor: "#000",
+            }}
           />
         )}
-        <h1 className="absolute inset-0 flex items-center justify-center text-3xl font-semibold text-white md:text-[56px] lg:text-8xl">
+        <h1 className="absolute inset-0 z-10 flex items-center justify-center text-3xl font-semibold text-white md:text-[56px] lg:text-8xl">
           {collection.title}
         </h1>
       </div>

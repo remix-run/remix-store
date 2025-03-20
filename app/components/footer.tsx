@@ -74,7 +74,7 @@ export function Footer({ footer: footerPromise }: FooterProps) {
                       {footer.menu.items.map((item, i) => {
                         if (!item.url) return null;
                         return (
-                          <li key={item.id}>
+                          <li key={item.id} suppressHydrationWarning>
                             <FooterLink
                               className={clsx({
                                 "font-bold text-[#a1a1a1] hover:text-white":
