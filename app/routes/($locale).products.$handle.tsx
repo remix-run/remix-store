@@ -25,7 +25,6 @@ import {
   useAnalytics,
   RichText,
 } from "@shopify/hydrogen";
-import type { SelectedOption } from "@shopify/hydrogen/storefront-api-types";
 import { useAside } from "~/components/ui/aside";
 import { FOOTER_QUERY } from "~/lib/fragments";
 import { Button, ButtonWithWellText } from "~/components/ui/button";
@@ -59,17 +58,15 @@ export function meta({
   const { product } = data;
   const { siteUrl } = matches[0].data;
 
-  const title = `The Remix Store | ${product.title}`;
-  const description = product.seo?.description || product.description;
-
   // Use product image if available
   const image = product.images?.nodes[0]?.url
     ? product.images.nodes[0].url
     : "/og_image.jpg";
 
   return generateMeta({
-    title,
-    description,
+    // I think there's a better way to get seo data using some Hydrogen helpers
+    title: product.seo?.title || product.title,
+    description: product.seo?.description ?? undefined,
     image,
     url: siteUrl,
   });
@@ -92,9 +89,17 @@ export async function loader(args: LoaderFunctionArgs) {
   });
 
   // Not sure if this will always be the same as the footer menu
-  const menuPromise = storefront.query(FOOTER_QUERY, {
-    cache: storefront.CacheLong(),
-  });
+  const menuPromise = storefront
+    .query(FOOTER_QUERY, {
+      cache: storefront.CacheLong(),
+    })
+    .then((data) => {
+      if (!data.menu) return [];
+      return data.menu?.items.map((item) => ({
+        label: item.title,
+        to: item.url,
+      }));
+    });
 
   let productPromise = getProductData(storefront, {
     variables: {
@@ -114,7 +119,8 @@ export async function loader(args: LoaderFunctionArgs) {
 }
 
 export default function Product() {
-  const { product, variants, checkoutDomain } = useLoaderData<typeof loader>();
+  const { menu, product, variants, checkoutDomain } =
+    useLoaderData<typeof loader>();
   let { selectedVariant } = product;
 
   // If a variant isn't selected, use the first variant for price, analytics, etc
@@ -123,17 +129,39 @@ export default function Product() {
   }
 
   return (
-    <div className="mx-auto max-w-(--breakpoint-xl) md:flex md:justify-center md:gap-[18px]">
-      <ProductImages
-        images={product?.images.nodes}
-        gradientColors={product.gradientColors}
-      />
-      <ProductMain
+    <div className="relative mt-(--header-height) flex min-h-[90vh] flex-col gap-4 md:flex-row md:justify-between md:gap-8 md:px-4 lg:px-9">
+      {menu ? (
+        <nav className="sticky top-(--header-height) hidden h-fit min-w-fit md:block lg:pt-32">
+          <ul className="flex flex-col gap-1">
+            {menu.map((item) => {
+              if (!item.to) return null;
+              return (
+                <li key={item.to}>
+                  <Link
+                    className="text-xs leading-5 text-neutral-400 transition-[color] hover:text-white lg:text-base lg:leading-6"
+                    to={item.to}
+                  >
+                    {item.label}
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </nav>
+      ) : null}
+
+      <ProductImages images={product?.images.nodes} />
+
+      <div className="border-red-brand static top-(--header-height) mx-4 h-[400px] border md:sticky md:mx-0 md:max-w-[410px] md:min-w-[200px] md:basis-1/3 lg:pt-32">
+        <h1 className="">{product.title}</h1>
+      </div>
+      {/* <ProductMain
         selectedVariant={selectedVariant}
         product={product}
         variants={variants}
         checkoutDomain={checkoutDomain}
-      />
+      /> */}
+
       <Analytics.ProductView
         data={{
           products: [
@@ -164,14 +192,14 @@ function ProductMain({
   variants: Promise<ProductVariantsQuery | null>;
   checkoutDomain: string;
 }) {
-  const { title, vendor, description, specs, fullDescription } = product;
+  const { title, vendor, description, technicalDescription } = product;
 
   const cardCss =
     "flex flex-col gap-6 md:gap-8 rounded-3xl bg-neutral-100 py-7 px-[24px] lg:p-9 dark:bg-neutral-700";
 
   return (
     <div>
-      <div className="sticky top-[var(--header-height)] flex flex-col gap-[18px]">
+      <div className="sticky top-[var(--header-height)] flex flex-col gap-[18px] [&_ul]:list-inside [&_ul]:list-disc [&_ul]:pl-2">
         <div className={cardCss}>
           <div className="flex flex-col gap-6">
             <ProductHeader
@@ -181,7 +209,7 @@ function ProductMain({
             />
           </div>
 
-          <p>{description}</p>
+          {description ? <RichText data={description.value} /> : null}
 
           <div className="flex flex-col gap-[18px] md:gap-8">
             <Suspense
@@ -213,23 +241,11 @@ function ProductMain({
 
         <div className={cardCss}>
           <Accordion type="multiple" className="-m-4 md:-m-6">
-            {fullDescription ? (
-              <AccordionItem value="description">
-                <AccordionTrigger>Description</AccordionTrigger>
+            {technicalDescription ? (
+              <AccordionItem value="technicalDescription">
+                <AccordionTrigger>Technical Description</AccordionTrigger>
                 <AccordionContent>
-                  <RichText data={fullDescription.value} />
-                </AccordionContent>
-              </AccordionItem>
-            ) : null}
-            {specs ? (
-              <AccordionItem value="specs">
-                <AccordionTrigger>Specs</AccordionTrigger>
-                <AccordionContent>
-                  <RichText
-                    data={specs.value}
-                    // Should this be set globally?
-                    className="[&_ul]:list-inside [&_ul]:list-disc [&_ul]:pl-2"
-                  />
+                  <RichText data={technicalDescription.value} />
                 </AccordionContent>
               </AccordionItem>
             ) : null}
@@ -357,7 +373,7 @@ function ProductForm({
                   {
                     merchandiseId: selectedVariant.id,
                     quantity: 1,
-                    // Add entire product to selected variant so we can determine gradient colours in an optimistic cart
+                    // Add entire product to selected variant so we can determine gradient colors in an optimistic cart
                     selectedVariant: { ...selectedVariant, product },
                   },
                 ]

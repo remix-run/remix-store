@@ -1,8 +1,5 @@
 import { Storefront } from "@shopify/hydrogen";
-import {
-  PRODUCT_DETAIL_FRAGMENT,
-  PRODUCT_VARIANT_FRAGMENT,
-} from "../fragments";
+
 import type {
   ProductQueryVariables,
   ProductVariantsQueryVariables,
@@ -42,6 +39,90 @@ export async function getProductVariants(
 
   return variants;
 }
+
+export const PRODUCT_IMAGE_FRAGMENT = `#graphql
+  fragment ProductImage on Image {
+    id
+    altText
+    url
+    width
+    height
+  }
+` as const;
+
+const PRODUCT_VARIANT_FRAGMENT = `#graphql
+  fragment ProductVariant on ProductVariant {
+    availableForSale
+    compareAtPrice {
+      amount
+      currencyCode
+    }
+    id
+    image {
+      ...ProductImage
+    }
+    price {
+      amount
+      currencyCode
+    }
+    product {
+      title
+      handle
+    }
+    selectedOptions {
+      name
+      value
+    }
+    sku
+    title
+    unitPrice {
+      amount
+      currencyCode
+    }
+  }
+  ${PRODUCT_IMAGE_FRAGMENT}
+` as const;
+
+const PRODUCT_DETAIL_FRAGMENT = `#graphql
+  fragment Product on Product {
+    id
+    title
+    vendor
+    handle
+    options {
+      name
+      optionValues {
+        name
+      }
+    }
+    selectedVariant: variantBySelectedOptions(selectedOptions: $selectedOptions, ignoreUnknownOptions: true, caseInsensitiveMatch: true) {
+      ...ProductVariant
+    }
+    variants(first: 1) {
+      nodes {
+        ...ProductVariant
+      }
+    }
+    images(first: 5) {
+      nodes {
+        ...ProductImage
+      }
+    }
+    seo {
+      description
+      title
+    }
+    description: metafield(key: "description", namespace: "custom") {
+      value
+    }
+    technicalDescription: metafield(key: "technical_description", namespace: "custom") {
+      value
+    }
+    availableForSale
+  }
+  ${PRODUCT_VARIANT_FRAGMENT}
+` as const;
+
 const PRODUCT_QUERY = `#graphql
   query Product(
     $country: CountryCode

@@ -1,5 +1,4 @@
-import { parseGradientColors } from "~/lib/metafields";
-import { Image, type ImageGradientColors } from "./ui/image";
+import { Image } from "./ui/image";
 
 import useEmblaCarousel from "embla-carousel-react";
 import { DotButton, useDotButton } from "~/components/carousel/dot-button";
@@ -10,45 +9,26 @@ import {
 } from "~/components/carousel/arrow-buttons";
 import { cn } from "~/lib/cn";
 
-import type {
-  ProductFragment,
-  ProductVariantFragment,
-} from "storefrontapi.generated";
+import type { ProductVariantFragment } from "storefrontapi.generated";
 
 export default function ProductImages({
   images,
-  gradientColors,
 }: {
   images: Array<ProductVariantFragment["image"]>;
-  gradientColors: ProductFragment["gradientColors"];
 }) {
-  const gradients = parseGradientColors(gradientColors);
-
-  const processedImages = images.map((image) => ({
-    image,
-    gradient: gradients.shift() ?? "random",
-  }));
-
   return (
     <>
       {/* Maybe we should do a mobile check here instead of hide/show with Tailwind? */}
-      <ImageGrid images={processedImages} />
-      <Carousel images={processedImages} />
+      <ImageGrid images={images} />
+      <Carousel images={images} />
     </>
   );
 }
 
-function ImageGrid({
-  images,
-}: {
-  images: Array<{
-    image: ProductVariantFragment["image"];
-    gradient: ImageGradientColors;
-  }>;
-}) {
+function ImageGrid({ images }: { images: ProductVariantFragment["image"][] }) {
   return (
     <div className="hidden size-full max-w-[800px] flex-col gap-[18px] md:flex">
-      {images.map(({ image, gradient }) => {
+      {images.map((image) => {
         if (!image) return null;
 
         return (
@@ -59,7 +39,6 @@ function ImageGrid({
             <Image
               alt={image.altText || "Product Image"}
               data={image}
-              gradient={gradient}
               gradientFade
               sizes="(min-width: 800px) 50vw, 100vw"
               loading="lazy"
@@ -71,14 +50,7 @@ function ImageGrid({
   );
 }
 
-function Carousel({
-  images,
-}: {
-  images: Array<{
-    image: ProductVariantFragment["image"];
-    gradient: ImageGradientColors;
-  }>;
-}) {
+function Carousel({ images }: { images: ProductVariantFragment["image"][] }) {
   const [emblaRef, emblaApi] = useEmblaCarousel();
 
   const { selectedIndex, scrollSnaps, onDotButtonClick } =
@@ -95,8 +67,9 @@ function Carousel({
     <section className="relative -mx-4 mb-[18px] md:hidden">
       <div className="overflow-hidden" ref={emblaRef}>
         <div className="pinch-zoom flex touch-pan-y">
-          {images.map(({ image, gradient }, index) => {
+          {images.map((image) => {
             if (!image) return null;
+
             return (
               <div
                 className="flex aspect-square w-full shrink-0"
@@ -106,7 +79,6 @@ function Carousel({
                   alt={image.altText || "Product Image"}
                   sizes="100vw"
                   data={image}
-                  gradient={gradient}
                   gradientFade={true}
                   loading="lazy"
                 />

@@ -1,7 +1,7 @@
 import type { Storefront } from "@shopify/hydrogen";
 import type { ProductImageFragment } from "storefrontapi.generated";
 import type { MoneyV2 } from "@shopify/hydrogen/customer-account-api-types";
-import { PRODUCT_IMAGE_FRAGMENT } from "~/lib/fragments";
+import { PRODUCT_IMAGE_FRAGMENT } from "./product.server";
 import { getFocalPoint } from "~/lib/image-utils";
 
 export type LookbookEntry = {
