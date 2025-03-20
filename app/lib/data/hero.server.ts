@@ -1,6 +1,6 @@
 import type { Storefront } from "@shopify/hydrogen";
 import type { ProductImageFragment } from "storefrontapi.generated";
-import { PRODUCT_IMAGE_FRAGMENT } from "./fragments";
+import { PRODUCT_IMAGE_FRAGMENT } from "../fragments";
 
 export type HeroData = {
   masthead: ProductImageFragment;

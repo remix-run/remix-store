@@ -27,10 +27,7 @@ import {
 } from "@shopify/hydrogen";
 import type { SelectedOption } from "@shopify/hydrogen/storefront-api-types";
 import { useAside } from "~/components/ui/aside";
-import {
-  PRODUCT_DETAIL_FRAGMENT,
-  PRODUCT_VARIANT_FRAGMENT,
-} from "~/lib/fragments";
+import { FOOTER_QUERY } from "~/lib/fragments";
 import { Button, ButtonWithWellText } from "~/components/ui/button";
 import {
   Accordion,
@@ -48,6 +45,7 @@ import Icon from "~/components/icon";
 import ProductImages from "~/components/product-images";
 import { generateMeta } from "~/lib/meta";
 import type { RootLoader } from "~/root";
+import { getProductData, getProductVariants } from "~/lib/data/product.server";
 
 /** The default vendor, which we hide because nobody cares */
 const DEFAULT_VENDOR = "Remix Swag Store";
@@ -78,75 +76,41 @@ export function meta({
 }
 
 export async function loader(args: LoaderFunctionArgs) {
-  // Start fetching non-critical data without blocking time to first byte
-  const deferredData = loadDeferredData(args);
-
-  // Await the critical data required to render initial state of the page
-  const criticalData = await loadCriticalData(args);
-
-  return data({ ...deferredData, ...criticalData });
-}
-
-async function loadCriticalData({
-  context,
-  params,
-  request,
-}: LoaderFunctionArgs) {
-  const { handle } = params;
-  const { storefront, env } = context;
+  let { request, params, context } = args;
+  let { storefront, env } = context;
+  let { handle } = params;
 
   if (!handle) {
     throw new Error("Expected product handle to be defined");
   }
 
-  const { product } = await storefront.query(PRODUCT_QUERY, {
+  let variants = getProductVariants(storefront, {
+    variables: { handle },
+  }).catch((error) => {
+    console.error(error);
+    return null;
+  });
+
+  // Not sure if this will always be the same as the footer menu
+  const menuPromise = storefront.query(FOOTER_QUERY, {
+    cache: storefront.CacheLong(),
+  });
+
+  let productPromise = getProductData(storefront, {
     variables: {
       handle,
       selectedOptions: getSelectedProductOptions(request),
     },
   });
 
-  if (!product?.id) {
-    throw new Response("Product not found", { status: 404 });
-  }
+  let [menu, product] = await Promise.all([menuPromise, productPromise]);
 
-  const firstVariant = product.variants.nodes[0];
-  const firstVariantIsDefault = Boolean(
-    firstVariant.selectedOptions.find(
-      (option: SelectedOption) =>
-        option.name === "Title" && option.value === "Default Title",
-    ),
-  );
-
-  if (firstVariantIsDefault) {
-    product.selectedVariant = firstVariant;
-  }
-
-  return {
+  return data({
     checkoutDomain: env.PUBLIC_CHECKOUT_DOMAIN,
+    menu,
     product,
-  };
-}
-
-function loadDeferredData({ context, params }: LoaderFunctionArgs) {
-  // In order to show which variants are available in the UI, we need to query
-  // all of them. But there might be a *lot*, so instead separate the variants
-  // into it's own separate query that is deferred. So there's a brief moment
-  // where variant options might show as available when they're not, but after
-  // this deferred query resolves, the UI will update.
-  const variants = context.storefront
-    .query(VARIANTS_QUERY, {
-      variables: { handle: params.handle! },
-    })
-    .catch((error) => {
-      // Log query errors, but don't throw them so the page can still render
-      console.error(error);
-      return null;
-    });
-
-  return {
     variants,
-  };
+  });
 }
 
 export default function Product() {
@@ -550,41 +514,3 @@ function AddToCartButton({
     </CartForm>
   );
 }
-
-const PRODUCT_QUERY = `#graphql
-  query Product(
-    $country: CountryCode
-    $handle: String!
-    $language: LanguageCode
-    $selectedOptions: [SelectedOptionInput!]!
-  ) @inContext(country: $country, language: $language) {
-    product(handle: $handle) {
-      ...Product
-    }
-  }
-  ${PRODUCT_DETAIL_FRAGMENT}
-` as const;
-
-const PRODUCT_VARIANTS_FRAGMENT = `#graphql
-  fragment ProductVariants on Product {
-    variants(first: 250) {
-      nodes {
-        ...ProductVariant
-      }
-    }
-  }
-  ${PRODUCT_VARIANT_FRAGMENT}
-` as const;
-
-const VARIANTS_QUERY = `#graphql
-  query ProductVariants(
-    $country: CountryCode
-    $language: LanguageCode
-    $handle: String!
-  ) @inContext(country: $country, language: $language) {
-    product(handle: $handle) {
-      ...ProductVariants
-    }
-  }
-  ${PRODUCT_VARIANTS_FRAGMENT}
-` as const;
