@@ -4,9 +4,6 @@ const MERCHANDISE_PRODUCT_FRAGMENT = `#graphql
     title
     id
     vendor
-    gradientColors: metafield(key: "images_gradient_background", namespace: "custom") {
-      value
-    }
   }
 ` as const;
 

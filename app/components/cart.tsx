@@ -11,7 +11,6 @@ import { Link, type FetcherWithComponents } from "@remix-run/react";
 import type { CartApiQueryFragment } from "storefrontapi.generated";
 import { useVariantUrl } from "~/lib/variants";
 import { Image } from "~/components/ui/image";
-import { parseGradientColors } from "~/lib/metafields";
 import { AsideDescription } from "~/components/ui/aside";
 import { Button } from "~/components/ui/button";
 import Icon from "~/components/icon";
@@ -148,19 +147,12 @@ function CartLineItem({
   const { id, merchandise } = line;
   const { product, title, image, selectedOptions } = merchandise;
   const lineItemUrl = useVariantUrl(product.handle, selectedOptions);
-  const gradients = parseGradientColors(product.gradientColors);
 
   return (
     <li key={id} className="flex first:pt-0 last:pb-8">
       {image && (
         <div className="h-[148px] w-[148px]">
-          <Image
-            alt={title}
-            data={image}
-            loading="lazy"
-            gradient={gradients[0]}
-            gradientFade
-          />
+          <Image alt={title} data={image} loading="lazy" gradientFade />
         </div>
       )}
 

@@ -473,9 +473,7 @@ export type ProductVariantsQuery = {
 export type MerchadiseProductFragment = Pick<
   StorefrontAPI.Product,
   'handle' | 'title' | 'id' | 'vendor'
-> & {
-  gradientColors?: StorefrontAPI.Maybe<Pick<StorefrontAPI.Metafield, 'value'>>;
-};
+>;
 
 export type CartApiMutationFragment = Pick<
   StorefrontAPI.Cart,
@@ -514,14 +512,7 @@ export type CartLineFragment = Pick<
     image?: StorefrontAPI.Maybe<
       Pick<StorefrontAPI.Image, 'id' | 'url' | 'altText' | 'width' | 'height'>
     >;
-    product: Pick<
-      StorefrontAPI.Product,
-      'handle' | 'title' | 'id' | 'vendor'
-    > & {
-      gradientColors?: StorefrontAPI.Maybe<
-        Pick<StorefrontAPI.Metafield, 'value'>
-      >;
-    };
+    product: Pick<StorefrontAPI.Product, 'handle' | 'title' | 'id' | 'vendor'>;
     selectedOptions: Array<
       Pick<StorefrontAPI.SelectedOption, 'name' | 'value'>
     >;
@@ -574,11 +565,7 @@ export type CartApiQueryFragment = Pick<
           product: Pick<
             StorefrontAPI.Product,
             'handle' | 'title' | 'id' | 'vendor'
-          > & {
-            gradientColors?: StorefrontAPI.Maybe<
-              Pick<StorefrontAPI.Metafield, 'value'>
-            >;
-          };
+          >;
           selectedOptions: Array<
             Pick<StorefrontAPI.SelectedOption, 'name' | 'value'>
           >;
