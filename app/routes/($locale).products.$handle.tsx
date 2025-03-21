@@ -137,7 +137,7 @@ export default function Product() {
   }
 
   return (
-    <div className="relative mt-(--header-height) flex min-h-[90vh] flex-col gap-4 md:flex-row md:justify-between md:gap-8 md:px-4 lg:px-9">
+    <div className="relative mt-(--header-height) flex min-h-[90vh] flex-col gap-4 overflow-x-clip md:flex-row md:justify-between md:gap-8 md:px-4 lg:px-9">
       <CollectionsMenu menu={menu} />
 
       <ProductImages images={product?.images.nodes} />
@@ -223,7 +223,7 @@ function ProductMain({
     : 0;
 
   return (
-    <div className="static top-(--header-height) mx-4 flex flex-col gap-6 text-white md:sticky md:mx-0 md:max-w-[410px] md:min-w-[300px] md:basis-1/3 lg:gap-9 lg:pt-32">
+    <div className="static top-(--header-height) mx-4 flex max-h-fit flex-col gap-6 text-white md:sticky md:mx-0 md:max-w-[410px] md:min-w-[300px] md:basis-1/3 lg:gap-9 lg:pt-32">
       <div className="flex flex-col gap-4">
         {category ? (
           <p className="text-xs lg:text-base">{category?.name}</p>

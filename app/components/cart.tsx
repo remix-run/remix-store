@@ -10,8 +10,8 @@ import type { CartLineUpdateInput } from "@shopify/hydrogen/storefront-api-types
 import { Link, type FetcherWithComponents } from "@remix-run/react";
 import type { CartApiQueryFragment } from "storefrontapi.generated";
 import { useVariantUrl } from "~/lib/variants";
-import { Image } from "~/components/ui/image";
 import { AsideDescription } from "~/components/ui/aside";
+import { Image as HydrogenImage } from "@shopify/hydrogen";
 import { Button } from "~/components/ui/button";
 import Icon from "~/components/icon";
 import { clsx } from "clsx";
@@ -152,7 +152,12 @@ function CartLineItem({
     <li key={id} className="flex first:pt-0 last:pb-8">
       {image && (
         <div className="h-[148px] w-[148px]">
-          <Image alt={title} data={image} loading="lazy" gradientFade />
+          <HydrogenImage
+            className="pointer-events-none size-auto select-none"
+            alt={title}
+            data={image}
+            loading="lazy"
+          />
         </div>
       )}
 
