@@ -261,3 +261,19 @@
         var(--animated-link-delay);
   }
 }
+
+@utility rich-text {
+  ul {
+    list-style: none;
+  }
+  ul li {
+    position: relative;
+    padding-left: 1em;
+    line-height: 1.6em;
+  }
+  ul li::before {
+    content: "•";
+    position: absolute;
+    left: 0;
+  }
+}

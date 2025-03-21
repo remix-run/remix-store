@@ -45,6 +45,7 @@ import ProductImages from "~/components/product-images";
 import { generateMeta } from "~/lib/meta";
 import type { RootLoader } from "~/root";
 import { getProductData, getProductVariants } from "~/lib/data/product.server";
+import { useRelativeUrl } from "~/lib/use-relative-url";
 
 /** The default vendor, which we hide because nobody cares */
 const DEFAULT_VENDOR = "Remix Swag Store";
@@ -94,11 +95,18 @@ export async function loader(args: LoaderFunctionArgs) {
       cache: storefront.CacheLong(),
     })
     .then((data) => {
-      if (!data.menu) return [];
-      return data.menu?.items.map((item) => ({
-        label: item.title,
-        to: item.url,
-      }));
+      let menu: MenuItem[] = [];
+      if (!data.menu) {
+        return menu;
+      }
+      for (const item of data.menu.items) {
+        if (!item.url) continue;
+        menu.push({
+          label: item.title,
+          to: item.url,
+        });
+      }
+      return menu;
     });
 
   let productPromise = getProductData(storefront, {
@@ -130,37 +138,16 @@ export default function Product() {
 
   return (
     <div className="relative mt-(--header-height) flex min-h-[90vh] flex-col gap-4 md:flex-row md:justify-between md:gap-8 md:px-4 lg:px-9">
-      {menu ? (
-        <nav className="sticky top-(--header-height) hidden h-fit min-w-fit md:block lg:pt-32">
-          <ul className="flex flex-col gap-1">
-            {menu.map((item) => {
-              if (!item.to) return null;
-              return (
-                <li key={item.to}>
-                  <Link
-                    className="text-xs leading-5 text-neutral-400 transition-[color] hover:text-white lg:text-base lg:leading-6"
-                    to={item.to}
-                  >
-                    {item.label}
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        </nav>
-      ) : null}
+      <CollectionsMenu menu={menu} />
 
       <ProductImages images={product?.images.nodes} />
 
-      <div className="border-red-brand static top-(--header-height) mx-4 h-[400px] border md:sticky md:mx-0 md:max-w-[410px] md:min-w-[200px] md:basis-1/3 lg:pt-32">
-        <h1 className="">{product.title}</h1>
-      </div>
-      {/* <ProductMain
+      <ProductMain
         selectedVariant={selectedVariant}
         product={product}
         variants={variants}
         checkoutDomain={checkoutDomain}
-      /> */}
+      />
 
       <Analytics.ProductView
         data={{
@@ -181,6 +168,40 @@ export default function Product() {
   );
 }
 
+type MenuItem = {
+  label: string;
+  to: string;
+};
+
+function CollectionsMenu({ menu }: { menu: MenuItem[] }) {
+  return (
+    <nav className="sticky top-(--header-height) hidden h-fit min-w-fit md:block lg:pt-32">
+      <ul className="flex flex-col gap-1">
+        {menu.map((item) => {
+          if (!item.to) return null;
+          return (
+            <li key={item.to}>
+              <MenuLink to={item.to}>{item.label}</MenuLink>
+            </li>
+          );
+        })}
+      </ul>
+    </nav>
+  );
+}
+
+function MenuLink({ to, children }: { to: string; children: React.ReactNode }) {
+  const { url } = useRelativeUrl(to);
+  return (
+    <Link
+      className="text-xs leading-5 text-neutral-400 transition-[color] hover:text-white lg:text-base lg:leading-6"
+      to={url}
+    >
+      {children}
+    </Link>
+  );
+}
+
 function ProductMain({
   selectedVariant,
   product,
@@ -188,132 +209,89 @@ function ProductMain({
   checkoutDomain,
 }: {
   product: ProductFragment;
-  selectedVariant: ProductFragment["selectedVariant"];
+  selectedVariant: NonNullable<ProductFragment["selectedVariant"]>;
   variants: Promise<ProductVariantsQuery | null>;
   checkoutDomain: string;
 }) {
-  const { title, vendor, description, technicalDescription } = product;
+  const { title, category, description, technicalDescription } = product;
 
-  const cardCss =
-    "flex flex-col gap-6 md:gap-8 rounded-3xl bg-neutral-100 py-7 px-[24px] lg:p-9 dark:bg-neutral-700";
-
-  return (
-    <div>
-      <div className="sticky top-[var(--header-height)] flex flex-col gap-[18px] [&_ul]:list-inside [&_ul]:list-disc [&_ul]:pl-2">
-        <div className={cardCss}>
-          <div className="flex flex-col gap-6">
-            <ProductHeader
-              title={title}
-              vendor={vendor}
-              selectedVariant={selectedVariant}
-            />
-          </div>
-
-          {description ? <RichText data={description.value} /> : null}
-
-          <div className="flex flex-col gap-[18px] md:gap-8">
-            <Suspense
-              fallback={
-                <ProductForm
-                  product={product}
-                  selectedVariant={selectedVariant}
-                  variants={[]}
-                  checkoutDomain={checkoutDomain}
-                />
-              }
-            >
-              <Await
-                errorElement="There was a problem loading product variants"
-                resolve={variants}
-              >
-                {(data) => (
-                  <ProductForm
-                    product={product}
-                    selectedVariant={selectedVariant}
-                    variants={data?.product?.variants.nodes || []}
-                    checkoutDomain={checkoutDomain}
-                  />
-                )}
-              </Await>
-            </Suspense>
-          </div>
-        </div>
-
-        <div className={cardCss}>
-          <Accordion type="multiple" className="-m-4 md:-m-6">
-            {technicalDescription ? (
-              <AccordionItem value="technicalDescription">
-                <AccordionTrigger>Technical Description</AccordionTrigger>
-                <AccordionContent>
-                  <RichText data={technicalDescription.value} />
-                </AccordionContent>
-              </AccordionItem>
-            ) : null}
-            <AccordionItem value="shipping" className="pb-0">
-              <AccordionTrigger>Shipping</AccordionTrigger>
-              <AccordionContent className="pb-9">
-                {/* Not sure if this should be coming from the data or just be standard for all products */}
-                See a full list of countries we ship to{" "}
-                <Link to="/help">here</Link>.
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function ProductHeader({
-  title,
-  vendor,
-  selectedVariant,
-}: {
-  title: string;
-  vendor?: string;
-  selectedVariant: ProductFragment["selectedVariant"];
-}) {
-  const displayVendor = vendor !== DEFAULT_VENDOR;
-  const price = Number(selectedVariant?.price.amount || 0);
-  const compareAtPrice = Number(selectedVariant?.compareAtPrice?.amount || 0);
+  const price = Number(selectedVariant.price.amount || 0);
+  const compareAtPrice = Number(selectedVariant.compareAtPrice?.amount || 0);
   const isOnSale = price < compareAtPrice;
   const percentageOff = isOnSale
     ? Math.round(((compareAtPrice - price) / compareAtPrice) * 100)
     : 0;
 
   return (
-    <div className="flex flex-col gap-4 md:gap-[18px]">
-      {(displayVendor || isOnSale) && (
-        <div className="flex justify-between text-base leading-4 md:text-2xl/6">
-          {displayVendor && <div>{vendor}</div>}
+    <div className="static top-(--header-height) mx-4 flex flex-col gap-6 text-white md:sticky md:mx-0 md:max-w-[410px] md:min-w-[300px] md:basis-1/3 lg:gap-9 lg:pt-32">
+      <div className="flex flex-col gap-4">
+        {category ? (
+          <p className="text-xs lg:text-base">{category?.name}</p>
+        ) : null}
+        <h1 className="min-w-fit font-sans text-2xl font-bold lg:text-4xl">
+          {title}
+        </h1>
+        <div className="flex gap-3">
+          <Money data={selectedVariant.price} withoutTrailingZeros />
+          {selectedVariant.compareAtPrice && isOnSale && (
+            <>
+              <s className="line-through opacity-50">
+                <Money
+                  data={selectedVariant.compareAtPrice}
+                  withoutTrailingZeros
+                />
+              </s>
+              <span className="text-red-brand">{percentageOff}% Off</span>
+            </>
+          )}
         </div>
-      )}
-      <h1 className="min-w-max font-sans text-2xl leading-6 font-bold tracking-[-0.32px] md:text-4xl md:leading-[1.875rem]">
-        {title}
-      </h1>
-
-      <div className="flex gap-3 font-mono text-base leading-4 tracking-[-0.48px] md:text-2xl/6 md:leading-6">
-        <Money
-          // eslint-disable-next-line @typescript-eslint/no-non-null-asserted-optional-chain
-          data={selectedVariant?.price!}
-          withoutTrailingZeros
-        />
-        {isOnSale && (
-          <>
-            <s className="line-through opacity-50">
-              <Money
-                // eslint-disable-next-line @typescript-eslint/no-non-null-asserted-optional-chain
-                data={selectedVariant?.compareAtPrice!}
-                withoutTrailingZeros
-              />
-            </s>
-            <span className="text-red-brand">{percentageOff}% Off</span>
-          </>
-        )}
       </div>
+
+      <div className="flex flex-col gap-[18px] md:gap-8">
+        <Suspense
+          fallback={
+            <ProductForm
+              product={product}
+              selectedVariant={selectedVariant}
+              variants={[]}
+              checkoutDomain={checkoutDomain}
+            />
+          }
+        >
+          <Await
+            errorElement="There was a problem loading product variants"
+            resolve={variants}
+          >
+            {(data) => (
+              <ProductForm
+                product={product}
+                selectedVariant={selectedVariant}
+                variants={data?.product?.variants.nodes || []}
+                checkoutDomain={checkoutDomain}
+              />
+            )}
+          </Await>
+        </Suspense>
+      </div>
+
+      {description ? (
+        <RichText
+          className="rich-text text-xs lg:text-base"
+          data={description.value}
+        />
+      ) : null}
+      <h3 className="text-sm font-bold lg:text-base">Technical Description</h3>
+      {technicalDescription ? (
+        <RichText
+          className="rich-text text-xs lg:text-base"
+          data={technicalDescription.value}
+        />
+      ) : null}
     </div>
   );
 }
+
+// TODO: get back to variants
 
 function ProductForm({
   product,
@@ -334,19 +312,19 @@ function ProductForm({
   let addToCartText = "Add to cart";
 
   // If the product has options (like size, color, etc), check whether each option has been selected
-  if (variants.length > 1) {
-    for (const option of options) {
-      const selectedOption = searchParams.get(option.name);
-      if (!selectedOption) {
-        addToCartText = `Select a ${option.name.toLowerCase()}`;
-        break;
-      }
-    }
-  }
+  // if (variants.length > 1) {
+  //   for (const option of options) {
+  //     const selectedOption = searchParams.get(option.name);
+  //     if (!selectedOption) {
+  //       addToCartText = `Select a ${option.name.toLowerCase()}`;
+  //       break;
+  //     }
+  //   }
+  // }
 
   return (
     <>
-      <VariantSelector
+      {/* <VariantSelector
         handle={product.handle}
         options={product.options.filter(
           (option) => option.optionValues.length > 1,
@@ -354,19 +332,19 @@ function ProductForm({
         variants={variants}
       >
         {({ option }) => <ProductOptions key={option.name} option={option} />}
-      </VariantSelector>
+      </VariantSelector> */}
       <div className="flex flex-col gap-2 md:gap-3">
         <AddToCartButton
           disabled={!selectedVariant || !isAvailable}
-          onClick={() => {
-            open("cart");
-            publish("cart_viewed", {
-              cart,
-              prevCart,
-              shop,
-              url: window.location.href || "",
-            } as CartViewPayload);
-          }}
+          // onClick={() => {
+          //   open("cart");
+          //   publish("cart_viewed", {
+          //     cart,
+          //     prevCart,
+          //     shop,
+          //     url: window.location.href || "",
+          //   } as CartViewPayload);
+          // }}
           lines={
             selectedVariant
               ? [
@@ -383,12 +361,12 @@ function ProductForm({
           {product.availableForSale ? addToCartText : "Sold out"}
         </AddToCartButton>
 
-        {isAvailable ? (
+        {/* {isAvailable ? (
           <ShopPayButton
             selectedVariant={selectedVariant}
             checkoutDomain={checkoutDomain}
           />
-        ) : null}
+        ) : null} */}
       </div>
     </>
   );
@@ -517,14 +495,14 @@ function AddToCartButton({
             type="hidden"
             value={JSON.stringify(analytics)}
           />
-          <Button
-            size="lg"
+          <button
             type="submit"
             onClick={onClick}
             disabled={disabled ?? fetcher.state !== "idle"}
+            className="hover:bg-blue-brand transition-color h-12 w-full rounded-[54px] bg-white px-5 py-2 text-center text-base font-semibold text-black duration-300 ease-in-out hover:text-white disabled:cursor-not-allowed disabled:opacity-50 md:h-16 md:gap-2.5 md:px-6 md:py-4 md:text-xl"
           >
             {children}
-          </Button>
+          </button>
         </>
       )}
     </CartForm>

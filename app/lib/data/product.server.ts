@@ -89,6 +89,9 @@ const PRODUCT_DETAIL_FRAGMENT = `#graphql
     title
     vendor
     handle
+    category {
+      name
+    }
     options {
       name
       optionValues {

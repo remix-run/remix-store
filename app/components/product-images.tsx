@@ -64,7 +64,7 @@ function Carousel({ images }: { images: ProductVariantFragment["image"][] }) {
   } = usePrevNextButtons(emblaApi);
 
   return (
-    <section className="relative -mx-4 mb-[18px] md:hidden">
+    <section className="relative -mx-4 md:hidden">
       <div className="overflow-hidden" ref={emblaRef}>
         <div className="pinch-zoom flex touch-pan-y">
           {images.map((image) => {
