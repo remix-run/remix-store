@@ -1,6 +1,3 @@
-import { parseGradientColors } from "~/lib/metafields";
-import { Image, type ImageGradientColors } from "./ui/image";
-
 import useEmblaCarousel from "embla-carousel-react";
 import { DotButton, useDotButton } from "~/components/carousel/dot-button";
 import {
@@ -8,59 +5,55 @@ import {
   PrevButton,
   usePrevNextButtons,
 } from "~/components/carousel/arrow-buttons";
+import { Image as HydrogenImage } from "@shopify/hydrogen";
 import { cn } from "~/lib/cn";
+import { useCallback, useRef, useState } from "react";
+import { useLayoutEffect } from "~/lib/use-layout-effect";
 
-import type {
-  ProductFragment,
-  ProductVariantFragment,
-} from "storefrontapi.generated";
+import type { ProductVariantFragment } from "storefrontapi.generated";
 
 export default function ProductImages({
   images,
-  gradientColors,
 }: {
   images: Array<ProductVariantFragment["image"]>;
-  gradientColors: ProductFragment["gradientColors"];
 }) {
-  const gradients = parseGradientColors(gradientColors);
-
-  const processedImages = images.map((image) => ({
-    image,
-    gradient: gradients.shift() ?? "random",
-  }));
-
   return (
     <>
-      {/* Maybe we should do a mobile check here instead of hide/show with Tailwind? */}
-      <ImageGrid images={processedImages} />
-      <Carousel images={processedImages} />
+      <ImageColumn images={images} />
+      <ImageCarousel images={images} />
     </>
   );
 }
 
-function ImageGrid({
+function ImageColumn({
   images,
 }: {
-  images: Array<{
-    image: ProductVariantFragment["image"];
-    gradient: ImageGradientColors;
-  }>;
+  images: ProductVariantFragment["image"][];
 }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const opacities = useImageOpacities(containerRef);
+
   return (
-    <div className="hidden size-full max-w-[800px] flex-col gap-[18px] md:flex">
-      {images.map(({ image, gradient }) => {
-        if (!image) return null;
+    <div
+      ref={containerRef}
+      className="hidden size-full max-w-[1200px] flex-col gap-[18px] md:flex"
+    >
+      {images.map((image, index) => {
+        if (!image || !image.id) return null;
+
+        let defaultOpacity = index === 0 ? 1 : 0;
 
         return (
           <div
             key={image.id}
+            data-image-id={image.id}
             className="aspect-square overflow-hidden rounded-3xl"
+            style={{ opacity: opacities.get(image.id) ?? defaultOpacity }}
           >
-            <Image
+            <HydrogenImage
+              className="pointer-events-none size-auto select-none"
               alt={image.altText || "Product Image"}
               data={image}
-              gradient={gradient}
-              gradientFade
               sizes="(min-width: 800px) 50vw, 100vw"
               loading="lazy"
             />
@@ -71,20 +64,16 @@ function ImageGrid({
   );
 }
 
-function Carousel({
+function ImageCarousel({
   images,
 }: {
-  images: Array<{
-    image: ProductVariantFragment["image"];
-    gradient: ImageGradientColors;
-  }>;
+  images: ProductVariantFragment["image"][];
 }) {
-  const [emblaRef, emblaApi] = useEmblaCarousel();
+  let [emblaRef, emblaApi] = useEmblaCarousel();
 
-  const { selectedIndex, scrollSnaps, onDotButtonClick } =
-    useDotButton(emblaApi);
+  let { selectedIndex, scrollSnaps, onDotButtonClick } = useDotButton(emblaApi);
 
-  const {
+  let {
     prevBtnDisabled,
     nextBtnDisabled,
     onPrevButtonClick,
@@ -92,22 +81,22 @@ function Carousel({
   } = usePrevNextButtons(emblaApi);
 
   return (
-    <section className="relative -mx-4 mb-[18px] md:hidden">
+    <section className="relative -mx-4 md:hidden">
       <div className="overflow-hidden" ref={emblaRef}>
         <div className="pinch-zoom flex touch-pan-y">
-          {images.map(({ image, gradient }, index) => {
+          {images.map((image) => {
             if (!image) return null;
+
             return (
               <div
                 className="flex aspect-square w-full shrink-0"
                 key={image.id}
               >
-                <Image
+                <HydrogenImage
+                  className="pointer-events-none size-auto select-none"
                   alt={image.altText || "Product Image"}
                   sizes="100vw"
                   data={image}
-                  gradient={gradient}
-                  gradientFade={true}
                   loading="lazy"
                 />
               </div>
@@ -157,4 +146,73 @@ function Carousel({
       )}
     </section>
   );
+}
+
+function useImageOpacities(containerRef: React.RefObject<HTMLElement>) {
+  const [opacities, setOpacities] = useState<Map<string, number>>(new Map());
+
+  useLayoutEffect(() => {
+    let rafId: number;
+
+    const calculateVisibilities = () => {
+      rafId = requestAnimationFrame(() => {
+        if (!containerRef.current) return;
+
+        const newOpacities = new Map<string, number>();
+        const windowHeight = window.innerHeight;
+
+        // Get the header height from CSS variable
+        const headerHeight =
+          parseInt(
+            getComputedStyle(document.documentElement)
+              .getPropertyValue("--header-height")
+              .trim(),
+          ) || windowHeight * 0.15;
+
+        // Create a fade range of about 40% of the viewport height
+        const fadeRange = windowHeight * 0.4;
+
+        // Get all image containers
+        const imageContainers =
+          containerRef.current.querySelectorAll("[data-image-id]");
+
+        imageContainers.forEach((element) => {
+          const id = element.getAttribute("data-image-id")!;
+          const rect = element.getBoundingClientRect();
+          const elementTop = rect.top;
+          const distanceFromTarget = Math.abs(elementTop - headerHeight);
+
+          // Calculate normalized distance (0 to 1)
+          const normalizedDistance = Math.min(
+            1,
+            distanceFromTarget / fadeRange,
+          );
+
+          // Use a quadratic curve for sharper falloff and apply minimum opacity
+          const opacity = Math.max(
+            0.2,
+            1 - normalizedDistance * normalizedDistance,
+          );
+          newOpacities.set(id, opacity);
+        });
+
+        setOpacities(newOpacities);
+      });
+    };
+
+    // Calculate initial visibilities
+    calculateVisibilities();
+
+    // Set up scroll listener
+    window.addEventListener("scroll", calculateVisibilities, { passive: true });
+    window.addEventListener("resize", calculateVisibilities);
+
+    return () => {
+      window.removeEventListener("scroll", calculateVisibilities);
+      window.removeEventListener("resize", calculateVisibilities);
+      cancelAnimationFrame(rafId);
+    };
+  }, [containerRef]);
+
+  return opacities;
 }

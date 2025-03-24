@@ -4,9 +4,6 @@ const MERCHANDISE_PRODUCT_FRAGMENT = `#graphql
     title
     id
     vendor
-    gradientColors: metafield(key: "images_gradient_background", namespace: "custom") {
-      value
-    }
   }
 ` as const;
 
@@ -207,92 +204,4 @@ export const FOOTER_QUERY = `#graphql
     }
   }
   ${MENU_FRAGMENT}
-` as const;
-
-export const PRODUCT_IMAGE_FRAGMENT = `#graphql
-  fragment ProductImage on Image {
-    id
-    altText
-    url
-    width
-    height
-  }
-` as const;
-
-export const PRODUCT_VARIANT_FRAGMENT = `#graphql
-  fragment ProductVariant on ProductVariant {
-    availableForSale
-    compareAtPrice {
-      amount
-      currencyCode
-    }
-    id
-    image {
-      ...ProductImage
-    }
-    price {
-      amount
-      currencyCode
-    }
-    product {
-      title
-      handle
-    }
-    selectedOptions {
-      name
-      value
-    }
-    sku
-    title
-    unitPrice {
-      amount
-      currencyCode
-    }
-  }
-  ${PRODUCT_IMAGE_FRAGMENT}
-` as const;
-
-export const PRODUCT_DETAIL_FRAGMENT = `#graphql
-  fragment Product on Product {
-    id
-    title
-    vendor
-    handle
-    descriptionHtml
-    description
-    options {
-      name
-      optionValues {
-        name
-      }
-    }
-    selectedVariant: variantBySelectedOptions(selectedOptions: $selectedOptions, ignoreUnknownOptions: true, caseInsensitiveMatch: true) {
-      ...ProductVariant
-    }
-    variants(first: 1) {
-      nodes {
-        ...ProductVariant
-      }
-    }
-    images(first: 5) {
-      nodes {
-        ...ProductImage
-      }
-    }
-    seo {
-      description
-      title
-    }
-    gradientColors: metafield(key: "images_gradient_background", namespace: "custom") {
-      value
-    }
-    fullDescription: metafield(key: "full_description", namespace: "custom") {
-      value
-    }
-    specs: metafield(key: "specs", namespace: "custom") {
-      value
-    }
-    availableForSale
-  }
-  ${PRODUCT_VARIANT_FRAGMENT}
 ` as const;

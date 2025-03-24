@@ -4,7 +4,7 @@ import { Await, useLoaderData, type MetaArgs } from "@remix-run/react";
 import { Analytics, Image as HydrogenImage } from "@shopify/hydrogen";
 import { FiltersAside, FiltersToolbar } from "~/components/filters";
 
-import { getCollectionQuery } from "~/lib/collection.server";
+import { getCollectionQuery } from "~/lib/data/collection.server";
 import { getFilterQueryVariables } from "~/lib/filters/query-variables.server";
 import { generateMeta } from "~/lib/meta";
 import type { RootLoader } from "~/root";

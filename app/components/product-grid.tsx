@@ -4,7 +4,7 @@ import { clsx } from "clsx";
 import { Suspense } from "react";
 
 import type { ProductImageFragment } from "storefrontapi.generated";
-import type { CollectionProductData } from "~/lib/collection.server";
+import type { CollectionProductData } from "~/lib/data/collection.server";
 
 let defaultLoadingProductCount = 12;
 

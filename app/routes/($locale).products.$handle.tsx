@@ -25,12 +25,8 @@ import {
   useAnalytics,
   RichText,
 } from "@shopify/hydrogen";
-import type { SelectedOption } from "@shopify/hydrogen/storefront-api-types";
 import { useAside } from "~/components/ui/aside";
-import {
-  PRODUCT_DETAIL_FRAGMENT,
-  PRODUCT_VARIANT_FRAGMENT,
-} from "~/lib/fragments";
+import { FOOTER_QUERY } from "~/lib/fragments";
 import { Button, ButtonWithWellText } from "~/components/ui/button";
 import {
   Accordion,
@@ -48,6 +44,8 @@ import Icon from "~/components/icon";
 import ProductImages from "~/components/product-images";
 import { generateMeta } from "~/lib/meta";
 import type { RootLoader } from "~/root";
+import { getProductData, getProductVariants } from "~/lib/data/product.server";
+import { useRelativeUrl } from "~/lib/use-relative-url";
 
 /** The default vendor, which we hide because nobody cares */
 const DEFAULT_VENDOR = "Remix Swag Store";
@@ -61,96 +59,76 @@ export function meta({
   const { product } = data;
   const { siteUrl } = matches[0].data;
 
-  const title = `The Remix Store | ${product.title}`;
-  const description = product.seo?.description || product.description;
-
   // Use product image if available
   const image = product.images?.nodes[0]?.url
     ? product.images.nodes[0].url
     : "/og_image.jpg";
 
   return generateMeta({
-    title,
-    description,
+    // I think there's a better way to get seo data using some Hydrogen helpers
+    title: product.seo?.title || product.title,
+    description: product.seo?.description ?? undefined,
     image,
     url: siteUrl,
   });
 }
 
 export async function loader(args: LoaderFunctionArgs) {
-  // Start fetching non-critical data without blocking time to first byte
-  const deferredData = loadDeferredData(args);
-
-  // Await the critical data required to render initial state of the page
-  const criticalData = await loadCriticalData(args);
-
-  return data({ ...deferredData, ...criticalData });
-}
-
-async function loadCriticalData({
-  context,
-  params,
-  request,
-}: LoaderFunctionArgs) {
-  const { handle } = params;
-  const { storefront, env } = context;
+  let { request, params, context } = args;
+  let { storefront, env } = context;
+  let { handle } = params;
 
   if (!handle) {
     throw new Error("Expected product handle to be defined");
   }
 
-  const { product } = await storefront.query(PRODUCT_QUERY, {
+  let variants = getProductVariants(storefront, {
+    variables: { handle },
+  }).catch((error) => {
+    console.error(error);
+    return null;
+  });
+
+  // Not sure if this will always be the same as the footer menu
+  const menuPromise = storefront
+    .query(FOOTER_QUERY, {
+      cache: storefront.CacheLong(),
+    })
+    .then((data) => {
+      let menu: MenuItem[] = [];
+      if (!data.menu) {
+        return menu;
+      }
+      for (const item of data.menu.items) {
+        if (!item.url) continue;
+        menu.push({
+          label: item.title,
+          to: item.url,
+        });
+      }
+      return menu;
+    });
+
+  let productPromise = getProductData(storefront, {
     variables: {
       handle,
       selectedOptions: getSelectedProductOptions(request),
     },
   });
 
-  if (!product?.id) {
-    throw new Response("Product not found", { status: 404 });
-  }
+  let [menu, product] = await Promise.all([menuPromise, productPromise]);
 
-  const firstVariant = product.variants.nodes[0];
-  const firstVariantIsDefault = Boolean(
-    firstVariant.selectedOptions.find(
-      (option: SelectedOption) =>
-        option.name === "Title" && option.value === "Default Title",
-    ),
-  );
-
-  if (firstVariantIsDefault) {
-    product.selectedVariant = firstVariant;
-  }
-
-  return {
+  return data({
     checkoutDomain: env.PUBLIC_CHECKOUT_DOMAIN,
+    menu,
     product,
-  };
-}
-
-function loadDeferredData({ context, params }: LoaderFunctionArgs) {
-  // In order to show which variants are available in the UI, we need to query
-  // all of them. But there might be a *lot*, so instead separate the variants
-  // into it's own separate query that is deferred. So there's a brief moment
-  // where variant options might show as available when they're not, but after
-  // this deferred query resolves, the UI will update.
-  const variants = context.storefront
-    .query(VARIANTS_QUERY, {
-      variables: { handle: params.handle! },
-    })
-    .catch((error) => {
-      // Log query errors, but don't throw them so the page can still render
-      console.error(error);
-      return null;
-    });
-
-  return {
     variants,
-  };
+  });
 }
 
 export default function Product() {
-  const { product, variants, checkoutDomain } = useLoaderData<typeof loader>();
+  const { menu, product, variants, checkoutDomain } =
+    useLoaderData<typeof loader>();
   let { selectedVariant } = product;
 
   // If a variant isn't selected, use the first variant for price, analytics, etc
@@ -159,17 +137,18 @@ export default function Product() {
   }
 
   return (
-    <div className="mx-auto max-w-(--breakpoint-xl) md:flex md:justify-center md:gap-[18px]">
-      <ProductImages
-        images={product?.images.nodes}
-        gradientColors={product.gradientColors}
-      />
+    <div className="relative mt-(--header-height) flex min-h-[90vh] flex-col gap-4 overflow-x-clip md:flex-row md:justify-between md:gap-8 md:px-4 lg:px-9">
+      <CollectionsMenu menu={menu} />
+
+      <ProductImages images={product?.images.nodes} />
+
       <ProductMain
         selectedVariant={selectedVariant}
         product={product}
         variants={variants}
         checkoutDomain={checkoutDomain}
       />
+
       <Analytics.ProductView
         data={{
           products: [
@@ -189,6 +168,40 @@ export default function Product() {
   );
 }
 
+type MenuItem = {
+  label: string;
+  to: string;
+};
+
+function CollectionsMenu({ menu }: { menu: MenuItem[] }) {
+  return (
+    <nav className="sticky top-(--header-height) hidden h-fit min-w-fit md:block lg:pt-32">
+      <ul className="flex flex-col gap-1">
+        {menu.map((item) => {
+          if (!item.to) return null;
+          return (
+            <li key={item.to}>
+              <MenuLink to={item.to}>{item.label}</MenuLink>
+            </li>
+          );
+        })}
+      </ul>
+    </nav>
+  );
+}
+
+function MenuLink({ to, children }: { to: string; children: React.ReactNode }) {
+  const { url } = useRelativeUrl(to);
+  return (
+    <Link
+      className="text-xs leading-5 text-neutral-400 transition-[color] hover:text-white lg:text-base lg:leading-6"
+      to={url}
+    >
+      {children}
+    </Link>
+  );
+}
+
 function ProductMain({
   selectedVariant,
   product,
@@ -196,144 +209,89 @@ function ProductMain({
   checkoutDomain,
 }: {
   product: ProductFragment;
-  selectedVariant: ProductFragment["selectedVariant"];
+  selectedVariant: NonNullable<ProductFragment["selectedVariant"]>;
   variants: Promise<ProductVariantsQuery | null>;
   checkoutDomain: string;
 }) {
-  const { title, vendor, description, specs, fullDescription } = product;
+  const { title, category, description, technicalDescription } = product;
 
-  const cardCss =
-    "flex flex-col gap-6 md:gap-8 rounded-3xl bg-neutral-100 py-7 px-[24px] lg:p-9 dark:bg-neutral-700";
-
-  return (
-    <div>
-      <div className="sticky top-[var(--header-height)] flex flex-col gap-[18px]">
-        <div className={cardCss}>
-          <div className="flex flex-col gap-6">
-            <ProductHeader
-              title={title}
-              vendor={vendor}
-              selectedVariant={selectedVariant}
-            />
-          </div>
-
-          <p>{description}</p>
-
-          <div className="flex flex-col gap-[18px] md:gap-8">
-            <Suspense
-              fallback={
-                <ProductForm
-                  product={product}
-                  selectedVariant={selectedVariant}
-                  variants={[]}
-                  checkoutDomain={checkoutDomain}
-                />
-              }
-            >
-              <Await
-                errorElement="There was a problem loading product variants"
-                resolve={variants}
-              >
-                {(data) => (
-                  <ProductForm
-                    product={product}
-                    selectedVariant={selectedVariant}
-                    variants={data?.product?.variants.nodes || []}
-                    checkoutDomain={checkoutDomain}
-                  />
-                )}
-              </Await>
-            </Suspense>
-          </div>
-        </div>
-
-        <div className={cardCss}>
-          <Accordion type="multiple" className="-m-4 md:-m-6">
-            {fullDescription ? (
-              <AccordionItem value="description">
-                <AccordionTrigger>Description</AccordionTrigger>
-                <AccordionContent>
-                  <RichText data={fullDescription.value} />
-                </AccordionContent>
-              </AccordionItem>
-            ) : null}
-            {specs ? (
-              <AccordionItem value="specs">
-                <AccordionTrigger>Specs</AccordionTrigger>
-                <AccordionContent>
-                  <RichText
-                    data={specs.value}
-                    // Should this be set globally?
-                    className="[&_ul]:list-inside [&_ul]:list-disc [&_ul]:pl-2"
-                  />
-                </AccordionContent>
-              </AccordionItem>
-            ) : null}
-            <AccordionItem value="shipping" className="pb-0">
-              <AccordionTrigger>Shipping</AccordionTrigger>
-              <AccordionContent className="pb-9">
-                {/* Not sure if this should be coming from the data or just be standard for all products */}
-                See a full list of countries we ship to{" "}
-                <Link to="/help">here</Link>.
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function ProductHeader({
-  title,
-  vendor,
-  selectedVariant,
-}: {
-  title: string;
-  vendor?: string;
-  selectedVariant: ProductFragment["selectedVariant"];
-}) {
-  const displayVendor = vendor !== DEFAULT_VENDOR;
-  const price = Number(selectedVariant?.price.amount || 0);
-  const compareAtPrice = Number(selectedVariant?.compareAtPrice?.amount || 0);
+  const price = Number(selectedVariant.price.amount || 0);
+  const compareAtPrice = Number(selectedVariant.compareAtPrice?.amount || 0);
   const isOnSale = price < compareAtPrice;
   const percentageOff = isOnSale
     ? Math.round(((compareAtPrice - price) / compareAtPrice) * 100)
     : 0;
 
   return (
-    <div className="flex flex-col gap-4 md:gap-[18px]">
-      {(displayVendor || isOnSale) && (
-        <div className="flex justify-between text-base leading-4 md:text-2xl/6">
-          {displayVendor && <div>{vendor}</div>}
+    <div className="static top-(--header-height) mx-4 flex max-h-fit flex-col gap-6 text-white md:sticky md:mx-0 md:max-w-[410px] md:min-w-[300px] md:basis-1/3 lg:gap-9 lg:pt-32">
+      <div className="flex flex-col gap-4">
+        {category ? (
+          <p className="text-xs lg:text-base">{category?.name}</p>
+        ) : null}
+        <h1 className="min-w-fit font-sans text-2xl font-bold lg:text-4xl">
+          {title}
+        </h1>
+        <div className="flex gap-3">
+          <Money data={selectedVariant.price} withoutTrailingZeros />
+          {selectedVariant.compareAtPrice && isOnSale && (
+            <>
+              <s className="line-through opacity-50">
+                <Money
+                  data={selectedVariant.compareAtPrice}
+                  withoutTrailingZeros
+                />
+              </s>
+              <span className="text-red-brand">{percentageOff}% Off</span>
+            </>
+          )}
         </div>
-      )}
-      <h1 className="min-w-max font-sans text-2xl leading-6 font-bold tracking-[-0.32px] md:text-4xl md:leading-[1.875rem]">
-        {title}
-      </h1>
-
-      <div className="flex gap-3 font-mono text-base leading-4 tracking-[-0.48px] md:text-2xl/6 md:leading-6">
-        <Money
-          // eslint-disable-next-line @typescript-eslint/no-non-null-asserted-optional-chain
-          data={selectedVariant?.price!}
-          withoutTrailingZeros
-        />
-        {isOnSale && (
-          <>
-            <s className="line-through opacity-50">
-              <Money
-                // eslint-disable-next-line @typescript-eslint/no-non-null-asserted-optional-chain
-                data={selectedVariant?.compareAtPrice!}
-                withoutTrailingZeros
-              />
-            </s>
-            <span className="text-red-brand">{percentageOff}% Off</span>
-          </>
-        )}
       </div>
+
+      <div className="flex flex-col gap-[18px] md:gap-8">
+        <Suspense
+          fallback={
+            <ProductForm
+              product={product}
+              selectedVariant={selectedVariant}
+              variants={[]}
+              checkoutDomain={checkoutDomain}
+            />
+          }
+        >
+          <Await
+            errorElement="There was a problem loading product variants"
+            resolve={variants}
+          >
+            {(data) => (
+              <ProductForm
+                product={product}
+                selectedVariant={selectedVariant}
+                variants={data?.product?.variants.nodes || []}
+                checkoutDomain={checkoutDomain}
+              />
+            )}
+          </Await>
+        </Suspense>
+      </div>
+
+      {description ? (
+        <RichText
+          className="rich-text text-xs lg:text-base"
+          data={description.value}
+        />
+      ) : null}
+      <h3 className="text-sm font-bold lg:text-base">Technical Description</h3>
+      {technicalDescription ? (
+        <RichText
+          className="rich-text text-xs lg:text-base"
+          data={technicalDescription.value}
+        />
+      ) : null}
     </div>
   );
 }
+
+// TODO: get back to variants
 
 function ProductForm({
   product,
@@ -354,19 +312,19 @@ function ProductForm({
   let addToCartText = "Add to cart";
 
   // If the product has options (like size, color, etc), check whether each option has been selected
-  if (variants.length > 1) {
-    for (const option of options) {
-      const selectedOption = searchParams.get(option.name);
-      if (!selectedOption) {
-        addToCartText = `Select a ${option.name.toLowerCase()}`;
-        break;
-      }
-    }
-  }
+  // if (variants.length > 1) {
+  //   for (const option of options) {
+  //     const selectedOption = searchParams.get(option.name);
+  //     if (!selectedOption) {
+  //       addToCartText = `Select a ${option.name.toLowerCase()}`;
+  //       break;
+  //     }
+  //   }
+  // }
 
   return (
     <>
-      <VariantSelector
+      {/* <VariantSelector
         handle={product.handle}
         options={product.options.filter(
           (option) => option.optionValues.length > 1,
@@ -374,26 +332,26 @@ function ProductForm({
         variants={variants}
       >
         {({ option }) => <ProductOptions key={option.name} option={option} />}
-      </VariantSelector>
+      </VariantSelector> */}
       <div className="flex flex-col gap-2 md:gap-3">
         <AddToCartButton
           disabled={!selectedVariant || !isAvailable}
-          onClick={() => {
-            open("cart");
-            publish("cart_viewed", {
-              cart,
-              prevCart,
-              shop,
-              url: window.location.href || "",
-            } as CartViewPayload);
-          }}
+          // onClick={() => {
+          //   open("cart");
+          //   publish("cart_viewed", {
+          //     cart,
+          //     prevCart,
+          //     shop,
+          //     url: window.location.href || "",
+          //   } as CartViewPayload);
+          // }}
           lines={
             selectedVariant
               ? [
                   {
                     merchandiseId: selectedVariant.id,
                     quantity: 1,
-                    // Add entire product to selected variant so we can determine gradient colours in an optimistic cart
+                    // Add entire product to selected variant so we can determine gradient colors in an optimistic cart
                     selectedVariant: { ...selectedVariant, product },
                   },
                 ]
@@ -403,12 +361,12 @@ function ProductForm({
           {product.availableForSale ? addToCartText : "Sold out"}
         </AddToCartButton>
 
-        {isAvailable ? (
+        {/* {isAvailable ? (
           <ShopPayButton
             selectedVariant={selectedVariant}
             checkoutDomain={checkoutDomain}
           />
-        ) : null}
+        ) : null} */}
       </div>
     </>
   );
@@ -537,54 +495,16 @@ function AddToCartButton({
             type="hidden"
             value={JSON.stringify(analytics)}
           />
-          <Button
-            size="lg"
+          <button
             type="submit"
             onClick={onClick}
             disabled={disabled ?? fetcher.state !== "idle"}
+            className="hover:bg-blue-brand transition-color h-12 w-full rounded-[54px] bg-white px-5 py-2 text-center text-base font-semibold text-black duration-300 ease-in-out hover:text-white disabled:cursor-not-allowed disabled:opacity-50 md:h-16 md:gap-2.5 md:px-6 md:py-4 md:text-xl"
           >
             {children}
-          </Button>
+          </button>
         </>
       )}
     </CartForm>
   );
 }
-
-const PRODUCT_QUERY = `#graphql
-  query Product(
-    $country: CountryCode
-    $handle: String!
-    $language: LanguageCode
-    $selectedOptions: [SelectedOptionInput!]!
-  ) @inContext(country: $country, language: $language) {
-    product(handle: $handle) {
-      ...Product
-    }
-  }
-  ${PRODUCT_DETAIL_FRAGMENT}
-` as const;
-
-const PRODUCT_VARIANTS_FRAGMENT = `#graphql
-  fragment ProductVariants on Product {
-    variants(first: 250) {
-      nodes {
-        ...ProductVariant
-      }
-    }
-  }
-  ${PRODUCT_VARIANT_FRAGMENT}
-` as const;
-
-const VARIANTS_QUERY = `#graphql
-  query ProductVariants(
-    $country: CountryCode
-    $language: LanguageCode
-    $handle: String!
-  ) @inContext(country: $country, language: $language) {
-    product(handle: $handle) {
-      ...ProductVariants
-    }
-  }
-  ${PRODUCT_VARIANTS_FRAGMENT}
-` as const;

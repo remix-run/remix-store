@@ -213,15 +213,15 @@
     --aside-header-height: 110px;
     --aside-summary-height: 280px;
     --yamaha-shadow-color: var(--color-neutral-50);
-    --header-height: 84px;
+    --header-height: 80px;
     --main-padding: --spacing(3);
 
     @media (width >= theme(--breakpoint-md)) {
       --main-padding: --spacing(9);
     }
 
-    @media (width >= theme(--breakpoint-sm)) {
-      --header-height: 110px;
+    @media (width >= theme(--breakpoint-md)) {
+      --header-height: 136px;
     }
   }
 
@@ -236,10 +236,6 @@
   html,
   body {
     @apply font-sans text-neutral-600 dark:text-neutral-300;
-  }
-
-  a {
-    @apply hover:text-blue-brand underline;
   }
 }
 
@@ -263,5 +259,21 @@
         var(--animated-link-delay),
       opacity var(--animated-link-duration) var(--ease-snap)
         var(--animated-link-delay);
+  }
+}
+
+@utility rich-text {
+  ul {
+    list-style: none;
+  }
+  ul li {
+    position: relative;
+    padding-left: 1em;
+    line-height: 1.6em;
+  }
+  ul li::before {
+    content: "•";
+    position: absolute;
+    left: 0;
   }
 }

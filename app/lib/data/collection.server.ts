@@ -1,5 +1,5 @@
 import type { Storefront } from "@shopify/hydrogen";
-import { PRODUCT_IMAGE_FRAGMENT } from "./fragments";
+import { PRODUCT_IMAGE_FRAGMENT } from "./product.server";
 // import { getFocalPoint } from "./image-utils";
 
 import type {

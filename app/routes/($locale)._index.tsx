@@ -2,14 +2,17 @@ import { useState, useEffect, memo, useRef } from "react";
 import type { LoaderFunctionArgs, MetaArgs } from "@shopify/remix-oxygen";
 import { data } from "@shopify/remix-oxygen";
 import { Link, useLoaderData } from "@remix-run/react";
-import { getCollectionQuery } from "~/lib/collection.server";
+import { getCollectionQuery } from "~/lib/data/collection.server";
 import { getFilterQueryVariables } from "~/lib/filters/query-variables.server";
 import { Image as HydrogenImage } from "@shopify/hydrogen";
 import {
   getLookbookEntries,
   type LookbookEntry as LookbookEntryProps,
-} from "~/lib/lookbook.server";
-import { getHeroData, type HeroData as HeroDataProps } from "~/lib/hero.server";
+} from "~/lib/data/lookbook.server";
+import {
+  getHeroData,
+  type HeroData as HeroDataProps,
+} from "~/lib/data/hero.server";
 import { clsx } from "clsx";
 import { usePrefersReducedMotion } from "~/lib/hooks";
 import { useLayoutEffect } from "~/lib/use-layout-effect";
