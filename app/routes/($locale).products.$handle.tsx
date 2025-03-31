@@ -40,8 +40,8 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
 } from "~/components/ui/dropdown-menu";
-import Icon from "~/components/icon";
-import ProductImages from "~/components/product-images";
+import { Icon } from "~/components/icon";
+import { ProductImages } from "~/components/product-images";
 import { generateMeta } from "~/lib/meta";
 import type { RootLoader } from "~/root";
 import { getProductData, getProductVariants } from "~/lib/data/product.server";

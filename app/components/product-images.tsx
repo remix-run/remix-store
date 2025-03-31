@@ -7,12 +7,12 @@ import {
 } from "~/components/carousel/arrow-buttons";
 import { Image as HydrogenImage } from "@shopify/hydrogen";
 import { cn } from "~/lib/cn";
-import { useCallback, useRef, useState } from "react";
-import { useLayoutEffect } from "~/lib/hooks";
+import { useRef, useState } from "react";
+import { useLayoutEffect, usePrefersReducedMotion } from "~/lib/hooks";
 
 import type { ProductVariantFragment } from "storefrontapi.generated";
 
-export default function ProductImages({
+export function ProductImages({
   images,
 }: {
   images: Array<ProductVariantFragment["image"]>;
@@ -150,11 +150,30 @@ function ImageCarousel({
 
 function useImageOpacities(containerRef: React.RefObject<HTMLElement>) {
   const [opacities, setOpacities] = useState<Map<string, number>>(new Map());
+  let prefersReducedMotion = usePrefersReducedMotion();
 
   useLayoutEffect(() => {
     let rafId: number;
 
     const calculateVisibilities = () => {
+      // Early return if container is not available
+      if (!containerRef.current) return;
+
+      // If user prefers reduced motion, set all opacities to 1
+      if (prefersReducedMotion) {
+        const newOpacities = new Map<string, number>();
+        const imageContainers =
+          containerRef.current.querySelectorAll("[data-image-id]");
+
+        imageContainers.forEach((element) => {
+          const id = element.getAttribute("data-image-id")!;
+          newOpacities.set(id, 1);
+        });
+
+        setOpacities(newOpacities);
+        return;
+      }
+
       rafId = requestAnimationFrame(() => {
         if (!containerRef.current) return;
 
@@ -212,7 +231,7 @@ function useImageOpacities(containerRef: React.RefObject<HTMLElement>) {
       window.removeEventListener("resize", calculateVisibilities);
       cancelAnimationFrame(rafId);
     };
-  }, [containerRef]);
+  }, [containerRef, prefersReducedMotion]);
 
   return opacities;
 }

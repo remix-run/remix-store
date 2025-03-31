@@ -3,7 +3,7 @@ import type { FooterQuery } from "storefrontapi.generated";
 import { clsx } from "clsx";
 import { useRelativeUrl } from "~/lib/use-relative-url";
 import { RemixLogo } from "~/components/remix-logo";
-import Icon from "~/components/icon";
+import { Icon } from "~/components/icon";
 import { cn } from "~/lib/cn";
 
 interface FooterProps {

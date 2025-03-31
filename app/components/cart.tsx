@@ -13,7 +13,7 @@ import { useVariantUrl } from "~/lib/variants";
 import { AsideDescription } from "~/components/ui/aside";
 import { Image as HydrogenImage } from "@shopify/hydrogen";
 import { Button } from "~/components/ui/button";
-import Icon from "~/components/icon";
+import { Icon } from "~/components/icon";
 import { clsx } from "clsx";
 import { cn } from "~/lib/cn";
 

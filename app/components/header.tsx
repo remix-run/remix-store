@@ -7,7 +7,7 @@ import type {
   CartApiQueryFragment,
 } from "storefrontapi.generated";
 import { ThemeToggle } from "~/components/theme-toggle";
-import Icon from "~/components/icon";
+import { Icon } from "~/components/icon";
 import { Button, ButtonWithWellText } from "~/components/ui/button";
 import { useRelativeUrl } from "~/lib/use-relative-url";
 import { useHydrated } from "~/lib/hooks";

@@ -1,6 +1,6 @@
 import { Link } from "@remix-run/react";
 import { cn } from "~/lib/cn";
-import Icon from "~/components/icon";
+import { Icon } from "~/components/icon";
 import { cva, type VariantProps } from "class-variance-authority";
 
 import type { IconName } from "~/components/icon/types.generated";

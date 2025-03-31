@@ -1,6 +1,6 @@
 import * as React from "react";
 import * as AccordionPrimitive from "@radix-ui/react-accordion";
-import Icon from "~/components/icon";
+import { Icon } from "~/components/icon";
 import { cn } from "~/lib/cn";
 import { cva } from "class-variance-authority";
 

@@ -1,6 +1,6 @@
 import { Button, ButtonWithWellText } from "~/components/ui/button";
 import { ShopPayButton } from "./($locale).products.$handle";
-import Icon from "~/components/icon";
+import { Icon } from "~/components/icon";
 import { iconNames } from "~/components/icon/types.generated";
 import { Fragment } from "react/jsx-runtime";
 import { Section } from "./components";

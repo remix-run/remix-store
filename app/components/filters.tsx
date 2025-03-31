@@ -6,7 +6,7 @@ import {
   useNavigation,
   useSearchParams,
 } from "@remix-run/react";
-import Icon from "~/components/icon";
+import { Icon } from "~/components/icon";
 import { Button, ButtonWithWellText } from "~/components/ui/button";
 import {
   DropdownMenu,
