@@ -1,7 +1,7 @@
 import { Suspense, useRef } from "react";
 import { data, redirect, type LoaderFunctionArgs } from "@shopify/remix-oxygen";
 import { Await, useLoaderData, type MetaArgs } from "@remix-run/react";
-import { Analytics, Image as HydrogenImage } from "@shopify/hydrogen";
+import { Analytics } from "@shopify/hydrogen";
 import { useScrollPercentage } from "~/lib/hooks";
 
 import { getCollectionQuery } from "~/lib/data/collection.server";
@@ -81,9 +81,6 @@ export default function Collection() {
   let { collection, remainingProducts } = useLoaderData<typeof loader>();
   let ref = useRef<HTMLDivElement>(null);
   let scrollPercentage = useScrollPercentage(ref);
-
-  // TODO: Remove the image
-  let { image } = collection;
 
   let distance = Math.round(Math.min(scrollPercentage * 2, 1) * 100);
 

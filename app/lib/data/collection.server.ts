@@ -1,12 +1,10 @@
 import type { Storefront } from "@shopify/hydrogen";
 import { PRODUCT_IMAGE_FRAGMENT } from "./product.server";
-// import { getFocalPoint } from "./image-utils";
 
 import type {
   CollectionQueryVariables,
   CollectionProductFragment,
   CollectionQuery,
-  ProductImageFragment,
 } from "storefrontapi.generated";
 import type { MoneyV2, PageInfo } from "@shopify/hydrogen/storefront-api-types";
 export type CollectionProductData = Pick<
@@ -18,11 +16,8 @@ export type CollectionProductData = Pick<
 
 export type CollectionData = Pick<
   NonNullable<CollectionQuery["collection"]>,
-  "id" | "handle" | "title" | "description" | "seo" | "image"
+  "id" | "handle" | "title" | "description" | "seo"
 > & {
-  // image:
-  //   | (ProductImageFragment & { focalPoint?: { x: number; y: number } })
-  //   | null;
   productsPageInfo: PageInfo;
   products: CollectionProductData[];
 };
@@ -42,17 +37,8 @@ export async function getCollectionQuery(
 
     let products = collection.products.nodes;
 
-    // Extract focal point from collection image if available
-    const collectionImage = collection.image
-      ? {
-          ...collection.image,
-          // focalPoint: getFocalPoint(collection.image.presentation?.asJson),
-        }
-      : null;
-
     return {
       ...collection,
-      image: collectionImage,
       productsPageInfo: collection.products.pageInfo,
       products: products.map(({ priceRange, ...product }) => {
         return {
@@ -76,7 +62,6 @@ export async function getCollectionQuery(
       seo: {
         title: "",
       },
-      image: null,
       productsPageInfo: {
         hasPreviousPage: false,
         hasNextPage: false,
@@ -134,14 +119,6 @@ export const COLLECTION_QUERY = `#graphql
       handle
       title
       description
-      image {
-        ...ProductImage
-        # sadly this doesn't work, gotta figure out another way to get the focal point for collection images
-        # presentation {
-        #   id
-        #   asJson(format: IMAGE)
-        # }
-      }
       seo {
         title
       }
