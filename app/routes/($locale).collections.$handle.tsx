@@ -1,8 +1,9 @@
-import { Suspense } from "react";
+import { Suspense, useState, useRef } from "react";
 import { data, redirect, type LoaderFunctionArgs } from "@shopify/remix-oxygen";
 import { Await, useLoaderData, type MetaArgs } from "@remix-run/react";
 import { Analytics, Image as HydrogenImage } from "@shopify/hydrogen";
-import { FiltersAside, FiltersToolbar } from "~/components/filters";
+import { useLayoutEffect } from "~/lib/use-layout-effect";
+import { usePrefersReducedMotion } from "~/lib/hooks";
 
 import { getCollectionQuery } from "~/lib/data/collection.server";
 import { getFilterQueryVariables } from "~/lib/filters/query-variables.server";
@@ -77,31 +78,159 @@ export async function loader({ params, request, context }: LoaderFunctionArgs) {
   return data({ collection, remainingProducts: null });
 }
 
-export default function Collection() {
-  const { collection, remainingProducts } = useLoaderData<typeof loader>();
+/**
+ * Hook that calculates what percentage of an element has been scrolled past
+ * Respects prefers-reduced-motion setting
+ * @param ref - React ref to the element to measure
+ * @returns A number between 0 and 1 representing the percentage scrolled past
+ */
+function useScrollPercentage(ref: React.RefObject<HTMLElement>) {
+  let [scrollPercentage, setScrollPercentage] = useState(0);
+  let prefersReducedMotion = usePrefersReducedMotion();
 
-  const { image } = collection;
+  useLayoutEffect(() => {
+    // If user prefers reduced motion, don't update scroll percentage
+    if (prefersReducedMotion) return;
+
+    let rafId: number;
+
+    let calculateVisibility = () => {
+      rafId = requestAnimationFrame(() => {
+        if (!ref.current) return;
+
+        const height = ref.current.offsetHeight;
+        const rect = ref.current.getBoundingClientRect();
+        const scrollY = window.scrollY;
+        const elementTop = scrollY + rect.top;
+
+        // If we've scrolled past the element, it's 0% visible
+        if (scrollY >= elementTop + height) {
+          return;
+        }
+
+        let percentage =
+          1 -
+          Math.max(0, Math.min(1, (elementTop + height - scrollY) / height));
+        setScrollPercentage(percentage);
+      });
+    };
+
+    // Calculate initial visibility
+    calculateVisibility();
+
+    // Set up scroll listener
+    window.addEventListener("scroll", calculateVisibility, { passive: true });
+    // Only need resize if window height affects calculations
+    window.addEventListener("resize", calculateVisibility);
+
+    return () => {
+      window.removeEventListener("scroll", calculateVisibility);
+      window.removeEventListener("resize", calculateVisibility);
+      cancelAnimationFrame(rafId);
+    };
+  }, [ref, prefersReducedMotion]);
+
+  return scrollPercentage;
+}
+
+export default function Collection() {
+  let { collection, remainingProducts } = useLoaderData<typeof loader>();
+  let ref = useRef<HTMLDivElement>(null);
+  let scrollPercentage = useScrollPercentage(ref);
+
+  // TODO: Remove the image
+  let { image } = collection;
+
+  let distance = Math.round(Math.min(scrollPercentage * 2, 1) * 100);
 
   return (
     <div>
-      <div className="relative">
-        {image && (
-          <HydrogenImage
-            sizes="100vw"
-            className="3xl:h-[540px] h-[280px] w-full object-cover opacity-50 xl:h-[400px]"
-            // style={{
-            //   objectPosition: image.focalPoint
-            //     ? `${100 * image.focalPoint.x}% ${100 * image.focalPoint.y}%`
-            //     : "center",
-            // }}
-            data={image}
-          />
-        )}
-        <h1 className="absolute inset-0 flex items-center justify-center text-3xl font-semibold text-white md:text-[56px] lg:text-8xl">
-          {collection.title}
-        </h1>
+      <div
+        ref={ref}
+        className="relative h-[200px] md:h-[360px] lg:h-[400px] xl:h-[480px] 2xl:h-[540px]"
+      >
+        <div className="absolute inset-0 grid place-items-center">
+          <div
+            // text-2xl md:text-5xl lg:text-7xl
+            className="relative isolate font-mono text-4xl leading-[0.75em] font-bold whitespace-nowrap uppercase md:text-7xl lg:text-8xl"
+          >
+            <h1 className="relative z-50 bg-black text-white">
+              {collection.title}
+            </h1>
+            <span
+              aria-hidden="true"
+              className="text-pink-brand absolute inset-0 z-40 bg-black"
+              style={{
+                transform: `translateY(${distance}%)`,
+              }}
+            >
+              {collection.title}
+            </span>
+
+            <span
+              aria-hidden="true"
+              className="text-red-brand absolute inset-0 bg-black"
+              style={{
+                transform: `translateY(${2 * distance}%)`,
+              }}
+            >
+              {collection.title}
+            </span>
+            <span
+              aria-hidden="true"
+              className="text-yellow-brand absolute inset-0 z-30 bg-black"
+              style={{
+                transform: `translateY(${-distance}%)`,
+              }}
+            >
+              {collection.title}
+            </span>
+            <span
+              aria-hidden="true"
+              className="text-green-brand absolute inset-0 z-20 bg-black"
+              style={{
+                transform: `translateY(${-2 * distance}%)`,
+              }}
+            >
+              {collection.title}
+            </span>
+            <span
+              aria-hidden="true"
+              className="text-blue-brand absolute inset-0 z-10 bg-black"
+              style={{
+                transform: `translateY(${-3 * distance}%)`,
+              }}
+            >
+              {collection.title}
+            </span>
+          </div>
+        </div>
       </div>
-      <FiltersAside>
+
+      {remainingProducts ? (
+        <Suspense
+          fallback={
+            <ProductGrid
+              products={collection.products}
+              loadingProductCount={4}
+            />
+          }
+        >
+          <Await resolve={remainingProducts}>
+            {(remainingProducts) => {
+              const products = [
+                ...collection.products,
+                ...remainingProducts.products,
+              ];
+              return <ProductGrid products={products} />;
+            }}
+          </Await>
+        </Suspense>
+      ) : (
+        <ProductGrid products={collection.products} />
+      )}
+
+      {/* <FiltersAside>
         {remainingProducts ? (
           <Suspense
             fallback={
@@ -135,7 +264,7 @@ export default function Collection() {
             <ProductGrid products={collection.products} />
           </>
         )}
-      </FiltersAside>
+      </FiltersAside> */}
 
       <Analytics.CollectionView
         data={{

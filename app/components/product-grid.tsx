@@ -19,7 +19,7 @@ export function ProductGrid({
   loadingProductCount = defaultLoadingProductCount,
 }: ProductGridProps) {
   return (
-    <div className="3xl:grid-cols-5 grid grid-cols-1 gap-y-9 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4">
+    <div className="3xl:grid-cols-5 grid grid-cols-1 gap-y-9 bg-linear-to-b from-[#2d2d38] to-black md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4">
       {"then" in products ? (
         <Suspense
           fallback={
