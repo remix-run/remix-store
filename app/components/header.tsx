@@ -33,7 +33,7 @@ interface HeaderProps {
 
 export function Header({ menu, cart }: HeaderProps) {
   return (
-    <header className="fixed top-0 z-10 grid max-h-(--header-height) w-full grid-cols-2 items-center p-4 md:grid-cols-3 md:p-9">
+    <header className="fixed top-0 z-10 grid max-h-(--header-height) w-full grid-cols-2 items-center bg-linear-to-b from-black/100 to-black/0 p-4 md:grid-cols-3 md:p-9">
       <Link to="/" className="flex max-w-fit justify-start">
         <span className="sr-only">Home</span>
         <RemixLogo animateOnScroll />
