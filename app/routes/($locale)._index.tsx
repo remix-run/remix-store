@@ -14,12 +14,11 @@ import {
   type HeroData as HeroDataProps,
 } from "~/lib/data/hero.server";
 import { clsx } from "clsx";
-import { usePrefersReducedMotion } from "~/lib/hooks";
+import { usePrefersReducedMotion, useScrollPercentage } from "~/lib/hooks";
 import { AnimatedLink } from "~/components/ui/animated-link";
 import { generateMeta } from "~/lib/meta";
 import type { RootLoader } from "~/root";
 import { ProductGrid } from "~/components/product-grid";
-import { useScrollPercentage } from "~/lib/scroll-hooks";
 
 export let FEATURED_COLLECTION_HANDLE = "remix-logo-apparel";
 

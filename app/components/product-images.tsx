@@ -8,7 +8,7 @@ import {
 import { Image as HydrogenImage } from "@shopify/hydrogen";
 import { cn } from "~/lib/cn";
 import { useCallback, useRef, useState } from "react";
-import { useLayoutEffect } from "~/lib/use-layout-effect";
+import { useLayoutEffect } from "~/lib/hooks";
 
 import type { ProductVariantFragment } from "storefrontapi.generated";
 

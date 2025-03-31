@@ -2,7 +2,7 @@ import { Suspense, useState, useRef } from "react";
 import { data, redirect, type LoaderFunctionArgs } from "@shopify/remix-oxygen";
 import { Await, useLoaderData, type MetaArgs } from "@remix-run/react";
 import { Analytics, Image as HydrogenImage } from "@shopify/hydrogen";
-import { useScrollPercentage } from "~/lib/scroll-hooks";
+import { useScrollPercentage } from "~/lib/hooks";
 
 import { getCollectionQuery } from "~/lib/data/collection.server";
 import { getFilterQueryVariables } from "~/lib/filters/query-variables.server";
