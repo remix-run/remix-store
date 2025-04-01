@@ -11,6 +11,7 @@
   --font-mono:
     "Source Code Pro", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
     "Liberation Mono", "Courier New", monospace;
+  --font-title: "Lexend Zetta", ui-sans-serif, system-ui, sans-serif;
 
   --breakpoint-*: initial;
   --breakpoint-sm: 430px;
@@ -206,6 +207,14 @@
     font-display: swap;
     font-style: italic;
     src: url("/font/source-code-pro-italic-var.woff2") format("woff2");
+  }
+
+  @font-face {
+    font-family: "Lexend Zetta";
+    font-weight: 900;
+    font-display: swap;
+    font-style: normal;
+    src: url("/font/lexend-zetta-black.woff2") format("woff2");
   }
 
   :root {

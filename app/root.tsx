@@ -26,6 +26,7 @@ import interUrl from "/font/inter-roman-latin-var.woff2?url";
 import interItalicUrl from "/font/inter-italic-latin-var.woff2?url";
 import sourceCodeProUrl from "/font/source-code-pro-roman-var.woff2?url";
 import sourceCodeProItalicUrl from "/font/source-code-pro-italic-var.woff2?url";
+import lexendZettaBlackUrl from "/font/lexend-zetta-black.woff2?url";
 /* eslint-enable import/no-unresolved */
 
 import "./tailwind.css";
@@ -64,6 +65,7 @@ export function links() {
     interItalicUrl,
     sourceCodeProUrl,
     sourceCodeProItalicUrl,
+    lexendZettaBlackUrl,
   ];
 
   return [

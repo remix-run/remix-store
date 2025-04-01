@@ -82,7 +82,7 @@ export default function Collection() {
   let ref = useRef<HTMLDivElement>(null);
   let scrollPercentage = useScrollPercentage(ref);
 
-  let distance = Math.round(Math.min(scrollPercentage * 2, 1) * 100);
+  let translatePercent = Math.round(Math.min(scrollPercentage * 2, 1) * 100);
 
   return (
     <div>
@@ -91,10 +91,7 @@ export default function Collection() {
         className="relative h-[200px] md:h-[360px] lg:h-[400px] xl:h-[480px] 2xl:h-[540px]"
       >
         <div className="absolute inset-0 grid place-items-center">
-          <div
-            // text-2xl md:text-5xl lg:text-7xl
-            className="relative isolate font-mono text-4xl leading-[0.75em] font-bold whitespace-nowrap uppercase md:text-7xl lg:text-8xl"
-          >
+          <div className="font-title relative isolate text-2xl leading-none font-black tracking-[-0.17em] whitespace-nowrap uppercase md:text-5xl lg:text-7xl">
             <h1 className="relative z-50 bg-black text-white">
               {collection.title}
             </h1>
@@ -102,7 +99,7 @@ export default function Collection() {
               aria-hidden="true"
               className="text-pink-brand absolute inset-0 z-40 bg-black"
               style={{
-                transform: `translateY(${distance}%)`,
+                transform: `translateY(${translatePercent}%)`,
               }}
             >
               {collection.title}
@@ -112,7 +109,7 @@ export default function Collection() {
               aria-hidden="true"
               className="text-red-brand absolute inset-0 bg-black"
               style={{
-                transform: `translateY(${2 * distance}%)`,
+                transform: `translateY(${2 * translatePercent}%)`,
               }}
             >
               {collection.title}
@@ -121,7 +118,7 @@ export default function Collection() {
               aria-hidden="true"
               className="text-yellow-brand absolute inset-0 z-30 bg-black"
               style={{
-                transform: `translateY(${-distance}%)`,
+                transform: `translateY(${-translatePercent}%)`,
               }}
             >
               {collection.title}
@@ -130,7 +127,7 @@ export default function Collection() {
               aria-hidden="true"
               className="text-green-brand absolute inset-0 z-20 bg-black"
               style={{
-                transform: `translateY(${-2 * distance}%)`,
+                transform: `translateY(${-2 * translatePercent}%)`,
               }}
             >
               {collection.title}
@@ -139,7 +136,7 @@ export default function Collection() {
               aria-hidden="true"
               className="text-blue-brand absolute inset-0 z-10 bg-black"
               style={{
-                transform: `translateY(${-3 * distance}%)`,
+                transform: `translateY(${-3 * translatePercent}%)`,
               }}
             >
               {collection.title}
