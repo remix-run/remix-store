@@ -5,6 +5,7 @@ import { useRelativeUrl } from "~/lib/use-relative-url";
 import { RemixLogo } from "~/components/remix-logo";
 import { Icon } from "~/components/icon";
 import { cn } from "~/lib/cn";
+import { Suspense } from "react";
 
 interface FooterProps {
   footer: Promise<FooterQuery | null>;
@@ -64,32 +65,33 @@ export function Footer({ footer: footerPromise }: FooterProps) {
           {/* Navigation Menus */}
           <div className="col-span-2 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
             <div>
-              {/* TODO: figure out why there's a hydration warning here */}
-              <Await resolve={footerPromise}>
-                {(footer) => {
-                  if (!footer?.menu) return null;
+              <Suspense fallback={<ul className="space-y-2" />}>
+                <Await resolve={footerPromise}>
+                  {(footer) => {
+                    if (!footer?.menu) return null;
 
-                  return (
-                    <ul className="space-y-2">
-                      {footer.menu.items.map((item, i) => {
-                        if (!item.url) return null;
-                        return (
-                          <li key={item.id}>
-                            <FooterLink
-                              className={clsx({
-                                "font-bold text-[#a1a1a1] hover:text-white":
-                                  i === 0,
-                              })}
-                              title={item.title}
-                              to={item.url}
-                            />
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  );
-                }}
-              </Await>
+                    return (
+                      <ul className="space-y-2">
+                        {footer.menu.items.map((item, i) => {
+                          if (!item.url) return null;
+                          return (
+                            <li key={item.id}>
+                              <FooterLink
+                                className={clsx({
+                                  "font-bold text-[#a1a1a1] hover:text-white":
+                                    i === 0,
+                                })}
+                                title={item.title}
+                                to={item.url}
+                              />
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    );
+                  }}
+                </Await>
+              </Suspense>
             </div>
 
             <div className="lg:col-span-2">
