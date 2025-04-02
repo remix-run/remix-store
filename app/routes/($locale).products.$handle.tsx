@@ -1,4 +1,4 @@
-import { Suspense } from "react";
+import { Suspense, useState } from "react";
 import { data, type LoaderFunctionArgs } from "@shopify/remix-oxygen";
 import {
   Await,
@@ -24,6 +24,7 @@ import {
   type CartViewPayload,
   useAnalytics,
   RichText,
+  useOptimisticCart,
 } from "@shopify/hydrogen";
 import { useAside } from "~/components/ui/aside";
 import { FOOTER_QUERY } from "~/lib/fragments";
@@ -46,6 +47,9 @@ import { generateMeta } from "~/lib/meta";
 import type { RootLoader } from "~/root";
 import { getProductData, getProductVariants } from "~/lib/data/product.server";
 import { useRelativeUrl } from "~/lib/use-relative-url";
+import { cva } from "class-variance-authority";
+import { cn } from "~/lib/cn";
+import clsx from "clsx";
 
 /** The default vendor, which we hide because nobody cares */
 const DEFAULT_VENDOR = "Remix Swag Store";
@@ -194,7 +198,7 @@ function MenuLink({ to, children }: { to: string; children: React.ReactNode }) {
   const { url } = useRelativeUrl(to);
   return (
     <Link
-      className="text-xs leading-5 text-neutral-400 transition-[color] hover:text-white lg:text-base lg:leading-6"
+      className="text-xs leading-5 text-white/90 transition-[color] hover:text-white lg:text-base lg:leading-6"
       to={url}
     >
       {children}
@@ -223,7 +227,7 @@ function ProductMain({
     : 0;
 
   return (
-    <div className="static top-(--header-height) mx-4 flex max-h-fit flex-col gap-6 text-white md:sticky md:mx-0 md:max-w-[410px] md:min-w-[300px] md:basis-1/3 lg:gap-9 lg:pt-32">
+    <div className="static top-(--header-height) mx-4 flex max-h-fit flex-col gap-6 text-white md:sticky md:mx-0 md:min-w-fit md:basis-1/3 lg:gap-9 lg:pt-32">
       <div className="flex flex-col gap-4">
         {category ? (
           <p className="text-xs lg:text-base">{category?.name}</p>
@@ -309,6 +313,7 @@ function ProductForm({
   const isAvailable = !!selectedVariant?.availableForSale;
   const [searchParams] = useSearchParams();
   const { options } = product;
+  const [isSmall, setIsSmall] = useState(false);
   let addToCartText = "Add to cart";
 
   // If the product has options (like size, color, etc), check whether each option has been selected
@@ -333,18 +338,37 @@ function ProductForm({
       >
         {({ option }) => <ProductOptions key={option.name} option={option} />}
       </VariantSelector> */}
-      <div className="flex flex-col gap-2 md:gap-3">
-        <AddToCartButton
+      <div className="flex flex-col gap-2 md:gap-3 lg:flex-row">
+        <div className="flex items-center justify-start rounded-[54px] border-[3px] border-white px-6 py-4 text-xl font-semibold transition-all duration-300 lg:flex-2">
+          <span>Medium</span>
+        </div>
+
+        <button
+          onClick={() => setIsSmall(true)}
+          className={clsx(
+            "flex min-h-16 min-w-fit items-center justify-center rounded-[54px] px-6 py-4 text-xl font-semibold transition-all duration-300",
+            isSmall
+              ? "bg-[#6EDE49] text-white lg:flex-0"
+              : "bg-white text-black lg:flex-1",
+          )}
+        >
+          {isSmall ? (
+            <Icon name="check" className="add-to-cart-icon size-8" />
+          ) : (
+            addToCartText
+          )}
+        </button>
+
+        {/* <AddToCartButton
           disabled={!selectedVariant || !isAvailable}
-          // onClick={() => {
-          //   open("cart");
-          //   publish("cart_viewed", {
-          //     cart,
-          //     prevCart,
-          //     shop,
-          //     url: window.location.href || "",
-          //   } as CartViewPayload);
-          // }}
+          onClick={() => {
+            publish("cart_viewed", {
+              cart,
+              prevCart,
+              shop,
+              url: window.location.href || "",
+            } as CartViewPayload);
+          }}
           lines={
             selectedVariant
               ? [
@@ -359,14 +383,7 @@ function ProductForm({
           }
         >
           {product.availableForSale ? addToCartText : "Sold out"}
-        </AddToCartButton>
-
-        {/* {isAvailable ? (
-          <ShopPayButton
-            selectedVariant={selectedVariant}
-            checkoutDomain={checkoutDomain}
-          />
-        ) : null} */}
+        </AddToCartButton> */}
       </div>
     </>
   );
@@ -454,7 +471,7 @@ function ProductOptions({ option }: { option: VariantOption }) {
                   className="cursor-pointer no-underline"
                 >
                   {value}
-                  {isActive ? <Icon name="check" /> : null}
+                  {isActive ? <Icon name="circle-check" /> : null}
                 </Link>
               ) : (
                 <span className="cursor-not-allowed opacity-35">
@@ -468,6 +485,20 @@ function ProductOptions({ option }: { option: VariantOption }) {
     </div>
   );
 }
+const addToCartButtonVariants = cva(
+  "h-12 w-full rounded-[54px] px-5 py-2 text-center text-base font-semibold text-nowrap ease-in-out md:h-16 md:gap-2.5 md:px-6 md:py-4 md:text-xl transition-all duration-1000",
+  {
+    variants: {
+      state: {
+        idle: "bg-white text-black hover:bg-blue-brand hover:text-white disabled:cursor-not-allowed disabled:opacity-50 flex-1",
+        loading: "bg-[#6EDE49] text-white cursor-not-allowed flex-0",
+      },
+    },
+    defaultVariants: {
+      state: "idle",
+    },
+  },
+);
 
 function AddToCartButton({
   analytics,
@@ -488,23 +519,34 @@ function AddToCartButton({
       inputs={{ lines }}
       action={CartForm.ACTIONS.LinesAdd}
     >
-      {(fetcher: FetcherWithComponents<any>) => (
-        <>
-          <input
-            name="analytics"
-            type="hidden"
-            value={JSON.stringify(analytics)}
-          />
-          <button
-            type="submit"
-            onClick={onClick}
-            disabled={disabled ?? fetcher.state !== "idle"}
-            className="hover:bg-blue-brand transition-color h-12 w-full rounded-[54px] bg-white px-5 py-2 text-center text-base font-semibold text-black duration-300 ease-in-out hover:text-white disabled:cursor-not-allowed disabled:opacity-50 md:h-16 md:gap-2.5 md:px-6 md:py-4 md:text-xl"
-          >
-            {children}
-          </button>
-        </>
-      )}
+      {(fetcher: FetcherWithComponents<any>) => {
+        const state = fetcher.state !== "idle" ? "loading" : "idle";
+
+        return (
+          <>
+            <input
+              name="analytics"
+              type="hidden"
+              value={JSON.stringify(analytics)}
+            />
+            <button
+              type="submit"
+              onClick={onClick}
+              disabled={disabled ?? fetcher.state !== "idle"}
+              className={cn(addToCartButtonVariants({ state }))}
+            >
+              {state === "loading" ? (
+                <Icon
+                  name="check"
+                  className="mx-auto h-8 w-8 scale-75 transition-transform duration-300 ease-in-out group-hover:scale-100"
+                />
+              ) : (
+                children
+              )}
+            </button>
+          </>
+        );
+      }}
     </CartForm>
   );
 }

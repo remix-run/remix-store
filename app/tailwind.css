@@ -94,6 +94,9 @@
   --animate-blink: blink 1s step-end infinite;
 
   --animate-pulse-radial: pulse-radial 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  --animate-check-appear: check-appear 400ms var(--ease-snap) 200ms forwards;
+  --animate-check-appear-delay: check-appear 400ms var(--ease-snap) 200ms
+    forwards;
 
   --shadow-yamaha-primary:
     0px 2px 1px 0px rgba(255, 255, 255, 0.1) inset,
@@ -137,6 +140,20 @@
     }
     50% {
       background-size: 80% 80%;
+    }
+  }
+
+  @keyframes check-appear {
+    0% {
+      transform: scale(0.75) rotate(-12deg);
+    }
+
+    30% {
+      transform: rotate(10deg);
+    }
+
+    100% {
+      transform: scale(1) rotate(0);
     }
   }
 }
@@ -269,6 +286,11 @@
       opacity var(--animated-link-duration) var(--ease-snap)
         var(--animated-link-delay);
   }
+}
+
+@utility add-to-cart-icon {
+  transform: scale(0.75) rotate(-12deg);
+  animation: var(--animate-check-appear-delay);
 }
 
 @utility rich-text {
