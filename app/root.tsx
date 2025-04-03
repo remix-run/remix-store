@@ -20,6 +20,7 @@ import { Button } from "~/components/ui/button";
 import { AsideProvider } from "~/components/ui/aside";
 import { Header } from "~/components/header";
 import { Footer } from "~/components/footer";
+import spriteHref from "~/assets/sprite.svg?url";
 
 /* eslint-disable import/no-unresolved */
 import interUrl from "/font/inter-roman-latin-var.woff2?url";
@@ -94,6 +95,12 @@ export function links() {
       type: "image/x-icon",
       href: "/favicon-dark.ico",
       media: "(prefers-color-scheme: dark)",
+    },
+    {
+      rel: "preload",
+      href: spriteHref,
+      as: "image",
+      type: "image/svg+xml",
     },
   ];
 }

@@ -1,6 +1,6 @@
 import { cn } from "~/lib/cn";
 import type { IconName } from "./types.generated";
-import spriteHref from "~/assets/sprite.svg";
+import spriteHref from "~/assets/sprite.svg?url";
 
 export type IconProps = Omit<React.SVGProps<SVGElement>, "ref"> & {
   name: IconName;
