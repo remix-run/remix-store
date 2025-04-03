@@ -19,7 +19,8 @@ export default defineConfig({
     tailwindcss(),
     iconsSpritesheet({
       inputDir: "app/assets/icons",
-      outputDir: "app/assets",
+      outputDir: "public",
+
       typesOutputFile: "app/components/icon/types.generated.ts",
       withTypes: true,
       iconNameTransformer: (name) =>

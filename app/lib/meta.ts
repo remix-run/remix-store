@@ -17,7 +17,7 @@ type MetaOptions = {
 export function generateMeta(options: MetaOptions = {}): MetaDescriptor[] {
   const {
     title = "The Remix Store",
-    description = "Soft ware for engineers of all kinds",
+    description = "Soft wear for engineers of all kinds",
     image = "/og_image.jpg",
     url,
     type = "website",
