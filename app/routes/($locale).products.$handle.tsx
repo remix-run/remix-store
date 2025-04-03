@@ -1,4 +1,4 @@
-import { Suspense, useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { data, type LoaderFunctionArgs } from "@shopify/remix-oxygen";
 import {
   Await,
@@ -10,7 +10,6 @@ import {
 } from "@remix-run/react";
 import type {
   ProductFragment,
-  ProductVariantsQuery,
   ProductVariantFragment,
 } from "storefrontapi.generated";
 import {
@@ -21,14 +20,11 @@ import {
   getSelectedProductOptions,
   CartForm,
   Analytics,
-  type CartViewPayload,
   useAnalytics,
   RichText,
-  useOptimisticCart,
 } from "@shopify/hydrogen";
-import { useAside } from "~/components/ui/aside";
 import { FOOTER_QUERY } from "~/lib/fragments";
-import { Button, ButtonWithWellText } from "~/components/ui/button";
+import { Button } from "~/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -43,9 +39,7 @@ import { getProductData, getProductVariants } from "~/lib/data/product.server";
 import { useRelativeUrl } from "~/lib/use-relative-url";
 import { cva } from "class-variance-authority";
 import { cn } from "~/lib/cn";
-
-/** The default vendor, which we hide because nobody cares */
-const DEFAULT_VENDOR = "Remix Swag Store";
+import { clsx } from "clsx";
 
 export function meta({
   data,
@@ -53,11 +47,11 @@ export function meta({
 }: MetaArgs<typeof loader, { root: RootLoader }>) {
   if (!data) return generateMeta();
 
-  const { product } = data;
-  const { siteUrl } = matches[0].data;
+  let { product } = data;
+  let { siteUrl } = matches[0].data;
 
   // Use product image if available
-  const image = product.images?.nodes[0]?.url
+  let image = product.images?.nodes[0]?.url
     ? product.images.nodes[0].url
     : "/og_image.jpg";
 
@@ -79,15 +73,12 @@ export async function loader(args: LoaderFunctionArgs) {
     throw new Error("Expected product handle to be defined");
   }
 
-  let variants = getProductVariants(storefront, {
+  let variantsPromise = getProductVariants(storefront, {
     variables: { handle },
-  }).catch((error) => {
-    console.error(error);
-    return null;
   });
 
   // Not sure if this will always be the same as the footer menu
-  const menuPromise = storefront
+  let menuPromise = storefront
     .query(FOOTER_QUERY, {
       cache: storefront.CacheLong(),
     })
@@ -96,7 +87,7 @@ export async function loader(args: LoaderFunctionArgs) {
       if (!data.menu) {
         return menu;
       }
-      for (const item of data.menu.items) {
+      for (let item of data.menu.items) {
         if (!item.url) continue;
         menu.push({
           label: item.title,
@@ -113,7 +104,11 @@ export async function loader(args: LoaderFunctionArgs) {
     },
   });
 
-  let [menu, product] = await Promise.all([menuPromise, productPromise]);
+  let [menu, product, variants] = await Promise.all([
+    menuPromise,
+    productPromise,
+    variantsPromise,
+  ]);
 
   return data({
     checkoutDomain: env.PUBLIC_CHECKOUT_DOMAIN,
@@ -124,7 +119,7 @@ export async function loader(args: LoaderFunctionArgs) {
 }
 
 export default function Product() {
-  const { menu, product, variants, checkoutDomain } =
+  let { menu, product, variants, checkoutDomain } =
     useLoaderData<typeof loader>();
   let { selectedVariant } = product;
 
@@ -143,7 +138,6 @@ export default function Product() {
         selectedVariant={selectedVariant}
         product={product}
         variants={variants}
-        checkoutDomain={checkoutDomain}
       />
 
       <Analytics.ProductView
@@ -188,7 +182,7 @@ function CollectionsMenu({ menu }: { menu: MenuItem[] }) {
 }
 
 function MenuLink({ to, children }: { to: string; children: React.ReactNode }) {
-  const { url } = useRelativeUrl(to);
+  let { url } = useRelativeUrl(to);
   return (
     <Link
       className="text-xs leading-5 text-white/90 transition-[color] hover:text-white lg:text-base lg:leading-6"
@@ -199,23 +193,28 @@ function MenuLink({ to, children }: { to: string; children: React.ReactNode }) {
   );
 }
 
+// TODO:
+// - Fix chevron icon orientation/animation
+// - Fix typography of options
+// - Fix hover/active states of options
+// - Fix width of form section
+// - Fix style of dropdown menu
+
 function ProductMain({
   selectedVariant,
   product,
   variants,
-  checkoutDomain,
 }: {
   product: ProductFragment;
   selectedVariant: NonNullable<ProductFragment["selectedVariant"]>;
-  variants: Promise<ProductVariantsQuery | null>;
-  checkoutDomain: string;
+  variants: ProductVariantFragment[];
 }) {
-  const { title, category, description, technicalDescription } = product;
+  let { title, category, description, technicalDescription } = product;
 
-  const price = Number(selectedVariant.price.amount || 0);
-  const compareAtPrice = Number(selectedVariant.compareAtPrice?.amount || 0);
-  const isOnSale = price < compareAtPrice;
-  const percentageOff = isOnSale
+  let price = Number(selectedVariant.price.amount || 0);
+  let compareAtPrice = Number(selectedVariant.compareAtPrice?.amount || 0);
+  let isOnSale = price < compareAtPrice;
+  let percentageOff = isOnSale
     ? Math.round(((compareAtPrice - price) / compareAtPrice) * 100)
     : 0;
 
@@ -244,32 +243,11 @@ function ProductMain({
         </div>
       </div>
 
-      <div className="flex flex-col gap-[18px] md:gap-8">
-        <Suspense
-          fallback={
-            <ProductForm
-              product={product}
-              selectedVariant={selectedVariant}
-              variants={[]}
-              checkoutDomain={checkoutDomain}
-            />
-          }
-        >
-          <Await
-            errorElement="There was a problem loading product variants"
-            resolve={variants}
-          >
-            {(data) => (
-              <ProductForm
-                product={product}
-                selectedVariant={selectedVariant}
-                variants={data?.product?.variants.nodes || []}
-                checkoutDomain={checkoutDomain}
-              />
-            )}
-          </Await>
-        </Suspense>
-      </div>
+      <ProductForm
+        product={product}
+        selectedVariant={selectedVariant}
+        variants={variants}
+      />
 
       {description ? (
         <RichText
@@ -277,72 +255,46 @@ function ProductMain({
           data={description.value}
         />
       ) : null}
-      <h3 className="text-sm font-bold lg:text-base">Technical Description</h3>
       {technicalDescription ? (
-        <RichText
-          className="rich-text text-xs lg:text-base"
-          data={technicalDescription.value}
-        />
+        <>
+          <h3 className="text-sm font-bold lg:text-base">
+            Technical Description
+          </h3>
+
+          <RichText
+            className="rich-text text-xs lg:text-base"
+            data={technicalDescription.value}
+          />
+        </>
       ) : null}
     </div>
   );
 }
 
-// TODO: get back to variants
-
 function ProductForm({
   product,
   selectedVariant,
   variants,
-  checkoutDomain,
 }: {
   product: ProductFragment;
   selectedVariant: NonNullable<ProductFragment["selectedVariant"]>;
   variants: Array<ProductVariantFragment>;
-  checkoutDomain: string;
 }) {
-  const { open } = useAside();
-  const { publish, shop, cart, prevCart } = useAnalytics();
-  const isAvailable = !!selectedVariant?.availableForSale;
-  const [searchParams] = useSearchParams();
-  const { options } = product;
-
-  // If the product has options (like size, color, etc), check whether each option has been selected
-  // if (variants.length > 1) {
-  //   for (const option of options) {
-  //     const selectedOption = searchParams.get(option.name);
-  //     if (!selectedOption) {
-  //       addToCartText = `Select a ${option.name.toLowerCase()}`;
-  //       break;
-  //     }
-  //   }
-  // }
+  let { publish, shop, cart, prevCart } = useAnalytics();
+  let isAvailable = !!selectedVariant?.availableForSale;
 
   return (
-    <>
-      {/* <VariantSelector
-        handle={product.handle}
-        options={product.options.filter(
-          (option) => option.optionValues.length > 1,
-        )}
-        variants={variants}
-      >
-        {({ option }) => <ProductOptions key={option.name} option={option} />}
-      </VariantSelector> */}
+    <div className="flex flex-col gap-[18px] md:gap-8">
       <div className="flex flex-col gap-2 md:gap-3 lg:flex-row">
-        <div className="flex items-center justify-start rounded-[54px] border-[3px] border-white px-6 py-4 text-xl font-semibold transition-all duration-300 lg:flex-2">
-          <span>Medium</span>
-        </div>
+        <VariantSelector
+          handle={product.handle}
+          options={product.options}
+          variants={variants}
+        >
+          {({ option }) => <ProductOptions key={option.name} option={option} />}
+        </VariantSelector>
         <AddToCartButton
           disabled={!selectedVariant || !isAvailable}
-          // onClick={() => {
-          //   publish("cart_viewed", {
-          //     cart,
-          //     prevCart,
-          //     shop,
-          //     url: window.location.href || "",
-          //   } as CartViewPayload);
-          // }}
           lines={
             selectedVariant
               ? [
@@ -354,15 +306,65 @@ function ProductForm({
                 ]
               : []
           }
+          // This handles overriding the animation on larger screens if there's
+          // not a variant selector
+          className={clsx({ "lg:flex-1": product.options.length === 0 })}
         >
           {isAvailable ? "Add to cart" : "Sold out"}
         </AddToCartButton>
       </div>
-    </>
+    </div>
   );
 }
 
-const addToCartButtonVariants = cva(
+function ProductOptions({ option }: { option: VariantOption }) {
+  let [searchParams] = useSearchParams();
+  let selectedOption = searchParams.get(option.name);
+
+  return (
+    <div className="relative w-full lg:flex-2">
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <button className="flex w-full items-center justify-between rounded-[54px] border-[3px] border-white px-6 py-4 text-xl font-semibold transition-all duration-300">
+            <span>{selectedOption || option.name}</span>
+            <Icon name="chevron-down" className="ml-2 size-6" />
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent
+          align="center"
+          className="w-[var(--radix-dropdown-menu-trigger-width)] rounded-2xl border border-white/20 bg-black p-2"
+        >
+          {option.values.map(({ value, isAvailable, isActive, to }) => (
+            <DropdownMenuItem
+              key={option.name + value}
+              asChild
+              // disabled={!isAvailable}
+              className="rounded-xl px-4 py-3 text-lg data-[highlighted]:bg-white/5"
+            >
+              <Link
+                prefetch="intent"
+                preventScrollReset
+                replace
+                to={to}
+                className={cn(
+                  "flex w-full items-center justify-between",
+                  isActive && "text-white",
+                  !isActive && "text-white/80",
+                  !isAvailable && "opacity-50",
+                )}
+              >
+                {value}
+                {isActive && <Icon name="check" className="size-5" />}
+              </Link>
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
+  );
+}
+
+let addToCartButtonVariants = cva(
   [
     "relative flex min-h-16 items-center justify-center overflow-hidden rounded-[54px] px-6 py-4 text-xl font-semibold whitespace-nowrap duration-300",
     "lg:min-w-20 lg:transition-[flex]",
@@ -385,19 +387,23 @@ const addToCartButtonVariants = cva(
   },
 );
 
+type AddToCartButtonProps = {
+  analytics?: unknown;
+  children: React.ReactNode;
+  disabled?: boolean;
+  lines: Array<OptimisticCartLineInput>;
+  onClick?: () => void;
+  className?: string;
+};
+
 function AddToCartButton({
   analytics,
   children,
   disabled,
   lines,
   onClick,
-}: {
-  analytics?: unknown;
-  children: React.ReactNode;
-  disabled?: boolean;
-  lines: Array<OptimisticCartLineInput>;
-  onClick?: () => void;
-}) {
+  className,
+}: AddToCartButtonProps) {
   let fetcher = useFetcher();
   let [pending, setPending] = useState(false);
   let loadStartTime = useRef<number | null>(null);
@@ -435,7 +441,7 @@ function AddToCartButton({
     <fetcher.Form
       method="post"
       action="/cart"
-      className={cn(addToCartButtonVariants({ pending, disabled }))}
+      className={cn(addToCartButtonVariants({ pending, disabled }), className)}
     >
       <input
         type="hidden"
@@ -453,7 +459,11 @@ function AddToCartButton({
         disabled={disabled ?? pending}
       >
         <span className="absolute inset-0" />
-        {pending ? <Icon name="check" className="size-8" /> : children}
+        {pending ? (
+          <Icon name="check" className="add-to-cart-icon size-8" />
+        ) : (
+          children
+        )}
       </button>
     </fetcher.Form>
   );
@@ -479,79 +489,5 @@ export function ShopPayButton({
         <Icon name="shop-pay" className="h-6 w-auto max-w-full" />
       </Button>
     </Link>
-  );
-}
-
-function ProductOptions({ option }: { option: VariantOption }) {
-  const [searchParams] = useSearchParams();
-  const selectedOption = searchParams.get(option.name);
-
-  // Size (XS, S, M, L, etc) should render buttons
-  if (option.name.toLowerCase() === "size") {
-    return (
-      <div className="grid grid-cols-[repeat(auto-fit,minmax(--spacing(12),1fr))] gap-2 lg:gap-4">
-        {option.values.map(({ value, isAvailable, isActive, to }) => (
-          <Button
-            asChild
-            key={option.name + value}
-            size="sm"
-            type="submit"
-            intent={isActive ? "primary" : "secondary"}
-            disabled={!isAvailable}
-            className="px-0 text-center"
-          >
-            {isAvailable ? (
-              <Link prefetch="intent" preventScrollReset replace to={to}>
-                {value}
-              </Link>
-            ) : (
-              <span>{value}</span>
-            )}
-          </Button>
-        ))}
-      </div>
-    );
-  }
-
-  // All other options should render a dropdown
-  return (
-    <div>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <ButtonWithWellText
-            size="icon"
-            wellPrefix={selectedOption ? selectedOption : `${option.name}`}
-          >
-            <Icon name="chevron-down" />
-          </ButtonWithWellText>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-fit md:w-[280px]">
-          {option.values.map(({ value, isAvailable, isActive, to }) => (
-            <DropdownMenuItem
-              asChild
-              className="justify-between"
-              key={option.name + value}
-            >
-              {isAvailable ? (
-                <Link
-                  prefetch="intent"
-                  preventScrollReset
-                  replace
-                  to={to}
-                  className="cursor-pointer no-underline"
-                >
-                  {value}
-                  {isActive ? <Icon name="circle-check" /> : null}
-                </Link>
-              ) : (
-                <span className="cursor-not-allowed opacity-35">
-                  {value} (Sold Out)
-                </span>
-              )}
-            </DropdownMenuItem>
-          ))}
-        </DropdownMenuContent>
-      </DropdownMenu>
-    </div>
   );
 }

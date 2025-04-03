@@ -2,6 +2,7 @@ import { Storefront } from "@shopify/hydrogen";
 
 import type {
   ProductQueryVariables,
+  ProductVariantFragment,
   ProductVariantsQueryVariables,
 } from "storefrontapi.generated";
 
@@ -22,6 +23,9 @@ export async function getProductData(
     ),
   );
 
+  // Note: we only support filter options for product variants
+  product.options = product.options.filter((option) => option.name === "Size");
+
   if (firstVariantIsDefault) {
     product.selectedVariant = firstVariant;
   }
@@ -32,12 +36,12 @@ export async function getProductData(
 export async function getProductVariants(
   storefront: Storefront,
   { variables }: { variables: ProductVariantsQueryVariables },
-) {
+): Promise<ProductVariantFragment[]> {
   const variants = await storefront.query(VARIANTS_QUERY, {
     variables,
   });
 
-  return variants;
+  return variants.product?.variants.nodes || [];
 }
 
 export const PRODUCT_IMAGE_FRAGMENT = `#graphql
