@@ -44,6 +44,7 @@ export default defineConfig({
     // Allow a strict Content-Security-Policy
     // without inlining assets as base64:
     assetsInlineLimit: 0,
+    assetsDir: "app/assets",
   },
   ssr: {
     optimizeDeps: {
