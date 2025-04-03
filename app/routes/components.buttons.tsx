@@ -1,5 +1,4 @@
 import { Button, ButtonWithWellText } from "~/components/ui/button";
-import { ShopPayButton } from "./($locale).products.$handle";
 import { Icon } from "~/components/icon";
 import { iconNames } from "~/components/icon/types.generated";
 import { Fragment } from "react/jsx-runtime";
@@ -9,7 +8,6 @@ export default function Buttons() {
   return (
     <div className="bg-neutral-100 dark:bg-neutral-700">
       <Section title="CTA Buttons" className="flex w-[400px] flex-col gap-4">
-        <ShopPayButton selectedVariant={undefined} checkoutDomain={""} />
         <Button size="lg" intent="primary">
           Continue checkout
         </Button>

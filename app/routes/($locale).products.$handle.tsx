@@ -24,7 +24,6 @@ import {
   RichText,
 } from "@shopify/hydrogen";
 import { FOOTER_QUERY } from "~/lib/fragments";
-import { Button } from "~/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -66,7 +65,7 @@ export function meta({
 
 export async function loader(args: LoaderFunctionArgs) {
   let { request, params, context } = args;
-  let { storefront, env } = context;
+  let { storefront } = context;
   let { handle } = params;
 
   if (!handle) {
@@ -111,7 +110,6 @@ export async function loader(args: LoaderFunctionArgs) {
   ]);
 
   return data({
-    checkoutDomain: env.PUBLIC_CHECKOUT_DOMAIN,
     menu,
     product,
     variants,
@@ -119,8 +117,7 @@ export async function loader(args: LoaderFunctionArgs) {
 }
 
 export default function Product() {
-  let { menu, product, variants, checkoutDomain } =
-    useLoaderData<typeof loader>();
+  let { menu, product, variants } = useLoaderData<typeof loader>();
   let { selectedVariant } = product;
 
   // If a variant isn't selected, use the first variant for price, analytics, etc
@@ -193,13 +190,6 @@ function MenuLink({ to, children }: { to: string; children: React.ReactNode }) {
   );
 }
 
-// TODO:
-// - Fix chevron icon orientation/animation
-// - Fix typography of options
-// - Fix hover/active states of options
-// - Fix width of form section
-// - Fix style of dropdown menu
-
 function ProductMain({
   selectedVariant,
   product,
@@ -219,12 +209,12 @@ function ProductMain({
     : 0;
 
   return (
-    <div className="static top-(--header-height) mx-4 flex max-h-fit flex-col gap-6 text-white md:sticky md:mx-0 md:min-w-fit md:basis-1/3 lg:gap-9 lg:pt-32">
+    <div className="static top-(--header-height) mx-4 flex max-h-fit flex-col gap-6 text-white md:sticky md:mx-0 md:max-w-xl md:basis-1/3 lg:gap-9 lg:pt-32">
       <div className="flex flex-col gap-4">
         {category ? (
           <p className="text-xs lg:text-base">{category?.name}</p>
         ) : null}
-        <h1 className="min-w-fit font-sans text-2xl font-bold lg:text-4xl">
+        <h1 className="min-w-max font-sans text-2xl font-bold lg:text-4xl">
           {title}
         </h1>
         <div className="flex gap-3">
@@ -325,21 +315,25 @@ function ProductOptions({ option }: { option: VariantOption }) {
     <div className="relative w-full lg:flex-2">
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <button className="flex w-full items-center justify-between rounded-[54px] border-[3px] border-white px-6 py-4 text-xl font-semibold transition-all duration-300">
+          <button className="flex w-full items-center justify-between rounded-[54px] border-[3px] border-white px-6 py-4 text-xl font-semibold data-[state=open]:[&_svg]:-rotate-180">
             <span>{selectedOption || option.name}</span>
-            <Icon name="chevron-down" className="ml-2 size-6" />
+            <Icon
+              name="chevron-down"
+              className="ml-2 size-6 transition-transform duration-200 ease-in"
+            />
           </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent
           align="center"
-          className="w-[var(--radix-dropdown-menu-trigger-width)] rounded-2xl border border-white/20 bg-black p-2"
+          className="w-[var(--radix-dropdown-menu-trigger-width)] rounded-4xl border border-[#222222] bg-[#111111]"
+          sideOffset={10}
         >
           {option.values.map(({ value, isAvailable, isActive, to }) => (
             <DropdownMenuItem
               key={option.name + value}
               asChild
               // disabled={!isAvailable}
-              className="rounded-xl px-4 py-3 text-lg data-[highlighted]:bg-white/5"
+              className="rounded-4xl px-5 py-4 text-lg text-white data-[highlighted]:bg-white/5 data-[highlighted]:text-white"
             >
               <Link
                 prefetch="intent"
@@ -347,10 +341,10 @@ function ProductOptions({ option }: { option: VariantOption }) {
                 replace
                 to={to}
                 className={cn(
-                  "flex w-full items-center justify-between",
-                  isActive && "text-white",
-                  !isActive && "text-white/80",
-                  !isAvailable && "opacity-50",
+                  "flex w-full items-center justify-between text-xl hover:text-white",
+                  // isActive && "text-white",
+                  // !isActive && "text-white/80",
+                  !isAvailable && "text-white/30",
                 )}
               >
                 {value}
@@ -466,28 +460,5 @@ function AddToCartButton({
         )}
       </button>
     </fetcher.Form>
-  );
-}
-
-// ShopPayButton -- if reused pull out into a component
-export function ShopPayButton({
-  selectedVariant,
-  checkoutDomain,
-}: {
-  selectedVariant: ProductFragment["selectedVariant"];
-  checkoutDomain: string;
-}) {
-  return (
-    <Link
-      to={`https://${checkoutDomain}/cart/${selectedVariant?.id.split("ProductVariant/")[1]}:1?payment=shop_pay&channel=hydrogen`}
-    >
-      <Button
-        className="bg-shop-pay flex justify-center py-6 [--yamaha-shadow-color:var(--color-shop-pay)]"
-        intent="primary"
-        size="lg"
-      >
-        <Icon name="shop-pay" className="h-6 w-auto max-w-full" />
-      </Button>
-    </Link>
   );
 }
