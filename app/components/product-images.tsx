@@ -9,6 +9,7 @@ import { Image as HydrogenImage } from "@shopify/hydrogen";
 import { cn } from "~/lib/cn";
 import { useRef, useState } from "react";
 import { useLayoutEffect, usePrefersReducedMotion } from "~/lib/hooks";
+import { Icon } from "./icon";
 
 import type { ProductVariantFragment } from "storefrontapi.generated";
 
@@ -114,9 +115,7 @@ function ImageCarousel({
             className="h-6 w-6"
             aria-label="Previous image"
           >
-            <svg viewBox="0 0 10 10" className="mx-auto">
-              <use href="/sprite.svg#chevron-left"></use>
-            </svg>
+            <Icon name="chevron-left" className="mx-auto size-6" />
           </PrevButton>
           <div className="flex space-x-4">
             {scrollSnaps.map((btnIndex, index) => {
@@ -138,9 +137,7 @@ function ImageCarousel({
             className="h-6 w-6"
             aria-label="Next image"
           >
-            <svg viewBox="0 0 10 10" className="mx-auto">
-              <use href="/sprite.svg#chevron-right"></use>
-            </svg>
+            <Icon name="chevron-right" className="mx-auto size-6" />
           </NextButton>
         </div>
       )}
