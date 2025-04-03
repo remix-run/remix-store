@@ -31,9 +31,6 @@ export async function action({ request, context }: ActionFunctionArgs) {
   let status = 200;
   let result: CartQueryDataReturn;
 
-  await new Promise((resolve) => setTimeout(resolve, 2000));
-  return null;
-
   switch (action) {
     case CartForm.ACTIONS.LinesAdd:
       result = await cart.addLines(inputs.lines);
