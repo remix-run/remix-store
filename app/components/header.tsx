@@ -1,4 +1,3 @@
-import { useEffect, useRef, useState } from "react";
 import type { NavLinkProps } from "@remix-run/react";
 import { Link, NavLink } from "@remix-run/react";
 import { type CartViewPayload, useAnalytics } from "@shopify/hydrogen";
@@ -24,16 +23,15 @@ import {
   useAside,
 } from "~/components/ui/aside";
 import { CartMain } from "~/components/cart";
-import { clsx } from "clsx";
 import { AnimatedLink } from "~/components/ui/animated-link";
 import { RemixLogo } from "~/components/remix-logo";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "~/components/ui/dropdown-menu";
 import { CartForm } from "@shopify/hydrogen";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+  PopoverClose,
+} from "~/components/ui/popover";
 
 interface HeaderProps {
   menu: NonNullable<HeaderQuery["menu"]>;
@@ -163,8 +161,8 @@ function CartButton({ cart }: Pick<HeaderProps, "cart">) {
 
   return (
     <div className="flex justify-end">
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild className="group">
+      <Popover>
+        <PopoverTrigger asChild className="group">
           <div>
             <CartCTA
               iconName="cart"
@@ -175,10 +173,10 @@ function CartButton({ cart }: Pick<HeaderProps, "cart">) {
               <span className="sr-only">in cart</span>
             </CartCTA>
           </div>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent
+        </PopoverTrigger>
+        <PopoverContent
           align="end"
-          className="w-[400px] bg-[#4475F2] p-6 text-white"
+          className="w-[400px] rounded-2xl bg-[#4475F2] p-6 text-white shadow-xl"
         >
           <div className="flex items-start justify-between">
             <h2 className="font-title text-[2rem] leading-[0.95]">
@@ -186,9 +184,15 @@ function CartButton({ cart }: Pick<HeaderProps, "cart">) {
               <br />
               IN CART
             </h2>
-            <button className="rounded-full p-1 hover:bg-white/10">
-              <Icon name="x" className="size-6" />
-            </button>
+            <PopoverClose asChild>
+              <button
+                type="button"
+                aria-label="Close cart"
+                className="rounded-full p-1 hover:bg-white/10 focus:ring-2 focus:ring-white/50 focus:outline-none"
+              >
+                <Icon name="x" className="size-6" />
+              </button>
+            </PopoverClose>
           </div>
           <div className="mt-8 space-y-8">
             {cart?.lines?.nodes.map((line) => {
@@ -221,12 +225,17 @@ function CartButton({ cart }: Pick<HeaderProps, "cart">) {
                         ${Number(line.cost.totalAmount.amount).toFixed(2)}
                       </p>
                     </div>
-                    <div className="mt-4 flex items-center gap-4">
+                    <div
+                      className="mt-4 flex items-center gap-4"
+                      role="group"
+                      aria-label={`Quantity controls for ${line.merchandise.product.title}`}
+                    >
                       {quantity === 1 ? (
                         <CartLineRemoveButton lineIds={[id]}>
                           <button
-                            className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20"
+                            className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 focus:ring-2 focus:ring-white/50 focus:outline-none"
                             type="submit"
+                            aria-label={`Remove ${line.merchandise.product.title} from cart`}
                           >
                             <Icon name="minus" className="size-5" />
                           </button>
@@ -236,26 +245,31 @@ function CartButton({ cart }: Pick<HeaderProps, "cart">) {
                           lines={[{ id, quantity: prevQuantity }]}
                         >
                           <button
-                            className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20"
+                            className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 focus:ring-2 focus:ring-white/50 focus:outline-none"
                             type="submit"
                             value={prevQuantity}
                             name="decrease-quantity"
+                            aria-label={`Decrease ${line.merchandise.product.title} quantity by 1`}
                           >
                             <Icon name="minus" className="size-5" />
                           </button>
                         </CartLineUpdateButton>
                       )}
-                      <span className="w-8 text-center text-xl">
+                      <span
+                        className="w-8 text-center text-xl"
+                        aria-label={`Current quantity: ${quantity}`}
+                      >
                         {quantity}
                       </span>
                       <CartLineUpdateButton
                         lines={[{ id, quantity: quantity + 1 }]}
                       >
                         <button
-                          className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20"
+                          className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 focus:ring-2 focus:ring-white/50 focus:outline-none"
                           type="submit"
                           value={quantity + 1}
                           name="increase-quantity"
+                          aria-label={`Increase ${line.merchandise.product.title} quantity by 1`}
                         >
                           <Icon name="plus" className="size-5" />
                         </button>
@@ -279,39 +293,21 @@ function CartButton({ cart }: Pick<HeaderProps, "cart">) {
             {cart?.checkoutUrl && (
               <a
                 href={cart.checkoutUrl}
-                className="font-title mt-6 flex w-full items-center justify-center gap-1 rounded-full bg-white py-4 text-[1.75rem] text-black hover:bg-white/90"
+                className="font-title mt-6 flex w-full items-center justify-center gap-1 rounded-full bg-white py-4 text-[1.75rem] text-black hover:bg-white/90 focus:ring-2 focus:ring-white/50 focus:outline-none"
+                aria-label="Proceed to checkout"
               >
                 Check out
                 <Icon name="fast-forward" className="size-6" />
               </a>
             )}
           </div>
-        </DropdownMenuContent>
-      </DropdownMenu>
+        </PopoverContent>
+      </Popover>
     </div>
   );
 }
 
 type HeaderMenuProps = Pick<HeaderProps, "menu">;
-
-function HeaderMenu({ menu }: HeaderMenuProps) {
-  return (
-    <>
-      <div className="flex-1 md:hidden">
-        <HeaderMenuMobileToggle menu={menu} />
-      </div>
-      <nav className="hidden flex-1 md:flex md:gap-3" role="navigation">
-        {menu.items.map((item) => {
-          if (!item.url) return null;
-          return (
-            <HeaderMenuLink key={item.id} title={item.title} url={item.url} />
-          );
-        })}
-        <ThemeToggle display="icon" />
-      </nav>
-    </>
-  );
-}
 
 type HeaderMenuLinkProps = {
   title: string;
