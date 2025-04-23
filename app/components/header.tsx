@@ -63,42 +63,6 @@ export function Header({ menu, cart }: HeaderProps) {
   );
 }
 
-function CartLineUpdateButton({
-  children,
-  lines,
-}: {
-  children: React.ReactNode;
-  lines: { id: string; quantity: number }[];
-}) {
-  return (
-    <CartForm
-      route="/cart"
-      action={CartForm.ACTIONS.LinesUpdate}
-      inputs={{ lines }}
-    >
-      {children}
-    </CartForm>
-  );
-}
-
-function CartLineRemoveButton({
-  children,
-  lineIds,
-}: {
-  children: React.ReactNode;
-  lineIds: string[];
-}) {
-  return (
-    <CartForm
-      route="/cart"
-      action={CartForm.ACTIONS.LinesRemove}
-      inputs={{ lineIds }}
-    >
-      {children}
-    </CartForm>
-  );
-}
-
 function CartCTA({
   children,
   className,
@@ -176,32 +140,30 @@ function CartButton({ cart }: Pick<HeaderProps, "cart">) {
         </PopoverTrigger>
         <PopoverContent
           align="end"
-          className="w-[400px] rounded-2xl bg-[#4475F2] p-6 text-white shadow-xl"
+          className="bg-blue-brand max-w-min min-w-[400px] rounded-t-4xl rounded-b-[2.625rem] text-white"
         >
-          <div className="flex items-start justify-between">
-            <h2 className="font-title text-[2rem] leading-[0.95]">
-              {totalQuantity} ITEMS
-              <br />
-              IN CART
+          <div className="flex items-center justify-between px-5 py-3">
+            <h2 className="font-title tracking-tightest text-base uppercase">
+              {totalQuantity} item(s) in cart
             </h2>
             <PopoverClose asChild>
               <button
                 type="button"
                 aria-label="Close cart"
-                className="rounded-full p-1 hover:bg-white/10 focus:ring-2 focus:ring-white/50 focus:outline-none"
+                className="rounded-full p-1 text-white hover:bg-white/20 focus-visible:ring-2 focus-visible:ring-white/50 focus-visible:outline-none"
               >
-                <Icon name="x" className="size-6" />
+                <Icon name="x" className="size-8" />
               </button>
             </PopoverClose>
           </div>
-          <div className="mt-8 space-y-8">
+          <div className="px-5 py-4">
             {cart?.lines?.nodes.map((line) => {
               const { id, quantity } = line;
               const prevQuantity = Math.max(0, quantity - 1);
 
               return (
-                <div key={id} className="flex gap-4">
-                  <div className="h-24 w-24 shrink-0 rounded-2xl bg-white p-2">
+                <div key={id} className="flex items-start gap-3">
+                  <div className="size-20 shrink-0 rounded-2xl bg-white p-2">
                     {line.merchandise.image && (
                       <img
                         src={line.merchandise.image.url}
@@ -210,78 +172,30 @@ function CartButton({ cart }: Pick<HeaderProps, "cart">) {
                       />
                     )}
                   </div>
-                  <div className="flex flex-1 flex-col">
-                    <div className="flex items-start justify-between gap-4">
-                      <div>
-                        <h3 className="font-title text-[1.75rem] leading-tight">
-                          {line.merchandise.product.title}
-                        </h3>
-                        <p className="text-xl text-white/80">
-                          {line.merchandise.title !== "Default Title" &&
-                            line.merchandise.title}
-                        </p>
-                      </div>
-                      <p className="font-title text-[1.75rem]">
-                        ${Number(line.cost.totalAmount.amount).toFixed(2)}
-                      </p>
-                    </div>
-                    <div
-                      className="mt-4 flex items-center gap-4"
-                      role="group"
-                      aria-label={`Quantity controls for ${line.merchandise.product.title}`}
-                    >
-                      {quantity === 1 ? (
-                        <CartLineRemoveButton lineIds={[id]}>
-                          <button
-                            className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 focus:ring-2 focus:ring-white/50 focus:outline-none"
-                            type="submit"
-                            aria-label={`Remove ${line.merchandise.product.title} from cart`}
-                          >
-                            <Icon name="minus" className="size-5" />
-                          </button>
-                        </CartLineRemoveButton>
-                      ) : (
-                        <CartLineUpdateButton
-                          lines={[{ id, quantity: prevQuantity }]}
-                        >
-                          <button
-                            className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 focus:ring-2 focus:ring-white/50 focus:outline-none"
-                            type="submit"
-                            value={prevQuantity}
-                            name="decrease-quantity"
-                            aria-label={`Decrease ${line.merchandise.product.title} quantity by 1`}
-                          >
-                            <Icon name="minus" className="size-5" />
-                          </button>
-                        </CartLineUpdateButton>
-                      )}
-                      <span
-                        className="w-8 text-center text-xl"
-                        aria-label={`Current quantity: ${quantity}`}
-                      >
-                        {quantity}
-                      </span>
-                      <CartLineUpdateButton
-                        lines={[{ id, quantity: quantity + 1 }]}
-                      >
-                        <button
-                          className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 focus:ring-2 focus:ring-white/50 focus:outline-none"
-                          type="submit"
-                          value={quantity + 1}
-                          name="increase-quantity"
-                          aria-label={`Increase ${line.merchandise.product.title} quantity by 1`}
-                        >
-                          <Icon name="plus" className="size-5" />
-                        </button>
-                      </CartLineUpdateButton>
-                    </div>
+                  <div className="flex flex-1 flex-col gap-1 text-sm">
+                    <h3 className="font-bold tracking-tight">
+                      {line.merchandise.product.title}
+                    </h3>
+                    <p>
+                      {line.merchandise.title !== "Default Title" &&
+                        line.merchandise.title}
+                    </p>
+                    <CartQuantityControls
+                      lineId={id}
+                      quantity={quantity}
+                      productTitle={line.merchandise.product.title}
+                    />
                   </div>
+
+                  <p className="text-sm font-bold">
+                    ${Number(line.cost.totalAmount.amount).toFixed(0)}
+                  </p>
                 </div>
               );
             })}
           </div>
-          <div className="mt-8 space-y-3">
-            <div className="flex items-center justify-between border-t border-white/20 pt-6">
+          {/* <div className="p-4">
+            <div className="flex items-center justify-between border-t border-white/20">
               <h3 className="font-title text-[2rem]">SUBTOTAL</h3>
               <p className="font-title text-[2rem]">
                 ${Number(cart?.cost?.subtotalAmount?.amount || 0).toFixed(2)}
@@ -293,14 +207,14 @@ function CartButton({ cart }: Pick<HeaderProps, "cart">) {
             {cart?.checkoutUrl && (
               <a
                 href={cart.checkoutUrl}
-                className="font-title mt-6 flex w-full items-center justify-center gap-1 rounded-full bg-white py-4 text-[1.75rem] text-black hover:bg-white/90 focus:ring-2 focus:ring-white/50 focus:outline-none"
+                className="font-title flex w-full items-center justify-center gap-1 rounded-full bg-white py-4 text-[1.75rem] text-black hover:bg-white/90 focus:ring-2 focus:ring-white/50 focus:outline-none"
                 aria-label="Proceed to checkout"
               >
                 Check out
                 <Icon name="fast-forward" className="size-6" />
               </a>
             )}
-          </div>
+          </div> */}
         </PopoverContent>
       </Popover>
     </div>
@@ -443,5 +357,107 @@ function CartBadge({ count }: { count: number }) {
         !isHydrated ? <a href="/cart">{inner}</a> : inner
       }
     </Button>
+  );
+}
+
+// TODO: make optimistic
+
+function CartQuantityControls({
+  lineId,
+  quantity,
+  productTitle,
+}: {
+  lineId: string;
+  quantity: number;
+  productTitle: string;
+}) {
+  const prevQuantity = quantity - 1;
+
+  let buttonClassName =
+    "flex items-center justify-center rounded-full text-white/50 transition-colors duration-150 ease-in-out hover:text-white  focus-visible:text-white focus-visible:ring-1 focus-visible:ring-white/50  focus-visible:outline-none";
+
+  return (
+    <div
+      className="flex items-center gap-2.5"
+      role="group"
+      aria-label={`Quantity controls for ${productTitle}`}
+    >
+      {quantity === 1 ? (
+        <CartLineRemoveButton lineIds={[lineId]}>
+          <button
+            type="submit"
+            className={buttonClassName}
+            aria-label={`Remove ${productTitle} from cart`}
+          >
+            <Icon name="circle-minus" className="size-5" />
+          </button>
+        </CartLineRemoveButton>
+      ) : (
+        <CartLineUpdateButton lines={[{ id: lineId, quantity: prevQuantity }]}>
+          <button
+            className={buttonClassName}
+            type="submit"
+            value={prevQuantity}
+            name="decrease-quantity"
+            aria-label={`Decrease ${productTitle} quantity by 1`}
+          >
+            <Icon name="circle-minus" className="size-5" />
+          </button>
+        </CartLineUpdateButton>
+      )}
+      <span
+        className="text-center"
+        aria-label={`Current quantity: ${quantity}`}
+      >
+        {quantity}
+      </span>
+      <CartLineUpdateButton lines={[{ id: lineId, quantity: quantity + 1 }]}>
+        <button
+          className={buttonClassName}
+          type="submit"
+          value={quantity + 1}
+          name="increase-quantity"
+          aria-label={`Increase ${productTitle} quantity by 1`}
+        >
+          <Icon name="circle-plus" className="size-5" />
+        </button>
+      </CartLineUpdateButton>
+    </div>
+  );
+}
+
+function CartLineUpdateButton({
+  children,
+  lines,
+}: {
+  children: React.ReactNode;
+  lines: { id: string; quantity: number }[];
+}) {
+  return (
+    <CartForm
+      route="/cart"
+      action={CartForm.ACTIONS.LinesUpdate}
+      inputs={{ lines }}
+    >
+      {children}
+    </CartForm>
+  );
+}
+
+function CartLineRemoveButton({
+  children,
+  lineIds,
+}: {
+  children: React.ReactNode;
+  lineIds: string[];
+}) {
+  return (
+    <CartForm
+      route="/cart"
+      action={CartForm.ACTIONS.LinesRemove}
+      inputs={{ lineIds }}
+    >
+      {children}
+    </CartForm>
   );
 }

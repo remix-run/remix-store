@@ -20,6 +20,8 @@ export const iconNames = [
   "fast-forward",
   "discord",
   "computer",
+  "circle-plus",
+  "circle-minus",
   "circle-check",
   "chevron-up",
   "chevron-right",
