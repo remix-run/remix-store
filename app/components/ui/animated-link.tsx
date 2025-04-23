@@ -104,7 +104,7 @@ export function AnimatedLink({
       <span className="flex gap-1">
         <span>{children}</span>
         {/* the max width is pretty arbitrary estimate */}
-        <span className="max-w-0 overflow-hidden pr-0 whitespace-nowrap transition-all duration-300 ease-in-out group-hover:max-w-[10ch] group-hover:pr-1 group-focus:max-w-[10ch] group-focus:pr-1">
+        <span className="max-w-0 overflow-hidden pr-0 whitespace-nowrap transition-all duration-300 ease-in-out group-hover:max-w-[10ch] group-hover:pr-1 group-focus-visible:max-w-[10ch] group-focus-visible:pr-1">
           {expandedText}
         </span>
       </span>
