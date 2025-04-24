@@ -3,7 +3,9 @@ import { Link, NavLink } from "@remix-run/react";
 import {
   type CartViewPayload,
   CartForm,
+  Money,
   useAnalytics,
+  useOptimisticCart,
 } from "@shopify/hydrogen";
 import type {
   HeaderQuery,
@@ -22,6 +24,7 @@ import {
   PopoverTrigger,
   PopoverClose,
 } from "~/components/ui/popover";
+import { clsx } from "clsx";
 
 interface HeaderProps {
   menu: NonNullable<HeaderQuery["menu"]>;
@@ -55,11 +58,12 @@ export function Header({ menu, cart }: HeaderProps) {
   );
 }
 
-function CartButton({ cart }: Pick<HeaderProps, "cart">) {
+function CartButton({ cart: originalCart }: Pick<HeaderProps, "cart">) {
+  let cart = useOptimisticCart(originalCart);
   let totalQuantity = cart?.totalQuantity || 0;
-  const { publish, shop } = useAnalytics();
+  let { publish, shop } = useAnalytics();
 
-  if (totalQuantity === 0) {
+  if (!cart || totalQuantity === 0) {
     return (
       <AnimatedLink
         to="/collections/all"
@@ -72,6 +76,10 @@ function CartButton({ cart }: Pick<HeaderProps, "cart">) {
     );
   }
 
+  let lines = cart.lines.nodes;
+  let subtotalAmount = cart.cost?.subtotalAmount;
+  let checkoutUrl = cart.checkoutUrl;
+
   return (
     <>
       <div className="block md:hidden">
@@ -79,14 +87,16 @@ function CartButton({ cart }: Pick<HeaderProps, "cart">) {
       </div>
       <Popover>
         <PopoverTrigger asChild className="group">
-          {/* div makes trigger work (dumb) and controls hiding for mobile */}
-          <div className="hidden md:block">
+          <div
+            // div makes trigger work (dumb) and controls hiding for mobile
+            className="hidden md:block"
+          >
             <CartCTA quantity={totalQuantity} />
           </div>
         </PopoverTrigger>
         <PopoverContent
           align="end"
-          className="bg-blue-brand max-w-min min-w-[380px] rounded-t-4xl rounded-b-[2.625rem] text-white"
+          className="bg-blue-brand max-h-[80vh] max-w-min min-w-[380px] overflow-y-auto rounded-t-4xl rounded-b-[2.625rem] text-white"
         >
           <div className="flex items-center justify-between px-5 py-3">
             <h2 className="font-title tracking-tightest text-base font-black uppercase">
@@ -102,57 +112,92 @@ function CartButton({ cart }: Pick<HeaderProps, "cart">) {
               </button>
             </PopoverClose>
           </div>
-          <div className="flex flex-col gap-4 px-5 py-4">
-            {cart?.lines?.nodes.map((line) => {
-              const { id, quantity } = line;
-              const prevQuantity = Math.max(0, quantity - 1);
+          <div className="flex flex-col gap-4 px-5 pt-4 pb-44">
+            {lines.map((line) => {
+              let { id, quantity, isOptimistic, cost } = line;
+
+              let { image, title, product, price } = line.merchandise;
+
+              // TODO: we need to revisit this logic with discounted items
+              // it probably won't be quite the right experience
+              let totalAmount = isOptimistic
+                ? // For new, pending item, just use the price
+                  price
+                : cart.isOptimistic
+                  ? // If the cart is pending, calculate an amount
+                    {
+                      ...price,
+                      amount: String(
+                        Number(cost.amountPerQuantity.amount) * quantity,
+                      ),
+                    }
+                  : // otherwise, use the the actual cost
+                    cost.totalAmount;
 
               return (
                 <div key={id} className="flex items-start gap-3">
-                  <div className="size-20 shrink-0 rounded-2xl bg-white p-2">
-                    {line.merchandise.image && (
+                  <Link
+                    to={`/products/${product.handle}`}
+                    onClick={(e) => {
+                      // Is this hacky?
+                      const event = new KeyboardEvent("keydown", {
+                        key: "Escape",
+                        code: "Escape",
+                        keyCode: 27,
+                        bubbles: true,
+                        cancelable: true,
+                      });
+                      e.currentTarget.dispatchEvent(event);
+                    }}
+                    className="size-20 shrink-0 rounded-2xl bg-white p-2"
+                  >
+                    {image && (
                       <img
-                        src={line.merchandise.image.url}
-                        alt={line.merchandise.image.altText || ""}
+                        src={image.url}
+                        alt={image.altText || ""}
                         className="h-full w-full object-contain"
                       />
                     )}
-                  </div>
+                  </Link>
                   <div className="flex flex-1 flex-col gap-1 text-sm">
                     <h3 className="font-bold tracking-tight">
-                      {line.merchandise.product.title}
+                      {product.title}
                     </h3>
-                    <p>
-                      {line.merchandise.title !== "Default Title" &&
-                        line.merchandise.title}
-                    </p>
+                    <p>{title !== "Default Title" && title}</p>
                     <CartQuantityControls
                       lineId={id}
                       quantity={quantity}
-                      productTitle={line.merchandise.product.title}
+                      productTitle={product.title}
                     />
                   </div>
 
-                  <p className="text-sm font-bold">
-                    ${Number(line.cost.totalAmount.amount).toFixed(0)}
-                  </p>
+                  <Money className="text-sm font-bold" data={totalAmount} />
                 </div>
               );
             })}
           </div>
-          <div className="flex flex-col items-start gap-3 p-4">
-            <p className="flex w-full items-center justify-between">
-              <span className="font-title tracking-tightest text-base font-black uppercase">
+          <div className="bg-blue-brand absolute bottom-0 flex w-full flex-col items-start gap-3 rounded-b-[2.625rem] p-4">
+            <div className="flex w-full items-center justify-between">
+              <p className="font-title tracking-tightest text-base font-black uppercase">
                 subtotal
-              </span>
-              <span className="text-sm">
-                ${Number(cart?.cost?.subtotalAmount?.amount || 0)}
-              </span>
-            </p>
+              </p>
+
+              {subtotalAmount ? (
+                <Money
+                  className={clsx(
+                    "text-sm",
+                    cart.isOptimistic && "text-white/50",
+                  )}
+                  data={subtotalAmount}
+                />
+              ) : null}
+            </div>
             <p className="text-center text-xs text-white/50">
               Taxes & Shipping calculated at checkout
             </p>
-            {cart?.checkoutUrl ? <CheckoutLink to={cart.checkoutUrl} /> : null}
+            {checkoutUrl ? (
+              <CheckoutLink to={checkoutUrl} disabled={cart.isOptimistic} />
+            ) : null}
           </div>
         </PopoverContent>
       </Popover>
@@ -183,7 +228,7 @@ function CartCTA({
   quantity: number;
 }) {
   let { publish, shop, cart, prevCart } = useAnalytics();
-  const isHydrated = useHydrated();
+  let isHydrated = useHydrated();
 
   let className =
     "group bg-blue-brand relative flex h-12 cursor-pointer items-center justify-center gap-2 rounded-[54px] px-5 py-2 pr-4 pl-5 text-center text-base font-semibold text-white no-underline md:h-16 md:gap-2.5 md:px-6 md:py-4 md:pr-5 md:pl-6 md:text-xl";
@@ -258,8 +303,6 @@ function HeaderMenuLink(props: HeaderMenuLinkProps) {
   );
 }
 
-// TODO: make optimistic
-
 function CartQuantityControls({
   lineId,
   quantity,
@@ -269,7 +312,7 @@ function CartQuantityControls({
   quantity: number;
   productTitle: string;
 }) {
-  const prevQuantity = quantity - 1;
+  let prevQuantity = quantity - 1;
 
   let buttonClassName =
     "flex items-center justify-center rounded-full text-white/50 transition-colors duration-150 ease-in-out hover:text-white  focus-visible:text-white focus-visible:ring-1 focus-visible:ring-white/50  focus-visible:outline-none";
@@ -360,20 +403,46 @@ function CartLineRemoveButton({
   );
 }
 
-function CheckoutLink({ to }: { to: string }) {
+function CheckoutLink({
+  to,
+  disabled = false,
+}: {
+  to: string;
+  disabled?: boolean;
+}) {
   return (
     <a
       href={to}
-      className="group hover:bg-blue-brand flex w-full items-center justify-center rounded-[54px] bg-white px-6 py-4 text-xl font-semibold text-black no-underline transition-colors duration-300 hover:text-white"
+      className={clsx(
+        "group flex w-full items-center justify-center rounded-[54px] bg-white px-6 py-4 text-xl font-semibold text-black no-underline outline-none ring-inset",
+        disabled
+          ? "cursor-not-allowed bg-white/70 text-black/60"
+          : "hover:bg-blue-brand focus-visible:bg-blue-brand transition-colors duration-300 hover:text-white hover:ring hover:ring-white focus-visible:text-white focus-visible:ring focus-visible:ring-white",
+      )}
+      aria-disabled={disabled}
+      onClick={(e) => {
+        e.preventDefault();
+      }}
     >
-      <div className="flex w-0 min-w-fit items-center justify-between gap-2.5 transition-[width] duration-300 ease-in-out group-hover:w-full">
-        <span>Check out</span>
-        <Icon
-          name="fast-forward"
-          className="size-8"
-          fill="currentColor"
-          aria-hidden="true"
-        />
+      <div
+        className={clsx(
+          "flex h-8 w-0 min-w-fit items-center justify-between gap-2.5 transition-[width] duration-300 ease-in-out",
+          !disabled && "group-hover:w-full group-focus-visible:w-full",
+        )}
+      >
+        {disabled ? (
+          <span>Updating cart...</span>
+        ) : (
+          <>
+            <span>Check out</span>
+            <Icon
+              name="fast-forward"
+              className="size-8"
+              fill="currentColor"
+              aria-hidden="true"
+            />
+          </>
+        )}
       </div>
     </a>
   );
