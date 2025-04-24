@@ -120,19 +120,20 @@ function CartButton({ cart: originalCart }: Pick<HeaderProps, "cart">) {
 
               // TODO: we need to revisit this logic with discounted items
               // it probably won't be quite the right experience
-              let totalAmount = isOptimistic
-                ? // For new, pending item, just use the price
-                  price
-                : cart.isOptimistic
-                  ? // If the cart is pending, calculate an amount
-                    {
-                      ...price,
-                      amount: String(
-                        Number(cost.amountPerQuantity.amount) * quantity,
-                      ),
-                    }
-                  : // otherwise, use the the actual cost
-                    cost.totalAmount;
+              let totalAmount =
+                !cost && isOptimistic
+                  ? // For new, pending item, just use the price
+                    price
+                  : cart.isOptimistic
+                    ? // If the cart is pending, calculate an amount
+                      {
+                        ...price,
+                        amount: String(
+                          Number(cost.amountPerQuantity.amount) * quantity,
+                        ),
+                      }
+                    : // otherwise, use the the actual cost
+                      cost.totalAmount;
 
               return (
                 <div key={id} className="flex items-start gap-3">
