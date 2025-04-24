@@ -1,10 +1,16 @@
 import { useRouteLoaderData, type MetaArgs } from "@remix-run/react";
 import type { CartQueryDataReturn } from "@shopify/hydrogen";
-import { CartForm } from "@shopify/hydrogen";
+import { CartForm, Money, useOptimisticCart } from "@shopify/hydrogen";
 import { data, type ActionFunctionArgs } from "@shopify/remix-oxygen";
 import type { RootLoader } from "~/root";
 import { generateMeta } from "~/lib/meta";
 import { PageTitle } from "~/components/page-title";
+import { CartHeader, CartLineItem, CheckoutLink } from "~/components/cart";
+import { clsx } from "clsx";
+
+// TODO:
+// - Add empty cart view
+// - Add discount item view
 
 export function meta({ matches }: MetaArgs<undefined, { root: RootLoader }>) {
   const { siteUrl } = matches[0].data;
@@ -92,59 +98,69 @@ export async function action({ request, context }: ActionFunctionArgs) {
 
 export default function Cart() {
   const rootData = useRouteLoaderData<RootLoader>("root");
-  if (!rootData) return null;
+  let cart = useOptimisticCart(rootData?.cart);
+  // TODO: figure out the empty cart state
+  if (!cart) return null;
+
+  let totalQuantity = cart.totalQuantity || 0;
+
+  let lines = cart.lines.nodes;
+  let subtotalAmount = cart.cost?.subtotalAmount;
+  let checkoutUrl = cart.checkoutUrl;
+  let isOptimistic = Boolean(cart.isOptimistic);
 
   return (
-    <div>
+    <main>
       <PageTitle>Cart</PageTitle>
-      <div className="mx-auto max-w-7xl px-4">
-        <div className="mb-32">
-          <h2 className="font-title tracking-tightest mb-8 text-xl font-black uppercase">
-            9 Item(s) in cart
-          </h2>
 
-          <div className="mb-8 flex flex-col gap-4">
-            {/* Cart Item Template */}
-            <div className="flex items-center gap-4">
-              <div className="size-20 shrink-0 rounded-2xl bg-white p-2">
-                {/* Image placeholder */}
-                <div className="h-full w-full bg-gray-200" />
-              </div>
-              <div className="flex flex-1 items-start justify-between">
-                <div className="flex flex-col gap-1">
-                  <h3 className="font-bold">Product Name</h3>
-                  <p className="text-sm text-gray-600">Variant</p>
-                  <div className="mt-1 flex items-center gap-2">
-                    <button className="rounded-full p-1 hover:bg-gray-100">
-                      <span className="sr-only">Decrease quantity</span>−
-                    </button>
-                    <span className="w-8 text-center">1</span>
-                    <button className="rounded-full p-1 hover:bg-gray-100">
-                      <span className="sr-only">Increase quantity</span>+
-                    </button>
+      <div className="mx-auto flex max-w-[800px] flex-col gap-12 px-4 md:px-9">
+        <CartHeader className="md:text-xl" totalQuantity={totalQuantity} />
+        <div className="relative flex flex-1 flex-col gap-9">
+          <ul className="flex flex-col gap-9">
+            {lines.map((line) => (
+              <CartLineItem
+                key={line.id}
+                line={line}
+                isOptimistic={isOptimistic}
+                className="gap-4"
+              />
+            ))}
+          </ul>
+          <div className="sticky right-0 bottom-0 left-0 z-10 bg-black py-4 md:sticky">
+            <div className="mx-auto max-w-[800px]">
+              <div className="flex w-full flex-col items-end gap-6">
+                <div className="flex w-full flex-col items-start gap-1">
+                  <div className="flex w-full items-center justify-between">
+                    <p className="font-title tracking-tightest text-base font-black uppercase md:text-xl">
+                      subtotal
+                    </p>
+
+                    {subtotalAmount ? (
+                      <Money
+                        className={clsx(
+                          "text-base font-bold md:text-xl",
+                          isOptimistic && "text-white/50",
+                        )}
+                        data={subtotalAmount}
+                      />
+                    ) : null}
                   </div>
+                  <p className="text-center text-xs text-white/50">
+                    Taxes & Shipping calculated at checkout
+                  </p>
                 </div>
-                <div className="font-bold">$XX.XX</div>
+                <div className="w-full md:w-[240px]">
+                  <CheckoutLink
+                    to={checkoutUrl ?? ""}
+                    disabled={isOptimistic || !checkoutUrl}
+                    className="hover:ring-0"
+                  />
+                </div>
               </div>
             </div>
-          </div>
-
-          <div className="border-t pt-4">
-            <div className="mb-2 flex items-center justify-between">
-              <h2 className="font-title tracking-tightest text-xl font-black uppercase">
-                Subtotal
-              </h2>
-              <div className="font-bold">$XXX.XX</div>
-            </div>
-            <p className="mb-4 text-sm text-gray-500">
-              Taxes & Shipping calculated at checkout
-            </p>
-            <button className="w-full rounded-full bg-black px-6 py-4 font-semibold text-white transition-colors hover:bg-gray-800">
-              Check out ▶
-            </button>
           </div>
         </div>
       </div>
-    </div>
+    </main>
   );
 }

@@ -261,7 +261,7 @@
 
   html,
   body {
-    @apply font-sans text-neutral-600 dark:text-neutral-300;
+    @apply font-sans text-white;
   }
 }
 

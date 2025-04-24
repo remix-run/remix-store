@@ -2,11 +2,9 @@ import type { NavLinkProps } from "@remix-run/react";
 import { Link, NavLink } from "@remix-run/react";
 import {
   type CartViewPayload,
-  CartForm,
   Money,
   useAnalytics,
   useOptimisticCart,
-  Image as HydrogenImage,
 } from "@shopify/hydrogen";
 import type {
   HeaderQuery,
@@ -25,8 +23,8 @@ import {
   PopoverTrigger,
   PopoverClose,
 } from "~/components/ui/popover";
+import { CartHeader, CartLineItem, CheckoutLink } from "./cart";
 import { clsx } from "clsx";
-import { CheckoutLink } from "./cart";
 
 interface NavbarProps {
   menu: NonNullable<HeaderQuery["menu"]>;
@@ -81,6 +79,19 @@ function CartButton({ cart: originalCart }: Pick<NavbarProps, "cart">) {
   let lines = cart.lines.nodes;
   let subtotalAmount = cart.cost?.subtotalAmount;
   let checkoutUrl = cart.checkoutUrl;
+  let isOptimistic = Boolean(cart.isOptimistic);
+
+  let onImageClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    // Is this hacky?
+    const event = new KeyboardEvent("keydown", {
+      key: "Escape",
+      code: "Escape",
+      keyCode: 27,
+      bubbles: true,
+      cancelable: true,
+    });
+    e.currentTarget.dispatchEvent(event);
+  };
 
   return (
     <>
@@ -101,9 +112,7 @@ function CartButton({ cart: originalCart }: Pick<NavbarProps, "cart">) {
           className="bg-blue-brand max-h-[80vh] max-w-min min-w-[380px] overflow-y-auto rounded-t-4xl rounded-b-[2.625rem] text-white"
         >
           <div className="flex items-center justify-between px-5 py-3">
-            <h2 className="font-title tracking-tightest text-base font-black uppercase">
-              {totalQuantity} item(s) in cart
-            </h2>
+            <CartHeader totalQuantity={totalQuantity} />
             <PopoverClose asChild>
               <button
                 type="button"
@@ -114,93 +123,37 @@ function CartButton({ cart: originalCart }: Pick<NavbarProps, "cart">) {
               </button>
             </PopoverClose>
           </div>
-          <div className="flex flex-col gap-4 px-5 pt-4 pb-44">
-            {lines.map((line) => {
-              let { id, quantity, isOptimistic, cost } = line;
-
-              let { image, title, product, price } = line.merchandise;
-
-              // TODO: we need to revisit this logic with discounted items
-              // it probably won't be quite the right experience
-              let totalAmount =
-                !cost && isOptimistic
-                  ? // For new, pending item, just use the price
-                    price
-                  : cart.isOptimistic
-                    ? // If the cart is pending, calculate an amount
-                      {
-                        ...price,
-                        amount: String(
-                          Number(cost.amountPerQuantity.amount) * quantity,
-                        ),
-                      }
-                    : // otherwise, use the the actual cost
-                      cost.totalAmount;
-
-              return (
-                <div key={id} className="flex items-start gap-3">
-                  <Link
-                    to={`/products/${product.handle}`}
-                    onClick={(e) => {
-                      // Is this hacky?
-                      const event = new KeyboardEvent("keydown", {
-                        key: "Escape",
-                        code: "Escape",
-                        keyCode: 27,
-                        bubbles: true,
-                        cancelable: true,
-                      });
-                      e.currentTarget.dispatchEvent(event);
-                    }}
-                    className="size-20 shrink-0 rounded-2xl bg-white p-2"
-                  >
-                    {image && (
-                      <HydrogenImage
-                        data={image}
-                        className="h-full w-full object-contain"
-                        sizes="5em"
-                      />
-                    )}
-                  </Link>
-                  <div className="flex flex-1 flex-col gap-1 text-sm">
-                    <h3 className="font-bold tracking-tight">
-                      {product.title}
-                    </h3>
-                    <p>{title !== "Default Title" && title}</p>
-                    <CartQuantityControls
-                      lineId={id}
-                      quantity={quantity}
-                      productTitle={product.title}
-                    />
-                  </div>
-
-                  <Money className="text-sm font-bold" data={totalAmount} />
-                </div>
-              );
-            })}
-          </div>
+          <ul className="flex flex-col gap-4 px-5 pt-4 pb-44">
+            {lines.map((line) => (
+              <CartLineItem
+                key={line.id}
+                isOptimistic={isOptimistic}
+                line={line}
+                onImageClick={onImageClick}
+              />
+            ))}
+          </ul>
           <div className="bg-blue-brand absolute bottom-0 flex w-full flex-col items-start gap-3 rounded-b-[2.625rem] p-4">
-            <div className="flex w-full items-center justify-between">
-              <p className="font-title tracking-tightest text-base font-black uppercase">
-                subtotal
-              </p>
+            <div className="flex w-full flex-col items-start gap-1">
+              <div className="flex w-full items-center justify-between">
+                <p className="font-title tracking-tightest text-base font-black uppercase">
+                  subtotal
+                </p>
 
-              {subtotalAmount ? (
-                <Money
-                  className={clsx(
-                    "text-sm",
-                    cart.isOptimistic && "text-white/50",
-                  )}
-                  data={subtotalAmount}
-                />
-              ) : null}
+                {subtotalAmount ? (
+                  <Money
+                    className={clsx("text-sm", isOptimistic && "text-white/50")}
+                    data={subtotalAmount}
+                  />
+                ) : null}
+              </div>
+              <p className="text-center text-xs text-white/50">
+                Taxes & Shipping calculated at checkout
+              </p>
             </div>
-            <p className="text-center text-xs text-white/50">
-              Taxes & Shipping calculated at checkout
-            </p>
             <CheckoutLink
               to={checkoutUrl ?? ""}
-              disabled={cart.isOptimistic || !checkoutUrl}
+              disabled={isOptimistic || !checkoutUrl}
             />
           </div>
         </PopoverContent>
@@ -304,105 +257,5 @@ function HeaderMenuLink(props: HeaderMenuLinkProps) {
     >
       {props.title}
     </NavLink>
-  );
-}
-
-function CartQuantityControls({
-  lineId,
-  quantity,
-  productTitle,
-}: {
-  lineId: string;
-  quantity: number;
-  productTitle: string;
-}) {
-  let prevQuantity = quantity - 1;
-
-  let buttonClassName =
-    "flex items-center justify-center rounded-full text-white/50 transition-colors duration-150 ease-in-out hover:text-white  focus-visible:text-white focus-visible:ring-1 focus-visible:ring-white/50  focus-visible:outline-none";
-
-  return (
-    <div
-      className="flex items-center gap-2.5"
-      role="group"
-      aria-label={`Quantity controls for ${productTitle}`}
-    >
-      {quantity === 1 ? (
-        <CartLineRemoveButton lineIds={[lineId]}>
-          <button
-            type="submit"
-            className={buttonClassName}
-            aria-label={`Remove ${productTitle} from cart`}
-          >
-            <Icon name="circle-minus" className="size-5" />
-          </button>
-        </CartLineRemoveButton>
-      ) : (
-        <CartLineUpdateButton lines={[{ id: lineId, quantity: prevQuantity }]}>
-          <button
-            className={buttonClassName}
-            type="submit"
-            value={prevQuantity}
-            name="decrease-quantity"
-            aria-label={`Decrease ${productTitle} quantity by 1`}
-          >
-            <Icon name="circle-minus" className="size-5" />
-          </button>
-        </CartLineUpdateButton>
-      )}
-      <span
-        className="text-center"
-        aria-label={`Current quantity: ${quantity}`}
-      >
-        {quantity}
-      </span>
-      <CartLineUpdateButton lines={[{ id: lineId, quantity: quantity + 1 }]}>
-        <button
-          className={buttonClassName}
-          type="submit"
-          value={quantity + 1}
-          name="increase-quantity"
-          aria-label={`Increase ${productTitle} quantity by 1`}
-        >
-          <Icon name="circle-plus" className="size-5" />
-        </button>
-      </CartLineUpdateButton>
-    </div>
-  );
-}
-
-function CartLineUpdateButton({
-  children,
-  lines,
-}: {
-  children: React.ReactNode;
-  lines: { id: string; quantity: number }[];
-}) {
-  return (
-    <CartForm
-      route="/cart"
-      action={CartForm.ACTIONS.LinesUpdate}
-      inputs={{ lines }}
-    >
-      {children}
-    </CartForm>
-  );
-}
-
-function CartLineRemoveButton({
-  children,
-  lineIds,
-}: {
-  children: React.ReactNode;
-  lineIds: string[];
-}) {
-  return (
-    <CartForm
-      route="/cart"
-      action={CartForm.ACTIONS.LinesRemove}
-      inputs={{ lineIds }}
-    >
-      {children}
-    </CartForm>
   );
 }
