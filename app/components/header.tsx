@@ -196,9 +196,10 @@ function CartButton({ cart: originalCart }: Pick<HeaderProps, "cart">) {
             <p className="text-center text-xs text-white/50">
               Taxes & Shipping calculated at checkout
             </p>
-            {checkoutUrl ? (
-              <CheckoutLink to={checkoutUrl} disabled={cart.isOptimistic} />
-            ) : null}
+            <CheckoutLink
+              to={checkoutUrl ?? ""}
+              disabled={cart.isOptimistic || !checkoutUrl}
+            />
           </div>
         </PopoverContent>
       </Popover>
