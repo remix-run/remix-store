@@ -1,14 +1,14 @@
-import { Suspense, useRef } from "react";
+import { Suspense } from "react";
 import { data, redirect, type LoaderFunctionArgs } from "@shopify/remix-oxygen";
 import { Await, useLoaderData, type MetaArgs } from "@remix-run/react";
 import { Analytics } from "@shopify/hydrogen";
-import { useScrollPercentage } from "~/lib/hooks";
 
 import { getCollectionQuery } from "~/lib/data/collection.server";
 import { getFilterQueryVariables } from "~/lib/filters/query-variables.server";
 import { generateMeta } from "~/lib/meta";
 import type { RootLoader } from "~/root";
 import { ProductGrid } from "~/components/product-grid";
+import { PageTitle } from "~/components/page-title";
 
 export function meta({
   data,
@@ -79,69 +79,10 @@ export async function loader({ params, request, context }: LoaderFunctionArgs) {
 
 export default function Collection() {
   let { collection, remainingProducts } = useLoaderData<typeof loader>();
-  let ref = useRef<HTMLDivElement>(null);
-  let scrollPercentage = useScrollPercentage(ref);
-
-  let translatePercent = Math.round(Math.min(scrollPercentage * 2, 1) * 80);
 
   return (
     <div>
-      <div
-        ref={ref}
-        className="relative grid h-[200px] place-items-center md:h-[360px] lg:h-[400px] xl:h-[480px] 2xl:h-[540px]"
-      >
-        <div className="font-title relative isolate w-full text-center text-2xl leading-[.8em] font-black tracking-[-0.23em] whitespace-nowrap uppercase select-none md:text-5xl lg:text-7xl">
-          <h1 className="relative z-50 bg-black text-white select-text">
-            {collection.title}
-          </h1>
-          <span
-            aria-hidden="true"
-            className="text-pink-brand absolute inset-0 z-40 bg-black"
-            style={{
-              transform: `translateY(${translatePercent}%)`,
-            }}
-          >
-            {collection.title}
-          </span>
-
-          <span
-            aria-hidden="true"
-            className="text-red-brand absolute inset-0 bg-black"
-            style={{
-              transform: `translateY(${2 * translatePercent}%)`,
-            }}
-          >
-            {collection.title}
-          </span>
-          <span
-            aria-hidden="true"
-            className="text-yellow-brand absolute inset-0 z-30 bg-black"
-            style={{
-              transform: `translateY(${-translatePercent}%)`,
-            }}
-          >
-            {collection.title}
-          </span>
-          <span
-            aria-hidden="true"
-            className="text-green-brand absolute inset-0 z-20 bg-black"
-            style={{
-              transform: `translateY(${-2 * translatePercent}%)`,
-            }}
-          >
-            {collection.title}
-          </span>
-          <span
-            aria-hidden="true"
-            className="text-blue-brand absolute inset-0 z-10 bg-black"
-            style={{
-              transform: `translateY(${-3 * translatePercent}%)`,
-            }}
-          >
-            {collection.title}
-          </span>
-        </div>
-      </div>
+      <PageTitle>{collection.title}</PageTitle>
 
       {remainingProducts ? (
         <Suspense

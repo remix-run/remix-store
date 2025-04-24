@@ -1,11 +1,10 @@
-import { Await, useRouteLoaderData, type MetaArgs } from "@remix-run/react";
-import { Suspense } from "react";
+import { useRouteLoaderData, type MetaArgs } from "@remix-run/react";
 import type { CartQueryDataReturn } from "@shopify/hydrogen";
 import { CartForm } from "@shopify/hydrogen";
 import { data, type ActionFunctionArgs } from "@shopify/remix-oxygen";
-import { CartMain } from "~/components/cart";
 import type { RootLoader } from "~/root";
 import { generateMeta } from "~/lib/meta";
+import { PageTitle } from "~/components/page-title";
 
 export function meta({ matches }: MetaArgs<undefined, { root: RootLoader }>) {
   const { siteUrl } = matches[0].data;
@@ -97,16 +96,55 @@ export default function Cart() {
 
   return (
     <div>
-      <Suspense fallback={<p>Loading cart ...</p>}>
-        <Await
-          resolve={rootData.cart}
-          errorElement={<div>An error occurred</div>}
-        >
-          {(cart) => {
-            return <CartMain layout="page" cart={cart} />;
-          }}
-        </Await>
-      </Suspense>
+      <PageTitle>Cart</PageTitle>
+      <div className="mx-auto max-w-7xl px-4">
+        <div className="mb-32">
+          <h2 className="font-title tracking-tightest mb-8 text-xl font-black uppercase">
+            9 Item(s) in cart
+          </h2>
+
+          <div className="mb-8 flex flex-col gap-4">
+            {/* Cart Item Template */}
+            <div className="flex items-center gap-4">
+              <div className="size-20 shrink-0 rounded-2xl bg-white p-2">
+                {/* Image placeholder */}
+                <div className="h-full w-full bg-gray-200" />
+              </div>
+              <div className="flex flex-1 items-start justify-between">
+                <div className="flex flex-col gap-1">
+                  <h3 className="font-bold">Product Name</h3>
+                  <p className="text-sm text-gray-600">Variant</p>
+                  <div className="mt-1 flex items-center gap-2">
+                    <button className="rounded-full p-1 hover:bg-gray-100">
+                      <span className="sr-only">Decrease quantity</span>−
+                    </button>
+                    <span className="w-8 text-center">1</span>
+                    <button className="rounded-full p-1 hover:bg-gray-100">
+                      <span className="sr-only">Increase quantity</span>+
+                    </button>
+                  </div>
+                </div>
+                <div className="font-bold">$XX.XX</div>
+              </div>
+            </div>
+          </div>
+
+          <div className="border-t pt-4">
+            <div className="mb-2 flex items-center justify-between">
+              <h2 className="font-title tracking-tightest text-xl font-black uppercase">
+                Subtotal
+              </h2>
+              <div className="font-bold">$XXX.XX</div>
+            </div>
+            <p className="mb-4 text-sm text-gray-500">
+              Taxes & Shipping calculated at checkout
+            </p>
+            <button className="w-full rounded-full bg-black px-6 py-4 font-semibold text-white transition-colors hover:bg-gray-800">
+              Check out ▶
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

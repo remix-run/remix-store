@@ -18,7 +18,7 @@ import { clsx } from "clsx";
 import { ColorSchemeScript, useColorScheme } from "~/lib/color-scheme";
 import { Button } from "~/components/ui/button";
 import { AsideProvider } from "~/components/ui/aside";
-import { Header } from "~/components/header";
+import { Navbar } from "~/components/navbar";
 import { Footer } from "~/components/footer";
 
 /* eslint-disable import/no-unresolved */
@@ -199,7 +199,7 @@ export function Layout({ children }: { children?: React.ReactNode }) {
           >
             <AsideProvider>
               {data.header.menu && (
-                <Header menu={data.header.menu} cart={data.cart} />
+                <Navbar menu={data.header.menu} cart={data.cart} />
               )}
               <main>{children}</main>
               <Footer footer={data.footer} />

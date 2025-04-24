@@ -456,3 +456,48 @@ function CheckoutButton({ checkoutUrl }: { checkoutUrl?: string }) {
     </div>
   );
 }
+
+export function CheckoutLink({
+  to,
+  disabled = false,
+}: {
+  to: string;
+  disabled?: boolean;
+}) {
+  return (
+    <a
+      href={to}
+      className={clsx(
+        "group flex w-full items-center justify-center rounded-[54px] bg-white px-6 py-4 text-xl font-semibold text-black no-underline outline-none ring-inset",
+        disabled
+          ? "cursor-not-allowed bg-white/70 text-black/60"
+          : "hover:bg-blue-brand focus-visible:bg-blue-brand transition-colors duration-300 hover:text-white hover:ring hover:ring-white focus-visible:text-white focus-visible:ring focus-visible:ring-white",
+      )}
+      aria-disabled={disabled}
+      onClick={(e) => {
+        e.preventDefault();
+      }}
+    >
+      <div
+        className={clsx(
+          "flex h-8 w-0 min-w-fit items-center justify-between gap-2.5 transition-[width] duration-300 ease-in-out",
+          !disabled && "group-hover:w-full group-focus-visible:w-full",
+        )}
+      >
+        {disabled ? (
+          <span>Updating cart...</span>
+        ) : (
+          <>
+            <span>Check out</span>
+            <Icon
+              name="fast-forward"
+              className="size-8"
+              fill="currentColor"
+              aria-hidden="true"
+            />
+          </>
+        )}
+      </div>
+    </a>
+  );
+}

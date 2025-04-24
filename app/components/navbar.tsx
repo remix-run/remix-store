@@ -6,6 +6,7 @@ import {
   Money,
   useAnalytics,
   useOptimisticCart,
+  Image as HydrogenImage,
 } from "@shopify/hydrogen";
 import type {
   HeaderQuery,
@@ -25,13 +26,14 @@ import {
   PopoverClose,
 } from "~/components/ui/popover";
 import { clsx } from "clsx";
+import { CheckoutLink } from "./cart";
 
-interface HeaderProps {
+interface NavbarProps {
   menu: NonNullable<HeaderQuery["menu"]>;
   cart: CartApiQueryFragment | null;
 }
 
-export function Header({ menu, cart }: HeaderProps) {
+export function Navbar({ menu, cart }: NavbarProps) {
   return (
     <header className="fixed top-0 z-10 grid max-h-(--header-height) w-full grid-cols-2 items-center bg-linear-to-b from-black/100 to-black/0 p-4 md:grid-cols-3 md:p-9">
       <Link to="/" className="flex max-w-fit justify-start">
@@ -58,7 +60,7 @@ export function Header({ menu, cart }: HeaderProps) {
   );
 }
 
-function CartButton({ cart: originalCart }: Pick<HeaderProps, "cart">) {
+function CartButton({ cart: originalCart }: Pick<NavbarProps, "cart">) {
   let cart = useOptimisticCart(originalCart);
   let totalQuantity = cart?.totalQuantity || 0;
   let { publish, shop } = useAnalytics();
@@ -153,10 +155,10 @@ function CartButton({ cart: originalCart }: Pick<HeaderProps, "cart">) {
                     className="size-20 shrink-0 rounded-2xl bg-white p-2"
                   >
                     {image && (
-                      <img
-                        src={image.url}
-                        alt={image.altText || ""}
+                      <HydrogenImage
+                        data={image}
                         className="h-full w-full object-contain"
+                        sizes="5em"
                       />
                     )}
                   </Link>
@@ -402,50 +404,5 @@ function CartLineRemoveButton({
     >
       {children}
     </CartForm>
-  );
-}
-
-function CheckoutLink({
-  to,
-  disabled = false,
-}: {
-  to: string;
-  disabled?: boolean;
-}) {
-  return (
-    <a
-      href={to}
-      className={clsx(
-        "group flex w-full items-center justify-center rounded-[54px] bg-white px-6 py-4 text-xl font-semibold text-black no-underline outline-none ring-inset",
-        disabled
-          ? "cursor-not-allowed bg-white/70 text-black/60"
-          : "hover:bg-blue-brand focus-visible:bg-blue-brand transition-colors duration-300 hover:text-white hover:ring hover:ring-white focus-visible:text-white focus-visible:ring focus-visible:ring-white",
-      )}
-      aria-disabled={disabled}
-      onClick={(e) => {
-        e.preventDefault();
-      }}
-    >
-      <div
-        className={clsx(
-          "flex h-8 w-0 min-w-fit items-center justify-between gap-2.5 transition-[width] duration-300 ease-in-out",
-          !disabled && "group-hover:w-full group-focus-visible:w-full",
-        )}
-      >
-        {disabled ? (
-          <span>Updating cart...</span>
-        ) : (
-          <>
-            <span>Check out</span>
-            <Icon
-              name="fast-forward"
-              className="size-8"
-              fill="currentColor"
-              aria-hidden="true"
-            />
-          </>
-        )}
-      </div>
-    </a>
   );
 }
