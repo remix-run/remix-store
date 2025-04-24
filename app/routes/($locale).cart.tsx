@@ -17,11 +17,7 @@ export function meta({ matches }: MetaArgs<undefined, { root: RootLoader }>) {
   });
 }
 
-let sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-
 export async function action({ request, context }: ActionFunctionArgs) {
-  await sleep(3000);
-
   const { cart } = context;
 
   const formData = await request.formData();
