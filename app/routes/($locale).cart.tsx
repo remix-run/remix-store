@@ -9,7 +9,6 @@ import { CartHeader, CartLineItem, CheckoutLink } from "~/components/cart";
 import { clsx } from "clsx";
 
 // TODO:
-// - Remove header for mobile
 // - Add empty cart view
 
 export function meta({ matches }: MetaArgs<undefined, { root: RootLoader }>) {
@@ -111,7 +110,10 @@ export default function Cart() {
 
   return (
     <main>
-      <PageTitle>Cart</PageTitle>
+      <div className="hidden md:block">
+        <PageTitle>Cart</PageTitle>
+      </div>
+      <div className="block h-28 md:hidden" />
 
       <div className="mx-auto flex max-w-[800px] flex-col gap-12 px-4 md:px-9">
         <CartHeader className="md:text-xl" totalQuantity={totalQuantity} />

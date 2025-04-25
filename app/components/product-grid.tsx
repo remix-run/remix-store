@@ -146,7 +146,7 @@ export function ProductPrice({ price, compareAtPrice }: ProductPriceProps) {
 
   if (compareAtPrice && priceAmount < compareAtPriceAmount) {
     return (
-      <div className="flex flex-col items-end">
+      <div className="flex w-max flex-col items-end">
         <s className="line-through">
           <Money data={compareAtPrice} />
         </s>
