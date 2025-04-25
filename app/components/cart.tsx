@@ -4,7 +4,10 @@ import { Link, type FetcherWithComponents } from "@remix-run/react";
 import { Image as HydrogenImage } from "@shopify/hydrogen";
 import { Button } from "~/components/ui/button";
 import { Icon } from "~/components/icon";
-import { ProductPrice } from "~/components/product-grid";
+import {
+  ProductPrice,
+  type ProductPriceProps,
+} from "~/components/product-grid";
 import { clsx } from "clsx";
 import { cn } from "~/lib/cn";
 
@@ -92,12 +95,14 @@ export function CartLineItem({
   isOptimistic,
   onImageClick,
   className,
+  layout,
 }: {
   line: CartLine;
   /** Cart optimistic state */
   isOptimistic: boolean;
   /** Callback for when the image is clicked */
   onImageClick?: React.MouseEventHandler<HTMLAnchorElement>;
+  layout?: ProductPriceProps["layout"];
   /** Additional className for the container */
   className?: string;
 }) {
@@ -152,7 +157,11 @@ export function CartLineItem({
         />
       </div>
 
-      <ProductPrice price={totalAmount} compareAtPrice={compareAtPrice} />
+      <ProductPrice
+        price={totalAmount}
+        compareAtPrice={compareAtPrice}
+        layout={layout}
+      />
     </li>
   );
 }

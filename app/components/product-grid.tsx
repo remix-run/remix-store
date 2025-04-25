@@ -133,12 +133,21 @@ function ProductImages({ images }: ProductImagesProps) {
   );
 }
 
-type ProductPriceProps = {
+export type ProductPriceProps = {
   price: MoneyV2 | null;
   compareAtPrice?: MoneyV2 | null;
+  /**
+   * Where the product is being used -- a bit hacky unfortunately
+   * @default "product"
+   */
+  layout?: "cart" | "product";
 };
 
-export function ProductPrice({ price, compareAtPrice }: ProductPriceProps) {
+export function ProductPrice({
+  price,
+  compareAtPrice,
+  layout = "product",
+}: ProductPriceProps) {
   if (!price) return null;
 
   let priceAmount = Number(price.amount || 0);
@@ -147,10 +156,22 @@ export function ProductPrice({ price, compareAtPrice }: ProductPriceProps) {
   if (compareAtPrice && priceAmount < compareAtPriceAmount) {
     return (
       <div className="flex w-max flex-col items-end">
-        <s className="line-through">
+        <s
+          className={clsx(
+            "line-through",
+            layout === "cart" && "text-white/50",
+            layout === "product" && "text-white",
+          )}
+        >
           <Money data={compareAtPrice} />
         </s>
-        <Money className="text-red-brand font-bold" data={price} />
+        <Money
+          className={clsx(
+            layout === "cart" && "text-white",
+            layout === "product" && "text-red-brand font-bold",
+          )}
+          data={price}
+        />
       </div>
     );
   }

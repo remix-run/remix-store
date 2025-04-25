@@ -8,9 +8,6 @@ import { PageTitle } from "~/components/page-title";
 import { CartHeader, CartLineItem, CheckoutLink } from "~/components/cart";
 import { clsx } from "clsx";
 
-// TODO:
-// - Add empty cart view
-
 export function meta({ matches }: MetaArgs<undefined, { root: RootLoader }>) {
   const { siteUrl } = matches[0].data;
 
