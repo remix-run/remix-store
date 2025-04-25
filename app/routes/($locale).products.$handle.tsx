@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { data, type LoaderFunctionArgs } from "@shopify/remix-oxygen";
 import {
-  Await,
   Link,
   useLoaderData,
   useSearchParams,
@@ -32,6 +31,7 @@ import {
 } from "~/components/ui/dropdown-menu";
 import { Icon } from "~/components/icon";
 import { ProductImages } from "~/components/product-images";
+import { ProductPrice } from "~/components/product-grid";
 import { generateMeta } from "~/lib/meta";
 import type { RootLoader } from "~/root";
 import { getProductData, getProductVariants } from "~/lib/data/product.server";
@@ -197,16 +197,9 @@ function ProductMain({
 }: {
   product: ProductFragment;
   selectedVariant: NonNullable<ProductFragment["selectedVariant"]>;
-  variants: ProductVariantFragment[];
+  variants: Array<ProductVariantFragment>;
 }) {
   let { title, category, description, technicalDescription } = product;
-
-  let price = Number(selectedVariant.price.amount || 0);
-  let compareAtPrice = Number(selectedVariant.compareAtPrice?.amount || 0);
-  let isOnSale = price < compareAtPrice;
-  let percentageOff = isOnSale
-    ? Math.round(((compareAtPrice - price) / compareAtPrice) * 100)
-    : 0;
 
   return (
     <div className="static top-(--header-height) mx-4 flex max-h-fit flex-col gap-6 text-white md:sticky md:mx-0 md:max-w-xl md:basis-1/3 lg:gap-9 lg:pt-32">
@@ -217,20 +210,10 @@ function ProductMain({
         <h1 className="min-w-max font-sans text-2xl font-bold lg:text-4xl">
           {title}
         </h1>
-        <div className="flex gap-3">
-          <Money data={selectedVariant.price} withoutTrailingZeros />
-          {selectedVariant.compareAtPrice && isOnSale && (
-            <>
-              <s className="line-through opacity-50">
-                <Money
-                  data={selectedVariant.compareAtPrice}
-                  withoutTrailingZeros
-                />
-              </s>
-              <span className="text-red-brand">{percentageOff}% Off</span>
-            </>
-          )}
-        </div>
+        <ProductPrice
+          price={selectedVariant.price}
+          compareAtPrice={selectedVariant.compareAtPrice}
+        />
       </div>
 
       <ProductForm

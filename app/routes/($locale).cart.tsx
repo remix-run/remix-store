@@ -9,8 +9,8 @@ import { CartHeader, CartLineItem, CheckoutLink } from "~/components/cart";
 import { clsx } from "clsx";
 
 // TODO:
+// - Remove header for mobile
 // - Add empty cart view
-// - Add discount item view
 
 export function meta({ matches }: MetaArgs<undefined, { root: RootLoader }>) {
   const { siteUrl } = matches[0].data;

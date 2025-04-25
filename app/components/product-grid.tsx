@@ -5,6 +5,7 @@ import { Suspense } from "react";
 
 import type { ProductImageFragment } from "storefrontapi.generated";
 import type { CollectionProductData } from "~/lib/data/collection.server";
+import type { MoneyV2 } from "@shopify/hydrogen/storefront-api-types";
 
 let defaultLoadingProductCount = 12;
 
@@ -86,9 +87,7 @@ function ProductGridItem({ product }: ProductGridItemProps) {
           <span className="absolute inset-0" />
           {title}
         </Link>
-        <div className="font-normal">
-          <Money className="text-white" data={price} withoutTrailingZeros />
-        </div>
+        <ProductPrice price={price} />
       </div>
     </ProductGridItemLayout>
   );
@@ -132,6 +131,31 @@ function ProductImages({ images }: ProductImagesProps) {
       )}
     </ImageLayout>
   );
+}
+
+type ProductPriceProps = {
+  price: MoneyV2 | null;
+  compareAtPrice?: MoneyV2 | null;
+};
+
+export function ProductPrice({ price, compareAtPrice }: ProductPriceProps) {
+  if (!price) return null;
+
+  let priceAmount = Number(price.amount || 0);
+  let compareAtPriceAmount = Number(compareAtPrice?.amount || 0);
+
+  if (compareAtPrice && priceAmount < compareAtPriceAmount) {
+    return (
+      <div className="flex flex-col items-end">
+        <s className="line-through">
+          <Money data={compareAtPrice} />
+        </s>
+        <Money className="text-red-brand font-bold" data={price} />
+      </div>
+    );
+  }
+
+  return <Money className="text-white" data={price} />;
 }
 
 type LayoutProps = {

@@ -4,6 +4,7 @@ import { Link, type FetcherWithComponents } from "@remix-run/react";
 import { Image as HydrogenImage } from "@shopify/hydrogen";
 import { Button } from "~/components/ui/button";
 import { Icon } from "~/components/icon";
+import { ProductPrice } from "~/components/product-grid";
 import { clsx } from "clsx";
 import { cn } from "~/lib/cn";
 
@@ -101,7 +102,7 @@ export function CartLineItem({
   className?: string;
 }) {
   let { id, quantity, cost } = line;
-  let { image, title, product, price } = line.merchandise;
+  let { image, title, product, price, compareAtPrice } = line.merchandise;
 
   // TODO: we need to revisit this logic with discounted items
   // it probably won't be quite the right experience
@@ -117,6 +118,14 @@ export function CartLineItem({
           }
         : // otherwise, use the the actual cost
           cost.totalAmount;
+
+  // If the product has a compare at price, multiply it by the quantity
+  if (compareAtPrice) {
+    compareAtPrice = {
+      ...compareAtPrice,
+      amount: String(Number(compareAtPrice.amount) * quantity),
+    };
+  }
 
   return (
     <li className={cn("flex items-start gap-3", className)}>
@@ -143,7 +152,7 @@ export function CartLineItem({
         />
       </div>
 
-      <Money className="text-sm font-bold" data={totalAmount} />
+      <ProductPrice price={totalAmount} compareAtPrice={compareAtPrice} />
     </li>
   );
 }
