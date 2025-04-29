@@ -219,6 +219,48 @@ export type LookbookImagesQuery = {
   };
 };
 
+export type PolicyFragment = Pick<
+  StorefrontAPI.ShopPolicy,
+  'body' | 'handle' | 'id' | 'title' | 'url'
+>;
+
+export type PolicyQueryVariables = StorefrontAPI.Exact<{
+  country?: StorefrontAPI.InputMaybe<StorefrontAPI.CountryCode>;
+  language?: StorefrontAPI.InputMaybe<StorefrontAPI.LanguageCode>;
+  privacyPolicy: StorefrontAPI.Scalars['Boolean']['input'];
+  refundPolicy: StorefrontAPI.Scalars['Boolean']['input'];
+  shippingPolicy: StorefrontAPI.Scalars['Boolean']['input'];
+  termsOfService: StorefrontAPI.Scalars['Boolean']['input'];
+}>;
+
+export type PolicyQuery = {
+  shop: {
+    privacyPolicy?: StorefrontAPI.Maybe<
+      Pick<StorefrontAPI.ShopPolicy, 'body' | 'handle' | 'id' | 'title' | 'url'>
+    >;
+    shippingPolicy?: StorefrontAPI.Maybe<
+      Pick<StorefrontAPI.ShopPolicy, 'body' | 'handle' | 'id' | 'title' | 'url'>
+    >;
+    termsOfService?: StorefrontAPI.Maybe<
+      Pick<StorefrontAPI.ShopPolicy, 'body' | 'handle' | 'id' | 'title' | 'url'>
+    >;
+    refundPolicy?: StorefrontAPI.Maybe<
+      Pick<StorefrontAPI.ShopPolicy, 'body' | 'handle' | 'id' | 'title' | 'url'>
+    >;
+  };
+};
+
+export type ContactPageQueryVariables = StorefrontAPI.Exact<{
+  handle: StorefrontAPI.Scalars['String']['input'];
+  language?: StorefrontAPI.InputMaybe<StorefrontAPI.LanguageCode>;
+}>;
+
+export type ContactPageQuery = {
+  page?: StorefrontAPI.Maybe<
+    Pick<StorefrontAPI.Page, 'body' | 'id' | 'title' | 'onlineStoreUrl'>
+  >;
+};
+
 export type ProductImageFragment = Pick<
   StorefrontAPI.Image,
   'id' | 'altText' | 'url' | 'width' | 'height'
@@ -676,6 +718,23 @@ export type FooterQueryVariables = StorefrontAPI.Exact<{
 }>;
 
 export type FooterQuery = {
+  remixShop?: StorefrontAPI.Maybe<
+    Pick<StorefrontAPI.Menu, 'id' | 'title'> & {
+      items: Array<
+        Pick<
+          StorefrontAPI.MenuItem,
+          'id' | 'resourceId' | 'tags' | 'title' | 'type' | 'url'
+        > & {
+          items: Array<
+            Pick<
+              StorefrontAPI.MenuItem,
+              'id' | 'resourceId' | 'tags' | 'title' | 'type' | 'url'
+            >
+          >;
+        }
+      >;
+    }
+  >;
   menu?: StorefrontAPI.Maybe<
     Pick<StorefrontAPI.Menu, 'id' | 'title'> & {
       items: Array<
@@ -693,37 +752,6 @@ export type FooterQuery = {
       >;
     }
   >;
-};
-
-export type PolicyFragment = Pick<
-  StorefrontAPI.ShopPolicy,
-  'body' | 'handle' | 'id' | 'title' | 'url'
->;
-
-export type PolicyQueryVariables = StorefrontAPI.Exact<{
-  country?: StorefrontAPI.InputMaybe<StorefrontAPI.CountryCode>;
-  language?: StorefrontAPI.InputMaybe<StorefrontAPI.LanguageCode>;
-  privacyPolicy: StorefrontAPI.Scalars['Boolean']['input'];
-  refundPolicy: StorefrontAPI.Scalars['Boolean']['input'];
-  shippingPolicy: StorefrontAPI.Scalars['Boolean']['input'];
-  termsOfService: StorefrontAPI.Scalars['Boolean']['input'];
-}>;
-
-export type PolicyQuery = {
-  shop: {
-    privacyPolicy?: StorefrontAPI.Maybe<
-      Pick<StorefrontAPI.ShopPolicy, 'body' | 'handle' | 'id' | 'title' | 'url'>
-    >;
-    shippingPolicy?: StorefrontAPI.Maybe<
-      Pick<StorefrontAPI.ShopPolicy, 'body' | 'handle' | 'id' | 'title' | 'url'>
-    >;
-    termsOfService?: StorefrontAPI.Maybe<
-      Pick<StorefrontAPI.ShopPolicy, 'body' | 'handle' | 'id' | 'title' | 'url'>
-    >;
-    refundPolicy?: StorefrontAPI.Maybe<
-      Pick<StorefrontAPI.ShopPolicy, 'body' | 'handle' | 'id' | 'title' | 'url'>
-    >;
-  };
 };
 
 export type StoreRobotsQueryVariables = StorefrontAPI.Exact<{
@@ -746,6 +774,14 @@ interface GeneratedQueryTypes {
     return: LookbookImagesQuery;
     variables: LookbookImagesQueryVariables;
   };
+  '#graphql\n  fragment Policy on ShopPolicy {\n    body\n    handle\n    id\n    title\n    url\n  }\n  query Policy(\n    $country: CountryCode\n    $language: LanguageCode\n    $privacyPolicy: Boolean!\n    $refundPolicy: Boolean!\n    $shippingPolicy: Boolean!\n    $termsOfService: Boolean!\n  ) @inContext(language: $language, country: $country) {\n    shop {\n      privacyPolicy @include(if: $privacyPolicy) {\n        ...Policy\n      }\n      shippingPolicy @include(if: $shippingPolicy) {\n        ...Policy\n      }\n      termsOfService @include(if: $termsOfService) {\n        ...Policy\n      }\n      refundPolicy @include(if: $refundPolicy) {\n        ...Policy\n      }\n    }\n  }\n': {
+    return: PolicyQuery;
+    variables: PolicyQueryVariables;
+  };
+  '#graphql\n  query ContactPage($handle: String!, $language: LanguageCode) @inContext(language: $language) {\n    page(handle: $handle) {\n      body\n      id\n      title\n      onlineStoreUrl\n    }\n  }\n': {
+    return: ContactPageQuery;
+    variables: ContactPageQueryVariables;
+  };
   '#graphql\n  query Product(\n    $country: CountryCode\n    $handle: String!\n    $language: LanguageCode\n    $selectedOptions: [SelectedOptionInput!]!\n  ) @inContext(country: $country, language: $language) {\n    product(handle: $handle) {\n      ...Product\n    }\n  }\n  #graphql\n  fragment Product on Product {\n    id\n    title\n    vendor\n    handle\n    category {\n      name\n    }\n    options {\n      name\n      optionValues {\n        name\n      }\n    }\n    selectedVariant: variantBySelectedOptions(selectedOptions: $selectedOptions, ignoreUnknownOptions: true, caseInsensitiveMatch: true) {\n      ...ProductVariant\n    }\n    variants(first: 1) {\n      nodes {\n        ...ProductVariant\n      }\n    }\n    images(first: 5) {\n      nodes {\n        ...ProductImage\n      }\n    }\n    seo {\n      description\n      title\n    }\n    description: metafield(key: "description", namespace: "custom") {\n      value\n    }\n    technicalDescription: metafield(key: "technical_description", namespace: "custom") {\n      value\n    }\n    availableForSale\n  }\n  #graphql\n  fragment ProductVariant on ProductVariant {\n    availableForSale\n    compareAtPrice {\n      amount\n      currencyCode\n    }\n    id\n    image {\n      ...ProductImage\n    }\n    price {\n      amount\n      currencyCode\n    }\n    product {\n      title\n      handle\n    }\n    selectedOptions {\n      name\n      value\n    }\n    sku\n    title\n    unitPrice {\n      amount\n      currencyCode\n    }\n  }\n  #graphql\n  fragment ProductImage on Image {\n    id\n    altText\n    url\n    width\n    height\n  }\n\n\n\n': {
     return: ProductQuery;
     variables: ProductQueryVariables;
@@ -758,13 +794,9 @@ interface GeneratedQueryTypes {
     return: HeaderQuery;
     variables: HeaderQueryVariables;
   };
-  '#graphql\n  query Footer(\n    $country: CountryCode\n    $language: LanguageCode\n  ) @inContext(language: $language, country: $country) {\n    # remixShop: menu(handle: "the-remix-shop") {\n    #   ...Menu\n    # }\n    # remixCommunity: menu(handle: "remix-community") {\n    #   ...Menu\n    # }\n    # remixResources: menu(handle: "remix-resources") {\n    #   ...Menu\n    # }\n    # hydrogenResources: menu(handle: "hydrogen-resources") {\n    #   ...Menu\n    # }\n    menu(handle: "footer") {\n      ...Menu\n    }\n  }\n  #graphql\n  fragment MenuItem on MenuItem {\n    id\n    resourceId\n    tags\n    title\n    type\n    url\n  }\n  fragment ChildMenuItem on MenuItem {\n    ...MenuItem\n  }\n  fragment ParentMenuItem on MenuItem {\n    ...MenuItem\n    items {\n      ...ChildMenuItem\n    }\n  }\n  fragment Menu on Menu {\n    id\n    title\n    items {\n      ...ParentMenuItem\n    }\n  }\n\n': {
+  '#graphql\n  query Footer(\n    $country: CountryCode\n    $language: LanguageCode\n  ) @inContext(language: $language, country: $country) {\n    remixShop: menu(handle: "the-remix-shop") {\n      ...Menu\n    }\n    # remixCommunity: menu(handle: "remix-community") {\n    #   ...Menu\n    # }\n    # remixResources: menu(handle: "remix-resources") {\n    #   ...Menu\n    # }\n    # hydrogenResources: menu(handle: "hydrogen-resources") {\n    #   ...Menu\n    # }\n    menu(handle: "footer") {\n      ...Menu\n    }\n  }\n  #graphql\n  fragment MenuItem on MenuItem {\n    id\n    resourceId\n    tags\n    title\n    type\n    url\n  }\n  fragment ChildMenuItem on MenuItem {\n    ...MenuItem\n  }\n  fragment ParentMenuItem on MenuItem {\n    ...MenuItem\n    items {\n      ...ChildMenuItem\n    }\n  }\n  fragment Menu on Menu {\n    id\n    title\n    items {\n      ...ParentMenuItem\n    }\n  }\n\n': {
     return: FooterQuery;
     variables: FooterQueryVariables;
-  };
-  '#graphql\n  fragment Policy on ShopPolicy {\n    body\n    handle\n    id\n    title\n    url\n  }\n  query Policy(\n    $country: CountryCode\n    $language: LanguageCode\n    $privacyPolicy: Boolean!\n    $refundPolicy: Boolean!\n    $shippingPolicy: Boolean!\n    $termsOfService: Boolean!\n  ) @inContext(language: $language, country: $country) {\n    shop {\n      privacyPolicy @include(if: $privacyPolicy) {\n        ...Policy\n      }\n      shippingPolicy @include(if: $shippingPolicy) {\n        ...Policy\n      }\n      termsOfService @include(if: $termsOfService) {\n        ...Policy\n      }\n      refundPolicy @include(if: $refundPolicy) {\n        ...Policy\n      }\n    }\n  }\n': {
-    return: PolicyQuery;
-    variables: PolicyQueryVariables;
   };
   '#graphql\n  query StoreRobots($country: CountryCode, $language: LanguageCode)\n   @inContext(country: $country, language: $language) {\n    shop {\n      id\n    }\n  }\n': {
     return: StoreRobotsQuery;

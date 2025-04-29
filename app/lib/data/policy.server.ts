@@ -1,39 +1,38 @@
 import { Storefront } from "@shopify/hydrogen";
 import type { Shop } from "@shopify/hydrogen/storefront-api-types";
 
-type PolicyHandle =
-  | "privacy-policy"
-  | "shipping-policy"
-  | "terms-of-service"
-  | "refund-policy";
 type PolicyKey = keyof Pick<
   Shop,
   "privacyPolicy" | "shippingPolicy" | "termsOfService" | "refundPolicy"
 >;
 
-const POLICY_HANDLE_MAP: Record<PolicyHandle, PolicyKey> = {
-  "privacy-policy": "privacyPolicy",
-  "shipping-policy": "shippingPolicy",
-  "terms-of-service": "termsOfService",
-  "refund-policy": "refundPolicy",
-} as const;
-
-function getPolicyKey(handle: string): PolicyKey {
-  if (!isPolicyHandle(handle)) {
-    throw new Response(`Invalid policy handle: ${handle}`, { status: 404 });
-  }
-  return POLICY_HANDLE_MAP[handle];
-}
-
-function isPolicyHandle(handle: string): handle is PolicyHandle {
-  return handle in POLICY_HANDLE_MAP;
-}
-
 export async function getPolicyData(
   storefront: Storefront,
   { handle }: { handle: string },
 ) {
-  const policyKey = getPolicyKey(handle);
+  if (handle === "contact-information") {
+    const data = await storefront.query(CONTACT_PAGE_QUERY, {
+      variables: {
+        handle: "contact",
+        language: storefront.i18n?.language,
+      },
+    });
+
+    const page = data.page;
+    if (!page) {
+      throw new Response("Could not find contact information", { status: 404 });
+    }
+
+    return {
+      body: page.body,
+      handle: "contact-information",
+      id: page.id,
+      title: page.title,
+      url: page.onlineStoreUrl,
+    };
+  }
+
+  const policyKey = transformHandleToKey(handle);
 
   const data = await storefront.query(POLICY_CONTENT_QUERY, {
     variables: {
@@ -55,35 +54,67 @@ export async function getPolicyData(
   return policy;
 }
 
-const POLICY_CONTENT_QUERY = `#graphql
-  fragment Policy on ShopPolicy {
-    body
-    handle
-    id
-    title
-    url
+function transformHandleToKey(handle: string): PolicyKey {
+  // Transform kebab-case to camelCase
+  const key = handle.replace(/-([a-z])/g, (_, letter) => letter.toUpperCase());
+
+  if (!isPolicyKey(key)) {
+    throw new Response(`Invalid policy handle: ${handle}`, { status: 404 });
   }
-  query Policy(
-    $country: CountryCode
-    $language: LanguageCode
-    $privacyPolicy: Boolean!
-    $refundPolicy: Boolean!
-    $shippingPolicy: Boolean!
-    $termsOfService: Boolean!
-  ) @inContext(language: $language, country: $country) {
-    shop {
-      privacyPolicy @include(if: $privacyPolicy) {
-        ...Policy
+
+  // Type assertion is safe because we've validated the handle
+  return key;
+}
+
+function isPolicyKey(handle: string): handle is PolicyKey {
+  return [
+    "refundPolicy",
+    "privacyPolicy",
+    "shippingPolicy",
+    "termsOfService",
+  ].includes(handle);
+}
+
+const POLICY_CONTENT_QUERY = `#graphql
+      fragment Policy on ShopPolicy {
+        body
+        handle
+        id
+        title
+        url
       }
-      shippingPolicy @include(if: $shippingPolicy) {
-        ...Policy
+      query Policy(
+        $country: CountryCode
+        $language: LanguageCode
+        $privacyPolicy: Boolean!
+        $refundPolicy: Boolean!
+        $shippingPolicy: Boolean!
+        $termsOfService: Boolean!
+      ) @inContext(language: $language, country: $country) {
+        shop {
+          privacyPolicy @include(if: $privacyPolicy) {
+            ...Policy
+          }
+          shippingPolicy @include(if: $shippingPolicy) {
+            ...Policy
+          }
+          termsOfService @include(if: $termsOfService) {
+            ...Policy
+          }
+          refundPolicy @include(if: $refundPolicy) {
+            ...Policy
+          }
+        }
       }
-      termsOfService @include(if: $termsOfService) {
-        ...Policy
-      }
-      refundPolicy @include(if: $refundPolicy) {
-        ...Policy
-      }
+    ` as const;
+
+const CONTACT_PAGE_QUERY = `#graphql
+  query ContactPage($handle: String!, $language: LanguageCode) @inContext(language: $language) {
+    page(handle: $handle) {
+      body
+      id
+      title
+      onlineStoreUrl
     }
   }
 ` as const;
