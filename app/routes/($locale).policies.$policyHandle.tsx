@@ -1,5 +1,6 @@
 import { data, redirect, type LoaderFunctionArgs } from "@shopify/remix-oxygen";
 import { useLoaderData } from "@remix-run/react";
+import { PageTitle } from "~/components/page-title";
 
 export async function loader({ params, context }: LoaderFunctionArgs) {
   const { policyHandle } = params;
@@ -8,9 +9,9 @@ export async function loader({ params, context }: LoaderFunctionArgs) {
     throw new Response("No handle was passed in", { status: 404 });
   }
 
-  if (policyHandle === "shipping-policy" || policyHandle === "refund-policy") {
-    return redirect(`/help`);
-  }
+  // if (policyHandle === "shipping-policy" || policyHandle === "refund-policy") {
+  //   return redirect(`/help`);
+  // }
 
   const policyName = policyHandle.replace(
     /-([a-z])/g,
@@ -36,16 +37,20 @@ export async function loader({ params, context }: LoaderFunctionArgs) {
 }
 export default function Policies() {
   const { policy } = useLoaderData<typeof loader>();
+  console.log(policy);
 
   return (
-    <div className="policy-container pb-12">
-      <div className="mt-[26px] rounded-3xl bg-neutral-100 px-[24px] py-7 lg:p-9 dark:bg-neutral-700">
-        <div
-          className="flex flex-col gap-9"
-          dangerouslySetInnerHTML={{ __html: policy.body }}
-        />
+    <main>
+      <PageTitle>{policy.title}</PageTitle>
+      <div className="policy-container mx-auto max-w-[700px]">
+        <div className="" dangerouslySetInnerHTML={{ __html: policy.body }} />
       </div>
-    </div>
+
+      <div
+        // bottom spacer
+        className="h-36"
+      />
+    </main>
   );
 }
 
@@ -62,12 +67,16 @@ const POLICY_QUERY = `#graphql
     $language: LanguageCode
     $privacyPolicy: Boolean!
     $termsOfService: Boolean!
+    $refundPolicy: Boolean!
   ) @inContext(language: $language, country: $country) {
     shop {
       privacyPolicy @include(if: $privacyPolicy) {
         ...Policy
       }
       termsOfService @include(if: $termsOfService) {
+        ...Policy
+      }
+      refundPolicy @include(if: $refundPolicy) {
         ...Policy
       }
     }
