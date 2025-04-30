@@ -34,7 +34,7 @@ export function generateMeta(options: MetaOptions = {}): MetaDescriptor[] {
       : image;
 
   return [
-    { title },
+    { title: title ? `${title} | ${siteName}` : siteName },
     { name: "description", content: description },
     // Open Graph tags
     { property: "og:type", content: type },

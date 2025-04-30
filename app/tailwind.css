@@ -187,12 +187,6 @@
   }
 }
 
-@utility policy-container {
-  & h2 {
-    @apply text-2xl font-bold tracking-[-0.48px];
-  }
-}
-
 @layer base {
   @font-face {
     font-family: "Inter";
@@ -306,5 +300,17 @@
     content: "•";
     position: absolute;
     left: 0;
+  }
+}
+
+@utility policy-container {
+  @apply -mt-12 px-9;
+
+  & h2 {
+    @apply mt-12 text-2xl leading-tight font-bold md:text-4xl md:leading-tight lg:text-[2.5rem] lg:leading-tight;
+  }
+
+  & p {
+    @apply mt-6 text-sm lg:text-base;
   }
 }

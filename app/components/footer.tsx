@@ -68,11 +68,17 @@ export function Footer({ footer: footerPromise }: FooterProps) {
               <Suspense fallback={<ul className="space-y-2" />}>
                 <Await resolve={footerPromise}>
                   {(footer) => {
-                    if (!footer?.menu) return null;
+                    if (!footer?.menu || !footer.remixShop) return null;
+
+                    // Temporarily adding policy menus here -- eventually the footer will be rewritten so this is fine
+                    let menu = [
+                      ...footer.menu.items,
+                      ...footer.remixShop.items,
+                    ];
 
                     return (
                       <ul className="space-y-2">
-                        {footer.menu.items.map((item, i) => {
+                        {menu.map((item, i) => {
                           if (!item.url) return null;
                           return (
                             <li key={item.id}>
