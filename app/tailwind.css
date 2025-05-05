@@ -98,6 +98,8 @@
   --animate-check-appear-delay: check-appear 400ms var(--ease-snap) 200ms
     forwards;
 
+  --animate-spin: spin 3s linear infinite;
+
   --shadow-yamaha-primary:
     0px 2px 1px 0px rgba(255, 255, 255, 0.1) inset,
     0px 4px 20px 8px rgba(248, 248, 248, 0.1) inset,

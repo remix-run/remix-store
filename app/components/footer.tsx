@@ -6,6 +6,9 @@ import { Icon } from "~/components/icon";
 import { cn } from "~/lib/cn";
 import { Suspense } from "react";
 
+import loadRunner1 from "~/assets/images/load-runner-1.webp";
+import loadRunnerGif from "~/assets/images/load-runner.gif";
+
 interface FooterProps {
   footer: Promise<FooterQuery | null>;
 }
@@ -31,7 +34,7 @@ let socials = [
 
 export function Footer({ footer: footerPromise }: FooterProps) {
   return (
-    <footer className="group bg-black py-16 font-mono text-xs leading-tight text-white uppercase opacity-30 transition-opacity duration-300 hover:opacity-100">
+    <footer className="group bg-black px-2 py-16 font-mono text-xs leading-tight text-white uppercase opacity-30 transition-opacity duration-300 hover:opacity-100">
       <div className="mx-auto flex max-w-fit flex-col gap-9 lg:gap-12">
         <div className="flex flex-col items-center gap-1">
           <FooterLink to="collection/all">
@@ -40,10 +43,43 @@ export function Footer({ footer: footerPromise }: FooterProps) {
           <p>Designed in USA</p>
         </div>
 
-        {/* TODO: Add SVGs */}
+        <div className="flex flex-col items-center gap-5 md:gap-6 lg:flex-row">
+          {/* Animated load runner */}
+
+          <Icon
+            name="remix-logo"
+            aria-label="Remix Logo"
+            className="h-[42px] w-[168px] md:h-[54px] md:w-[216px] lg:h-[65px] lg:w-[260px]"
+          />
+
+          <div className="flex items-center gap-1">
+            <div className="relative size-[70px]">
+              <div className="absolute inset-0 box-border rounded-full border-2 border-dotted border-white transition-[border] duration-150 group-hover:animate-spin group-hover:border-4" />
+              <img
+                alt=""
+                aria-hidden={true}
+                src={loadRunner1}
+                className="relative size-full object-cover object-center group-hover:hidden"
+              />
+              <img
+                alt=""
+                aria-hidden={true}
+                src={loadRunnerGif}
+                loading="eager"
+                className="relative hidden size-full object-cover object-center group-hover:block"
+              />
+            </div>
+
+            <Icon
+              name="remix-glyphs"
+              aria-hidden={true}
+              className="h-[70px] w-[146px]"
+            />
+          </div>
+        </div>
 
         <div className="flex items-start gap-9">
-          <div className="flex flex-col items-end gap-2">
+          <div className="flex flex-col items-end gap-2 text-right">
             <p>Remix is for everyone</p>
             <p>Remix is an engineering team</p>
             <p>Remix builds tools for a better web</p>
