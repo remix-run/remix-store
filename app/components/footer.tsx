@@ -1,6 +1,5 @@
 import { Await, Link } from "@remix-run/react";
 import type { FooterQuery } from "storefrontapi.generated";
-import { clsx } from "clsx";
 import { useRelativeUrl } from "~/lib/use-relative-url";
 import { RemixLogo } from "~/components/remix-logo";
 import { Icon } from "~/components/icon";
@@ -32,19 +31,33 @@ let socials = [
 
 export function Footer({ footer: footerPromise }: FooterProps) {
   return (
-    <footer className="bg-black text-white">
-      <div className="mx-auto max-w-7xl px-9 pt-16 pb-36 lg:px-16">
-        <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
-          {/* Logo and Social Links */}
-          <div className="flex flex-col space-y-6">
-            <a
-              href="https://www.remix.run"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <RemixLogo />
-            </a>
-            <div className="flex space-x-4">
+    <footer className="group bg-black py-16 font-mono text-xs leading-tight text-white uppercase opacity-30 transition-opacity duration-300 hover:opacity-100">
+      <div className="mx-auto flex max-w-fit flex-col gap-9 lg:gap-12">
+        <div className="flex flex-col items-center gap-1">
+          <FooterLink to="collection/all">
+            Remix Soft Wear Catalog V.1
+          </FooterLink>
+          <p>Designed in USA</p>
+        </div>
+
+        {/* TODO: Add SVGs */}
+
+        <div className="flex items-start gap-9">
+          <div className="flex flex-col items-end gap-2">
+            <p>Remix is for everyone</p>
+            <p>Remix is an engineering team</p>
+            <p>Remix builds tools for a better web</p>
+
+            <nav className="flex items-center gap-4 py-1.5">
+              <a
+                href="https://www.remix.run"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="rounded-3xl border border-white px-1.5 py-1 transition-colors duration-300 hover:bg-white hover:text-black"
+              >
+                remix.run
+              </a>
+
               {socials.map(({ href, name, label }) => (
                 <a
                   key={name}
@@ -52,82 +65,54 @@ export function Footer({ footer: footerPromise }: FooterProps) {
                   aria-label={label}
                   target="_blank"
                   rel="noopener noreferrer"
+                  className="opacity-100 transition-opacity duration-300 group-hover:opacity-50 hover:opacity-100"
                 >
                   <span className="sr-only">{label}</span>
-                  <Icon name={name} className="h-6 w-6 fill-white" />
+                  <Icon name={name} className="size-4 fill-white" />
                 </a>
               ))}
-            </div>
-            <div className="text-sm">Docs and examples licensed under MIT</div>
-            <div className="text-sm">© Shopify, Inc.</div>
+            </nav>
           </div>
 
-          {/* Navigation Menus */}
-          <div className="col-span-2 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
-            <div>
-              <Suspense fallback={<ul className="space-y-2" />}>
-                <Await resolve={footerPromise}>
-                  {(footer) => {
-                    if (!footer?.menu || !footer.remixShop) return null;
-
-                    // Temporarily adding policy menus here -- eventually the footer will be rewritten so this is fine
-                    let menu = [
-                      ...footer.menu.items,
-                      ...footer.remixShop.items,
-                    ];
+          <nav className="flex flex-col items-start gap-2">
+            <Suspense fallback={null}>
+              <Await resolve={footerPromise}>
+                {(footer) => {
+                  return footer?.menu?.items.map((item) => {
+                    if (!item.url) return null;
 
                     return (
-                      <ul className="space-y-2">
-                        {menu.map((item, i) => {
-                          if (!item.url) return null;
-                          return (
-                            <li key={item.id}>
-                              <FooterLink
-                                className={clsx({
-                                  "font-bold text-[#a1a1a1] hover:text-white":
-                                    i === 0,
-                                })}
-                                title={item.title}
-                                to={item.url}
-                              />
-                            </li>
-                          );
-                        })}
-                      </ul>
+                      <FooterLink key={item.id} to={item.url}>
+                        {item.title}
+                      </FooterLink>
                     );
-                  }}
-                </Await>
-              </Suspense>
-            </div>
+                  });
+                }}
+              </Await>
+            </Suspense>
+          </nav>
+        </div>
 
-            <div className="lg:col-span-2">
-              <h3 className="mb-4 text-base font-extrabold">About Remix</h3>
-              <p className="text-sm">
-                Remix is a full stack web framework that lets you focus on the
-                user interface and work back through web standards to deliver a
-                fast, slick, and resilient user experience.
-              </p>
-              <p className="mt-4 text-sm">
-                This store is a way to celebrate the brand.
-              </p>
-            </div>
-          </div>
+        <div className="flex flex-col items-center gap-1">
+          <p>Docs and Examples licensed under MIT</p>
+          <p className="flex items-start gap-1">
+            <span className="text-base leading-none">©</span>
+            <span>{new Date().getFullYear()} Shopify, Inc.</span>
+          </p>
         </div>
       </div>
-
-      <RemixRainbow />
     </footer>
   );
 }
 
 function FooterLink({
-  title,
+  children,
   to,
   className,
 }: {
-  title: string;
+  children: React.ReactNode;
   to: string;
-  className: string;
+  className?: string;
 }) {
   const { url, isExternal } = useRelativeUrl(to);
 
@@ -136,21 +121,12 @@ function FooterLink({
       prefetch="intent"
       to={url}
       {...(isExternal ? { target: "_blank", rel: "noopener noreferrer" } : {})}
-      className={cn("no-underline hover:font-bold hover:text-white", className)}
+      className={cn(
+        "hover:text-blue-brand no-underline transition-colors duration-300 hover:font-bold",
+        className,
+      )}
     >
-      {title}
+      {children}
     </Link>
-  );
-}
-
-function RemixRainbow() {
-  return (
-    <div className="flex aspect-[1600/36] h-auto w-full">
-      <div className="flex-1 bg-[#0089ce]"></div>
-      <div className="flex-1 bg-[#64c146]"></div>
-      <div className="flex-1 bg-[#ffc100]"></div>
-      <div className="flex-1 bg-[#ff71e4]"></div>
-      <div className="flex-1 bg-[#f30]"></div>
-    </div>
   );
 }
