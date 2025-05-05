@@ -187,9 +187,6 @@ export const FOOTER_QUERY = `#graphql
     $country: CountryCode
     $language: LanguageCode
   ) @inContext(language: $language, country: $country) {
-    remixShop: menu(handle: "the-remix-shop") {
-      ...Menu
-    }
     # remixCommunity: menu(handle: "remix-community") {
     #   ...Menu
     # }

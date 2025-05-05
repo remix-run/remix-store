@@ -8,6 +8,8 @@ export const iconNames = [
   "tag",
   "sun",
   "shop-pay",
+  "remix-logo",
+  "remix-glyphs",
   "plus",
   "moon",
   "minus",
