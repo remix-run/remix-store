@@ -52,7 +52,7 @@ export async function loader({ params, request, context }: LoaderFunctionArgs) {
   const collection = await getCollectionQuery(storefront, {
     variables: {
       ...variables,
-      first: 8,
+      first: 15,
     },
   });
 
