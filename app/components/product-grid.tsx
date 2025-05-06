@@ -6,19 +6,30 @@ import { Suspense } from "react";
 import type { ProductImageFragment } from "storefrontapi.generated";
 import type { CollectionProductData } from "~/lib/data/collection.server";
 import type { MoneyV2 } from "@shopify/hydrogen/storefront-api-types";
+import {
+  useLoadMoreProducts,
+  type LoadMoreProductsOptions,
+} from "~/routes/actions/load-more-products";
 
 let defaultLoadingProductCount = 12;
 
 type ProductGridProps = {
-  products: CollectionProductData[] | Promise<CollectionProductData[]>;
+  products: CollectionProductData[];
   // Defaults to 12, only useful if you're using deferred product data and triggering a skeleton
   loadingProductCount?: number;
+  loadMoreProducts: Omit<LoadMoreProductsOptions, "initialProducts">;
 };
 
 export function ProductGrid({
-  products,
+  products: initialProducts,
+  loadMoreProducts,
   loadingProductCount = defaultLoadingProductCount,
 }: ProductGridProps) {
+  const { Form, products } = useLoadMoreProducts({
+    ...loadMoreProducts,
+    initialProducts,
+  });
+
   return (
     <div className="3xl:grid-cols-5 grid grid-cols-1 gap-y-9 bg-linear-to-b from-[#2d2d38] to-black md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4">
       {"then" in products ? (
@@ -42,9 +53,14 @@ export function ProductGrid({
           </Await>
         </Suspense>
       ) : (
-        products.map((product) => (
-          <ProductGridItem key={product.id} product={product} />
-        ))
+        <>
+          {products.map((product) => (
+            <ProductGridItem key={product.id} product={product} />
+          ))}
+          <div className="col-span-full">
+            <Form />
+          </div>
+        </>
       )}
     </div>
   );
