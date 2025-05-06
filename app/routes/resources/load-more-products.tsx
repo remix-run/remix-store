@@ -46,6 +46,8 @@ export type LoadMoreProductsOptions = {
   hasNextPage: boolean;
 };
 
+// RSC would be nice right about now
+
 /**
  * This hook is used to load more products from the collection.
  * It's used in the ProductGrid component to load more products when the user scrolls to the bottom of the grid.
@@ -100,7 +102,7 @@ export function useLoadMoreProducts({
       return (
         <FetcherForm
           method="get"
-          action="/_actions/load-more-products"
+          action="/_resources/load-more-products"
           {...props}
         >
           <input

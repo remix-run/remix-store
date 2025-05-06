@@ -46,7 +46,7 @@ export function ThemeToggle({
         <Form
           preventScrollReset
           replace
-          action="/_actions/color-scheme"
+          action="/_resources/color-scheme"
           method="post"
           className="flex flex-col gap-px"
         >

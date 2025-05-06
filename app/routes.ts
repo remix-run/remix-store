@@ -6,9 +6,9 @@ const routes = [
   ...(await hydrogenRoutes(
     await flatRoutes({ rootDirectory: "routes/pages" }),
   )),
-  ...prefix("_actions", [
-    route("color-scheme", "routes/actions/color-scheme.tsx"),
-    route("load-more-products", "routes/actions/load-more-products.tsx"),
+  ...prefix("_resources", [
+    route("color-scheme", "routes/resources/color-scheme.tsx"),
+    route("load-more-products", "routes/resources/load-more-products.tsx"),
   ]),
 ] satisfies RouteConfig;
 

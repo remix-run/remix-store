@@ -9,7 +9,7 @@ import type { MoneyV2 } from "@shopify/hydrogen/storefront-api-types";
 import {
   useLoadMoreProducts,
   type LoadMoreProductsOptions,
-} from "~/routes/actions/load-more-products";
+} from "~/routes/resources/load-more-products";
 
 let defaultLoadingProductCount = 12;
 
