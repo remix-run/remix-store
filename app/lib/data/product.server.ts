@@ -1,10 +1,6 @@
 import { Storefront } from "@shopify/hydrogen";
 
-import type {
-  ProductQueryVariables,
-  ProductVariantFragment,
-  ProductVariantsQueryVariables,
-} from "storefrontapi.generated";
+import type { ProductQueryVariables } from "storefrontapi.generated";
 
 export async function getProductData(
   storefront: Storefront,
@@ -16,32 +12,14 @@ export async function getProductData(
     throw new Response("Product not found", { status: 404 });
   }
 
-  const firstVariant = product.variants.nodes[0];
-  const firstVariantIsDefault = Boolean(
-    firstVariant.selectedOptions.find(
-      (option) => option.name === "Title" && option.value === "Default Title",
-    ),
-  );
-
   // Note: we only support filter options for product variants
-  product.options = product.options.filter((option) => option.name === "Size");
-
-  if (firstVariantIsDefault) {
-    product.selectedVariant = firstVariant;
+  if (product.options) {
+    product.options = product.options.filter(
+      (option) => option.name === "Size",
+    );
   }
 
   return product;
-}
-
-export async function getProductVariants(
-  storefront: Storefront,
-  { variables }: { variables: ProductVariantsQueryVariables },
-): Promise<ProductVariantFragment[]> {
-  const variants = await storefront.query(VARIANTS_QUERY, {
-    variables,
-  });
-
-  return variants.product?.variants.nodes || [];
 }
 
 export const PRODUCT_IMAGE_FRAGMENT = `#graphql
@@ -93,6 +71,9 @@ const PRODUCT_DETAIL_FRAGMENT = `#graphql
     title
     vendor
     handle
+    description
+    encodedVariantExistence
+    encodedVariantAvailability
     category {
       name
     }
@@ -100,15 +81,24 @@ const PRODUCT_DETAIL_FRAGMENT = `#graphql
       name
       optionValues {
         name
+        firstSelectableVariant {
+          ...ProductVariant
+        }
+        swatch {
+          color
+          image {
+            previewImage {
+              url
+            }
+          }
+        }
       }
     }
-    selectedVariant: variantBySelectedOptions(selectedOptions: $selectedOptions, ignoreUnknownOptions: true, caseInsensitiveMatch: true) {
+    selectedOrFirstAvailableVariant(selectedOptions: $selectedOptions, ignoreUnknownOptions: true, caseInsensitiveMatch: true) {
       ...ProductVariant
     }
-    variants(first: 1) {
-      nodes {
-        ...ProductVariant
-      }
+    adjacentVariants (selectedOptions: $selectedOptions) {
+      ...ProductVariant
     }
     images(first: 5) {
       nodes {
@@ -119,7 +109,7 @@ const PRODUCT_DETAIL_FRAGMENT = `#graphql
       description
       title
     }
-    description: metafield(key: "description", namespace: "custom") {
+    customDescription: metafield(key: "description", namespace: "custom") {
       value
     }
     technicalDescription: metafield(key: "technical_description", namespace: "custom") {
@@ -142,28 +132,4 @@ const PRODUCT_QUERY = `#graphql
     }
   }
   ${PRODUCT_DETAIL_FRAGMENT}
-` as const;
-
-const PRODUCT_VARIANTS_FRAGMENT = `#graphql
-  fragment ProductVariants on Product {
-    variants(first: 250) {
-      nodes {
-        ...ProductVariant
-      }
-    }
-  }
-  ${PRODUCT_VARIANT_FRAGMENT}
-` as const;
-
-const VARIANTS_QUERY = `#graphql
-  query ProductVariants(
-    $country: CountryCode
-    $language: LanguageCode
-    $handle: String!
-  ) @inContext(country: $country, language: $language) {
-    product(handle: $handle) {
-      ...ProductVariants
-    }
-  }
-  ${PRODUCT_VARIANTS_FRAGMENT}
 ` as const;

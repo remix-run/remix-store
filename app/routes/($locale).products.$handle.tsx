@@ -1,26 +1,24 @@
 import { useState, useEffect, useRef } from "react";
+import { useLayoutEffect } from "~/lib/hooks";
 import { data, type LoaderFunctionArgs } from "@shopify/remix-oxygen";
 import {
   Link,
   useLoaderData,
-  useSearchParams,
   type MetaArgs,
   useFetcher,
 } from "@remix-run/react";
-import type {
-  ProductFragment,
-  ProductVariantFragment,
-} from "storefrontapi.generated";
+import type { ProductFragment } from "storefrontapi.generated";
 import {
   type OptimisticCartLineInput,
-  Money,
-  VariantSelector,
-  type VariantOption,
+  type MappedProductOptions,
   getSelectedProductOptions,
   CartForm,
   Analytics,
-  useAnalytics,
   RichText,
+  useOptimisticVariant,
+  getAdjacentAndFirstAvailableVariants,
+  mapSelectedProductOptionToObject,
+  getProductOptions,
 } from "@shopify/hydrogen";
 import { FOOTER_QUERY } from "~/lib/fragments";
 import {
@@ -33,12 +31,11 @@ import { Icon } from "~/components/icon";
 import { ProductImages } from "~/components/product-images";
 import { ProductPrice } from "~/components/product-grid";
 import { generateMeta } from "~/lib/meta";
-import type { RootLoader } from "~/root";
-import { getProductData, getProductVariants } from "~/lib/data/product.server";
+import { getProductData } from "~/lib/data/product.server";
 import { useRelativeUrl } from "~/lib/use-relative-url";
 import { cva } from "class-variance-authority";
 import { cn } from "~/lib/cn";
-import { clsx } from "clsx";
+import type { RootLoader } from "~/root";
 
 export function meta({
   data,
@@ -72,8 +69,11 @@ export async function loader(args: LoaderFunctionArgs) {
     throw new Error("Expected product handle to be defined");
   }
 
-  let variantsPromise = getProductVariants(storefront, {
-    variables: { handle },
+  let productPromise = getProductData(storefront, {
+    variables: {
+      handle,
+      selectedOptions: getSelectedProductOptions(request),
+    },
   });
 
   // Not sure if this will always be the same as the footer menu
@@ -96,34 +96,46 @@ export async function loader(args: LoaderFunctionArgs) {
       return menu;
     });
 
-  let productPromise = getProductData(storefront, {
-    variables: {
-      handle,
-      selectedOptions: getSelectedProductOptions(request),
-    },
-  });
-
-  let [menu, product, variants] = await Promise.all([
-    menuPromise,
-    productPromise,
-    variantsPromise,
-  ]);
+  let [menu, product] = await Promise.all([menuPromise, productPromise]);
 
   return data({
     menu,
     product,
-    variants,
   });
 }
 
 export default function Product() {
-  let { menu, product, variants } = useLoaderData<typeof loader>();
-  let { selectedVariant } = product;
+  let { menu, product } = useLoaderData<typeof loader>();
 
-  // If a variant isn't selected, use the first variant for price, analytics, etc
-  if (!selectedVariant) {
-    selectedVariant = product.variants.nodes[0];
-  }
+  // Optimistically selects a variant with given available variant information
+  const selectedVariant = useOptimisticVariant(
+    product.selectedOrFirstAvailableVariant,
+    getAdjacentAndFirstAvailableVariants(product),
+  );
+
+  // Sets the search param to the selected variant without navigation
+  // only when no search params are set in the url
+  useLayoutEffect(() => {
+    if (window.location.search !== "") return;
+
+    const searchParams = new URLSearchParams(
+      mapSelectedProductOptionToObject(selectedVariant.selectedOptions || []),
+    );
+
+    if (searchParams.toString() === "") return;
+
+    window.history.replaceState(
+      {},
+      "",
+      `${location.pathname}?${searchParams.toString()}`,
+    );
+  }, [selectedVariant.selectedOptions]);
+
+  // Get the product options array
+  const productOptions = getProductOptions({
+    ...product,
+    selectedOrFirstAvailableVariant: selectedVariant,
+  });
 
   return (
     <div className="relative mt-(--header-height) flex min-h-[90vh] flex-col gap-4 overflow-x-clip md:flex-row md:justify-between md:gap-8 md:px-4 lg:px-9">
@@ -134,7 +146,7 @@ export default function Product() {
       <ProductMain
         selectedVariant={selectedVariant}
         product={product}
-        variants={variants}
+        productOptions={productOptions}
       />
 
       <Analytics.ProductView
@@ -193,13 +205,17 @@ function MenuLink({ to, children }: { to: string; children: React.ReactNode }) {
 function ProductMain({
   selectedVariant,
   product,
-  variants,
+  productOptions,
 }: {
   product: ProductFragment;
-  selectedVariant: NonNullable<ProductFragment["selectedVariant"]>;
-  variants: Array<ProductVariantFragment>;
+  selectedVariant: NonNullable<
+    ProductFragment["selectedOrFirstAvailableVariant"]
+  >;
+  productOptions: MappedProductOptions[];
 }) {
-  let { title, category, description, technicalDescription } = product;
+  let { title, category, technicalDescription } = product;
+  const mainDescription =
+    product.customDescription?.value || product.description;
 
   return (
     <div className="static top-(--header-height) mx-4 flex max-h-fit flex-col gap-6 text-white md:sticky md:mx-0 md:max-w-xl md:basis-1/3 lg:gap-9 lg:pt-32">
@@ -217,15 +233,14 @@ function ProductMain({
       </div>
 
       <ProductForm
-        product={product}
+        productOptions={productOptions}
         selectedVariant={selectedVariant}
-        variants={variants}
       />
 
-      {description ? (
+      {mainDescription ? (
         <RichText
           className="rich-text text-xs lg:text-base"
-          data={description.value}
+          data={mainDescription}
         />
       ) : null}
       {technicalDescription ? (
@@ -245,61 +260,49 @@ function ProductMain({
 }
 
 function ProductForm({
-  product,
+  productOptions,
   selectedVariant,
-  variants,
 }: {
-  product: ProductFragment;
-  selectedVariant: NonNullable<ProductFragment["selectedVariant"]>;
-  variants: Array<ProductVariantFragment>;
+  productOptions: MappedProductOptions[];
+  selectedVariant: ProductFragment["selectedOrFirstAvailableVariant"];
 }) {
-  let { publish, shop, cart, prevCart } = useAnalytics();
-  let isAvailable = !!selectedVariant?.availableForSale;
-
   return (
-    <div className="flex flex-col gap-[18px] md:gap-8">
-      <div className="flex flex-col gap-2 md:gap-3 lg:flex-row">
-        <VariantSelector
-          handle={product.handle}
-          options={product.options}
-          variants={variants}
-        >
-          {({ option }) => <ProductOptions key={option.name} option={option} />}
-        </VariantSelector>
-        <AddToCartButton
-          disabled={!selectedVariant || !isAvailable}
-          lines={
-            selectedVariant
-              ? [
-                  {
-                    merchandiseId: selectedVariant.id,
-                    quantity: 1,
-                    selectedVariant: { ...selectedVariant, product },
-                  },
-                ]
-              : []
-          }
-          // This handles overriding the animation on larger screens if there's
-          // not a variant selector
-          className={clsx({ "lg:flex-1": product.options.length === 0 })}
-        >
-          {isAvailable ? "Add to cart" : "Sold out"}
-        </AddToCartButton>
+    <div className="flex flex-col gap-4 lg:flex-row lg:gap-3">
+      <div className="flex flex-col gap-4 lg:flex-auto">
+        {productOptions.map((option) => (
+          <ProductOptions key={option.name} option={option} />
+        ))}
       </div>
+
+      <AddToCartButton
+        disabled={!selectedVariant || !selectedVariant.availableForSale}
+        lines={
+          selectedVariant
+            ? [
+                {
+                  merchandiseId: selectedVariant.id,
+                  quantity: 1,
+                  selectedVariant,
+                },
+              ]
+            : []
+        }
+      >
+        {selectedVariant?.availableForSale ? "Add to cart" : "Sold out"}
+      </AddToCartButton>
     </div>
   );
 }
 
-function ProductOptions({ option }: { option: VariantOption }) {
-  let [searchParams] = useSearchParams();
-  let selectedOption = searchParams.get(option.name);
+function ProductOptions({ option }: { option: MappedProductOptions }) {
+  const selectedValueName = option.optionValues.find((ov) => ov.selected)?.name;
 
   return (
     <div className="relative w-full lg:flex-2">
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <button className="flex w-full items-center justify-between rounded-[54px] border-[3px] border-white px-6 py-4 text-xl font-semibold data-[state=open]:[&_svg]:-rotate-180">
-            <span>{selectedOption || option.name}</span>
+          <button className="focus-visible:ring-blue-brand flex w-full items-center justify-between rounded-[54px] border-[3px] border-white px-6 py-4 text-xl font-semibold outline-none focus-visible:ring-2 data-[state=open]:[&_svg]:-rotate-180">
+            <span>{selectedValueName || option.name}</span>
             <Icon
               name="chevron-down"
               className="ml-2 size-6 transition-transform duration-200 ease-in"
@@ -308,33 +311,46 @@ function ProductOptions({ option }: { option: VariantOption }) {
         </DropdownMenuTrigger>
         <DropdownMenuContent
           align="center"
-          className="w-[var(--radix-dropdown-menu-trigger-width)] rounded-4xl border border-[#222222] bg-[#111111]"
+          className="w-[var(--radix-dropdown-menu-trigger-width)] rounded-4xl border border-[#222222] bg-[#111111] p-0"
           sideOffset={10}
         >
-          {option.values.map(({ value, isAvailable, isActive, to }) => (
-            <DropdownMenuItem
-              key={option.name + value}
-              asChild
-              // disabled={!isAvailable}
-              className="rounded-4xl px-5 py-4 text-lg text-white data-[highlighted]:bg-white/5 data-[highlighted]:text-white"
-            >
-              <Link
-                prefetch="intent"
-                preventScrollReset
-                replace
-                to={to}
+          {option.optionValues.map((valueOption) => {
+            const { name, variantUriQuery, selected, available } = valueOption;
+
+            return (
+              <DropdownMenuItem
+                key={option.name + name}
+                asChild
+                disabled={!available}
                 className={cn(
-                  "flex w-full items-center justify-between text-xl hover:text-white",
-                  // isActive && "text-white",
-                  // !isActive && "text-white/80",
-                  !isAvailable && "text-white/30",
+                  "rounded-4xl px-5 py-5 text-lg",
+                  "data-[highlighted]:bg-white/5",
+                  available
+                    ? "text-white data-[highlighted]:text-white"
+                    : "cursor-not-allowed text-white/30 data-[highlighted]:text-white/30",
                 )}
               >
-                {value}
-                {isActive && <Icon name="check" className="size-5" />}
-              </Link>
-            </DropdownMenuItem>
-          ))}
+                <Link
+                  prefetch="intent"
+                  preventScrollReset
+                  replace
+                  to={{ search: variantUriQuery }}
+                  className={cn(
+                    "flex w-full items-center justify-between text-xl hover:text-white",
+                    !available && "text-white/30",
+                  )}
+                  onClick={(e) => {
+                    if (!available) e.preventDefault();
+                  }}
+                  tabIndex={!available ? -1 : undefined}
+                  aria-disabled={!available}
+                >
+                  {name}
+                  {selected && <Icon name="check" className="size-5" />}
+                </Link>
+              </DropdownMenuItem>
+            );
+          })}
         </DropdownMenuContent>
       </DropdownMenu>
     </div>

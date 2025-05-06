@@ -40,7 +40,8 @@ export async function getCollectionQuery(
     return {
       ...collection,
       productsPageInfo: collection.products.pageInfo,
-      products: products.map(({ priceRange, ...product }) => {
+      products: products.map((fullProductNode) => {
+        const { priceRange, ...product } = fullProductNode;
         return {
           id: product.id,
           handle: product.handle,
@@ -81,7 +82,6 @@ export const COLLECTION_PRODUCT_FRAGMENT = `#graphql
     id
     handle
     title
-    # availableForSale
     priceRange {
       minVariantPrice {
         ...MoneyProductItem
