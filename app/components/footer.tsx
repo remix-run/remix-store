@@ -34,7 +34,7 @@ let socials = [
 
 export function Footer({ footer: footerPromise }: FooterProps) {
   return (
-    <footer className="group bg-black px-2 py-16 font-mono text-xs leading-tight text-white uppercase opacity-30 transition-opacity duration-300 hover:opacity-100">
+    <footer className="group bg-black px-2 py-16 font-mono text-xs leading-tight text-white uppercase opacity-30 transition-opacity duration-300 focus-within:opacity-100 hover:opacity-100">
       <div className="mx-auto flex max-w-fit flex-col gap-9 lg:gap-12">
         <div className="flex flex-col items-center gap-1">
           <FooterLink to="collection/all">
