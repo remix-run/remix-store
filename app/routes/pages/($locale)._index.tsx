@@ -3,7 +3,6 @@ import type { LoaderFunctionArgs, MetaArgs } from "@shopify/remix-oxygen";
 import { data } from "@shopify/remix-oxygen";
 import { Link, useLoaderData } from "@remix-run/react";
 import { getCollectionQuery } from "~/lib/data/collection.server";
-import { getFilterQueryVariables } from "~/lib/filters/query-variables.server";
 import { Image as HydrogenImage } from "@shopify/hydrogen";
 import {
   getLookbookEntries,
@@ -35,18 +34,14 @@ export function meta({
 export async function loader({ request, context }: LoaderFunctionArgs) {
   let { storefront } = context;
 
-  let url = new URL(request.url);
-  let { searchParams } = url;
-
+  let collectionHandle = "all";
   let expectedNumberOfProducts = 12;
-  let products = getCollectionQuery(storefront, {
+  let { products, productsPageInfo } = await getCollectionQuery(storefront, {
     variables: {
-      handle: "remix-logo-apparel",
+      handle: collectionHandle,
       first: expectedNumberOfProducts,
-      // TODO: remove this for the homepage, just keeping here as an example for when I move the logic to other pages that account for filters
-      ...getFilterQueryVariables(searchParams),
     },
-  }).then(({ products }) => products);
+  });
 
   let lookbookEntriesQuery = getLookbookEntries(storefront);
   let heroQuery = getHeroData(storefront);
@@ -60,12 +55,20 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
     lookbookEntries,
     expectedNumberOfProducts,
     products,
+    collectionHandle,
+    productsPageInfo,
   });
 }
 
 export default function Homepage() {
-  let { hero, lookbookEntries, expectedNumberOfProducts, products } =
-    useLoaderData<typeof loader>();
+  let {
+    hero,
+    lookbookEntries,
+    expectedNumberOfProducts,
+    products: initialProducts,
+    collectionHandle,
+    productsPageInfo,
+  } = useLoaderData<typeof loader>();
 
   let [firstEntry, ...restEntries] = lookbookEntries;
 
@@ -81,18 +84,16 @@ export default function Homepage() {
       ))}
       <div className="bg-linear-[180deg,#2d2d38,var(--color-black)] py-9 md:py-12 lg:py-16">
         <ProductGrid
-          products={products}
+          products={initialProducts}
           loadingProductCount={expectedNumberOfProducts}
+          loadMoreProducts={{
+            collectionHandle,
+            hasNextPage: productsPageInfo.hasNextPage,
+            endCursor: productsPageInfo.endCursor ?? undefined,
+            numberOfProducts: expectedNumberOfProducts,
+          }}
         />
       </div>
-      <button
-        className="bg-blue-brand hover:text-blue-brand w-full py-9 text-center text-xl font-bold text-white transition-colors hover:bg-white"
-        onClick={() => {
-          alert("This doesn't work yet! Complain to Brooks");
-        }}
-      >
-        <span>Load more</span>
-      </button>
     </>
   );
 }
