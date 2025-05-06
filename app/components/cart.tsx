@@ -135,6 +135,7 @@ export function CartLineItem({
   return (
     <li className={cn("flex items-start gap-3", className)}>
       <Link
+        prefetch="intent"
         to={`/products/${product.handle}`}
         onClick={onImageClick}
         className="size-20 shrink-0 rounded-2xl bg-white p-2"

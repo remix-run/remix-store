@@ -34,7 +34,7 @@ interface NavbarProps {
 export function Navbar({ menu, cart }: NavbarProps) {
   return (
     <header className="fixed top-0 z-10 grid max-h-(--header-height) w-full grid-cols-2 items-center bg-linear-to-b from-black/100 to-black/0 p-4 md:grid-cols-3 md:p-9">
-      <Link to="/" className="flex max-w-fit justify-start">
+      <Link to="/" className="flex max-w-fit justify-start" prefetch="intent">
         <span className="sr-only">Home</span>
         <RemixLogo animateOnScroll />
       </Link>
@@ -70,6 +70,7 @@ function CartButton({ cart: originalCart }: Pick<NavbarProps, "cart">) {
         iconName="cart"
         animationType="text"
         expandedText="All"
+        prefetch="intent"
       >
         Shop
       </AnimatedLink>
@@ -218,7 +219,7 @@ function CartCTA({
   // Before hydration or on mobile, render as a link for non-JS fallback
   if (isLink || !isHydrated) {
     return (
-      <Link to="/cart" className={className}>
+      <Link to="/cart" className={className} prefetch="intent">
         {inner}
       </Link>
     );
@@ -255,6 +256,7 @@ function HeaderMenuLink(props: HeaderMenuLinkProps) {
     <NavLink
       className="text-base leading-tight font-semibold text-white no-underline hover:font-bold hover:text-white"
       to={url}
+      prefetch="intent"
     >
       {props.title}
     </NavLink>

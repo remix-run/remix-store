@@ -196,6 +196,7 @@ function MenuLink({ to, children }: { to: string; children: React.ReactNode }) {
     <Link
       className="text-xs leading-5 text-white/90 transition-[color] hover:text-white lg:text-base lg:leading-6"
       to={url}
+      prefetch="intent"
     >
       {children}
     </Link>
@@ -214,8 +215,7 @@ function ProductMain({
   productOptions: MappedProductOptions[];
 }) {
   let { title, category, technicalDescription } = product;
-  const mainDescription =
-    product.customDescription?.value || product.description;
+  const mainDescription = product.customDescription?.value;
 
   return (
     <div className="static top-(--header-height) mx-4 flex max-h-fit flex-col gap-6 text-white md:sticky md:mx-0 md:max-w-xl md:basis-1/3 lg:gap-9 lg:pt-32">

@@ -1,4 +1,4 @@
-import { Link } from "@remix-run/react";
+import { Link, type LinkProps } from "@remix-run/react";
 import { cn } from "~/lib/cn";
 import { Icon } from "~/components/icon";
 import { cva, type VariantProps } from "class-variance-authority";
@@ -40,6 +40,7 @@ type BaseAnimatedLinkProps = {
   to: string;
   children: React.ReactNode;
   className?: string;
+  prefetch?: LinkProps["prefetch"];
 };
 
 export type AnimatedLinkProps = BaseAnimatedLinkProps &
@@ -71,6 +72,7 @@ export function AnimatedLink({
   iconName,
   expandedText,
   iconPosition = "left",
+  prefetch,
   children,
 }: AnimatedLinkProps) {
   // Default styles for the link
@@ -112,7 +114,7 @@ export function AnimatedLink({
   }
 
   return (
-    <Link className={linkClasses} to={to}>
+    <Link className={linkClasses} to={to} prefetch={prefetch}>
       {iconPosition === "left" && icon}
       {text}
       {iconPosition === "right" && icon}

@@ -272,6 +272,7 @@ function LookbookEntry({ image, product }: LookbookEntryProps) {
 
       {product ? (
         <AnimatedLink
+          prefetch="intent"
           animationType="icon"
           iconName="fast-forward"
           to={`/products/${product.handle}`}
@@ -283,6 +284,7 @@ function LookbookEntry({ image, product }: LookbookEntryProps) {
         </AnimatedLink>
       ) : (
         <AnimatedLink
+          prefetch="intent"
           animationType="icon"
           iconName="mail"
           // TODO: Add proper signup link

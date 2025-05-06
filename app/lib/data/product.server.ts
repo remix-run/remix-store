@@ -71,7 +71,6 @@ const PRODUCT_DETAIL_FRAGMENT = `#graphql
     title
     vendor
     handle
-    description
     encodedVariantExistence
     encodedVariantAvailability
     category {
