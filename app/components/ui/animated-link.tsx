@@ -121,3 +121,48 @@ export function AnimatedLink({
     </Link>
   );
 }
+
+// Accounting for every possible link type is pretty difficult, might want to refactor the components in this file and document them a bit better at some point
+export function AnimatedLinkSpread({
+  to,
+  disabled = false,
+  className,
+  onClick,
+  children,
+  ...props
+}: {
+  disabled?: boolean;
+} & LinkProps) {
+  return (
+    <Link
+      to={to}
+      className={cn(
+        "group flex w-full items-center justify-center rounded-[54px] bg-white px-6 py-4 text-xl font-semibold text-black no-underline outline-none ring-inset",
+        disabled
+          ? "cursor-not-allowed bg-white/70 text-black/60"
+          : "hover:bg-blue-brand focus-visible:bg-blue-brand transition-colors duration-300 hover:text-white hover:ring hover:ring-white focus-visible:text-white focus-visible:ring focus-visible:ring-white",
+        className,
+      )}
+      aria-disabled={disabled}
+      onClick={(e) => {
+        if (disabled) {
+          e.preventDefault();
+          return;
+        }
+        if (onClick) {
+          onClick(e);
+        }
+      }}
+      {...props}
+    >
+      <div
+        className={cn(
+          "flex h-8 w-0 min-w-fit items-center justify-between gap-2.5 transition-[width] duration-300 ease-in-out",
+          !disabled && "group-hover:w-full group-focus-visible:w-full",
+        )}
+      >
+        {children}
+      </div>
+    </Link>
+  );
+}

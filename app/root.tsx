@@ -16,10 +16,11 @@ import { FOOTER_QUERY, HEADER_QUERY } from "~/lib/fragments";
 import { parseColorScheme } from "~/lib/color-scheme.server";
 import { clsx } from "clsx";
 import { ColorSchemeScript, useColorScheme } from "~/lib/color-scheme";
-import { Button } from "~/components/ui/button";
+import { AnimatedLinkSpread } from "~/components/ui/animated-link";
 import { AsideProvider } from "~/components/ui/aside";
 import { Navbar } from "~/components/navbar";
 import { Footer } from "~/components/footer";
+import { Icon } from "~/components/icon";
 
 /* eslint-disable import/no-unresolved */
 import interUrl from "/font/inter-roman-latin-var.woff2?url";
@@ -230,14 +231,29 @@ export function ErrorBoundary() {
   }
 
   return (
-    <div className="my-[100px] flex flex-col items-center gap-6">
-      <p className="text-xl">
-        Please check to see if you have typed the URL correctly.
-      </p>
-      <div className="w-[340px]">
-        <Button size="lg" asChild>
-          <Link to="/collections/all">Back to shop</Link>
-        </Button>
+    <div className="flex h-screen flex-col items-center justify-center pt-[140px] pb-[140px] md:h-min md:pt-[200px] md:pb-[240]">
+      {/* TODO: Title */}
+      {/* <p>{errorStatus}</p> */}
+      <div className="flex flex-col items-center gap-9 md:gap-12">
+        <div className="flex flex-col items-center gap-3 md:gap-6">
+          <h1 className="font-title text-3xl font-black tracking-[-0.2em] uppercase md:text-5xl md:tracking-[-0.2em]">
+            {errorMessage}
+          </h1>
+          <p className="text-sm tracking-tight md:text-base md:tracking-tight">
+            Please check the URL and try again
+          </p>
+        </div>
+        <AnimatedLinkSpread to="/" className="w-60">
+          <>
+            <Icon
+              name="fast-forward"
+              className="size-8 rotate-180"
+              fill="currentColor"
+              aria-hidden="true"
+            />
+            <span>Back Home</span>
+          </>
+        </AnimatedLinkSpread>
       </div>
     </div>
   );
