@@ -31,6 +31,7 @@ import lexendZettaBlackUrl from "/font/lexend-zetta-black.woff2?url";
 /* eslint-enable import/no-unresolved */
 
 import error404Src from "~/assets/images/error-404.png";
+import error500Src from "~/assets/images/error-500.png";
 
 import "./tailwind.css";
 
@@ -312,9 +313,17 @@ function getHexCharForPixelBrightness(r: number, g: number, b: number): string {
   return HEX_CHARS[charIndex];
 }
 
+interface GlitchData {
+  originalString: string;
+  displayString: string;
+  /** Flat indices relative to originalString (without newlines) */
+  activeCharIndices: number[];
+}
+
 function GlitchyText() {
   const [bgImageDataUrl, setBgImageDataUrl] = useState("");
-  const [hexString, setHexString] = useState("");
+  const [glitchData, setGlitchData] = useState<GlitchData | null>(null);
+  const [scale, setScale] = useState(1);
 
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -322,11 +331,18 @@ function GlitchyText() {
     const img = new Image();
     img.crossOrigin = "anonymous";
     img.src = error404Src;
+    let targetCanvasWidth: number;
+    let targetCanvasHeight: number;
 
     img.onload = () => {
       const canvas = document.createElement("canvas");
-      const targetCanvasWidth = 140;
-      const targetCanvasHeight = 66;
+      targetCanvasWidth = img.naturalWidth;
+      targetCanvasHeight = img.naturalHeight;
+
+      if (targetCanvasWidth === 0 || targetCanvasHeight === 0) {
+        console.error("Image loaded with zero dimensions. Cannot process.");
+        return;
+      }
 
       canvas.width = targetCanvasWidth;
       canvas.height = targetCanvasHeight;
@@ -336,7 +352,6 @@ function GlitchyText() {
         console.error("Failed to get 2D context from canvas");
         return;
       }
-      // Draw the source image, stretching/squashing it into the 140x66 canvas
       ctx.drawImage(img, 0, 0, targetCanvasWidth, targetCanvasHeight);
 
       const dataUrl = canvas.toDataURL();
@@ -349,59 +364,158 @@ function GlitchyText() {
         targetCanvasHeight,
       );
       const pixelData = imageData.data;
-      let generatedString = "";
-      const step = 4; // Process RGBA for each pixel
+      let generatedOriginalString = "";
+      const tempActiveIndices: number[] = [];
+      let flatCharIndex = 0;
 
-      for (let i = 0; i < pixelData.length; i += step) {
+      for (let i = 0; i < pixelData.length; i += 4) {
         const r = pixelData[i];
         const g = pixelData[i + 1];
         const b = pixelData[i + 2];
 
-        // Replace custom logic with call to the new function
-        generatedString += getHexCharForPixelBrightness(r, g, b);
+        const char = getHexCharForPixelBrightness(r, g, b);
+        generatedOriginalString += char;
 
-        const currentPixelIndexInFlatArray = i / step;
+        if (char !== " ") {
+          tempActiveIndices.push(flatCharIndex);
+        }
+        flatCharIndex++;
+
+        const currentPixelIndexInFlatArray = i / 4;
         if ((currentPixelIndexInFlatArray + 1) % targetCanvasWidth === 0) {
           if (
             currentPixelIndexInFlatArray <
             targetCanvasWidth * targetCanvasHeight - 1
           ) {
-            generatedString += "\n";
+            generatedOriginalString += "\n";
           }
         }
       }
-      setHexString(generatedString.toUpperCase()); // No .trim() to preserve line lengths
+      setGlitchData({
+        originalString: generatedOriginalString,
+        displayString: generatedOriginalString, // Initially same as original
+        activeCharIndices: tempActiveIndices,
+      });
+      handleResize();
     };
 
     img.onerror = (err) => {
       console.error("Failed to load image for GlitchyText:", err);
     };
+
+    const handleResize = () => {
+      if (!targetCanvasWidth) return;
+
+      // Each character is 6px wide
+      setScale(window.innerWidth / (targetCanvasWidth * 6));
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  // RAF Glitching Effect with setTimeout throttling
+  useEffect(() => {
+    if (!glitchData?.activeCharIndices?.length) {
+      // No active characters or data, ensure any pending timeouts are cleared.
+      // (No specific timeoutId to clear here as it's managed within the running loop's scope)
+      return;
+    }
+
+    let timeoutId: NodeJS.Timeout | null = null;
+    let animationFrameId: number | null = null; // To cancel RAF if timeout gets cleared first
+
+    const glitchAmountPercent = 0.08;
+    const minCharsToGlitch = 1;
+    const glitchInterval = 80; // ms
+    const numActiveChars = glitchData?.activeCharIndices.length;
+    const numToGlitch = Math.max(
+      minCharsToGlitch,
+      Math.floor(numActiveChars * glitchAmountPercent),
+    );
+
+    const animate = () => {
+      setGlitchData((prevGlitchData) => {
+        if (!prevGlitchData) return null;
+
+        const { originalString, activeCharIndices } = prevGlitchData;
+        const chars = originalString.split("");
+
+        for (let k = 0; k < numToGlitch; k++) {
+          if (numActiveChars === 0) break;
+          const randomActiveIndex = Math.floor(Math.random() * numActiveChars);
+          const flatIndexToGlitch = activeCharIndices[randomActiveIndex];
+
+          let currentFlatIdx = 0;
+          let actualStringIdx = -1;
+          for (let j = 0; j < originalString.length; j++) {
+            if (originalString[j] === "\n") continue;
+            if (currentFlatIdx === flatIndexToGlitch) {
+              actualStringIdx = j;
+              break;
+            }
+            currentFlatIdx++;
+          }
+
+          if (
+            actualStringIdx !== -1 &&
+            chars[actualStringIdx] !== " " &&
+            chars[actualStringIdx] !== "\n"
+          ) {
+            const currentHex = chars[actualStringIdx];
+            const intValue = parseInt(currentHex, 16);
+            if (!isNaN(intValue)) {
+              const newValue = (intValue + 1) % 16;
+              chars[actualStringIdx] = newValue.toString(16).toUpperCase();
+            }
+          }
+        }
+        return { ...prevGlitchData, displayString: chars.join("") };
+      });
+
+      // Schedule the next animation frame after the interval
+      timeoutId = setTimeout(() => {
+        animationFrameId = requestAnimationFrame(animate);
+      }, glitchInterval);
+    };
+
+    // Start the first animation frame immediately
+    animationFrameId = requestAnimationFrame(animate);
+
+    return () => {
+      // Cleanup: clear the timeout and cancel the animation frame
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+      }
+    };
+  }, [glitchData?.activeCharIndices]); // Re-run if originalString or active indices change
+
   return (
-    <div className="relative aspect-[3/1] w-full" ref={containerRef}>
-      <div className="relative size-full overflow-hidden bg-transparent">
-        <div
-          className="absolute top-1/2 left-1/2 h-fit w-fit text-center font-mono whitespace-pre text-transparent select-none"
-          style={{
-            transformOrigin: "center center",
-            fontVariantNumeric: "tabular-nums",
-            transform: "translate(-50%, -50%) scale(1.3369)",
-            backgroundRepeat: "no-repeat",
-            backgroundSize: "100% 100%",
-            imageRendering: "pixelated",
-            backgroundClip: "text",
-            fontSize: "10px",
-            fontStyle: "normal",
-            fontWeight: "500",
-            letterSpacing: "0em",
-            lineHeight: "1em",
-            backgroundImage: `url(${bgImageDataUrl})`,
-            // backgroundImage: `url("data:image/png;base64,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")`,
-          }}
-        >
-          {hexString}
-        </div>
+    <div
+      className="relative aspect-[3/1] w-full overflow-hidden text-center font-mono text-[10px] leading-none font-medium tracking-normal text-transparent select-none"
+      ref={containerRef}
+    >
+      <div
+        className="absolute top-1/2 left-1/2 bg-size-[100%_100%] bg-clip-text bg-no-repeat whitespace-pre blur-xl"
+        style={{
+          transform: `translate(-50%, -50%) scale(${scale})`,
+          imageRendering: "pixelated",
+          backgroundImage: `url(${bgImageDataUrl})`,
+        }}
+      >
+        {glitchData?.originalString}
+      </div>
+      <div
+        className="absolute top-1/2 left-1/2 bg-size-[100%_100%] bg-clip-text bg-no-repeat whitespace-pre"
+        style={{
+          transform: `translate(-50%, -50%) scale(${scale})`,
+          imageRendering: "pixelated",
+          backgroundImage: `url(${bgImageDataUrl})`,
+        }}
+      >
+        {glitchData?.displayString}
       </div>
     </div>
   );
