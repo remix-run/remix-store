@@ -2,12 +2,6 @@
 
 import { useNonce, getShopAnalytics, Analytics } from "@shopify/hydrogen";
 import {
-  data,
-  redirect,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@shopify/remix-oxygen";
-import {
   Links,
   Meta,
   Outlet,
@@ -17,8 +11,12 @@ import {
   ScrollRestoration,
   isRouteErrorResponse,
   type ShouldRevalidateFunction,
+  type MetaFunction,
   Link,
-} from "@remix-run/react";
+  type LoaderFunctionArgs,
+  redirect,
+  data,
+} from "react-router";
 import { FOOTER_QUERY, HEADER_QUERY } from "~/lib/fragments";
 import { clsx } from "clsx";
 import { AnimatedLinkSpread } from "~/components/ui/animated-link";
@@ -34,7 +32,7 @@ import jetBrainsMonoUrl from "/font/jet-brains-mono.woff2?url";
 import lexendZettaBlackUrl from "/font/lexend-zetta-black.woff2?url";
 /* eslint-enable import/no-unresolved */
 
-import "./tailwind.css";
+import tailwindCssSrc from "./tailwind.css?url";
 import { MatrixText } from "./components/matrix-text";
 import { isMagicHidden, getShowAllTheMagic } from "./lib/show-the-magic";
 import { Splash } from "./components/splash";
@@ -76,6 +74,7 @@ export function links() {
   ];
 
   return [
+    { rel: "stylesheet", href: tailwindCssSrc },
     ...preconnects.map((preconnect) => ({ rel: "preconnect", ...preconnect })),
     ...localFonts.map((href) => ({
       rel: "preload",

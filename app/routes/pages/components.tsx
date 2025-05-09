@@ -1,5 +1,5 @@
-import { Link, Outlet, useLoaderData } from "@remix-run/react";
-import type { LoaderFunctionArgs, MetaArgs } from "@remix-run/node";
+import { Link, Outlet, useLoaderData } from "react-router";
+import type { LoaderFunctionArgs, MetaArgs } from "react-router";
 import { Button } from "~/components/ui/button";
 import {
   DropdownMenu,

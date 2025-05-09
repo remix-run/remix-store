@@ -1,5 +1,5 @@
-import { type LoaderFunctionArgs, type MetaArgs } from "@shopify/remix-oxygen";
-import { useLoaderData } from "@remix-run/react";
+import { type LoaderFunctionArgs } from "@shopify/remix-oxygen";
+import { type MetaArgs, useLoaderData } from "react-router";
 import { PageTitle } from "~/components/page-title";
 import type { RootLoader } from "~/root";
 import { generateMeta } from "~/lib/meta";

@@ -1,4 +1,4 @@
-import { useRouteLoaderData } from "@remix-run/react";
+import { useRouteLoaderData } from "react-router";
 import type { loader as rootLoader } from "~/root";
 import { isMagicHidden } from "./show-the-magic";
 

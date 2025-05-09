@@ -1,6 +1,6 @@
-// @ts-expect-error - Virtual entry point for the app
+// Virtual entry point for the app
 // eslint-disable-next-line import/no-unresolved
-import * as remixBuild from "virtual:remix/server-build";
+import * as reactRouterBuild from "virtual:react-router/server-build";
 import { storefrontRedirect } from "@shopify/hydrogen";
 import { createRequestHandler } from "@shopify/remix-oxygen";
 import { createAppLoadContext } from "~/lib/context";
@@ -26,7 +26,8 @@ export default {
        * Hydrogen's Storefront client to the loader context.
        */
       const handleRequest = createRequestHandler({
-        build: remixBuild,
+        // @ts-expect-error TODO: fix this before merge
+        build: { ...reactRouterBuild, mode: process.env.NODE_ENV },
         mode: process.env.NODE_ENV,
         getLoadContext: () => appLoadContext,
       });

@@ -1,4 +1,4 @@
-import { redirect } from "@remix-run/react";
+import { redirect } from "react-router";
 import { type CollectionQueryVariables } from "storefrontapi.generated";
 import { type ProductFilter } from "@shopify/hydrogen/storefront-api-types";
 import {

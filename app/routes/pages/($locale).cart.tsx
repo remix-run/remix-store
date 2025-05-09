@@ -1,4 +1,4 @@
-import { useRouteLoaderData, type MetaArgs } from "@remix-run/react";
+import { useRouteLoaderData, type MetaArgs } from "react-router";
 import type { CartQueryDataReturn } from "@shopify/hydrogen";
 import { CartForm, Money, useOptimisticCart } from "@shopify/hydrogen";
 import { data, type ActionFunctionArgs } from "@shopify/remix-oxygen";

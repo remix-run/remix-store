@@ -29,6 +29,8 @@ export default [
       "**/*.graphql.d.ts",
       "**/*.graphql.ts",
       "**/*.generated.d.ts",
+      ".react-router",
+      "coverage",
     ],
   },
   ...fixupConfigRules(

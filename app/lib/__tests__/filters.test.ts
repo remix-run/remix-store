@@ -1,4 +1,4 @@
-import { redirect } from "@remix-run/react";
+import { redirect } from "react-router";
 import { getFilterQueryVariables } from "~/lib/filters/query-variables.server";
 
 describe("filters", () => {

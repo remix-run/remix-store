@@ -1,6 +1,6 @@
-import { flatRoutes } from "@remix-run/fs-routes";
+import { flatRoutes } from "@react-router/fs-routes";
 import { hydrogenRoutes } from "@shopify/hydrogen";
-import { prefix, route, type RouteConfig } from "@remix-run/route-config";
+import { prefix, route, type RouteConfig } from "@react-router/dev/routes";
 
 const routes = [
   ...(await hydrogenRoutes(

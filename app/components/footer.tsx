@@ -1,4 +1,4 @@
-import { Await, Link } from "@remix-run/react";
+import { Await, Link } from "react-router";
 import type { FooterQuery } from "storefrontapi.generated";
 import { useRelativeUrl } from "~/lib/use-relative-url";
 import { RemixLogo } from "~/components/remix-logo";

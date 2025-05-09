@@ -1,10 +1,6 @@
 import React, { useRef } from "react";
 import { CartForm, type OptimisticCartLine } from "@shopify/hydrogen";
-import {
-  Link,
-  type FetcherWithComponents,
-  type LinkProps,
-} from "@remix-run/react";
+import { Link, type FetcherWithComponents, type LinkProps } from "react-router";
 import { Image as HydrogenImage } from "@shopify/hydrogen";
 import { Button } from "~/components/ui/button";
 import { Icon } from "~/components/icon";

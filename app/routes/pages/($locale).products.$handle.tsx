@@ -1,12 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useLayoutEffect } from "~/lib/hooks";
 import { data, type LoaderFunctionArgs } from "@shopify/remix-oxygen";
-import {
-  Link,
-  useLoaderData,
-  type MetaArgs,
-  useFetcher,
-} from "@remix-run/react";
+import { Link, useLoaderData, type MetaArgs, useFetcher } from "react-router";
 import type { ProductFragment } from "storefrontapi.generated";
 import {
   type OptimisticCartLineInput,

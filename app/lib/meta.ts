@@ -1,4 +1,4 @@
-import type { MetaDescriptor } from "@remix-run/react";
+import type { MetaDescriptor } from "react-router";
 
 type MetaOptions = {
   title?: string;

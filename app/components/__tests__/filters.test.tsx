@@ -1,11 +1,11 @@
 import { render, screen } from "@testing-library/react";
-import { createRemixStub } from "@remix-run/testing";
+import { createRoutesStub } from "react-router";
 import { HiddenFilterInputs } from "~/components/filters";
 
 function createRemixStubWithHiddenFilterInputs(
   props: Parameters<typeof HiddenFilterInputs>[0],
 ) {
-  return createRemixStub([
+  return createRoutesStub([
     {
       path: "/",
       Component: () => <HiddenFilterInputs {...props} />,

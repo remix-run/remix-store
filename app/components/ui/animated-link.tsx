@@ -1,4 +1,4 @@
-import { Link, type LinkProps } from "@remix-run/react";
+import { Link, type LinkProps } from "react-router";
 import { cn } from "~/lib/cn";
 import { Icon } from "~/components/icon";
 import { cva, type VariantProps } from "class-variance-authority";

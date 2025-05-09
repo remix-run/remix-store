@@ -1,5 +1,5 @@
-import type { NavLinkProps } from "@remix-run/react";
-import { Link, NavLink } from "@remix-run/react";
+import type { NavLinkProps } from "react-router";
+import { Link, NavLink } from "react-router";
 import {
   type CartViewPayload,
   Money,

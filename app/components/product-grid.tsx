@@ -1,4 +1,4 @@
-import { Await, Link } from "@remix-run/react";
+import { Await, Link } from "react-router";
 import { Image as HydrogenImage, Money } from "@shopify/hydrogen";
 import { clsx } from "clsx";
 import { Suspense } from "react";
