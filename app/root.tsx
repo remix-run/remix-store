@@ -1,5 +1,9 @@
 import { useNonce, getShopAnalytics, Analytics } from "@shopify/hydrogen";
-import { data, type LoaderFunctionArgs } from "@shopify/remix-oxygen";
+import {
+  data,
+  type LoaderFunctionArgs,
+  type MetaFunction,
+} from "@shopify/remix-oxygen";
 import {
   Links,
   Meta,
@@ -218,6 +222,14 @@ export function Layout({ children }: { children?: React.ReactNode }) {
 export default function App() {
   return <Outlet />;
 }
+
+export const meta: MetaFunction = ({ error }) => {
+  const title =
+    isRouteErrorResponse(error) && error.status === 404
+      ? "Not Found"
+      : "Something went wrong";
+  return [{ title }];
+};
 
 export function ErrorBoundary() {
   const error = useRouteError();

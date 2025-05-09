@@ -12,10 +12,10 @@ import { AnimatedLinkSpread } from "~/components/ui/animated-link";
 import { Icon } from "~/components/icon";
 
 export function meta({ matches }: MetaArgs<undefined, { root: RootLoader }>) {
-  const { siteUrl } = matches[0].data;
+  const { siteUrl, cart } = matches[0].data;
 
   return generateMeta({
-    title: "The Remix Store | Cart",
+    title: cart?.totalQuantity ? `Cart (${cart?.totalQuantity})` : "Cart",
     description: "View your shopping cart and checkout",
     url: siteUrl,
   });
