@@ -13,6 +13,12 @@ export default async function handleRequest(
 ) {
   const { nonce, header, NonceProvider } = createContentSecurityPolicy({
     fontSrc: ["'self'", "https://cdn.shopify.com"],
+    imgSrc: [
+      "'self'",
+      "data:",
+      "https://cdn.shopify.com",
+      context.env.PUBLIC_STORE_DOMAIN,
+    ],
     defaultSrc: [
       "'self'",
       "https://cdn.shopify.com",

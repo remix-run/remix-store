@@ -1,6 +1,10 @@
 import React, { useRef } from "react";
-import { CartForm, Money, type OptimisticCartLine } from "@shopify/hydrogen";
-import { Link, type FetcherWithComponents } from "@remix-run/react";
+import { CartForm, type OptimisticCartLine } from "@shopify/hydrogen";
+import {
+  Link,
+  type FetcherWithComponents,
+  type LinkProps,
+} from "@remix-run/react";
 import { Image as HydrogenImage } from "@shopify/hydrogen";
 import { Button } from "~/components/ui/button";
 import { Icon } from "~/components/icon";
@@ -12,6 +16,7 @@ import { clsx } from "clsx";
 import { cn } from "~/lib/cn";
 
 import type { CartApiQueryFragment } from "storefrontapi.generated";
+import { AnimatedLinkSpread } from "./ui/animated-link";
 
 export function CartHeader({
   totalQuantity,
@@ -35,56 +40,27 @@ export function CartHeader({
 export function CheckoutLink({
   to,
   disabled = false,
-  className,
-  onClick,
   ...props
 }: {
   to: string;
   disabled?: boolean;
-} & Omit<React.ComponentProps<"a">, "href" | "children">) {
+} & Omit<LinkProps, "to" | "children">) {
   return (
-    <a
-      href={to}
-      className={cn(
-        "group flex w-full items-center justify-center rounded-[54px] bg-white px-6 py-4 text-xl font-semibold text-black no-underline outline-none ring-inset",
-        disabled
-          ? "cursor-not-allowed bg-white/70 text-black/60"
-          : "hover:bg-blue-brand focus-visible:bg-blue-brand transition-colors duration-300 hover:text-white hover:ring hover:ring-white focus-visible:text-white focus-visible:ring focus-visible:ring-white",
-        className,
+    <AnimatedLinkSpread to={to} {...props}>
+      {disabled ? (
+        <span>Updating cart...</span>
+      ) : (
+        <>
+          <span>Check out</span>
+          <Icon
+            name="fast-forward"
+            className="size-8"
+            fill="currentColor"
+            aria-hidden="true"
+          />
+        </>
       )}
-      aria-disabled={disabled}
-      onClick={(e) => {
-        if (disabled) {
-          e.preventDefault();
-          return;
-        }
-        if (onClick) {
-          onClick(e);
-        }
-      }}
-      {...props}
-    >
-      <div
-        className={clsx(
-          "flex h-8 w-0 min-w-fit items-center justify-between gap-2.5 transition-[width] duration-300 ease-in-out",
-          !disabled && "group-hover:w-full group-focus-visible:w-full",
-        )}
-      >
-        {disabled ? (
-          <span>Updating cart...</span>
-        ) : (
-          <>
-            <span>Check out</span>
-            <Icon
-              name="fast-forward"
-              className="size-8"
-              fill="currentColor"
-              aria-hidden="true"
-            />
-          </>
-        )}
-      </div>
-    </a>
+    </AnimatedLinkSpread>
   );
 }
 

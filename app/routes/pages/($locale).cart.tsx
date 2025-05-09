@@ -7,6 +7,9 @@ import { generateMeta } from "~/lib/meta";
 import { PageTitle } from "~/components/page-title";
 import { CartHeader, CartLineItem, CheckoutLink } from "~/components/cart";
 import { clsx } from "clsx";
+import { MatrixText } from "~/components/matrix-text";
+import { AnimatedLinkSpread } from "~/components/ui/animated-link";
+import { Icon } from "~/components/icon";
 
 export function meta({ matches }: MetaArgs<undefined, { root: RootLoader }>) {
   const { siteUrl } = matches[0].data;
@@ -104,6 +107,38 @@ export default function Cart() {
   let subtotalAmount = cart.cost?.subtotalAmount;
   let checkoutUrl = cart.checkoutUrl;
   let isOptimistic = Boolean(cart.isOptimistic);
+
+  // Note -- this empty cart state is the same as the root ErrorBoundary -- if we propagate it again it's probably a good time to turn it into a component
+  if (lines.length === 0) {
+    return (
+      <div className="flex h-screen flex-col items-center justify-center pt-[140px] pb-[140px] md:h-min md:pt-[200px] md:pb-[240]">
+        <MatrixText
+          // FIXME: Need a "cart" option
+          text={"500"}
+        />
+        <div className="flex flex-col items-center gap-9 md:gap-12">
+          <div className="flex flex-col items-center gap-3 md:gap-6">
+            <h1 className="font-title text-3xl font-black tracking-[-0.2em] uppercase md:text-5xl md:tracking-[-0.2em]">
+              No items in cart
+            </h1>
+            <p className="text-sm tracking-tight md:text-base md:tracking-tight">
+              Please check the URL and try again -- you may be wondering why
+              there is a 500 👆 -- we should probably fix that
+            </p>
+          </div>
+          <AnimatedLinkSpread to="/collections/all" className="w-60">
+            <Icon
+              name="cart"
+              className="size-8"
+              fill="currentColor"
+              aria-hidden="true"
+            />
+            <span>Shop</span>
+          </AnimatedLinkSpread>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <main>
