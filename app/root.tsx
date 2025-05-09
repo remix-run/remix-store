@@ -244,15 +244,13 @@ export function ErrorBoundary() {
           </p>
         </div>
         <AnimatedLinkSpread to="/" className="w-60">
-          <>
-            <Icon
-              name="fast-forward"
-              className="size-8 rotate-180"
-              fill="currentColor"
-              aria-hidden="true"
-            />
-            <span>Back Home</span>
-          </>
+          <Icon
+            name="fast-forward"
+            className="size-8 rotate-180"
+            fill="currentColor"
+            aria-hidden="true"
+          />
+          <span>Back Home</span>
         </AnimatedLinkSpread>
       </div>
     </div>
