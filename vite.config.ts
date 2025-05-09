@@ -3,16 +3,13 @@ import { hydrogen } from "@shopify/hydrogen/vite";
 import { oxygen } from "@shopify/mini-oxygen/vite";
 import tailwindcss from "@tailwindcss/vite";
 import { iconsSpritesheet } from "vite-plugin-icons-spritesheet";
-import { vitePlugin as remix } from "@remix-run/dev";
+import { reactRouter } from "@react-router/dev/vite";
 import tsconfigPaths from "vite-tsconfig-paths";
 
-declare module "@remix-run/server-runtime" {
-  interface Future {
-    v3_singleFetch: true;
-  }
-}
-
 export default defineConfig({
+  optimizeDeps: {
+    force: true,
+  },
   plugins: [
     hydrogen(),
     oxygen(),
@@ -26,19 +23,7 @@ export default defineConfig({
       iconNameTransformer: (name) =>
         name.charAt(0).toLowerCase() + name.slice(1),
     }),
-    remix({
-      presets: [hydrogen.v3preset()],
-      future: {
-        v3_fetcherPersist: true,
-        v3_relativeSplatPath: true,
-        v3_throwAbortReason: true,
-        v3_lazyRouteDiscovery: true,
-        v3_singleFetch: true,
-        v3_routeConfig: true,
-        unstable_optimizeDeps: true,
-      },
-    }),
-
+    reactRouter(),
     tsconfigPaths(),
   ],
   build: {
@@ -58,7 +43,7 @@ export default defineConfig({
        * Include 'example-dep' in the array below.
        * @see https://vitejs.dev/config/dep-optimization-options
        */
-      include: ["spin-delay"],
+      include: ["set-cookie-parser", "cookie", "spin-delay"],
     },
   },
 });

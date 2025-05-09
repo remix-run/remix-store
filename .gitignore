@@ -8,6 +8,6 @@ node_modules
 .shopify
 .DS_STORE
 /coverage
-
+.react-router
 
 .cursor/
