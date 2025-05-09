@@ -98,18 +98,9 @@ export async function action({ request, context }: ActionFunctionArgs) {
 export default function Cart() {
   const rootData = useRouteLoaderData<RootLoader>("root");
   let cart = useOptimisticCart(rootData?.cart);
-  // TODO: figure out the empty cart state
-  if (!cart) return null;
-
-  let totalQuantity = cart.totalQuantity || 0;
-
-  let lines = cart.lines.nodes;
-  let subtotalAmount = cart.cost?.subtotalAmount;
-  let checkoutUrl = cart.checkoutUrl;
-  let isOptimistic = Boolean(cart.isOptimistic);
 
   // Note -- this empty cart state is the same as the root ErrorBoundary -- if we propagate it again it's probably a good time to turn it into a component
-  if (lines.length === 0) {
+  if (!cart || cart.lines?.nodes?.length === 0) {
     return (
       <div className="flex h-screen flex-col items-center justify-center pt-[140px] pb-[140px] md:h-min md:pt-[200px] md:pb-[240]">
         <MatrixText
@@ -139,6 +130,13 @@ export default function Cart() {
       </div>
     );
   }
+
+  let totalQuantity = cart.totalQuantity || 0;
+
+  let lines = cart.lines.nodes;
+  let subtotalAmount = cart.cost?.subtotalAmount;
+  let checkoutUrl = cart.checkoutUrl;
+  let isOptimistic = Boolean(cart.isOptimistic);
 
   return (
     <main>
