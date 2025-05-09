@@ -1,9 +1,8 @@
-import type { AppLoadContext ,EntryContext } from "react-router";
+import type { AppLoadContext, EntryContext } from "react-router";
 import { ServerRouter } from "react-router";
 import { isbot } from "isbot";
 import { renderToReadableStream } from "react-dom/server";
 import { createContentSecurityPolicy } from "@shopify/hydrogen";
-
 
 export default async function handleRequest(
   request: Request,
