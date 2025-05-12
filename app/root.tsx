@@ -35,6 +35,7 @@ import lexendZettaBlackUrl from "/font/lexend-zetta-black.woff2?url";
 
 import "./tailwind.css";
 import { MatrixText } from "./components/matrix-text";
+import { isProduction } from "./lib/is-production.server";
 
 export type RootLoader = typeof loader;
 
@@ -103,6 +104,11 @@ export function links() {
 }
 
 export async function loader(args: LoaderFunctionArgs) {
+  // PRE-LAUNCH CHECK -- don't load any data
+  if (isProduction) {
+    return { isProduction: true };
+  }
+
   // Start fetching non-critical data without blocking time to first byte
   const deferredData = loadDeferredData(args);
 
@@ -194,27 +200,37 @@ export function Layout({ children }: { children?: React.ReactNode }) {
         <Meta />
         <Links />
       </head>
-      <body className="min-h-screen overflow-x-hidden bg-black antialiased">
-        {data ? (
-          <Analytics.Provider
-            cart={data.cart}
-            shop={data.shop}
-            consent={data.consent}
-          >
-            <AsideProvider>
-              {data.header.menu && (
-                <Navbar menu={data.header.menu} cart={data.cart} />
-              )}
-              <main>{children}</main>
-              <Footer footer={data.footer} />
-            </AsideProvider>
-          </Analytics.Provider>
+
+      {
+        // PRE-LAUNCH CHECK -- conditional render of all the extra stuff
+        data && "isProduction" in data && data.isProduction ? (
+          <body className="min-h-screen overflow-x-hidden bg-[#0A101A] antialiased">
+            {children}
+          </body>
         ) : (
-          children
-        )}
-        <ScrollRestoration nonce={nonce} />
-        <Scripts nonce={nonce} />
-      </body>
+          <body className="min-h-screen overflow-x-hidden bg-black antialiased">
+            {data && "cart" in data ? (
+              <Analytics.Provider
+                cart={data.cart}
+                shop={data.shop}
+                consent={data.consent}
+              >
+                <AsideProvider>
+                  {data.header.menu && (
+                    <Navbar menu={data.header.menu} cart={data.cart} />
+                  )}
+                  <main>{children}</main>
+                  <Footer footer={data.footer} />
+                </AsideProvider>
+              </Analytics.Provider>
+            ) : (
+              children
+            )}
+            <ScrollRestoration nonce={nonce} />
+            <Scripts nonce={nonce} />
+          </body>
+        )
+      }
     </html>
   );
 }
