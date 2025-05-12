@@ -1,6 +1,6 @@
 // Temporary production check for splash page deployment
 
-import type { useRouteLoaderData } from "@remix-run/react";
+import type { useRouteLoaderData } from "react-router";
 import type { AppLoadContext } from "@shopify/remix-oxygen";
 import type { RootLoader } from "~/root";
 
