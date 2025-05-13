@@ -112,7 +112,7 @@ let heroHeight = 1600;
 
 function Hero({ masthead, assetImages, product }: HeroDataProps) {
   const heroRef = useRef<HTMLDivElement>(null);
-  let { scrollPercentage, isJumpy } = useScrollPercentage(heroRef);
+  let scrollPercentage = useScrollPercentage(heroRef);
 
   let translateY = Math.floor(
     (heroRef.current?.offsetHeight || 0) * scrollPercentage * 0.5,
@@ -135,11 +135,7 @@ function Hero({ masthead, assetImages, product }: HeroDataProps) {
       <div
         style={{
           height: `${heroRef.current?.offsetHeight || heroHeight}px`,
-          // Disable parallax effect if jumpy scrolling is detected because it
-          // looks wonky.  Maybe we can figure out a better fix for this after
-          // the launch though?
-          // See https://github.com/remix-run/remix-store/issues/152
-          transform: !isJumpy ? `translate3d(0, ${translateY}%, 0)` : undefined,
+          transform: `translate3d(0, ${translateY}px, 0)`,
         }}
       >
         <HydrogenImage
