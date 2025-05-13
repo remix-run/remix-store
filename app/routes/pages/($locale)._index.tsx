@@ -85,24 +85,26 @@ export default function Homepage() {
   return (
     <>
       <Hero {...hero} />
-      {firstEntry && (
-        <LookbookEntry key={firstEntry.image.id} {...firstEntry} />
-      )}
-      <LoadRunner />
-      {restEntries.map((entry) => (
-        <LookbookEntry key={entry.image.id} {...entry} />
-      ))}
-      <div className="bg-linear-[180deg,#2d2d38,var(--color-black)] py-9 md:py-12 lg:py-16">
-        <ProductGrid
-          products={initialProducts}
-          loadingProductCount={expectedNumberOfProducts}
-          loadMoreProducts={{
-            collectionHandle,
-            hasNextPage: productsPageInfo.hasNextPage,
-            endCursor: productsPageInfo.endCursor ?? undefined,
-            numberOfProducts: expectedNumberOfProducts,
-          }}
-        />
+      <div className="relative">
+        {firstEntry && (
+          <LookbookEntry key={firstEntry.image.id} {...firstEntry} />
+        )}
+        <LoadRunner />
+        {restEntries.map((entry) => (
+          <LookbookEntry key={entry.image.id} {...entry} />
+        ))}
+        <div className="bg-linear-[180deg,#2d2d38,var(--color-black)] py-9 md:py-12 lg:py-16">
+          <ProductGrid
+            products={initialProducts}
+            loadingProductCount={expectedNumberOfProducts}
+            loadMoreProducts={{
+              collectionHandle,
+              hasNextPage: productsPageInfo.hasNextPage,
+              endCursor: productsPageInfo.endCursor ?? undefined,
+              numberOfProducts: expectedNumberOfProducts,
+            }}
+          />
+        </div>
       </div>
     </>
   );
