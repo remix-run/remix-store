@@ -135,7 +135,8 @@ function Hero({ masthead, assetImages, product }: HeroDataProps) {
       <div
         style={{
           height: `${heroRef.current?.offsetHeight || heroHeight}px`,
-          transform: `translate3d(0, ${translateY}px, 0)`,
+          position: "fixed",
+          transform: `translate3d(0, -${translateY}px, 0)`,
         }}
       >
         <HydrogenImage
