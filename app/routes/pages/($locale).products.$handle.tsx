@@ -102,63 +102,13 @@ export async function loader(args: LoaderFunctionArgs) {
 export default function Product() {
   let { menu, product } = useLoaderData<typeof loader>();
 
-  // Optimistically selects a variant with given available variant information
-  const selectedVariant = useOptimisticVariant(
-    product.selectedOrFirstAvailableVariant,
-    getAdjacentAndFirstAvailableVariants(product),
-  );
-
-  // Sets the search param to the selected variant without navigation
-  // only when no search params are set in the url
-  useLayoutEffect(() => {
-    if (window.location.search !== "") return;
-
-    const searchParams = new URLSearchParams(
-      mapSelectedProductOptionToObject(selectedVariant.selectedOptions || []),
-    );
-
-    if (searchParams.toString() === "") return;
-
-    window.history.replaceState(
-      {},
-      "",
-      `${location.pathname}?${searchParams.toString()}`,
-    );
-  }, [selectedVariant.selectedOptions]);
-
-  // Get the product options array
-  const productOptions = getProductOptions({
-    ...product,
-    selectedOrFirstAvailableVariant: selectedVariant,
-  });
-
   return (
     <div className="relative mt-(--header-height) flex min-h-[90vh] flex-col gap-4 overflow-x-clip md:flex-row md:justify-between md:gap-8 md:px-4 lg:px-9">
       <CollectionsMenu menu={menu} />
 
       <ProductImages images={product?.images.nodes} />
 
-      <ProductMain
-        selectedVariant={selectedVariant}
-        product={product}
-        productOptions={productOptions}
-      />
-
-      <Analytics.ProductView
-        data={{
-          products: [
-            {
-              id: product.id,
-              title: product.title,
-              price: selectedVariant?.price.amount || "0",
-              vendor: product.vendor,
-              variantId: selectedVariant?.id || "",
-              variantTitle: selectedVariant?.title || "",
-              quantity: 1,
-            },
-          ],
-        }}
-      />
+      <ProductMain product={product} />
     </div>
   );
 }
@@ -198,60 +148,118 @@ function MenuLink({ to, children }: { to: string; children: React.ReactNode }) {
   );
 }
 
-function ProductMain({
-  selectedVariant,
-  product,
-  productOptions,
-}: {
-  product: ProductFragment;
-  selectedVariant: NonNullable<
-    ProductFragment["selectedOrFirstAvailableVariant"]
-  >;
-  productOptions: MappedProductOptions[];
-}) {
+function ProductMain({ product }: { product: ProductFragment }) {
   let { title, category, technicalDescription } = product;
   const mainDescription = product.customDescription?.value;
 
+  const { productOptions, selectedVariant } = useProductOptions(product);
+
   return (
-    <div className="static top-(--header-height) mx-4 flex max-h-fit flex-col gap-6 text-white md:sticky md:mx-0 md:max-w-xl md:basis-1/3 lg:gap-9 lg:pt-32">
-      <div className="flex flex-col gap-4">
-        {category ? (
-          <p className="text-xs lg:text-base">{category?.name}</p>
-        ) : null}
-        <h1 className="min-w-max font-sans text-2xl font-bold lg:text-4xl">
-          {title}
-        </h1>
-        <ProductPrice
-          price={selectedVariant.price}
-          compareAtPrice={selectedVariant.compareAtPrice}
+    <>
+      <div className="static top-(--header-height) mx-4 flex max-h-fit flex-col gap-6 text-white md:sticky md:mx-0 md:max-w-xl md:basis-1/3 lg:gap-9 lg:pt-32">
+        <div className="flex flex-col gap-4">
+          {category ? (
+            <p className="text-xs lg:text-base">{category?.name}</p>
+          ) : null}
+          <h1 className="min-w-max font-sans text-2xl font-bold lg:text-4xl">
+            {title}
+          </h1>
+          <ProductPrice
+            price={selectedVariant.price}
+            compareAtPrice={selectedVariant.compareAtPrice}
+          />
+        </div>
+
+        <ProductForm
+          productOptions={productOptions}
+          selectedVariant={selectedVariant}
         />
-      </div>
 
-      <ProductForm
-        productOptions={productOptions}
-        selectedVariant={selectedVariant}
-      />
-
-      {mainDescription ? (
-        <RichText
-          className="rich-text text-xs lg:text-base"
-          data={mainDescription}
-        />
-      ) : null}
-      {technicalDescription ? (
-        <>
-          <h3 className="text-sm font-bold lg:text-base">
-            Technical Description
-          </h3>
-
+        {mainDescription ? (
           <RichText
             className="rich-text text-xs lg:text-base"
-            data={technicalDescription.value}
+            data={mainDescription}
           />
-        </>
-      ) : null}
-    </div>
+        ) : null}
+        {technicalDescription ? (
+          <>
+            <h3 className="text-sm font-bold lg:text-base">
+              Technical Description
+            </h3>
+
+            <RichText
+              className="rich-text text-xs lg:text-base"
+              data={technicalDescription.value}
+            />
+          </>
+        ) : null}
+      </div>
+      <Analytics.ProductView
+        data={{
+          products: [
+            {
+              id: product.id,
+              title: product.title,
+              price: selectedVariant?.price.amount || "0",
+              vendor: product.vendor,
+              variantId: selectedVariant?.id || "",
+              variantTitle: selectedVariant?.title || "",
+              quantity: 1,
+            },
+          ],
+        }}
+      />
+    </>
   );
+}
+
+/**
+ * This hook is used to get the product options and selected variant
+ * It also sets the search param to the selected variant without navigation
+ * only when there are options and no search params are set in the url
+ */
+function useProductOptions(product: ProductFragment) {
+  const { options, selectedOrFirstAvailableVariant } = product;
+
+  const hasOptions = options.length > 0;
+
+  const adjacentVariants = hasOptions
+    ? getAdjacentAndFirstAvailableVariants(product)
+    : [];
+
+  // Optimistically selects a variant with given available variant information
+  const selectedVariant = useOptimisticVariant(
+    selectedOrFirstAvailableVariant,
+    adjacentVariants,
+  );
+
+  // Sets the search param to the selected variant without navigation
+  // only when there are options and no search params are set in the url
+  useLayoutEffect(() => {
+    if (!hasOptions) return;
+    if (window.location.search !== "") return;
+
+    const searchParams = new URLSearchParams(
+      mapSelectedProductOptionToObject(selectedVariant.selectedOptions || []),
+    );
+
+    if (searchParams.toString() === "") return;
+
+    window.history.replaceState(
+      {},
+      "",
+      `${location.pathname}?${searchParams.toString()}`,
+    );
+  }, [hasOptions, selectedVariant.selectedOptions]);
+
+  const productOptions = hasOptions
+    ? getProductOptions({
+        ...product,
+        selectedOrFirstAvailableVariant: selectedVariant,
+      })
+    : [];
+
+  return { productOptions, selectedVariant };
 }
 
 function ProductForm({
@@ -263,11 +271,13 @@ function ProductForm({
 }) {
   return (
     <div className="flex flex-col gap-4 lg:flex-row lg:gap-3">
-      <div className="flex flex-col gap-4 lg:flex-auto">
-        {productOptions.map((option) => (
-          <ProductOptions key={option.name} option={option} />
-        ))}
-      </div>
+      {productOptions.length > 0 ? (
+        <div className="flex flex-col gap-4 lg:flex-auto">
+          {productOptions.map((option) => (
+            <ProductOptions key={option.name} option={option} />
+          ))}
+        </div>
+      ) : null}
 
       <AddToCartButton
         disabled={!selectedVariant || !selectedVariant.availableForSale}
