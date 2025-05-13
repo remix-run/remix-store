@@ -7,6 +7,7 @@ import {
   useState,
   useLayoutEffect as React_useLayoutEffect,
   useSyncExternalStore,
+  useRef,
 } from "react";
 
 // Taken from https://github.com/sergiodxa/remix-utils/blob/main/src/react/use-hydrated.ts#L25
@@ -71,6 +72,8 @@ export function usePrefersReducedMotion() {
  */
 export function useScrollPercentage(ref: React.RefObject<HTMLElement>) {
   let [scrollPercentage, setScrollPercentage] = useState(0);
+  let prevScrollPositionRef = useRef<number | null>(null);
+  let isJumpy = useRef(false);
   let prefersReducedMotion = usePrefersReducedMotion();
 
   useLayoutEffect(() => {
@@ -87,6 +90,18 @@ export function useScrollPercentage(ref: React.RefObject<HTMLElement>) {
         const rect = ref.current.getBoundingClientRect();
         const scrollY = window.scrollY;
         const elementTop = scrollY + rect.top;
+
+        // Detect "jumpy" scrolling scenarios (such as using an MX Master with
+        // Smooth Scrolling disabled) and let the consumer know so we can
+        // disable UI effects that don't play nice with jumpy scrolling, such
+        // as a parallax effect
+        if (prevScrollPositionRef.current == null) {
+          prevScrollPositionRef.current = scrollY;
+        } else if (!isJumpy.current) {
+          isJumpy.current =
+            Math.abs(scrollY - prevScrollPositionRef.current) > 10;
+          prevScrollPositionRef.current = scrollY;
+        }
 
         // If we've scrolled past the element, it's 0% visible
         if (scrollY >= elementTop + height) {
@@ -115,5 +130,5 @@ export function useScrollPercentage(ref: React.RefObject<HTMLElement>) {
     };
   }, [ref, prefersReducedMotion]);
 
-  return scrollPercentage;
+  return { scrollPercentage, isJumpy: isJumpy.current };
 }

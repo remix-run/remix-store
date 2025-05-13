@@ -9,7 +9,7 @@ interface PageTitleProps {
 
 export function PageTitle({ children, className }: PageTitleProps) {
   let ref = useRef<HTMLDivElement>(null);
-  let scrollPercentage = useScrollPercentage(ref);
+  let { scrollPercentage } = useScrollPercentage(ref);
   let translatePercent = Math.round(Math.min(scrollPercentage * 2, 1) * 80);
 
   return (
