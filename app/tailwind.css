@@ -1,5 +1,5 @@
 @import "tailwindcss";
-@config "../tailwind.config.ts";
+@import "tw-animate-css";
 
 @custom-variant dark (&:where(.dark, .dark *));
 
@@ -29,6 +29,7 @@
   --color-cyan-brand: #3defe9;
 
   --color-blue-brand: #3992ff;
+  --color-blue-600: #367cff;
   --color-blue-led: #c8dfea;
 
   --color-green-brand: #6bd968;
@@ -160,17 +161,6 @@
   }
 }
 
-@utility container {
-  margin-inline: auto;
-  padding-inline: 2rem;
-  @media (width >= --theme(--breakpoint-sm)) {
-    max-width: none;
-  }
-  @media (width >= 1400px) {
-    max-width: 1400px;
-  }
-}
-
 /*
   The default border color has changed to `currentColor` in Tailwind CSS v4,
   so we've added these compatibility styles to make sure everything still
@@ -187,9 +177,7 @@
   ::file-selector-button {
     border-color: var(--color-gray-200, currentColor);
   }
-}
 
-@layer base {
   @font-face {
     font-family: "Inter";
     font-weight: 100 900;
@@ -250,6 +238,10 @@
   html,
   body {
     @apply font-sans text-white;
+  }
+
+  a {
+    @apply text-white hover:text-blue-600 transition-colors duration-300 ease-in-out;
   }
 }
 

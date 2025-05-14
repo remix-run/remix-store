@@ -139,7 +139,7 @@ function MenuLink({ to, children }: { to: string; children: React.ReactNode }) {
   let { url } = useRelativeUrl(to);
   return (
     <Link
-      className="text-xs leading-5 text-white/90 transition-[color] hover:text-white lg:text-base lg:leading-6"
+      className="text-xs leading-5 text-white/90 hover:text-blue-600 lg:text-base lg:leading-6"
       to={url}
       prefetch="intent"
     >

@@ -159,10 +159,7 @@ function FooterLink({
       prefetch="intent"
       to={url}
       {...(isExternal ? { target: "_blank", rel: "noopener noreferrer" } : {})}
-      className={cn(
-        "hover:text-blue-brand no-underline transition-colors duration-300 hover:font-bold",
-        className,
-      )}
+      className={className}
     >
       {children}
     </Link>
