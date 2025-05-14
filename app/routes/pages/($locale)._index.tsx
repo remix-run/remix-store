@@ -135,9 +135,9 @@ function Hero({ masthead, assetImages, product }: HeroDataProps) {
       className="relative h-screen max-h-[1200px] overflow-hidden bg-linear-[180deg,var(--color-black),#27273B] pt-24 md:top-7 md:h-[1200px] lg:h-[1600px] lg:max-h-[1600px] 2xl:h-[1800px] 2xl:max-h-[1800px]"
     >
       <div
+        className="w-full fixed"
         style={{
           height: `${heroRef.current?.offsetHeight || heroHeight}px`,
-          position: "fixed",
           transform: `translate3d(0, -${translateY}px, 0)`,
         }}
       >
@@ -269,7 +269,7 @@ function HeroText({
 
 function LookbookEntry({ image, product }: LookbookEntryProps) {
   return (
-    <div className="relative h-[640px] md:h-[800px]">
+    <div className="relative h-[640px] md:h-[800px] bg-black">
       <div className="absolute inset-0">
         <HydrogenImage
           sizes="100vw"

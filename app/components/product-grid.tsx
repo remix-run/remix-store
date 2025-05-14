@@ -98,7 +98,7 @@ function ProductGridItem({ product }: ProductGridItemProps) {
         <Link
           prefetch="intent"
           to={`/products/${handle}`}
-          className="font-bold no-underline hover:text-white"
+          className="font-bold hover:text-white"
         >
           <span className="absolute inset-0" />
           {title}
