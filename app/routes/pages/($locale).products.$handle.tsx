@@ -26,7 +26,11 @@ import { Icon } from "~/components/icon";
 import { ProductImages } from "~/components/product-images";
 import { ProductPrice } from "~/components/product-grid";
 import { generateMeta } from "~/lib/meta";
-import { getProductData } from "~/lib/data/product.server";
+import {
+  getProductData,
+  getProductMenu,
+  type MenuItem,
+} from "~/lib/data/product.server";
 import { useRelativeUrl } from "~/lib/use-relative-url";
 import { cva } from "class-variance-authority";
 import { cn } from "~/lib/cn";
@@ -71,25 +75,7 @@ export async function loader(args: LoaderFunctionArgs) {
     },
   });
 
-  // Not sure if this will always be the same as the footer menu
-  let menuPromise = storefront
-    .query(FOOTER_QUERY, {
-      cache: storefront.CacheLong(),
-    })
-    .then((data) => {
-      let menu: MenuItem[] = [];
-      if (!data.menu) {
-        return menu;
-      }
-      for (let item of data.menu.items) {
-        if (!item.url) continue;
-        menu.push({
-          label: item.title,
-          to: item.url,
-        });
-      }
-      return menu;
-    });
+  let menuPromise = getProductMenu(storefront);
 
   let [menu, product] = await Promise.all([menuPromise, productPromise]);
 
@@ -112,11 +98,6 @@ export default function Product() {
     </div>
   );
 }
-
-type MenuItem = {
-  label: string;
-  to: string;
-};
 
 function CollectionsMenu({ menu }: { menu: MenuItem[] }) {
   return (

@@ -1,6 +1,7 @@
 import { Storefront } from "@shopify/hydrogen";
 
 import type { ProductQueryVariables } from "storefrontapi.generated";
+import { PRODUCT_SIDEBAR_MENU_QUERY } from "../fragments";
 
 export async function getProductData(
   storefront: Storefront,
@@ -20,6 +21,32 @@ export async function getProductData(
   }
 
   return product;
+}
+
+export type MenuItem = {
+  label: string;
+  to: string;
+};
+
+export async function getProductMenu(storefront: Storefront) {
+  let data = await storefront.query(PRODUCT_SIDEBAR_MENU_QUERY, {
+    cache: storefront.CacheLong(),
+  });
+
+  let menu: MenuItem[] = [];
+
+  if (!data.menu) {
+    return menu;
+  }
+
+  for (let item of data.menu.items) {
+    if (!item.url) continue;
+    menu.push({
+      label: item.title,
+      to: item.url,
+    });
+  }
+  return menu;
 }
 
 export const PRODUCT_IMAGE_FRAGMENT = `#graphql

@@ -187,16 +187,19 @@ export const FOOTER_QUERY = `#graphql
     $country: CountryCode
     $language: LanguageCode
   ) @inContext(language: $language, country: $country) {
-    # remixCommunity: menu(handle: "remix-community") {
-    #   ...Menu
-    # }
-    # remixResources: menu(handle: "remix-resources") {
-    #   ...Menu
-    # }
-    # hydrogenResources: menu(handle: "hydrogen-resources") {
-    #   ...Menu
-    # }
     menu(handle: "footer") {
+      ...Menu
+    }
+  }
+  ${MENU_FRAGMENT}
+` as const;
+
+export const PRODUCT_SIDEBAR_MENU_QUERY = `#graphql
+  query ProductSidebarMenu(
+    $country: CountryCode
+    $language: LanguageCode
+  ) @inContext(language: $language, country: $country) {
+    menu(handle: "product-sidebar-menu") {
       ...Menu
     }
   }
