@@ -129,7 +129,7 @@ export default function Cart() {
               fill="currentColor"
               aria-hidden="true"
             />
-            <span>Shop</span>
+            <span>Shop All</span>
           </AnimatedLinkSpread>
         </div>
       </div>
