@@ -181,7 +181,7 @@
 
   html,
   body {
-    @apply font-sans text-white;
+    @apply font-sans text-white scheme-dark;
   }
 
   a {

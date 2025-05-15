@@ -110,7 +110,7 @@ function CartButton({ cart: originalCart }: Pick<NavbarProps, "cart">) {
         </PopoverTrigger>
         <PopoverContent
           align="end"
-          className="bg-blue-brand max-h-[80vh] max-w-min min-w-[380px] overflow-y-auto rounded-t-4xl rounded-b-[2.625rem] text-white"
+          className="bg-blue-brand max-w-min min-w-[380px] rounded-t-4xl rounded-b-[2.625rem] text-white"
         >
           <div className="flex items-center justify-between px-5 py-3">
             <CartHeader totalQuantity={totalQuantity} />
@@ -124,7 +124,7 @@ function CartButton({ cart: originalCart }: Pick<NavbarProps, "cart">) {
               </button>
             </PopoverClose>
           </div>
-          <ul className="flex flex-col gap-4 px-5 pt-4 pb-44">
+          <ul className="flex flex-col gap-4 px-5 py-4 max-h-[60vh] overflow-y-scroll">
             {lines.map((line) => (
               <CartLineItem
                 key={line.id}
@@ -135,7 +135,7 @@ function CartButton({ cart: originalCart }: Pick<NavbarProps, "cart">) {
               />
             ))}
           </ul>
-          <div className="bg-blue-brand absolute bottom-0 flex w-full flex-col items-start gap-3 rounded-b-[2.625rem] p-4">
+          <div className="bg-blue-brand flex w-full flex-col items-start gap-3 rounded-b-[2.625rem] p-4">
             <div className="flex w-full flex-col items-start gap-1">
               <div className="flex w-full items-center justify-between">
                 <p className="font-title tracking-tightest text-base font-black uppercase">

@@ -8,7 +8,7 @@ import tsconfigPaths from "vite-tsconfig-paths";
 
 export default defineConfig({
   optimizeDeps: {
-    force: true,
+    include: ["embla-carousel-react"],
   },
   plugins: [
     hydrogen(),
