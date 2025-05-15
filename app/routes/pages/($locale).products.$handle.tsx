@@ -269,7 +269,7 @@ function ProductForm({
   selectedVariant: ProductFragment["selectedOrFirstAvailableVariant"];
 }) {
   return (
-    <div className="flex flex-col gap-4 lg:flex-row lg:gap-3">
+    <div className="flex flex-col gap-4 lg:flex-row lg:gap-3 lg:min-w-[450px]">
       {productOptions.length > 0 ? (
         <div className="flex flex-col gap-4 lg:flex-auto">
           {productOptions.map((option) => (
@@ -306,7 +306,9 @@ function ProductOptions({ option }: { option: MappedProductOptions }) {
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <button className="focus-visible:ring-blue-brand flex w-full items-center justify-between rounded-[54px] border-[3px] border-white px-6 py-4 text-xl font-semibold outline-none focus-visible:ring-2 data-[state=open]:[&_svg]:-rotate-180">
-            <span>{selectedValueName || option.name}</span>
+            <span className="min-w-fit">
+              {selectedValueName || option.name}
+            </span>
             <Icon
               name="chevron-down"
               className="ml-2 size-6 transition-transform duration-200 ease-in"
