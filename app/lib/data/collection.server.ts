@@ -26,51 +26,32 @@ export async function getCollectionQuery(
   storefront: Storefront,
   { variables }: { variables: CollectionQueryVariables },
 ): Promise<CollectionData> {
-  try {
-    let { collection } = await storefront.query(COLLECTION_QUERY, {
-      variables,
+  let { collection } = await storefront.query(COLLECTION_QUERY, {
+    variables,
+  });
+
+  if (!collection) {
+    throw new Response("Collection not found", {
+      status: 404,
     });
-
-    if (!collection) {
-      throw new Error("Collection not found");
-    }
-
-    let products = collection.products.nodes;
-
-    return {
-      ...collection,
-      productsPageInfo: collection.products.pageInfo,
-      products: products.map((fullProductNode) => {
-        const { priceRange, ...product } = fullProductNode;
-        return {
-          id: product.id,
-          handle: product.handle,
-          title: product.title,
-          images: product.images,
-          price: priceRange.maxVariantPrice,
-        };
-      }),
-    };
-  } catch (error) {
-    console.error(error);
-    // TODO: handle errors/missing data better
-    return {
-      id: "",
-      handle: "",
-      title: "",
-      description: "",
-      products: [],
-      seo: {
-        title: "",
-      },
-      productsPageInfo: {
-        hasPreviousPage: false,
-        hasNextPage: false,
-        endCursor: "",
-        startCursor: "",
-      },
-    };
   }
+
+  let products = collection.products.nodes;
+
+  return {
+    ...collection,
+    productsPageInfo: collection.products.pageInfo,
+    products: products.map((fullProductNode) => {
+      const { priceRange, ...product } = fullProductNode;
+      return {
+        id: product.id,
+        handle: product.handle,
+        title: product.title,
+        images: product.images,
+        price: priceRange.maxVariantPrice,
+      };
+    }),
+  };
 }
 
 export const COLLECTION_PRODUCT_FRAGMENT = `#graphql

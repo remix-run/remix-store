@@ -51,12 +51,6 @@ export async function loader({ params, request, context }: LoaderFunctionArgs) {
     },
   });
 
-  if (!collection) {
-    throw new Response("Collection not found", {
-      status: 404,
-    });
-  }
-
   return data({ collection });
 }
 
