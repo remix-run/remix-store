@@ -1,6 +1,5 @@
 import { Link, Outlet, useLoaderData } from "react-router";
 import type { LoaderFunctionArgs, MetaArgs } from "react-router";
-import { Button } from "~/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -30,13 +29,13 @@ export function meta({
   });
 }
 
-export async function loader({ request, context }: LoaderFunctionArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
   // TODO: turn this on only for the most prodest of environments
-  // if (process.env.NODE_ENV === "production") {
-  //   throw new Response("Not found", { status: 404 });
-  // }
+  if (process.env.NODE_ENV === "production") {
+    throw new Response("Not found", { status: 404 });
+  }
 
-  const componentFiles = import.meta.glob("../routes/components.*.tsx", {
+  const componentFiles = import.meta.glob("../pages/components.*.tsx", {
     eager: true,
   });
 
@@ -64,9 +63,9 @@ export default function Components() {
         <div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button size="sm" className="px-4 lowercase">
+              <button className="px-4 py-2 text-2xl lowercase border border-white rounded-xl bg-white/10 text-white font-medium shadow-sm transition hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-blue-400">
                 {selectedComponent ? selectedComponent : "select a component"}
-              </Button>
+              </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
               {componentRoutes.map((route) => (

@@ -11,15 +11,12 @@ import {
   isRouteErrorResponse,
   type ShouldRevalidateFunction,
   type MetaFunction,
-  Link,
   type LoaderFunctionArgs,
   redirect,
   data,
 } from "react-router";
 import { FOOTER_QUERY, HEADER_QUERY } from "~/lib/fragments";
-import { clsx } from "clsx";
 import { AnimatedLinkSpread } from "~/components/ui/animated-link";
-import { AsideProvider } from "~/components/ui/aside";
 import { Navbar } from "~/components/navbar";
 import { Footer } from "~/components/footer";
 import { Icon } from "~/components/icon";
@@ -210,13 +207,11 @@ export function Layout({ children }: { children?: React.ReactNode }) {
                 shop={data.shop}
                 consent={data.consent}
               >
-                <AsideProvider>
-                  {data.header.menu && (
-                    <Navbar menu={data.header.menu} cart={data.cart} />
-                  )}
-                  <main>{children}</main>
-                  <Footer footer={data.footer} />
-                </AsideProvider>
+                {data.header.menu && (
+                  <Navbar menu={data.header.menu} cart={data.cart} />
+                )}
+                <main>{children}</main>
+                <Footer footer={data.footer} />
               </Analytics.Provider>
             ) : (
               children

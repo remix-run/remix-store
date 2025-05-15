@@ -1,14 +1,11 @@
-import React, { useRef } from "react";
 import { CartForm, type OptimisticCartLine } from "@shopify/hydrogen";
-import { Link, type FetcherWithComponents, type LinkProps } from "react-router";
+import { Link, type LinkProps } from "react-router";
 import { Image as HydrogenImage } from "@shopify/hydrogen";
-import { Button } from "~/components/ui/button";
 import { Icon } from "~/components/icon";
 import {
   ProductPrice,
   type ProductPriceProps,
 } from "~/components/product-grid";
-import { clsx } from "clsx";
 import { cn } from "~/lib/cn";
 
 import type { CartApiQueryFragment } from "storefrontapi.generated";
@@ -236,106 +233,5 @@ function CartLineRemoveButton({
     >
       {children}
     </CartForm>
-  );
-}
-
-// Keeping this discount code logic because we might want to add it back
-
-function CartDiscounts({
-  discountCodes,
-}: {
-  discountCodes?: CartApiQueryFragment["discountCodes"];
-}) {
-  const inputRef = useRef<HTMLInputElement>(null);
-  const codeEntered = Boolean(inputRef.current?.value);
-  const codes: string[] =
-    discountCodes
-      ?.filter((discount) => discount.applicable)
-      ?.map(({ code }) => code) || [];
-
-  const codeApplied = Boolean(codes.length);
-  const codeEnteredInvalid = codeEntered && !codeApplied;
-
-  return (
-    <div className={clsx(codeEnteredInvalid ? "pt-8 pb-2" : "py-8")}>
-      {/* Have existing discount, display it with a remove option */}
-      {Boolean(codes.length) && (
-        <div className="flex justify-between">
-          <p className="rounded-input text-blue-brand w-full bg-neutral-200 p-5 leading-5 dark:bg-neutral-800">
-            Promo code applied
-          </p>
-        </div>
-      )}
-
-      {/* Show an input to apply a discount */}
-      {!codes.length && (
-        <UpdateDiscountForm discountCodes={codes}>
-          <div className="rounded-input flex h-[60px] w-full justify-between bg-neutral-200 pl-5 dark:bg-neutral-800">
-            <input
-              type="text"
-              ref={inputRef}
-              name="discountCode"
-              placeholder="Enter promo code"
-              className={clsx(
-                "font-sm lh-5 my-5 bg-neutral-200 font-mono leading-5 font-bold uppercase dark:bg-neutral-800",
-                "focus:border-transparent focus:ring-0 focus:outline-hidden",
-                "placeholder:font-thin placeholder:normal-case",
-                "w-full",
-              )}
-            />
-            <div className="pt-[1px] pr-[1px]">
-              <Button type="submit" className="w-max uppercase">
-                apply code
-              </Button>
-            </div>
-          </div>
-        </UpdateDiscountForm>
-      )}
-
-      <span
-        className={clsx(
-          "text-red-brand mt-2 text-sm",
-          codeEnteredInvalid ? "visible" : "hidden",
-        )}
-      >
-        The code you entered is invalid or has expired
-      </span>
-    </div>
-  );
-}
-
-function UpdateDiscountForm({
-  discountCodes,
-  children,
-}: {
-  discountCodes?: string[];
-  children: React.ReactNode;
-}) {
-  return (
-    <CartForm
-      route="/cart"
-      action={CartForm.ACTIONS.DiscountCodesUpdate}
-      inputs={{
-        discountCodes: discountCodes || [],
-      }}
-    >
-      {({ data }: FetcherWithComponents<any>) => {
-        return children;
-      }}
-    </CartForm>
-  );
-}
-
-function CheckoutButton({ checkoutUrl }: { checkoutUrl?: string }) {
-  if (!checkoutUrl) return null;
-
-  return (
-    <div className="flex">
-      <Button intent="primary" size="lg" asChild>
-        <a href={checkoutUrl} target="_self">
-          <p>Continue to checkout</p>
-        </a>
-      </Button>
-    </div>
   );
 }

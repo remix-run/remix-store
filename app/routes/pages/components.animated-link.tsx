@@ -4,7 +4,7 @@ import { Fragment } from "react";
 
 export default function AnimatedLinks() {
   return (
-    <div className="bg-neutral-100 dark:bg-neutral-700">
+    <div>
       <Section title="AnimatedLink Component" className="mb-8">
         <p className="mb-6 text-lg">
           The AnimatedLink component provides three animation types with
