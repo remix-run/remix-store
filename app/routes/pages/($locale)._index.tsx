@@ -289,7 +289,7 @@ function LookbookEntry({ image, product }: LookbookEntryProps) {
           animationType="icon"
           iconName="fast-forward"
           to={`/products/${product.handle}`}
-          className="absolute bottom-9 left-9"
+          className="absolute bottom-5 left-5 md:bottom-9 md:left-9"
         >
           <span>{product.title}</span>
           <span className="text-[28px]">·</span>
@@ -302,7 +302,7 @@ function LookbookEntry({ image, product }: LookbookEntryProps) {
           iconName="mail"
           // TODO: Add proper signup link
           to="https://rmx.as/newsletter"
-          className="absolute bottom-9 left-9"
+          className="absolute bottom-5 left-5 md:bottom-9 md:left-9"
         >
           Coming Soon
         </AnimatedLink>
