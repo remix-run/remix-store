@@ -28,8 +28,10 @@
 
   --color-cyan-brand: #3defe9;
 
+  --color-blue-400: #54bbff;
   --color-blue-brand: #3992ff;
   --color-blue-600: #367cff;
+
   --color-blue-led: #c8dfea;
 
   --color-green-brand: #6bd968;
@@ -231,6 +233,10 @@
     position: absolute;
     left: 0;
   }
+
+  a {
+    @apply text-blue-400 hover:text-blue-brand hover:underline transition-none;
+  }
 }
 
 @utility policy-container {
@@ -245,6 +251,6 @@
   }
 
   & a {
-    @apply text-blue-brand hover:underline;
+    @apply text-blue-400 hover:text-blue-brand hover:underline transition-none;
   }
 }

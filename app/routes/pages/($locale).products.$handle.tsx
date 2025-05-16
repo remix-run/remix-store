@@ -1,7 +1,13 @@
 import { useState, useEffect, useRef } from "react";
 import { useLayoutEffect } from "~/lib/hooks";
 import { data, type LoaderFunctionArgs } from "@shopify/remix-oxygen";
-import { Link, useLoaderData, type MetaArgs, useFetcher } from "react-router";
+import {
+  Link,
+  useLoaderData,
+  type MetaArgs,
+  useFetcher,
+  href,
+} from "react-router";
 import type { ProductFragment } from "storefrontapi.generated";
 import {
   type OptimisticCartLineInput,
@@ -167,6 +173,31 @@ function ProductMain({ product }: { product: ProductFragment }) {
             />
           </>
         ) : null}
+        {/* Temporary shipping information for store launch with delayed products */}
+        <>
+          <h3 className="text-sm font-bold lg:text-base">Shipping Info</h3>
+          <div className="rich-text text-xs lg:text-base">
+            <ul>
+              <li>Ready to ship in 7-10 business days</li>
+              <li>
+                Please note that items will be shipped together once all items
+                in the order are in-hand and ready to ship
+              </li>
+              <li>
+                For shipping questions, please contact{" "}
+                <a href="mailto:support@merch.co">support@merch.co</a> or
+                consult our{" "}
+                <Link
+                  to={href("/:locale?/policies/:handle", {
+                    handle: "shipping-policy",
+                  })}
+                >
+                  Shipping Policy
+                </Link>
+              </li>
+            </ul>
+          </div>
+        </>
       </div>
       <Analytics.ProductView
         data={{
