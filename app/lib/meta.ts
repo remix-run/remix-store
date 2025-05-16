@@ -1,4 +1,5 @@
 import type { MetaDescriptor } from "react-router";
+import ogImageSrc from "~/assets/images/social-main.jpg";
 
 type MetaOptions = {
   title?: string;
@@ -18,7 +19,7 @@ export function generateMeta(options: MetaOptions = {}): MetaDescriptor[] {
   const {
     title = "The Remix Store",
     description = "Soft wear for engineers of all kinds",
-    image = "/og_image.jpg",
+    image = ogImageSrc,
     url,
     type = "website",
     siteName = "The Remix Store",

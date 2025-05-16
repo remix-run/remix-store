@@ -9,6 +9,8 @@ import type { RootLoader } from "~/root";
 import { ProductGrid } from "~/components/product-grid";
 import { PageTitle } from "~/components/page-title";
 
+import ogImageSrc from "~/assets/images/social-collections.jpg";
+
 export function meta({
   data,
   matches,
@@ -29,6 +31,7 @@ export function meta({
   return generateMeta({
     title,
     url: siteUrl,
+    image: ogImageSrc,
   });
 }
 
