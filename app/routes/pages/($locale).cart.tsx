@@ -110,7 +110,7 @@ export default function Cart() {
       <div className="flex h-screen flex-col items-center justify-center pt-[140px] pb-[140px] md:h-min md:pt-[200px] md:pb-[240]">
         <MatrixText
           // FIXME: Need a "cart" option
-          text={"500"}
+          text="empty"
         />
         <div className="flex flex-col items-center gap-9 md:gap-12">
           <div className="flex flex-col items-center gap-3 md:gap-6">
@@ -118,8 +118,7 @@ export default function Cart() {
               No items in cart
             </h1>
             <p className="text-sm tracking-tight md:text-base md:tracking-tight">
-              Please check the URL and try again -- you may be wondering why
-              there is a 500 👆 -- we should probably fix that
+              Please browse our catalog and add items before checking out.
             </p>
           </div>
           <AnimatedLinkSpread to="/collections/all" className="w-60">
