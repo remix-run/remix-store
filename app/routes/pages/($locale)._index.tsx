@@ -291,7 +291,7 @@ function LookbookEntry({ image, product }: LookbookEntryProps) {
           to={`/products/${product.handle}`}
           className="absolute bottom-9 left-9"
         >
-          <span>Shop</span>
+          <span>{product.title}</span>
           <span className="text-[28px]">·</span>
           <span>${Math.floor(Number(product.price.amount))}</span>
         </AnimatedLink>

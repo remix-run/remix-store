@@ -8,6 +8,7 @@ export type LookbookEntry = {
   image: ProductImageFragment & { focalPoint?: { x: number; y: number } };
   product?: {
     handle: string;
+    title: string;
     price: MoneyV2;
   };
 };
@@ -51,6 +52,7 @@ export async function getLookbookEntries(
         ...(product?.__typename === "Product" && {
           product: {
             handle: product.handle,
+            title: product.title,
             price: product.priceRange.minVariantPrice,
           },
         }),
@@ -85,6 +87,7 @@ export let LOOKBOOK_QUERY = `#graphql
             ... on Product {
               id
               handle
+              title
               priceRange {
                 minVariantPrice {
                   amount

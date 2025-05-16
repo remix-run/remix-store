@@ -202,7 +202,7 @@ export type LookbookImagesQuery = {
                   })
               | ({__typename: 'Product'} & Pick<
                   StorefrontAPI.Product,
-                  'id' | 'handle'
+                  'id' | 'handle' | 'title'
                 > & {
                     priceRange: {
                       minVariantPrice: Pick<
@@ -793,7 +793,7 @@ interface GeneratedQueryTypes {
     return: HeroQuery;
     variables: HeroQueryVariables;
   };
-  '#graphql\n  #graphql\n  fragment ProductImage on Image {\n    id\n    altText\n    url\n    width\n    height\n  }\n\n  query LookbookImages (\n    $country: CountryCode\n    $language: LanguageCode\n  ) @inContext(country: $country, language: $language) {\n    lookbookEntries: metaobjects(type: "lookbook_entry", first: 5) {\n      nodes {\n        handle\n        fields {\n          __typename\n          reference {\n            __typename\n            ... on MediaImage {\n              id\n              alt\n              presentation {\n                id\n                asJson(format: IMAGE)\n              }\n              image {\n                ...ProductImage\n              }\n            }\n            ... on Product {\n              id\n              handle\n              priceRange {\n                minVariantPrice {\n                  amount\n                  currencyCode\n                }\n              }\n            }\n          }\n        }\n      }\n    }\n  }\n': {
+  '#graphql\n  #graphql\n  fragment ProductImage on Image {\n    id\n    altText\n    url\n    width\n    height\n  }\n\n  query LookbookImages (\n    $country: CountryCode\n    $language: LanguageCode\n  ) @inContext(country: $country, language: $language) {\n    lookbookEntries: metaobjects(type: "lookbook_entry", first: 5) {\n      nodes {\n        handle\n        fields {\n          __typename\n          reference {\n            __typename\n            ... on MediaImage {\n              id\n              alt\n              presentation {\n                id\n                asJson(format: IMAGE)\n              }\n              image {\n                ...ProductImage\n              }\n            }\n            ... on Product {\n              id\n              handle\n              title\n              priceRange {\n                minVariantPrice {\n                  amount\n                  currencyCode\n                }\n              }\n            }\n          }\n        }\n      }\n    }\n  }\n': {
     return: LookbookImagesQuery;
     variables: LookbookImagesQueryVariables;
   };
