@@ -44,7 +44,7 @@ export default function BlurImage({
         src={previewUrl}
         alt={alt}
         className={clsx(
-          "absolute inset-0 size-full object-cover blur-2xl transition-opacity duration-150",
+          "absolute inset-0 size-full object-cover blur-2xl transition-opacity duration-750",
           loadState === "loaded" ? "opacity-0" : "opacity-100",
         )}
         draggable={false}
