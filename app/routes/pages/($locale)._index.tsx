@@ -36,7 +36,7 @@ export function meta({
 
   const { siteUrl } = matches[0].data;
   return generateMeta({
-    title: "The Remix Store | Home",
+    title: "Home",
     url: siteUrl,
   });
 }
