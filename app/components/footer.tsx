@@ -21,8 +21,8 @@ let socials = [
   },
   {
     href: "https://x.com/remix_run",
-    name: "twitter",
-    label: "Twitter",
+    name: "x-logo",
+    label: "X",
   },
   {
     href: "https://www.youtube.com/c/Remix-Run",
@@ -105,7 +105,10 @@ export function Footer({ footer: footerPromise }: FooterProps) {
                     className="opacity-100 transition-opacity duration-300 group-hover:opacity-50 hover:opacity-100"
                   >
                     <span className="sr-only">{label}</span>
-                    <Icon name={name} className="size-4 fill-white" />
+                    <Icon
+                      name={name}
+                      className="size-4 fill-white text-white"
+                    />
                   </a>
                 ))}
               </nav>

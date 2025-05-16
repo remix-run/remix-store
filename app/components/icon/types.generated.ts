@@ -3,7 +3,7 @@
 export const iconNames = [
   "youtube",
   "x",
-  "twitter",
+  "x-logo",
   "trash",
   "tag",
   "sun",
