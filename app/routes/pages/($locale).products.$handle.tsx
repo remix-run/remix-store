@@ -141,7 +141,7 @@ function ProductMain({ product }: { product: ProductFragment }) {
           {category ? (
             <p className="text-xs lg:text-base">{category?.name}</p>
           ) : null}
-          <h1 className="min-w-max font-sans text-2xl font-bold lg:text-4xl">
+          <h1 className="min-w-fit font-sans text-2xl font-bold lg:text-4xl">
             {title}
           </h1>
           <ProductPrice
@@ -250,7 +250,7 @@ function ProductForm({
   selectedVariant: ProductFragment["selectedOrFirstAvailableVariant"];
 }) {
   return (
-    <div className="flex flex-col gap-4 lg:flex-row lg:gap-3 lg:min-w-[450px]">
+    <div className="flex flex-col gap-4 lg:flex-row lg:gap-3 md:min-w-[330px] lg:min-w-[480px]">
       {productOptions.length > 0 ? (
         <div className="flex flex-col gap-4 lg:flex-auto">
           {productOptions.map((option) => (

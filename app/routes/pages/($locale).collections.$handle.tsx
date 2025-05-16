@@ -59,7 +59,9 @@ export default function Collection() {
 
   return (
     <div>
-      <PageTitle>{collection.title}</PageTitle>
+      <PageTitle className="xl:h-[520px] 2xl:h-[600px]">
+        {collection.title}
+      </PageTitle>
 
       <ProductGrid
         key={collection.handle}
