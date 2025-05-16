@@ -1,9 +1,7 @@
 import { Await, Link } from "react-router";
 import type { FooterQuery } from "storefrontapi.generated";
 import { useRelativeUrl } from "~/lib/use-relative-url";
-import { RemixLogo } from "~/components/remix-logo";
 import { Icon } from "~/components/icon";
-import { cn } from "~/lib/cn";
 import { Suspense } from "react";
 
 import loadRunner1 from "~/assets/images/load-runner-1.webp";
@@ -35,7 +33,7 @@ let socials = [
 export function Footer({ footer: footerPromise }: FooterProps) {
   return (
     <footer className="relative bg-black">
-      <div className="group px-2 py-16 font-mono text-xs leading-tight text-white uppercase opacity-30 transition-opacity duration-300 focus-within:opacity-100 hover:opacity-100">
+      <div className="group px-2 pb-16 py-32 font-mono text-xs leading-tight text-white uppercase opacity-30 transition-opacity duration-300 focus-within:opacity-100 hover:opacity-100">
         <div className="mx-auto flex max-w-fit flex-col gap-9 lg:gap-12">
           <div className="flex flex-col items-center gap-1">
             <FooterLink to="collection/all">
