@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { clsx } from "clsx";
 
-import error404Src from "~/assets/images/error-404.png";
-import error500Src from "~/assets/images/error-500.png";
+import error404Src from "~/assets/images/matrix-text/error-404.png";
+import error500Src from "~/assets/images/matrix-text/error-500.png";
+import emptySrc from "~/assets/images/matrix-text/empty.png";
 import { usePrefersReducedMotion } from "~/lib/hooks";
 
 interface MatrixTextData {
@@ -17,6 +18,7 @@ interface MatrixTextData {
 const textToImageMap = {
   "404": error404Src,
   "500": error500Src,
+  empty: emptySrc,
 };
 
 type TextId = keyof typeof textToImageMap;
