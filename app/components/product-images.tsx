@@ -86,7 +86,7 @@ function ImageCarousel({
     <section className="relative -mx-4 md:hidden">
       <div className="overflow-hidden" ref={emblaRef}>
         <div className="pinch-zoom flex touch-pan-y">
-          {images.map((image) => {
+          {images.map((image, index) => {
             if (!image) return null;
 
             return (
