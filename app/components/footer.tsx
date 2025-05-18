@@ -2,7 +2,9 @@ import { Await, Link } from "react-router";
 import type { FooterQuery } from "storefrontapi.generated";
 import { useRelativeUrl } from "~/lib/use-relative-url";
 import { Icon } from "~/components/icon";
-import { Suspense } from "react";
+import { Suspense, useRef, useState } from "react";
+import { useLayoutEffect, usePrefersReducedMotion } from "~/lib/hooks";
+import { clsx } from "clsx";
 
 import loadRunner1 from "~/assets/images/load-runner-1.webp";
 import loadRunnerGif from "~/assets/images/load-runner.gif";
@@ -31,10 +33,44 @@ let socials = [
 ] as const;
 
 export function Footer({ footer: footerPromise }: FooterProps) {
+  let footerRef = useRef<HTMLDivElement>(null);
+  let [visibleState, setVisibleState] = useState<
+    "initializing" | "visible" | "hidden"
+  >("initializing");
+  let prefersReducedMotion = usePrefersReducedMotion();
+
+  useLayoutEffect(() => {
+    let footerEl = footerRef.current;
+    if (!footerEl || prefersReducedMotion) return;
+
+    let observer = new window.IntersectionObserver(
+      ([entry]) => {
+        setVisibleState(entry.intersectionRatio >= 0.35 ? "visible" : "hidden");
+      },
+      { threshold: [0, 0.35, 1] },
+    );
+    observer.observe(footerEl);
+    return () => observer.disconnect();
+  }, [prefersReducedMotion]);
+
+  // Show the footer when:
+  // - users prefer reduced motion
+  // - JS has not finished loading
+  // - JS has loaded and the intersection observer has been triggered
+  let isVisible = prefersReducedMotion || visibleState !== "hidden";
+
   return (
     <footer className="relative bg-black">
-      <div className="group px-2 pb-16 py-32 font-mono text-xs leading-tight text-white uppercase opacity-30 transition-opacity duration-300 focus-within:opacity-100 hover:opacity-100">
-        <div className="mx-auto flex max-w-fit flex-col gap-9 lg:gap-12">
+      <div
+        className={clsx(
+          "px-2 pb-16 py-32 font-mono text-xs leading-tight text-white uppercase transition-opacity duration-300",
+          isVisible ? "opacity-100" : "opacity-30",
+        )}
+      >
+        <div
+          ref={footerRef}
+          className="mx-auto flex max-w-fit flex-col gap-9 lg:gap-12"
+        >
           <div className="flex flex-col items-center gap-1">
             <FooterLink to="collection/all">
               Remix Soft Wear Catalog V.1
@@ -53,19 +89,33 @@ export function Footer({ footer: footerPromise }: FooterProps) {
 
             <div className="flex items-center gap-1">
               <div className="relative size-[70px]">
-                <div className="absolute inset-0 box-border rounded-full border-2 border-dotted border-white transition-[border] duration-150 group-hover:animate-spin group-hover:border-4" />
+                <div
+                  className={clsx(
+                    "absolute inset-0 box-border rounded-full border-2 border-dotted border-white transition-[border] duration-150",
+                    isVisible &&
+                      "motion-safe:animate-spin motion-safe:border-4",
+                  )}
+                />
                 <img
                   alt=""
                   aria-hidden={true}
                   src={loadRunner1}
-                  className="relative size-full object-cover object-center group-hover:hidden"
+                  className={clsx(
+                    "relative size-full object-cover object-center",
+                    isVisible ? "motion-safe:hidden" : "block",
+                  )}
                 />
                 <img
                   alt=""
                   aria-hidden={true}
                   src={loadRunnerGif}
                   loading="eager"
-                  className="relative hidden size-full object-cover object-center group-hover:block"
+                  className={clsx(
+                    "relative size-full object-cover object-center",
+                    isVisible
+                      ? "motion-safe:block motion-reduce:hidden"
+                      : "hidden",
+                  )}
                 />
               </div>
 
@@ -100,7 +150,12 @@ export function Footer({ footer: footerPromise }: FooterProps) {
                     aria-label={label}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="opacity-100 transition-opacity duration-300 group-hover:opacity-50 hover:opacity-100"
+                    className={clsx(
+                      "transition-opacity duration-300",
+                      isVisible
+                        ? "opacity-50 hover:opacity-100"
+                        : "opacity-100",
+                    )}
                   >
                     <span className="sr-only">{label}</span>
                     <Icon
