@@ -277,7 +277,7 @@ function ProductForm({
   return (
     <div className="flex flex-col gap-4 lg:flex-row lg:gap-3 md:min-w-[330px] lg:min-w-[480px]">
       {productOptions.length > 0 ? (
-        <div className="flex flex-col gap-4 lg:flex-auto">
+        <div className="flex flex-col gap-4 w-full lg:basis-2/3">
           {productOptions.map((option) => (
             <ProductOptions key={option.name} option={option} />
           ))}
@@ -371,17 +371,15 @@ function ProductOptions({ option }: { option: MappedProductOptions }) {
 
 let addToCartButtonVariants = cva(
   [
-    "relative flex min-h-16 items-center justify-center overflow-hidden rounded-[54px] px-6 py-4 text-xl font-semibold whitespace-nowrap duration-300",
-    "lg:min-w-20 lg:transition-[flex]",
+    "relative flex min-h-16 items-center justify-center overflow-hidden rounded-[54px] px-6 py-4 text-xl font-semibold whitespace-nowrap duration-300 transition-colors w-full lg:basis-1/3 lg:flex-1",
   ],
   {
     variants: {
       pending: {
-        false: "bg-white text-black lg:flex-1",
-        true: "bg-[#6EDE49] text-white lg:flex-0",
+        false: "bg-white text-black",
+        true: "bg-[#6EDE49] text-white",
       },
       disabled: {
-        false: "transition-color duration-300 lg:min-w-20 lg:transition-[flex]",
         true: "bg-white/20 text-white/80",
       },
     },
