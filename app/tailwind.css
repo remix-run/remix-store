@@ -253,4 +253,24 @@
   & a {
     @apply text-blue-400 hover:text-blue-brand hover:underline transition-none;
   }
+
+  & blockquote {
+    @apply bg-[#212121] p-6 mt-6;
+  }
+
+  & blockquote p:first-child {
+    @apply mt-0;
+  }
+
+  & ul {
+    @apply list-disc pl-6;
+  }
+
+  & ol {
+    @apply list-decimal pl-6;
+  }
+
+  & li {
+    @apply pl-0 static mt-4;
+  }
 }
