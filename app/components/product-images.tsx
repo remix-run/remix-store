@@ -10,6 +10,7 @@ import { cn } from "~/lib/cn";
 import { useRef, useState } from "react";
 import { useLayoutEffect, usePrefersReducedMotion } from "~/lib/hooks";
 import { Icon } from "./icon";
+import BlurImage from "./ui/blur-image";
 
 import type { ProductVariantFragment } from "storefrontapi.generated";
 
@@ -51,12 +52,12 @@ function ImageColumn({
             className="aspect-square overflow-hidden rounded-3xl"
             style={{ opacity: opacities.get(image.id) ?? defaultOpacity }}
           >
-            <HydrogenImage
+            <BlurImage
               className="pointer-events-none size-auto select-none"
               alt={image.altText || "Product Image"}
               data={image}
-              sizes="(min-width: 800px) 50vw, 100vw"
-              loading="lazy"
+              sizes="30vw"
+              loading={index === 0 ? "eager" : "lazy"}
             />
           </div>
         );
@@ -85,7 +86,7 @@ function ImageCarousel({
     <section className="relative -mx-4 md:hidden">
       <div className="overflow-hidden" ref={emblaRef}>
         <div className="pinch-zoom flex touch-pan-y">
-          {images.map((image) => {
+          {images.map((image, index) => {
             if (!image) return null;
 
             return (
@@ -93,12 +94,12 @@ function ImageCarousel({
                 className="flex aspect-square w-full shrink-0"
                 key={image.id}
               >
-                <HydrogenImage
+                <BlurImage
                   className="pointer-events-none size-auto select-none"
                   alt={image.altText || "Product Image"}
-                  sizes="100vw"
                   data={image}
-                  loading="lazy"
+                  sizes="100vw"
+                  loading={index === 0 ? "eager" : "lazy"}
                 />
               </div>
             );
