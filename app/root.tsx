@@ -135,6 +135,7 @@ export async function loader(args: LoaderFunctionArgs) {
       consent: {
         checkoutDomain: env.PUBLIC_CHECKOUT_DOMAIN,
         storefrontAccessToken: env.PUBLIC_STOREFRONT_API_TOKEN,
+        withPrivacyBanner: true,
       },
     },
     {
@@ -185,6 +186,8 @@ function loadDeferredData({ context }: LoaderFunctionArgs) {
 export function Layout({ children }: { children?: React.ReactNode }) {
   const nonce = useNonce();
   const data = useRouteLoaderData<RootLoader>("root");
+
+  console.log({ consent: data?.consent });
 
   return (
     <html lang="en" suppressHydrationWarning>
