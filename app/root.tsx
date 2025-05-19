@@ -187,8 +187,6 @@ export function Layout({ children }: { children?: React.ReactNode }) {
   const nonce = useNonce();
   const data = useRouteLoaderData<RootLoader>("root");
 
-  console.log({ consent: data?.consent });
-
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
