@@ -41,7 +41,7 @@ type BaseAnimatedLinkProps = {
   children: React.ReactNode;
   className?: string;
   prefetch?: LinkProps["prefetch"];
-};
+} & LinkProps;
 
 export type AnimatedLinkProps = BaseAnimatedLinkProps &
   (
@@ -74,6 +74,7 @@ export function AnimatedLink({
   iconPosition = "left",
   prefetch,
   children,
+  ...props
 }: AnimatedLinkProps) {
   // Default styles for the link
   let linkClasses = cn(
@@ -114,7 +115,7 @@ export function AnimatedLink({
   }
 
   return (
-    <Link className={linkClasses} to={to} prefetch={prefetch}>
+    <Link className={linkClasses} to={to} prefetch={prefetch} {...props}>
       {iconPosition === "left" && icon}
       {text}
       {iconPosition === "right" && icon}
