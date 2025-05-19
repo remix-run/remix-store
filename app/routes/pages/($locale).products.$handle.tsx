@@ -50,11 +50,21 @@ export function meta({
   let { product } = data;
   let { siteUrl } = matches[0].data;
 
+  let image = product.images.nodes[0].url;
+
+  // if (image) {
+  //   let url = new URL(image);
+  //   url.searchParams.set("width", "1200");
+  //   url.searchParams.set("height", "630");
+  //   image = url.toString();
+  // }
+
   return generateMeta({
     // I think there's a better way to get seo data using some Hydrogen helpers
     title: product.seo?.title || product.title,
     description: product.seo?.description ?? undefined,
     url: siteUrl,
+    image,
   });
 }
 
