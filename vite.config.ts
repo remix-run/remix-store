@@ -18,6 +18,7 @@ export default defineConfig({
       inputDir: "app/assets/icons",
       outputDir: "public",
       typesOutputFile: "app/components/icon/types.generated.ts",
+      fileName: "sprites.svg",
       withTypes: true,
       iconNameTransformer: (name) =>
         name.charAt(0).toLowerCase() + name.slice(1),

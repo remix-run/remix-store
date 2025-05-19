@@ -14,7 +14,7 @@ export function Icon({ name, className, ...props }: IconProps) {
       }
       {...props}
     >
-      <use href={`/sprite.svg#${name}`} />
+      <use href={`/sprites.svg#${name}`} />
     </svg>
   );
 }

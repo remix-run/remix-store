@@ -21,7 +21,6 @@ import {
   mapSelectedProductOptionToObject,
   getProductOptions,
 } from "@shopify/hydrogen";
-import { FOOTER_QUERY } from "~/lib/fragments";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
