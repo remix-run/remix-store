@@ -1,6 +1,11 @@
 import { useRouteLoaderData, type MetaArgs } from "react-router";
 import type { CartQueryDataReturn } from "@shopify/hydrogen";
-import { CartForm, Money, useOptimisticCart } from "@shopify/hydrogen";
+import {
+  Analytics,
+  CartForm,
+  Money,
+  useOptimisticCart,
+} from "@shopify/hydrogen";
 import { data, type ActionFunctionArgs } from "@shopify/remix-oxygen";
 import type { RootLoader } from "~/root";
 import { generateMeta } from "~/lib/meta";
@@ -197,6 +202,7 @@ export default function Cart() {
           </div>
         </div>
       </div>
+      <Analytics.CartView />
     </main>
   );
 }

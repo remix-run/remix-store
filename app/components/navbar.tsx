@@ -1,5 +1,6 @@
+import { forwardRef, useMemo } from "react";
+import { href, Link, NavLink } from "react-router";
 import type { NavLinkProps } from "react-router";
-import { Link, NavLink } from "react-router";
 import {
   type CartViewPayload,
   Money,
@@ -58,6 +59,25 @@ export function Navbar({ menu, cart }: NavbarProps) {
   );
 }
 
+type HeaderMenuLinkProps = {
+  title: string;
+  url: string;
+  onClick?: NavLinkProps["onClick"];
+};
+function HeaderMenuLink(props: HeaderMenuLinkProps) {
+  let { url } = useRelativeUrl(props.url);
+
+  return (
+    <NavLink
+      className="text-base leading-tight font-semibold no-underline"
+      to={url}
+      prefetch="intent"
+    >
+      {props.title}
+    </NavLink>
+  );
+}
+
 function CartButton({ cart: originalCart }: Pick<NavbarProps, "cart">) {
   let cart = useOptimisticCart(originalCart);
   let totalQuantity = cart?.totalQuantity || 0;
@@ -95,17 +115,11 @@ function CartButton({ cart: originalCart }: Pick<NavbarProps, "cart">) {
 
   return (
     <>
-      <div className="block md:hidden">
-        <CartCTA isLink quantity={totalQuantity} />
-      </div>
+      <CartCTALink quantity={totalQuantity} className="flex md:hidden" />
+
       <Popover>
         <PopoverTrigger asChild className="group">
-          <div
-            // div makes trigger work (dumb) and controls hiding for mobile
-            className="hidden md:block"
-          >
-            <CartCTA quantity={totalQuantity} />
-          </div>
+          <CartCTAButton quantity={totalQuantity} className="hidden md:flex" />
         </PopoverTrigger>
         <PopoverContent
           align="end"
@@ -174,33 +188,64 @@ function CartButton({ cart: originalCart }: Pick<NavbarProps, "cart">) {
  * This dual behavior exists because:
  * 1. Mobile needs a direct link to the cart page
  * 2. Desktop needs to trigger the popover but a link for non-JS fallback
- *
- * @param props.isLink - Whether this should behave as a link (mobile) or button (desktop)
- * @param props.quantity - The number of items in the cart
  */
-function CartCTA({
-  isLink = false,
+
+function CartCTALink({
   quantity,
+  className,
 }: {
-  isLink?: boolean;
   quantity: number;
+  className?: string;
 }) {
+  let linkClassNames = useCartCTAClassNames(className);
+
+  return (
+    <Link
+      to={href("/:locale?/cart")}
+      className={linkClassNames}
+      prefetch="intent"
+    >
+      <CartCTAInner quantity={quantity} />
+    </Link>
+  );
+}
+
+const CartCTAButton = forwardRef<
+  HTMLButtonElement,
+  { quantity: number } & React.ComponentPropsWithoutRef<"button">
+>(({ quantity, className, ...props }, ref) => {
   let { publish, shop, cart, prevCart } = useAnalytics();
   let isHydrated = useHydrated();
 
-  const handleClick = () => {
-    publish("cart_viewed", {
-      cart,
-      prevCart,
-      shop,
-      url: window.location.href || "",
-    } satisfies CartViewPayload);
-  };
+  let buttonClassNames = useCartCTAClassNames(className);
 
-  let className =
-    "group bg-blue-brand relative flex h-12 cursor-pointer items-center justify-center gap-2 rounded-[54px] px-5 py-2 pr-4 pl-5 text-center text-base font-semibold text-white no-underline md:h-16 md:gap-2.5 md:px-6 md:py-4 md:pr-5 md:pl-6 md:text-xl";
+  if (!isHydrated) {
+    return <CartCTALink quantity={quantity} className={buttonClassNames} />;
+  }
 
-  let inner = (
+  // After hydration or on desktop, render as a button
+  return (
+    <button
+      type="button"
+      className={buttonClassNames}
+      onClick={() => {
+        publish("cart_viewed", {
+          cart,
+          prevCart,
+          shop,
+          url: window.location.href || "",
+        } satisfies CartViewPayload);
+      }}
+      ref={ref}
+      {...props}
+    >
+      <CartCTAInner quantity={quantity} />
+    </button>
+  );
+});
+
+function CartCTAInner({ quantity }: { quantity: number }) {
+  return (
     <>
       <Icon
         name="cart"
@@ -223,44 +268,15 @@ function CartCTA({
       </span>
     </>
   );
-
-  // Before hydration or on mobile, render as a link for non-JS fallback
-  if (isLink || !isHydrated) {
-    return (
-      <Link
-        to="/cart"
-        className={className}
-        prefetch="intent"
-        onClick={handleClick}
-      >
-        {inner}
-      </Link>
-    );
-  }
-
-  // After hydration or on desktop, render as a button
-  return (
-    <button type="button" className={className} onClick={handleClick}>
-      {inner}
-    </button>
-  );
 }
 
-type HeaderMenuLinkProps = {
-  title: string;
-  url: string;
-  onClick?: NavLinkProps["onClick"];
-};
-function HeaderMenuLink(props: HeaderMenuLinkProps) {
-  let { url } = useRelativeUrl(props.url);
-
-  return (
-    <NavLink
-      className="text-base leading-tight font-semibold no-underline"
-      to={url}
-      prefetch="intent"
-    >
-      {props.title}
-    </NavLink>
+function useCartCTAClassNames(className?: string) {
+  return useMemo(
+    () =>
+      cn(
+        "group bg-blue-brand relative flex h-12 cursor-pointer items-center justify-center gap-2 rounded-[54px] px-5 py-2 pr-4 pl-5 text-center text-base font-semibold text-white no-underline md:h-16 md:gap-2.5 md:px-6 md:py-4 md:pr-5 md:pl-6 md:text-xl",
+        className,
+      ),
+    [className],
   );
 }
