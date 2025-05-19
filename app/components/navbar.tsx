@@ -61,7 +61,6 @@ export function Navbar({ menu, cart }: NavbarProps) {
 function CartButton({ cart: originalCart }: Pick<NavbarProps, "cart">) {
   let cart = useOptimisticCart(originalCart);
   let totalQuantity = cart?.totalQuantity || 0;
-  let { publish, shop } = useAnalytics();
 
   if (!cart || totalQuantity === 0) {
     return (
@@ -189,6 +188,15 @@ function CartCTA({
   let { publish, shop, cart, prevCart } = useAnalytics();
   let isHydrated = useHydrated();
 
+  const handleClick = () => {
+    publish("cart_viewed", {
+      cart,
+      prevCart,
+      shop,
+      url: window.location.href || "",
+    } satisfies CartViewPayload);
+  };
+
   let className =
     "group bg-blue-brand relative flex h-12 cursor-pointer items-center justify-center gap-2 rounded-[54px] px-5 py-2 pr-4 pl-5 text-center text-base font-semibold text-white no-underline md:h-16 md:gap-2.5 md:px-6 md:py-4 md:pr-5 md:pl-6 md:text-xl";
 
@@ -219,7 +227,12 @@ function CartCTA({
   // Before hydration or on mobile, render as a link for non-JS fallback
   if (isLink || !isHydrated) {
     return (
-      <Link to="/cart" className={className} prefetch="intent">
+      <Link
+        to="/cart"
+        className={className}
+        prefetch="intent"
+        onClick={handleClick}
+      >
         {inner}
       </Link>
     );
@@ -227,18 +240,7 @@ function CartCTA({
 
   // After hydration or on desktop, render as a button
   return (
-    <button
-      type="button"
-      className={className}
-      onClick={() => {
-        publish("cart_viewed", {
-          cart,
-          prevCart,
-          shop,
-          url: window.location.href || "",
-        } satisfies CartViewPayload);
-      }}
-    >
+    <button type="button" className={className} onClick={handleClick}>
       {inner}
     </button>
   );
