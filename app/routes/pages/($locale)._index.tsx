@@ -267,8 +267,21 @@ function HeroText({
 }
 
 function LookbookEntry({ image, product }: LookbookEntryProps) {
+  // This component makes heavy use of custom properties to ensure the
+  // the whole lookbook entry is clickable as a link
+
+  const animatedLinkCss = clsx(
+    "[--offset:theme(spacing.5)] md:[--offset:theme(spacing.9)]",
+    "absolute bottom-[var(--offset)] left-[var(--offset)]",
+  );
   return (
-    <div className="relative h-[640px] md:h-[800px] bg-black">
+    <div
+      className={clsx(
+        "[--lookbook-entry-height:640px] md:[--lookbook-entry-height:800px]",
+        "relative h-(--lookbook-entry-height) bg-black",
+      )}
+    >
+      {/* Visual content */}
       <div className="absolute inset-0">
         <HydrogenImage
           sizes="100vw"
@@ -288,8 +301,9 @@ function LookbookEntry({ image, product }: LookbookEntryProps) {
           animationType="icon"
           iconName="fast-forward"
           to={`/products/${product.handle}`}
-          className="absolute bottom-5 left-5 md:bottom-9 md:left-9"
+          className={animatedLinkCss}
         >
+          <span className="absolute w-lvw -bottom-(--offset) -left-(--offset) h-(--lookbook-entry-height)" />
           <span>{product.title}</span>
           <span className="text-[28px]">·</span>
           <span>${Math.floor(Number(product.price.amount))}</span>
@@ -299,9 +313,8 @@ function LookbookEntry({ image, product }: LookbookEntryProps) {
           prefetch="intent"
           animationType="icon"
           iconName="mail"
-          // TODO: Add proper signup link
           to="https://rmx.as/newsletter"
-          className="absolute bottom-5 left-5 md:bottom-9 md:left-9"
+          className={animatedLinkCss}
         >
           Coming Soon
         </AnimatedLink>
