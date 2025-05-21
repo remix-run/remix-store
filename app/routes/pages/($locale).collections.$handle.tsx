@@ -1,5 +1,10 @@
-import { data, redirect, type LoaderFunctionArgs } from "@shopify/remix-oxygen";
-import { type MetaArgs, useLoaderData } from "react-router";
+import {
+  type MetaArgs,
+  type LoaderFunctionArgs,
+  data,
+  redirect,
+  useLoaderData,
+} from "react-router";
 import { Analytics } from "@shopify/hydrogen";
 
 import { getCollectionQuery } from "~/lib/data/collection.server";

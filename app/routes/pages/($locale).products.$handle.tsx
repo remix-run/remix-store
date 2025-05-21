@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef } from "react";
 import { useLayoutEffect } from "~/lib/hooks";
-import { data, type LoaderFunctionArgs } from "@shopify/remix-oxygen";
 import {
+  type MetaArgs,
+  type LoaderFunctionArgs,
+  data,
   Link,
   useLoaderData,
-  type MetaArgs,
   useFetcher,
   href,
 } from "react-router";

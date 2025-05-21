@@ -3,7 +3,7 @@ import {
   createCookieSessionStorage,
   type SessionStorage,
   type Session,
-} from "@shopify/remix-oxygen";
+} from "react-router";
 
 export class AppSession implements HydrogenSession {
   #sessionStorage;

@@ -1,4 +1,4 @@
-import { redirect } from "@shopify/remix-oxygen";
+import { redirect } from "react-router";
 
 export async function loader() {
   // TODO: Add a collections index page, for now just redirect to all products

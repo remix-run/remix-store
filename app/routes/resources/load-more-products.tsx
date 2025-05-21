@@ -1,11 +1,13 @@
-import type { LoaderFunctionArgs } from "@shopify/remix-oxygen";
-import { useFetcher } from "react-router";
+import {
+  type LoaderFunctionArgs,
+  type FormProps,
+  useFetcher,
+} from "react-router";
 import {
   getCollectionQuery,
   type CollectionProductData,
 } from "~/lib/data/collection.server";
 import { useState, useEffect, useCallback } from "react";
-import type { FormProps } from "react-router";
 
 export async function loader({ request, context }: LoaderFunctionArgs) {
   let url = new URL(request.url);

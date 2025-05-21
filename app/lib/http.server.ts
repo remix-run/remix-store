@@ -1,4 +1,4 @@
-import { redirect } from "@shopify/remix-oxygen";
+import { redirect } from "react-router";
 
 export function safeRedirect(
   to: FormDataEntryValue | string | null | undefined,

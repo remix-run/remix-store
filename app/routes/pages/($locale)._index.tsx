@@ -1,7 +1,11 @@
 import { useState, useEffect, memo, useRef } from "react";
-import type { LoaderFunctionArgs } from "@shopify/remix-oxygen";
-import { data } from "@shopify/remix-oxygen";
-import { type MetaArgs, Link, useLoaderData } from "react-router";
+import {
+  type MetaArgs,
+  type LoaderFunctionArgs,
+  Link,
+  useLoaderData,
+  data,
+} from "react-router";
 import { getCollectionQuery } from "~/lib/data/collection.server";
 import { Image as HydrogenImage } from "@shopify/hydrogen";
 import {
