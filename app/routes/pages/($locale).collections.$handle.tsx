@@ -1,25 +1,16 @@
-import {
-  type MetaArgs,
-  type LoaderFunctionArgs,
-  data,
-  redirect,
-  useLoaderData,
-} from "react-router";
+import { data } from "react-router";
 import { Analytics } from "@shopify/hydrogen";
 
 import { getCollectionQuery } from "~/lib/data/collection.server";
 import { getFilterQueryVariables } from "~/lib/filters/query-variables.server";
 import { generateMeta } from "~/lib/meta";
-import type { RootLoader } from "~/root";
 import { ProductGrid } from "~/components/product-grid";
 import { PageTitle } from "~/components/page-title";
 
 import ogImageSrc from "~/assets/images/social-collections.jpg";
+import type { Route } from "./+types/($locale).collections.$handle";
 
-export function meta({
-  data,
-  matches,
-}: MetaArgs<typeof loader, { root: RootLoader }>) {
+export function meta({ data, matches }: Route.MetaArgs) {
   if (!data) return generateMeta();
 
   const { collection } = data;
@@ -32,13 +23,9 @@ export function meta({
   });
 }
 
-export async function loader({ params, request, context }: LoaderFunctionArgs) {
+export async function loader({ params, request, context }: Route.LoaderArgs) {
   const { handle } = params;
   const { storefront } = context;
-
-  if (!handle) {
-    throw redirect("/collections");
-  }
 
   const url = new URL(request.url);
   const { searchParams } = url;
@@ -54,8 +41,8 @@ export async function loader({ params, request, context }: LoaderFunctionArgs) {
   return data({ collection });
 }
 
-export default function Collection() {
-  let { collection } = useLoaderData<typeof loader>();
+export default function Collection({ loaderData }: Route.ComponentProps) {
+  let { collection } = loaderData;
 
   return (
     <div>

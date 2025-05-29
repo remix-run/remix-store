@@ -1,4 +1,4 @@
-import { Await, Link } from "react-router";
+import { Await, href, Link } from "react-router";
 import { Image as HydrogenImage, Money } from "@shopify/hydrogen";
 import { clsx } from "clsx";
 import { Suspense } from "react";
@@ -97,7 +97,7 @@ function ProductGridItem({ product }: ProductGridItemProps) {
       <div className="flex h-14 flex-col items-center justify-center gap-2.5 text-base leading-none text-white">
         <Link
           prefetch="intent"
-          to={`/products/${handle}`}
+          to={href("/products/:handle", { handle })}
           className="font-bold hover:text-white"
         >
           <span className="absolute inset-0" />

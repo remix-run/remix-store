@@ -1,14 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useLayoutEffect } from "~/lib/hooks";
-import {
-  type MetaArgs,
-  type LoaderFunctionArgs,
-  data,
-  Link,
-  useLoaderData,
-  useFetcher,
-  href,
-} from "react-router";
+import { data, Link, useFetcher, href } from "react-router";
 import type { ProductFragment } from "storefrontapi.generated";
 import {
   type OptimisticCartLineInput,
@@ -40,12 +32,9 @@ import {
 import { useRelativeUrl } from "~/lib/use-relative-url";
 import { cva } from "class-variance-authority";
 import { cn } from "~/lib/cn";
-import type { RootLoader } from "~/root";
+import type { Route } from "./+types/($locale).products.$handle";
 
-export function meta({
-  data,
-  matches,
-}: MetaArgs<typeof loader, { root: RootLoader }>) {
+export function meta({ data, matches }: Route.MetaArgs) {
   if (!data) return generateMeta();
 
   let { product } = data;
@@ -70,14 +59,10 @@ export function meta({
   });
 }
 
-export async function loader(args: LoaderFunctionArgs) {
+export async function loader(args: Route.LoaderArgs) {
   let { request, params, context } = args;
   let { storefront } = context;
   let { handle } = params;
-
-  if (!handle) {
-    throw new Error("Expected product handle to be defined");
-  }
 
   let productPromise = getProductData(storefront, {
     variables: {
@@ -96,8 +81,8 @@ export async function loader(args: LoaderFunctionArgs) {
   });
 }
 
-export default function Product() {
-  let { menu, product } = useLoaderData<typeof loader>();
+export default function Product({ loaderData }: Route.ComponentProps) {
+  let { menu, product } = loaderData;
 
   return (
     <div className="relative mt-(--header-height) flex min-h-[90vh] flex-col gap-4 overflow-x-clip md:flex-row md:justify-between md:gap-8 md:px-4 lg:px-9">
@@ -199,7 +184,7 @@ function ProductMain({ product }: { product: ProductFragment }) {
                 <a href="mailto:support@merch.co">support@merch.co</a> or
                 consult our{" "}
                 <Link
-                  to={href("/:locale?/policies/:handle", {
+                  to={href("/policies/:handle", {
                     handle: "shipping-policy",
                   })}
                 >

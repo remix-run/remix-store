@@ -1,11 +1,5 @@
 import { useState, useEffect, memo, useRef } from "react";
-import {
-  type MetaArgs,
-  type LoaderFunctionArgs,
-  Link,
-  useLoaderData,
-  data,
-} from "react-router";
+import { Link, data, href } from "react-router";
 import { getCollectionQuery } from "~/lib/data/collection.server";
 import { Image as HydrogenImage } from "@shopify/hydrogen";
 import {
@@ -20,14 +14,12 @@ import { clsx } from "clsx";
 import { usePrefersReducedMotion, useScrollPercentage } from "~/lib/hooks";
 import { AnimatedLink } from "~/components/ui/animated-link";
 import { generateMeta } from "~/lib/meta";
-import type { RootLoader } from "~/root";
 import { ProductGrid } from "~/components/product-grid";
+import type { Route } from "./+types/($locale)._index";
 
 export let FEATURED_COLLECTION_HANDLE = "remix-logo-apparel";
 
-export function meta({
-  matches,
-}: MetaArgs<typeof loader, { root: RootLoader }>) {
+export function meta({ matches }: Route.MetaArgs) {
   const { siteUrl } = matches[0].data;
   return generateMeta({
     title: "Home",
@@ -35,11 +27,11 @@ export function meta({
   });
 }
 
-export async function loader({ request, context }: LoaderFunctionArgs) {
+export async function loader({ context }: Route.LoaderArgs) {
   let { storefront } = context;
 
   let collectionHandle = "all";
-  let expectedNumberOfProducts = 12;
+  let expectedNumberOfProducts = 15;
   let { products, productsPageInfo } = await getCollectionQuery(storefront, {
     variables: {
       handle: collectionHandle,
@@ -64,7 +56,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
   });
 }
 
-export default function Homepage() {
+export default function Homepage({ loaderData }: Route.ComponentProps) {
   let {
     hero,
     lookbookEntries,
@@ -72,7 +64,7 @@ export default function Homepage() {
     products: initialProducts,
     collectionHandle,
     productsPageInfo,
-  } = useLoaderData<typeof loader>();
+  } = loaderData;
 
   let [firstEntry, ...restEntries] = lookbookEntries;
 
@@ -221,7 +213,7 @@ let RotatingProduct = memo(
 
     return (
       <Link
-        to={`/products/${product.handle}`}
+        to={href("/products/:handle", { handle: product.handle })}
         className="3xl:scale-130 3xl:hover:scale-135 3xl:translate-y-56 absolute top-0 w-full translate-y-14 scale-125 transition-transform duration-200 select-none hover:scale-130 md:translate-y-12 lg:translate-y-20 lg:scale-100 lg:hover:scale-105 xl:scale-100 xl:hover:scale-105 2xl:translate-y-32 2xl:scale-110 2xl:hover:scale-115"
       >
         <span className="sr-only">{product.title}</span>
@@ -295,7 +287,7 @@ function LookbookEntry({ image, product }: LookbookEntryProps) {
           prefetch="intent"
           animationType="icon"
           iconName="fast-forward"
-          to={`/products/${product.handle}`}
+          to={href("/products/:handle", { handle: product.handle })}
           className={animatedLinkCss}
         >
           <span className="absolute -bottom-(--offset) -left-(--offset) h-(--lookbook-entry-height) w-lvw" />

@@ -8,9 +8,6 @@ import {
   ScrollRestoration,
   isRouteErrorResponse,
   type ShouldRevalidateFunction,
-  type MetaFunction,
-  type LoaderFunctionArgs,
-  redirect,
   data,
 } from "react-router";
 import { FOOTER_QUERY, HEADER_QUERY } from "~/lib/fragments";
@@ -31,7 +28,7 @@ import { MatrixText } from "./components/matrix-text";
 
 import type { Route } from "./+types/root";
 
-export type RootLoader = typeof loader;
+export type RootLoader = Route.ComponentProps["loaderData"];
 
 /**
  * This is important to avoid re-fetching root queries on sub-navigations
@@ -98,7 +95,7 @@ export function links() {
   ];
 }
 
-export async function loader(args: LoaderFunctionArgs) {
+export async function loader(args: Route.LoaderArgs) {
   let requestUrl = new URL(args.request.url);
   let siteUrl = requestUrl.protocol + "//" + requestUrl.host;
 
@@ -134,7 +131,7 @@ export async function loader(args: LoaderFunctionArgs) {
   );
 }
 
-async function loadCriticalData({ context, request }: LoaderFunctionArgs) {
+async function loadCriticalData({ context }: Route.LoaderArgs) {
   const { storefront, cart } = context;
 
   const [header, cartData] = await Promise.all([
@@ -153,7 +150,7 @@ async function loadCriticalData({ context, request }: LoaderFunctionArgs) {
   };
 }
 
-function loadDeferredData({ context }: LoaderFunctionArgs) {
+function loadDeferredData({ context }: Route.LoaderArgs) {
   const { storefront, customerAccount } = context;
   // defer the footer query (below the fold)
   const footer = storefront
@@ -210,7 +207,7 @@ export default function App() {
   return <Outlet />;
 }
 
-export const meta: MetaFunction<typeof loader> = ({ data, error }) => {
+export const meta: Route.MetaFunction = ({ error }) => {
   const title =
     isRouteErrorResponse(error) && error.status === 404
       ? "Not Found"
@@ -218,7 +215,7 @@ export const meta: MetaFunction<typeof loader> = ({ data, error }) => {
   return [{ title }];
 };
 
-export function ErrorBoundary({ error, loaderData }: Route.ErrorBoundaryProps) {
+export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
   let errorMessage = "Unknown error";
   let errorStatus = 500;
 

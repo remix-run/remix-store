@@ -72,9 +72,7 @@ export function Footer({ footer: footerPromise }: FooterProps) {
           className="mx-auto flex max-w-fit flex-col gap-9 lg:gap-12"
         >
           <div className="flex flex-col items-center gap-1">
-            <FooterLink
-              to={href("/:locale?/collections/:handle", { handle: "all" })}
-            >
+            <FooterLink to={href("/collections/:handle", { handle: "all" })}>
               Remix Soft Wear Catalog V.1
             </FooterLink>
             <p>Designed in USA</p>

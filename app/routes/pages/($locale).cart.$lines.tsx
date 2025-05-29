@@ -1,4 +1,5 @@
-import { redirect, type LoaderFunctionArgs } from "react-router";
+import { href, redirect } from "react-router";
+import type { Route } from "./+types/($locale).cart.$lines";
 
 /**
  * Automatically creates a new cart based on the URL and redirects straight to checkout.
@@ -18,10 +19,10 @@ import { redirect, type LoaderFunctionArgs } from "react-router";
  *
  * ```
  */
-export async function loader({ request, context, params }: LoaderFunctionArgs) {
+export async function loader({ request, context, params }: Route.LoaderArgs) {
   const { cart } = context;
   const { lines } = params;
-  if (!lines) return redirect("/cart");
+  if (!lines) return redirect(href("/cart"));
   const linesMap = lines.split(",").map((line) => {
     const lineDetails = line.split(":");
     const variantId = lineDetails[0];

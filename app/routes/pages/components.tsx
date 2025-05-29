@@ -1,5 +1,4 @@
-import { Link, Outlet, useLoaderData } from "react-router";
-import type { LoaderFunctionArgs, MetaArgs } from "react-router";
+import { Link, Outlet } from "react-router";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -8,12 +7,9 @@ import {
 } from "~/components/ui/dropdown-menu";
 import { cn } from "~/lib/cn";
 import { generateMeta } from "~/lib/meta";
-import type { RootLoader } from "~/root";
+import type { Route } from "./+types/components";
 
-export function meta({
-  data,
-  matches,
-}: MetaArgs<typeof loader, { root: RootLoader }>) {
+export function meta({ data, matches }: Route.MetaArgs) {
   const selectedComponent = data?.selectedComponent;
   const title = selectedComponent
     ? `${selectedComponent} | Component Library`
@@ -29,7 +25,7 @@ export function meta({
   });
 }
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader({ request }: Route.LoaderArgs) {
   // TODO: turn this on only for the most prodest of environments
   if (process.env.NODE_ENV === "production") {
     throw new Response("Not found", { status: 404 });
@@ -51,8 +47,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
   return { componentRoutes: paths, selectedComponent };
 }
 
-export default function Components() {
-  const { componentRoutes, selectedComponent } = useLoaderData<typeof loader>();
+export default function Components({ loaderData }: Route.ComponentProps) {
+  const { componentRoutes, selectedComponent } = loaderData;
 
   return (
     <div className="mt-32">
