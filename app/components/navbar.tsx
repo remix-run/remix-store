@@ -37,7 +37,11 @@ const FREE_SHIPPING_THRESHOLD = 75;
 export function Navbar({ menu, cart }: NavbarProps) {
   return (
     <header className="fixed top-0 z-10 grid max-h-(--header-height) w-full grid-cols-2 items-center bg-linear-to-b from-black/100 to-black/0 p-4 md:grid-cols-3 md:p-9">
-      <Link to="/" className="flex max-w-fit justify-start" prefetch="intent">
+      <Link
+        to={href("/")}
+        className="flex max-w-fit justify-start"
+        prefetch="intent"
+      >
         <span className="sr-only">Home</span>
         <RemixLogo animateOnScroll />
       </Link>
@@ -206,11 +210,7 @@ function CartCTALink({
   let linkClassNames = useCartCTAClassNames(className);
 
   return (
-    <Link
-      to={href("/:locale?/cart")}
-      className={linkClassNames}
-      prefetch="intent"
-    >
+    <Link to={href("/cart")} className={linkClassNames} prefetch="intent">
       <CartCTAInner quantity={quantity} />
     </Link>
   );

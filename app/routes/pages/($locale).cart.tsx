@@ -1,9 +1,4 @@
-import {
-  type MetaArgs,
-  type ActionFunctionArgs,
-  useRouteLoaderData,
-  data,
-} from "react-router";
+import { useRouteLoaderData, data, href } from "react-router";
 import type { CartQueryDataReturn } from "@shopify/hydrogen";
 import {
   Analytics,
@@ -20,8 +15,9 @@ import { clsx } from "clsx";
 import { MatrixText } from "~/components/matrix-text";
 import { AnimatedLinkSpread } from "~/components/ui/animated-link";
 import { Icon } from "~/components/icon";
+import type { Route } from "./+types/($locale).cart";
 
-export function meta({ matches }: MetaArgs<undefined, { root: RootLoader }>) {
+export function meta({ matches }: Route.MetaArgs) {
   const rootData = matches[0].data;
   const { siteUrl, cart } = rootData;
   return generateMeta({
@@ -31,7 +27,7 @@ export function meta({ matches }: MetaArgs<undefined, { root: RootLoader }>) {
   });
 }
 
-export async function action({ request, context }: ActionFunctionArgs) {
+export async function action({ request, context }: Route.ActionArgs) {
   const { cart } = context;
 
   const formData = await request.formData();
@@ -126,7 +122,10 @@ export default function Cart() {
               Please browse our catalog and add items before checking out.
             </p>
           </div>
-          <AnimatedLinkSpread to="/collections/all" className="w-60">
+          <AnimatedLinkSpread
+            to={href("/collections/:handle", { handle: "all" })}
+            className="w-60"
+          >
             <Icon
               name="cart"
               className="size-8"

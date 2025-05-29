@@ -1,4 +1,5 @@
-import { type LoaderFunctionArgs, redirect } from "react-router";
+import { redirect } from "react-router";
+import type { Route } from "./+types/($locale).discount.$code";
 
 /**
  * Automatically applies a discount found on the url
@@ -11,7 +12,7 @@ import { type LoaderFunctionArgs, redirect } from "react-router";
  *
  * ```
  */
-export async function loader({ request, context, params }: LoaderFunctionArgs) {
+export async function loader({ request, context, params }: Route.LoaderArgs) {
   const { cart } = context;
   const { code } = params;
 

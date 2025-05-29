@@ -1,15 +1,12 @@
-import {
-  type LoaderFunctionArgs,
-  type FormProps,
-  useFetcher,
-} from "react-router";
+import { type FormProps, useFetcher } from "react-router";
 import {
   getCollectionQuery,
   type CollectionProductData,
 } from "~/lib/data/collection.server";
 import { useState, useEffect, useCallback } from "react";
+import type { Route } from "./+types/load-more-products";
 
-export async function loader({ request, context }: LoaderFunctionArgs) {
+export async function loader({ request, context }: Route.LoaderArgs) {
   let url = new URL(request.url);
   let searchParams = new URLSearchParams(url.search);
 
