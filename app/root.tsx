@@ -145,7 +145,7 @@ async function loadCriticalData({ context, request }: Route.LoaderArgs) {
     searchParams.delete("discount");
 
     // Build redirect URL with remaining parameters
-    const redirectUrl = `${requestUrl.pathname}${searchParams}`;
+    const redirectUrl = `${requestUrl.pathname}?${searchParams}`;
 
     try {
       // Apply discount to cart
