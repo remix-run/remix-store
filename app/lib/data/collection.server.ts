@@ -54,7 +54,7 @@ export async function getCollectionQuery(
   };
 }
 
-export const COLLECTION_PRODUCT_FRAGMENT = `#graphql
+const COLLECTION_PRODUCT_FRAGMENT = `#graphql
   fragment MoneyProductItem on MoneyV2 {
     amount
     currencyCode
@@ -81,7 +81,7 @@ export const COLLECTION_PRODUCT_FRAGMENT = `#graphql
 ` as const;
 
 // NOTE: https://shopify.dev/docs/api/storefront/2022-04/objects/collection
-export const COLLECTION_QUERY = `#graphql
+const COLLECTION_QUERY = `#graphql
   ${COLLECTION_PRODUCT_FRAGMENT}
   query Collection(
     $handle: String!

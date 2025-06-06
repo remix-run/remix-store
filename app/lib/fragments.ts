@@ -8,20 +8,6 @@ const MERCHANDISE_PRODUCT_FRAGMENT = `#graphql
 ` as const;
 
 // NOTE: https://shopify.dev/docs/api/storefront/latest/queries/cart
-export const CART_MUTATE_FRAGMENT = `#graphql
-  fragment CartApiMutation on Cart {
-    updatedAt
-    id
-    checkoutUrl
-    totalQuantity
-    discountCodes {
-      code
-      applicable
-    }
-  }
-` as const;
-
-// NOTE: https://shopify.dev/docs/api/storefront/latest/queries/cart
 export const CART_QUERY_FRAGMENT = `#graphql
   fragment Money on MoneyV2 {
     currencyCode

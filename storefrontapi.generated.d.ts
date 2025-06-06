@@ -529,15 +529,6 @@ export type MerchadiseProductFragment = Pick<
   'handle' | 'title' | 'id' | 'vendor'
 >;
 
-export type CartApiMutationFragment = Pick<
-  StorefrontAPI.Cart,
-  'updatedAt' | 'id' | 'checkoutUrl' | 'totalQuantity'
-> & {
-  discountCodes: Array<
-    Pick<StorefrontAPI.CartDiscountCode, 'code' | 'applicable'>
-  >;
-};
-
 export type MoneyFragment = Pick<
   StorefrontAPI.MoneyV2,
   'currencyCode' | 'amount'

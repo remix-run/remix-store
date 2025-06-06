@@ -60,7 +60,7 @@ export async function getLookbookEntries(
     });
 }
 
-export let LOOKBOOK_QUERY = `#graphql
+let LOOKBOOK_QUERY = `#graphql
   ${PRODUCT_IMAGE_FRAGMENT}
   query LookbookImages (
     $country: CountryCode

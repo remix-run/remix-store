@@ -65,7 +65,7 @@ export async function getHeroData(storefront: Storefront): Promise<HeroData> {
   };
 }
 
-export let HERO_QUERY = `#graphql
+let HERO_QUERY = `#graphql
   ${PRODUCT_IMAGE_FRAGMENT}
   query Hero (
     $country: CountryCode

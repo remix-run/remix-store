@@ -14,7 +14,7 @@ export type SortKey =
  *
  * I have not found a way to get these from the storefront API, so hardcoded here.
  */
-export const PRODUCT_TYPES = [
+const PRODUCT_TYPES = [
   "apparel",
   "accessories",
   "stationery",
