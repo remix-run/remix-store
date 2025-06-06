@@ -210,7 +210,11 @@ function CartCTALink({
   let linkClassNames = useCartCTAClassNames(className);
 
   return (
-    <Link to={href("/cart")} className={linkClassNames} prefetch="intent">
+    <Link
+      to={href("/:locale?/cart")}
+      className={linkClassNames}
+      prefetch="intent"
+    >
       <CartCTAInner quantity={quantity} />
     </Link>
   );

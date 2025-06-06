@@ -123,7 +123,7 @@ export default function Cart() {
             </p>
           </div>
           <AnimatedLinkSpread
-            to={href("/collections/:handle", { handle: "all" })}
+            to={href("/:locale?/collections/:handle", { handle: "all" })}
             className="w-60"
           >
             <Icon

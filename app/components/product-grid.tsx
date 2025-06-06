@@ -97,7 +97,7 @@ function ProductGridItem({ product }: ProductGridItemProps) {
       <div className="flex h-14 flex-col items-center justify-center gap-2.5 text-base leading-none text-white">
         <Link
           prefetch="intent"
-          to={href("/products/:handle", { handle })}
+          to={href("/:locale?/products/:handle", { handle })}
           className="font-bold hover:text-white"
         >
           <span className="absolute inset-0" />

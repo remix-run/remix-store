@@ -22,7 +22,7 @@ import type { Route } from "./+types/($locale).cart.$lines";
 export async function loader({ request, context, params }: Route.LoaderArgs) {
   const { cart } = context;
   const { lines } = params;
-  if (!lines) return redirect(href("/cart"));
+  if (!lines) return redirect(href("/:locale?/cart"));
   const linesMap = lines.split(",").map((line) => {
     const lineDetails = line.split(":");
     const variantId = lineDetails[0];

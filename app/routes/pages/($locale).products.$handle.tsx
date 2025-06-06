@@ -184,7 +184,7 @@ function ProductMain({ product }: { product: ProductFragment }) {
                 <a href="mailto:support@merch.co">support@merch.co</a> or
                 consult our{" "}
                 <Link
-                  to={href("/policies/:handle", {
+                  to={href("/:locale?/policies/:handle", {
                     handle: "shipping-policy",
                   })}
                 >
