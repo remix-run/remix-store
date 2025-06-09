@@ -102,7 +102,7 @@ function ProductGridItem({ product }: ProductGridItemProps) {
   return (
     <ProductGridItemLayout className="group">
       <ProductImages images={product.images.nodes} />
-      <div className="flex h-14 flex-col items-center justify-center gap-2.5 text-base leading-none text-white">
+      <div className="flex h-14 flex-col items-center justify-center gap-2.5 text-base/none text-white">
         <Link
           prefetch="intent"
           to={href("/:locale?/products/:handle", { handle })}

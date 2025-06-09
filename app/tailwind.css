@@ -213,7 +213,7 @@
   @apply -mt-12 px-9;
 
   & h2 {
-    @apply mt-12 text-2xl leading-tight font-bold md:text-4xl md:leading-tight lg:text-[2.5rem] lg:leading-tight;
+    @apply mt-12 text-2xl/tight font-bold md:text-4xl/tight lg:text-[2.5rem]/tight;
   }
 
   & p {

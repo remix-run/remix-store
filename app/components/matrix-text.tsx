@@ -30,7 +30,7 @@ export function MatrixText({ text }: { text: TextId }) {
     "absolute top-1/2 left-1/2 bg-size-[100%_100%] bg-clip-text bg-no-repeat whitespace-pre";
 
   return (
-    <div className="relative aspect-[3/1] w-full overflow-hidden text-center font-mono text-[10px] leading-none font-medium tracking-normal text-transparent select-none">
+    <div className="relative aspect-[3/1] w-full overflow-hidden text-center font-mono text-[10px]/none font-medium tracking-normal text-transparent select-none">
       <div
         className={clsx(wrapperCss, "blur-xl")}
         style={{
