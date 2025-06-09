@@ -26,13 +26,9 @@
   --color-current: currentColor;
   --color-transparent: transparent;
 
-  --color-cyan-brand: #3defe9;
-
   --color-blue-400: #54bbff;
   --color-blue-brand: #3992ff;
   --color-blue-600: #367cff;
-
-  --color-blue-led: #c8dfea;
 
   --color-green-brand: #6bd968;
 
@@ -45,18 +41,16 @@
   --color-black: #000000;
   --color-white: #ffffff;
 
-  --color-neutral-50: #f1f1ec;
-  --color-neutral-100: #eaeae4;
-  --color-neutral-200: #e3e2dd;
-  --color-neutral-300: #dadada;
-  --color-neutral-400: #808080;
-  --color-neutral-500: #59585c;
-  --color-neutral-600: #434343;
-  --color-neutral-700: #343436;
-  --color-neutral-800: #242426;
-  --color-neutral-900: #1d1d1e;
-
-  --color-shop-pay: #5a31f4;
+  --color-gray-50: #f7f7f7;
+  --color-gray-100: #e3e3e3;
+  --color-gray-200: #c8c8c8;
+  --color-gray-300: #a4a4a4;
+  --color-gray-400: #818181;
+  --color-gray-500: #666666;
+  --color-gray-600: #515151;
+  --color-gray-700: #434343;
+  --color-gray-800: #212121;
+  --color-gray-900: #111111;
 
   --text-*: initial;
   --text-xs: 0.75rem;
@@ -89,10 +83,6 @@
   --ease-snap: cubic-bezier(0.13, 0.74, 0.41, 0.92);
 
   --animate-pulse-radial: pulse-radial 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-  --animate-check-appear: check-appear 400ms var(--ease-snap) 200ms forwards;
-  --animate-check-appear-delay: check-appear 400ms var(--ease-snap) 200ms
-    forwards;
-
   --animate-spin: spin 3s linear infinite;
 
   @keyframes pulse-radial {
@@ -104,83 +94,49 @@
       background-size: 80% 80%;
     }
   }
+}
 
-  @keyframes check-appear {
-    0% {
-      transform: scale(0.75) rotate(-12deg);
-    }
+@font-face {
+  font-family: "Inter";
+  font-weight: 100 900;
+  font-display: swap;
+  font-style: normal;
+  src: url("/font/inter-roman-latin-var.woff2") format("woff2");
+}
 
-    30% {
-      transform: rotate(10deg);
-    }
+@font-face {
+  font-family: "Inter";
+  font-weight: 100 900;
+  font-display: swap;
+  font-style: italic;
+  src: url("/font/inter-italic-latin-var.woff2") format("woff2");
+}
 
-    100% {
-      transform: scale(1) rotate(0);
-    }
+@font-face {
+  font-family: "JetBrains Mono";
+  font-weight: 100 900;
+  font-display: swap;
+  font-style: normal;
+  src: url("/font/jet-brains-mono.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Lexend Zetta";
+  font-weight: 900;
+  font-display: swap;
+  font-style: normal;
+  src: url("/font/lexend-zetta-black.woff2") format("woff2");
+}
+
+:root {
+  --header-height: 80px;
+
+  @media (width >= theme(--breakpoint-md)) {
+    --header-height: 136px;
   }
 }
 
-/*
-  The default border color has changed to `currentColor` in Tailwind CSS v4,
-  so we've added these compatibility styles to make sure everything still
-  looks the same as it did with Tailwind CSS v3.
-
-  If we ever want to remove these styles, we need to add an explicit border
-  color utility to any element that depends on these defaults.
-*/
 @layer base {
-  *,
-  ::after,
-  ::before,
-  ::backdrop,
-  ::file-selector-button {
-    border-color: var(--color-gray-200, currentColor);
-  }
-
-  @font-face {
-    font-family: "Inter";
-    font-weight: 100 900;
-    font-display: swap;
-    font-style: normal;
-    src: url("/font/inter-roman-latin-var.woff2") format("woff2");
-  }
-
-  @font-face {
-    font-family: "Inter";
-    font-weight: 100 900;
-    font-display: swap;
-    font-style: italic;
-    src: url("/font/inter-italic-latin-var.woff2") format("woff2");
-  }
-
-  @font-face {
-    font-family: "JetBrains Mono";
-    font-weight: 100 900;
-    font-display: swap;
-    font-style: normal;
-    src: url("/font/jet-brains-mono.woff2") format("woff2");
-  }
-
-  @font-face {
-    font-family: "Lexend Zetta";
-    font-weight: 900;
-    font-display: swap;
-    font-style: normal;
-    src: url("/font/lexend-zetta-black.woff2") format("woff2");
-  }
-
-  :root {
-    --header-height: 80px;
-
-    @media (width >= theme(--breakpoint-md)) {
-      --header-height: 136px;
-    }
-  }
-
-  .dark {
-    color-scheme: dark;
-  }
-
   html,
   body {
     @apply font-sans text-white scheme-dark;
@@ -214,9 +170,23 @@
   }
 }
 
+@keyframes check-appear {
+  0% {
+    transform: scale(0.75) rotate(-12deg);
+  }
+
+  30% {
+    transform: rotate(10deg);
+  }
+
+  100% {
+    transform: scale(1) rotate(0);
+  }
+}
+
 @utility add-to-cart-icon {
   transform: scale(0.75) rotate(-12deg);
-  animation: var(--animate-check-appear-delay);
+  animation: check-appear 400ms var(--ease-snap) 200ms forwards;
 }
 
 @utility rich-text {
@@ -243,7 +213,7 @@
   @apply -mt-12 px-9;
 
   & h2 {
-    @apply mt-12 text-2xl leading-tight font-bold md:text-4xl md:leading-tight lg:text-[2.5rem] lg:leading-tight;
+    @apply mt-12 text-2xl/tight font-bold md:text-4xl/tight lg:text-[2.5rem]/tight;
   }
 
   & p {
@@ -255,7 +225,7 @@
   }
 
   & blockquote {
-    @apply mt-6 bg-[#212121] p-6;
+    @apply mt-6 bg-gray-800 p-6;
   }
 
   & blockquote p:first-child {

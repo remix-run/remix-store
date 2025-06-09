@@ -63,7 +63,7 @@ export function Footer({ footer: footerPromise }: FooterProps) {
     <footer className="relative bg-black">
       <div
         className={clsx(
-          "px-2 py-32 pb-16 font-mono text-xs leading-tight text-white uppercase transition-opacity duration-300",
+          "px-2 py-32 pb-16 font-mono text-xs/tight text-white uppercase transition-opacity duration-300",
           isVisible ? "opacity-100" : "opacity-30",
         )}
       >
@@ -191,7 +191,7 @@ export function Footer({ footer: footerPromise }: FooterProps) {
           <div className="flex flex-col items-center gap-1">
             <p>Docs and Examples licensed under MIT</p>
             <p className="flex items-start gap-1">
-              <span className="text-base leading-none">©</span>
+              <span className="text-base/none">©</span>
               <span>{new Date().getFullYear()} Shopify, Inc.</span>
             </p>
           </div>

@@ -118,7 +118,7 @@ function ImageCarousel({
           >
             <Icon name="chevron-left" className="mx-auto size-6" />
           </PrevButton>
-          <div className="flex space-x-4">
+          <div className="flex gap-4">
             {scrollSnaps.map((btnIndex, index) => {
               return (
                 <DotButton

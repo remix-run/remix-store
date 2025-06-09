@@ -10,6 +10,7 @@ import {
   useLoadMoreProducts,
   type LoadMoreProductsOptions,
 } from "~/routes/resources/load-more-products";
+import { cn } from "~/lib/cn";
 
 let defaultLoadingProductCount = 12;
 
@@ -18,12 +19,14 @@ type ProductGridProps = {
   // Defaults to 12, only useful if you're using deferred product data and triggering a skeleton
   loadingProductCount?: number;
   loadMoreProducts: Omit<LoadMoreProductsOptions, "initialProducts">;
+  className?: string;
 };
 
 export function ProductGrid({
   products: initialProducts,
   loadMoreProducts,
   loadingProductCount = defaultLoadingProductCount,
+  className,
 }: ProductGridProps) {
   const { Form, products } = useLoadMoreProducts({
     ...loadMoreProducts,
@@ -31,7 +34,12 @@ export function ProductGrid({
   });
 
   return (
-    <div className="3xl:grid-cols-5 grid grid-cols-1 gap-y-9 bg-linear-to-b from-[#2d2d38] to-black md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4">
+    <div
+      className={cn(
+        "3xl:grid-cols-5 grid grid-cols-1 gap-y-9 bg-linear-to-b from-[#2d2d38] to-black md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4",
+        className,
+      )}
+    >
       {"then" in products ? (
         <Suspense
           fallback={
@@ -94,7 +102,7 @@ function ProductGridItem({ product }: ProductGridItemProps) {
   return (
     <ProductGridItemLayout className="group">
       <ProductImages images={product.images.nodes} />
-      <div className="flex h-14 flex-col items-center justify-center gap-2.5 text-base leading-none text-white">
+      <div className="flex h-14 flex-col items-center justify-center gap-2.5 text-base/none text-white">
         <Link
           prefetch="intent"
           to={href("/:locale?/products/:handle", { handle })}

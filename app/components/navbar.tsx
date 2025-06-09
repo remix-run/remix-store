@@ -75,7 +75,7 @@ function HeaderMenuLink(props: HeaderMenuLinkProps) {
 
   return (
     <NavLink
-      className="text-base leading-tight font-semibold no-underline"
+      className="text-base/tight font-semibold no-underline"
       to={url}
       prefetch="intent"
     >
