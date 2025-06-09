@@ -258,7 +258,7 @@ function LookbookEntry({ image, product }: LookbookEntryProps) {
   // the whole lookbook entry is clickable as a link
 
   const animatedLinkCss = clsx(
-    "[--offset:theme(spacing.5)] md:[--offset:theme(spacing.9)]",
+    "[--offset:--spacing(5)] md:[--offset:--spacing(9)]",
     "absolute bottom-[var(--offset)] left-[var(--offset)]",
   );
   return (

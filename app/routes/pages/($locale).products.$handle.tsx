@@ -319,10 +319,10 @@ function ProductOptions({ option }: { option: MappedProductOptions }) {
         </DropdownMenuTrigger>
         <DropdownMenuContent
           align="center"
-          className="w-[var(--radix-dropdown-menu-trigger-width)] rounded-4xl border border-[#222222] bg-[#111111] p-0"
+          className="w-[var(--radix-dropdown-menu-trigger-width)] rounded-4xl border border-gray-800 bg-gray-900 p-0"
           sideOffset={10}
         >
-          {option.optionValues.map((valueOption) => {
+          {option.optionValues.map((valueOption, i) => {
             const { name, variantUriQuery, selected, available } = valueOption;
 
             return (
@@ -332,10 +332,7 @@ function ProductOptions({ option }: { option: MappedProductOptions }) {
                 disabled={!available}
                 className={cn(
                   "rounded-4xl px-5 py-5 text-lg",
-                  "data-[highlighted]:bg-white/5",
-                  available
-                    ? "text-white data-[highlighted]:text-white"
-                    : "cursor-not-allowed text-white/30 data-[highlighted]:text-white/30",
+                  !available && "cursor-not-allowed text-white/30",
                 )}
               >
                 <Link
@@ -373,7 +370,7 @@ let addToCartButtonVariants = cva(
     variants: {
       pending: {
         false: "bg-white text-black",
-        true: "bg-[#6EDE49] text-white",
+        true: "bg-green-brand text-white",
       },
       disabled: {
         true: "bg-white/20 text-white/80",
