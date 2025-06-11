@@ -33,13 +33,18 @@ export function CartHeader({
 export function CheckoutLink({
   to,
   disabled = false,
+  className,
   ...props
 }: {
   to: string;
   disabled?: boolean;
 } & Omit<LinkProps, "to" | "children">) {
   return (
-    <AnimatedLinkSpread to={to} {...props}>
+    <AnimatedLinkSpread
+      to={to}
+      {...props}
+      className={cn("select-none", className)}
+    >
       {disabled ? (
         <span>Updating cart...</span>
       ) : (
@@ -112,7 +117,8 @@ export function CartLineItem({
         {image && (
           <HydrogenImage
             data={image}
-            className="h-full w-full object-contain"
+            className="h-full w-full object-contain select-none"
+            draggable={false}
             sizes="5em"
           />
         )}
@@ -148,7 +154,7 @@ function CartQuantityControls({
   let prevQuantity = quantity - 1;
 
   let buttonClassName =
-    "flex items-center justify-center rounded-full text-white/50 transition-colors duration-150 ease-in-out hover:text-white  focus-visible:text-white focus-visible:ring-1 focus-visible:ring-white/50  focus-visible:outline-none";
+    "flex items-center justify-center rounded-full text-white/50 transition-colors duration-150 ease-in-out hover:text-white  focus-visible:text-white focus-visible:ring-1 focus-visible:ring-white/50  focus-visible:outline-none select-none";
 
   return (
     <div
