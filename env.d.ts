@@ -20,6 +20,7 @@ declare global {
 
   interface Env extends HydrogenEnv {
     // declare additional Env parameter use in the fetch handler and Remix loader context here
+    ADMIN_ACCESS_TOKEN?: string;
   }
 }
 

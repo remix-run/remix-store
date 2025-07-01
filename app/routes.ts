@@ -8,6 +8,7 @@ const routes = [
   )),
   ...prefix("_resources", [
     route("load-more-products", "routes/resources/load-more-products.tsx"),
+    route("notify-me", "routes/resources/notify-me.tsx"),
   ]),
 ] satisfies RouteConfig;
 

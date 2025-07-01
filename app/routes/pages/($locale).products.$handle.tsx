@@ -270,6 +270,14 @@ function ProductForm({
   productOptions: MappedProductOptions[];
   selectedVariant: ProductFragment["selectedOrFirstAvailableVariant"];
 }) {
+  // Special boolean to control when to show signup form instead of normal product form
+  // You can modify this logic later to determine when to show the signup form
+  const showSignupForm = true; // This will be your custom logic
+
+  if (showSignupForm) {
+    return <NotifyMeForm selectedVariant={selectedVariant} />;
+  }
+
   return (
     <div className="flex flex-col gap-4 md:min-w-[330px] lg:min-w-[480px] lg:flex-row lg:gap-3">
       {productOptions.length > 0 ? (
@@ -296,6 +304,84 @@ function ProductForm({
       >
         {selectedVariant?.availableForSale ? "Add to cart" : "Sold out"}
       </AddToCartButton>
+    </div>
+  );
+}
+function NotifyMeForm({
+  selectedVariant,
+}: {
+  selectedVariant?: ProductFragment["selectedOrFirstAvailableVariant"];
+}) {
+  const fetcher = useFetcher<{
+    success?: boolean;
+    message?: string;
+    error?: string;
+  }>();
+
+  const isSubmitting = fetcher.state === "submitting";
+  const isSuccess = fetcher.data?.success;
+  const errorMessage = fetcher.data?.error;
+  const successMessage = fetcher.data?.message;
+
+  return (
+    <div className="flex flex-col gap-4 md:min-w-[330px] lg:min-w-[480px]">
+      <fetcher.Form
+        // TODO: remove
+        noValidate
+        method="post"
+        action="/_resources/notify-me"
+        className="flex flex-col gap-4 lg:flex-row lg:gap-3"
+      >
+        {/* Hidden fields for product information */}
+        <input
+          type="hidden"
+          name="variantId"
+          value={selectedVariant?.id || ""}
+        />
+        <input
+          type="hidden"
+          name="variantTitle"
+          value={selectedVariant?.title || ""}
+        />
+
+        <div className="flex w-full flex-col">
+          <label htmlFor="notify-email" className="sr-only">
+            Email address for stock notifications
+          </label>
+          <input
+            id="notify-email"
+            type="email"
+            name="email"
+            placeholder="run@remix.run"
+            required
+            disabled={isSubmitting || isSuccess}
+            className="focus-visible:ring-blue-brand w-full rounded-[54px] border-[3px] border-white bg-transparent px-6 py-4 text-lg font-semibold text-white outline-none placeholder:text-xl placeholder:text-white/60 focus-visible:ring-2 disabled:opacity-50"
+          />
+        </div>
+
+        <button
+          type="submit"
+          disabled={isSubmitting || isSuccess}
+          className="relative flex min-h-16 w-full items-center justify-center overflow-hidden rounded-[54px] bg-white px-6 py-4 text-xl font-semibold whitespace-nowrap text-black transition-colors duration-300 hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-50 lg:max-w-fit"
+        >
+          <span className="absolute inset-0" />
+          {isSubmitting ? "Signing up..." : isSuccess ? "Done!" : "Notify me"}
+        </button>
+      </fetcher.Form>
+
+      <div className="text-sm text-white/60">
+        {isSuccess ? (
+          <p className="text-green-400">{successMessage}</p>
+        ) : errorMessage ? (
+          <p className="text-red-400">{errorMessage}</p>
+        ) : (
+          <p>
+            This item is currently out of stock
+            <br />
+            We&apos;ll email you as soon as we have more
+          </p>
+        )}
+      </div>
     </div>
   );
 }
