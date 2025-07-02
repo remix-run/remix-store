@@ -263,13 +263,14 @@ function useProductOptions(product: ProductFragment) {
   return { productOptions, selectedVariant };
 }
 
-function ProductForm({
-  productOptions,
-  selectedVariant,
-}: {
+type ProductFormProps = {
   productOptions: MappedProductOptions[];
-  selectedVariant: ProductFragment["selectedOrFirstAvailableVariant"];
-}) {
+  selectedVariant: NonNullable<
+    ProductFragment["selectedOrFirstAvailableVariant"]
+  >;
+};
+
+function ProductForm({ productOptions, selectedVariant }: ProductFormProps) {
   // Special boolean to control when to show signup form instead of normal product form
   // You can modify this logic later to determine when to show the signup form
   const showSignupForm = true; // This will be your custom logic
@@ -309,9 +310,7 @@ function ProductForm({
 }
 function NotifyMeForm({
   selectedVariant,
-}: {
-  selectedVariant?: ProductFragment["selectedOrFirstAvailableVariant"];
-}) {
+}: Pick<ProductFormProps, "selectedVariant">) {
   const fetcher = useFetcher<{
     success?: boolean;
     message?: string;
@@ -329,19 +328,14 @@ function NotifyMeForm({
         // TODO: remove
         noValidate
         method="post"
-        action="/_resources/notify-me"
+        action="/_resources/subscribe"
         className="flex flex-col gap-4 lg:flex-row lg:gap-3"
       >
-        {/* Hidden fields for product information */}
-        <input
-          type="hidden"
-          name="variantId"
-          value={selectedVariant?.id || ""}
-        />
+        <input type="hidden" name="variantId" value={selectedVariant.id} />
         <input
           type="hidden"
           name="variantTitle"
-          value={selectedVariant?.title || ""}
+          value={selectedVariant.title}
         />
 
         <div className="flex w-full flex-col">
