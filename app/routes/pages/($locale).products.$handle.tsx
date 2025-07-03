@@ -137,13 +137,6 @@ function ProductMain({ product }: { product: ProductLoaderData }) {
 
   const { productOptions, selectedVariant } = useProductOptions(product);
 
-  // TODO: remove this before goes to prod
-  // temporary fail state
-  productOptions[0].optionValues[2].variant.availableForSale = false;
-  // @ts-expect-error - TODO: remove this before goes to prod
-  productOptions[0].optionValues[2].firstSelectableVariant.availableForSale =
-    false;
-
   return (
     <>
       <div className="static top-(--header-height) mx-4 flex max-h-fit flex-col gap-6 text-white md:sticky md:mx-0 md:max-w-xl md:basis-1/3 lg:gap-9 lg:pt-32">
