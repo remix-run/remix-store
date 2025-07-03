@@ -276,7 +276,7 @@ function ProductForm({ productOptions, selectedVariant }: ProductFormProps) {
   const showSignupForm = true; // This will be your custom logic
 
   if (showSignupForm) {
-    return <NotifyMeForm selectedVariant={selectedVariant} />;
+    return <SubscribeCustomerForm selectedVariant={selectedVariant} />;
   }
 
   return (
@@ -308,7 +308,7 @@ function ProductForm({ productOptions, selectedVariant }: ProductFormProps) {
     </div>
   );
 }
-function NotifyMeForm({
+function SubscribeCustomerForm({
   selectedVariant,
 }: Pick<ProductFormProps, "selectedVariant">) {
   const fetcher = useFetcher<{
@@ -331,11 +331,10 @@ function NotifyMeForm({
         action="/_resources/subscribe"
         className="flex flex-col gap-4 lg:flex-row lg:gap-3"
       >
-        <input type="hidden" name="variantId" value={selectedVariant.id} />
         <input
           type="hidden"
-          name="variantTitle"
-          value={selectedVariant.title}
+          name="variant-handle"
+          value={selectedVariant.product.handle}
         />
 
         <div className="flex w-full flex-col">
@@ -363,11 +362,11 @@ function NotifyMeForm({
         </button>
       </fetcher.Form>
 
-      <div className="text-sm text-white/60">
+      <div className="text-xs text-white/60 lg:text-sm">
         {isSuccess ? (
-          <p className="text-green-400">{successMessage}</p>
+          <p className="whitespace-pre-line text-green-400">{successMessage}</p>
         ) : errorMessage ? (
-          <p className="text-red-400">{errorMessage}</p>
+          <p className="whitespace-pre-line text-red-400">{errorMessage}</p>
         ) : (
           <p>
             This item is currently out of stock
@@ -402,7 +401,7 @@ function ProductOptions({ option }: { option: MappedProductOptions }) {
           className="w-[var(--radix-dropdown-menu-trigger-width)] rounded-4xl border border-gray-800 bg-gray-900 p-0"
           sideOffset={10}
         >
-          {option.optionValues.map((valueOption, i) => {
+          {option.optionValues.map((valueOption) => {
             const { name, variantUriQuery, selected, available } = valueOption;
 
             return (

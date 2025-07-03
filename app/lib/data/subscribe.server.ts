@@ -4,7 +4,7 @@ import * as z from "zod/v4";
 /**
  * Shopify Admin API client class.
  */
-export class CreateShopifyAdminClient {
+export class ShopifyCustomer {
   private request: <T = any>(
     query: string,
     variables?: Record<string, any>,
@@ -86,18 +86,14 @@ export class CreateShopifyAdminClient {
     }
   }
 
-  // Create a new customer
-  async createCustomer(input: {
-    email: string;
-    tags: string[];
-    emailMarketingConsent?: {
-      marketingState: string;
-      marketingOptInLevel: string;
-      consentUpdatedAt: string;
-    };
-  }) {
+  async createAndSubscribeCustomer(input: { email: string; tags: string[] }) {
     try {
-      const result = await this.request(CREATE_CUSTOMER_MUTATION, { input });
+      const result = await this.request(CREATE_CUSTOMER_MUTATION, {
+        input: {
+          ...input,
+          emailMarketingConsent: createEmailMarketingConsentInput(),
+        },
+      });
 
       throwOnGraphQLErrors(result);
 
@@ -126,10 +122,7 @@ export class CreateShopifyAdminClient {
     }
   }
 
-  // TODO: return {error: message} instead of throwing errors
-
-  // Update customer tags
-  async updateCustomer(input: { id: string; tags: string[] }) {
+  async updateCustomerTags(input: { id: string; tags: string[] }) {
     try {
       const result = await this.request(UPDATE_CUSTOMER_MUTATION, { input });
 
@@ -161,18 +154,16 @@ export class CreateShopifyAdminClient {
   }
 
   // Update customer email marketing consent
-  async updateEmailMarketingConsent(input: {
-    customerId: string;
-    emailMarketingConsent: {
-      marketingState: string;
-      marketingOptInLevel: string;
-      consentUpdatedAt: string;
-    };
-  }) {
+  async subscribeCustomer(input: { customerId: string }) {
     try {
       const result = await this.request(
         UPDATE_EMAIL_MARKETING_CONSENT_MUTATION,
-        { input },
+        {
+          input: {
+            ...input,
+            emailMarketingConsent: createEmailMarketingConsentInput(),
+          },
+        },
       );
 
       throwOnGraphQLErrors(result);
@@ -197,6 +188,7 @@ export class CreateShopifyAdminClient {
       // Validate customer data
       const customerValidation = CustomerSchema.safeParse(customerData);
       if (!customerValidation.success) {
+        console.error(customerValidation.error);
         throw new Error("Invalid customer data received");
       }
 
@@ -209,6 +201,14 @@ export class CreateShopifyAdminClient {
   }
 }
 
+function createEmailMarketingConsentInput() {
+  return {
+    marketingState: "SUBSCRIBED",
+    marketingOptInLevel: "SINGLE_OPT_IN",
+    consentUpdatedAt: new Date().toISOString(),
+  };
+}
+
 function throwOnGraphQLErrors(
   result: any,
   fallbackMessage = "Something went wrong. Please try again.",
@@ -218,23 +218,10 @@ function throwOnGraphQLErrors(
   }
 }
 
-// Zod schemas for validation and type generation
-const EmailMarketingConsentSchema = z.object({
-  marketingState: z.string(),
-  marketingOptInLevel: z.string().optional(),
-  consentUpdatedAt: z.string().optional(),
-});
-
 const CustomerSchema = z.object({
   id: z.string(),
   email: z.string(),
-  tags: z.array(z.string()),
-  emailMarketingConsent: EmailMarketingConsentSchema.optional(),
-});
-
-const UserErrorSchema = z.object({
-  field: z.array(z.string()).optional(),
-  message: z.string(),
+  tags: z.array(z.string()).default([]),
 });
 
 const GET_CUSTOMER_BY_EMAIL_QUERY = `#graphql
@@ -242,12 +229,7 @@ const GET_CUSTOMER_BY_EMAIL_QUERY = `#graphql
     customerByIdentifier(identifier: { emailAddress: $email }) {
       id
       email
-      tags
-      emailMarketingConsent {
-        marketingState
-        marketingOptInLevel
-        consentUpdatedAt
-      }
+      tags 
     }
   }
 `;
@@ -259,10 +241,6 @@ const CREATE_CUSTOMER_MUTATION = `#graphql
         id
         email
         tags
-        emailMarketingConsent {
-          marketingState
-          marketingOptInLevel
-        }
       }
       userErrors {
         field
@@ -293,10 +271,7 @@ const UPDATE_EMAIL_MARKETING_CONSENT_MUTATION = `#graphql
     customerEmailMarketingConsentUpdate(input: $input) {
       customer {
         id
-        emailMarketingConsent {
-          marketingState
-          marketingOptInLevel
-        }
+        email
       }
       userErrors {
         field

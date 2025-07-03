@@ -1,14 +1,13 @@
 import { data } from "react-router";
 import type { Route } from "./+types/subscribe";
-import { CreateShopifyAdminClient } from "~/lib/data/subscribe.server";
+import { ShopifyCustomer } from "~/lib/data/subscribe.server";
 import * as z from "zod/v4";
 
 // TODO: handle redirect for when JS hasn't loaded yet
 
 const subscribeSchema = z.object({
   email: z.email("Please enter a valid email address"),
-  variantId: z.string("Variant ID is required").min(1),
-  variantTitle: z.string("Variant title is required"),
+  variantHandle: z.string("Variant handle is required"),
 });
 
 export async function action({ request, context }: Route.ActionArgs) {
@@ -23,8 +22,7 @@ export async function action({ request, context }: Route.ActionArgs) {
 
   const validationResult = subscribeSchema.safeParse({
     email: form.get("email"),
-    variantId: form.get("variantId"),
-    variantTitle: form.get("variantTitle"),
+    variantHandle: form.get("variant-handle"),
   });
 
   if (!validationResult.success) {
@@ -32,66 +30,41 @@ export async function action({ request, context }: Route.ActionArgs) {
     return data({ error: firstError.message, success: false }, { status: 400 });
   }
 
-  const { email, variantId, variantTitle } = validationResult.data;
+  const { email, variantHandle } = validationResult.data;
+  const tags = [`${variantHandle}-subscriber`, "out-of-stock-subscriber"];
 
   try {
-    const adminClient = new CreateShopifyAdminClient(context);
-
-    // Create product notification tag
-    const productTag = variantTitle
-      ? `notify-${variantId}-${variantTitle.toLowerCase().replace(/\s+/g, "-")}`
-      : `notify-${variantId}`;
-
-    const baseTag = "out-of-stock-subscriber";
-
-    // Step 1: Check if customer exists
-    const existingCustomer = await adminClient.getCustomerByEmail(email);
+    const customerClient = new ShopifyCustomer(context);
+    const existingCustomer = await customerClient.getCustomerByEmail(email);
 
     if (existingCustomer) {
-      // Step 2a: Update existing customer tags and email marketing consent
-      const existingTags = existingCustomer.tags || [];
-      const newTags = [...new Set([...existingTags, productTag, baseTag])];
+      const existingTags = existingCustomer.tags;
+      const newTags = [...new Set([...existingTags, ...tags])];
 
-      // Update customer tags
-      await adminClient.updateCustomer({
+      await customerClient.updateCustomerTags({
         id: existingCustomer.id,
         tags: newTags,
       });
 
-      // Update email marketing consent
-      await adminClient.updateEmailMarketingConsent({
+      await customerClient.subscribeCustomer({
         customerId: existingCustomer.id,
-        emailMarketingConsent: {
-          marketingState: "SUBSCRIBED",
-          marketingOptInLevel: "SINGLE_OPT_IN",
-          consentUpdatedAt: new Date().toISOString(),
-        },
       });
     } else {
-      // Step 2b: Create new customer
-      await adminClient.createCustomer({
+      await customerClient.createAndSubscribeCustomer({
         email,
-        tags: [productTag, baseTag],
-        emailMarketingConsent: {
-          marketingState: "SUBSCRIBED",
-          marketingOptInLevel: "SINGLE_OPT_IN",
-          consentUpdatedAt: new Date().toISOString(),
-        },
+        tags,
       });
     }
 
-    // Step 3: Success response
     return data(
       {
         success: true,
-        message: "Thanks! We'll notify you when this item is back in stock.",
+        message: "We got you\nYou'll know",
       },
       { status: 200 },
     );
   } catch (error: any) {
     console.error("Subscribe action error:", error);
-
-    // TODO: return {error: message} instead of throwing errors where appropriate, this should just be a final catch all
 
     return data(
       {
