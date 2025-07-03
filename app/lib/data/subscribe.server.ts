@@ -53,6 +53,7 @@ export class ShopifyCustomer {
       const result = (await response.json()) as any;
 
       if (result.errors) {
+        console.error(result.errors);
         throw new Error(
           `GraphQL errors: ${result.errors.map((e: any) => e.message).join(", ")}`,
         );
@@ -77,6 +78,7 @@ export class ShopifyCustomer {
       // Validate customer data
       const customerValidation = CustomerSchema.safeParse(customerData);
       if (!customerValidation.success) {
+        console.error(customerValidation.error);
         throw new Error("Invalid customer data received");
       }
 
@@ -113,6 +115,7 @@ export class ShopifyCustomer {
       // Validate customer data
       const customerValidation = CustomerSchema.safeParse(customerData);
       if (!customerValidation.success) {
+        console.error(customerValidation.error);
         throw new Error("Invalid customer data received");
       }
 
@@ -144,6 +147,7 @@ export class ShopifyCustomer {
       // Validate customer data
       const customerValidation = CustomerSchema.safeParse(customerData);
       if (!customerValidation.success) {
+        console.error(customerValidation.error);
         throw new Error("Invalid customer data received");
       }
 
@@ -214,6 +218,7 @@ function throwOnGraphQLErrors(
   fallbackMessage = "Something went wrong. Please try again.",
 ) {
   if (result.errors?.length) {
+    console.error(result.errors);
     throw new Error(result.errors[0].message || fallbackMessage);
   }
 }

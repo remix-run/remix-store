@@ -1,13 +1,13 @@
-import { data } from "react-router";
+import { data, redirect } from "react-router";
 import type { Route } from "./+types/subscribe";
 import { ShopifyCustomer } from "~/lib/data/subscribe.server";
 import * as z from "zod/v4";
 
-// TODO: handle redirect for when JS hasn't loaded yet
-
 const subscribeSchema = z.object({
   email: z.email("Please enter a valid email address"),
   variantHandle: z.string("Variant handle is required"),
+  variantTitle: z.string("Variant title is required"),
+  redirect: z.string().nullish(),
 });
 
 export async function action({ request, context }: Route.ActionArgs) {
@@ -23,15 +23,29 @@ export async function action({ request, context }: Route.ActionArgs) {
   const validationResult = subscribeSchema.safeParse({
     email: form.get("email"),
     variantHandle: form.get("variant-handle"),
+    variantTitle: form.get("variant-title"),
+    redirect: form.get("redirect"),
   });
 
   if (!validationResult.success) {
+    console.error(validationResult.error);
     const firstError = validationResult.error.issues[0];
     return data({ error: firstError.message, success: false }, { status: 400 });
   }
 
-  const { email, variantHandle } = validationResult.data;
-  const tags = [`${variantHandle}-subscriber`, "out-of-stock-subscriber"];
+  let {
+    email,
+    variantHandle,
+    variantTitle,
+    redirect: redirectUrl,
+  } = validationResult.data;
+
+  variantTitle = variantTitle.toLowerCase().replace(/ /g, "-");
+
+  const tags = [
+    `back-in-stock-subscriber`,
+    `${variantHandle}-${variantTitle}-back-in-stock-subscriber`,
+  ];
 
   try {
     const customerClient = new ShopifyCustomer(context);
@@ -56,10 +70,17 @@ export async function action({ request, context }: Route.ActionArgs) {
       });
     }
 
+    // If redirect URL exists, redirect after success (JS not loaded)
+    if (redirectUrl) {
+      return redirect(redirectUrl);
+    }
+
+    // Otherwise, return data for hydrated form (JS loaded)
     return data(
       {
         success: true,
-        message: "We got you\nYou'll know",
+        message:
+          "Thanks for subscribing! We'll let you know when it's back in stock.",
       },
       { status: 200 },
     );

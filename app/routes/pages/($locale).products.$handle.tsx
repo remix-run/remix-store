@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from "react";
-import { useLayoutEffect } from "~/lib/hooks";
+import { useLayoutEffect, useHydrated } from "~/lib/hooks";
 import { data, Link, useFetcher, href } from "react-router";
-import type { ProductFragment } from "storefrontapi.generated";
 import {
   type OptimisticCartLineInput,
   type MappedProductOptions,
@@ -81,6 +80,8 @@ export async function loader(args: Route.LoaderArgs) {
   });
 }
 
+type ProductLoaderData = Route.ComponentProps["loaderData"]["product"];
+
 export default function Product({ loaderData }: Route.ComponentProps) {
   let { menu, product } = loaderData;
 
@@ -125,8 +126,14 @@ function MenuLink({ to, children }: { to: string; children: React.ReactNode }) {
   );
 }
 
-function ProductMain({ product }: { product: ProductFragment }) {
-  let { title, category, technicalDescription, customDescription } = product;
+function ProductMain({ product }: { product: ProductLoaderData }) {
+  let {
+    title,
+    category,
+    technicalDescription,
+    customDescription,
+    subscribeIfBackInStock,
+  } = product;
 
   const { productOptions, selectedVariant } = useProductOptions(product);
 
@@ -149,6 +156,7 @@ function ProductMain({ product }: { product: ProductFragment }) {
         <ProductForm
           productOptions={productOptions}
           selectedVariant={selectedVariant}
+          subscribeIfBackInStock={subscribeIfBackInStock}
         />
 
         {customDescription ? (
@@ -219,7 +227,7 @@ function ProductMain({ product }: { product: ProductFragment }) {
  * It also sets the search param to the selected variant without navigation
  * only when there are options and no search params are set in the url
  */
-function useProductOptions(product: ProductFragment) {
+function useProductOptions(product: ProductLoaderData) {
   const { options, selectedOrFirstAvailableVariant } = product;
 
   const hasOptions = options.length > 0;
@@ -264,48 +272,58 @@ function useProductOptions(product: ProductFragment) {
 }
 
 type ProductFormProps = {
+  subscribeIfBackInStock: boolean;
   productOptions: MappedProductOptions[];
   selectedVariant: NonNullable<
-    ProductFragment["selectedOrFirstAvailableVariant"]
+    ProductLoaderData["selectedOrFirstAvailableVariant"]
   >;
 };
 
-function ProductForm({ productOptions, selectedVariant }: ProductFormProps) {
-  // Special boolean to control when to show signup form instead of normal product form
-  // You can modify this logic later to determine when to show the signup form
-  const showSignupForm = true; // This will be your custom logic
-
-  if (showSignupForm) {
-    return <SubscribeCustomerForm selectedVariant={selectedVariant} />;
+function ProductForm({
+  productOptions,
+  selectedVariant,
+  subscribeIfBackInStock,
+}: ProductFormProps) {
+  // TODO: remove this
+  if (selectedVariant.selectedOptions[0].value === "Large") {
+    selectedVariant.availableForSale = false;
   }
 
-  return (
-    <div className="flex flex-col gap-4 md:min-w-[330px] lg:min-w-[480px] lg:flex-row lg:gap-3">
-      {productOptions.length > 0 ? (
-        <div className="flex w-full flex-col gap-4 lg:basis-2/3">
-          {productOptions.map((option) => (
-            <ProductOptions key={option.name} option={option} />
-          ))}
-        </div>
-      ) : null}
+  const showSubscribeForm =
+    !selectedVariant.availableForSale && subscribeIfBackInStock;
 
-      <AddToCartButton
-        disabled={!selectedVariant || !selectedVariant.availableForSale}
-        lines={
-          selectedVariant
-            ? [
-                {
-                  merchandiseId: selectedVariant.id,
-                  quantity: 1,
-                  selectedVariant,
-                },
-              ]
-            : []
-        }
-      >
-        {selectedVariant?.availableForSale ? "Add to cart" : "Sold out"}
-      </AddToCartButton>
-    </div>
+  return (
+    <>
+      <div className="flex flex-col gap-4 md:min-w-[330px] lg:min-w-[480px] lg:flex-row lg:gap-3">
+        {productOptions.length > 0 ? (
+          <div className="flex w-full flex-col gap-4 lg:basis-2/3">
+            {productOptions.map((option) => (
+              <ProductOptions key={option.name} option={option} />
+            ))}
+          </div>
+        ) : null}
+
+        <AddToCartButton
+          disabled={!selectedVariant || !selectedVariant.availableForSale}
+          lines={
+            selectedVariant
+              ? [
+                  {
+                    merchandiseId: selectedVariant.id,
+                    quantity: 1,
+                    selectedVariant,
+                  },
+                ]
+              : []
+          }
+        >
+          {selectedVariant?.availableForSale ? "Add to cart" : "Sold out"}
+        </AddToCartButton>
+      </div>
+      {showSubscribeForm ? (
+        <SubscribeCustomerForm selectedVariant={selectedVariant} />
+      ) : null}
+    </>
   );
 }
 function SubscribeCustomerForm({
@@ -316,7 +334,7 @@ function SubscribeCustomerForm({
     message?: string;
     error?: string;
   }>();
-
+  const isHydrated = useHydrated();
   const isSubmitting = fetcher.state === "submitting";
   const isSuccess = fetcher.data?.success;
   const errorMessage = fetcher.data?.error;
@@ -336,6 +354,20 @@ function SubscribeCustomerForm({
           name="variant-handle"
           value={selectedVariant.product.handle}
         />
+        <input
+          type="hidden"
+          name="variant-title"
+          value={selectedVariant.title}
+        />
+
+        {!isHydrated && (
+          // if JS hasn't loaded yet, redirect to collections page after success
+          <input
+            type="hidden"
+            name="redirect"
+            value={href("/:locale?/collections/:handle", { handle: "all" })}
+          />
+        )}
 
         <div className="flex w-full flex-col">
           <label htmlFor="notify-email" className="sr-only">
@@ -364,14 +396,13 @@ function SubscribeCustomerForm({
 
       <div className="text-xs text-white/60 lg:text-sm">
         {isSuccess ? (
-          <p className="whitespace-pre-line text-green-400">{successMessage}</p>
+          <p className="text-green-400">{successMessage}</p>
         ) : errorMessage ? (
-          <p className="whitespace-pre-line text-red-400">{errorMessage}</p>
+          <p className="text-red-400">{errorMessage}</p>
         ) : (
           <p>
-            This item is currently out of stock
-            <br />
-            We&apos;ll email you as soon as we have more
+            This item is currently out of stock. We&apos;ll email you as soon as
+            we have more.
           </p>
         )}
       </div>

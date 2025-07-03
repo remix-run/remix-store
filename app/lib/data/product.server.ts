@@ -20,7 +20,10 @@ export async function getProductData(
     );
   }
 
-  return product;
+  return {
+    ...product,
+    subscribeIfBackInStock: product.subscribeIfBackInStock?.value === "true",
+  };
 }
 
 export type MenuItem = {
@@ -139,6 +142,9 @@ const PRODUCT_DETAIL_FRAGMENT = `#graphql
       value
     }
     technicalDescription: metafield(key: "technical_description", namespace: "custom") {
+      value
+    }
+    subscribeIfBackInStock: metafield(key: "subscribe_if_back_in_stock", namespace: "custom") {
       value
     }
     availableForSale
