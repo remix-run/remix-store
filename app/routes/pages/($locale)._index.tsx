@@ -211,15 +211,11 @@ let RotatingProduct = memo(
         .catch(() => setImagesLoaded("error"));
     }, [assetImages, imagesLoaded, prefersReducedMotion]);
 
-    // Temporarily not a link while we fix some product issues
-
-    // <Link
-    //   to={href("/:locale?/products/:handle", { handle: product.handle })}
-    //   className="3xl:scale-130 3xl:hover:scale-135 3xl:translate-y-56 absolute top-0 w-full translate-y-14 scale-125 transition-transform duration-200 select-none hover:scale-130 md:translate-y-12 lg:translate-y-20 lg:scale-100 lg:hover:scale-105 xl:scale-100 xl:hover:scale-105 2xl:translate-y-32 2xl:scale-110 2xl:hover:scale-115"
-    // >
-
     return (
-      <div className="3xl:scale-130 3xl:translate-y-56 absolute top-0 w-full translate-y-14 scale-125 transition-transform duration-200 select-none md:translate-y-12 lg:translate-y-20 lg:scale-100 xl:scale-100 2xl:translate-y-32 2xl:scale-110">
+      <Link
+        to={href("/:locale?/products/:handle", { handle: product.handle })}
+        className="3xl:scale-130 3xl:hover:scale-135 3xl:translate-y-56 absolute top-0 w-full translate-y-14 scale-125 transition-transform duration-200 select-none hover:scale-130 md:translate-y-12 lg:translate-y-20 lg:scale-100 lg:hover:scale-105 xl:scale-100 xl:hover:scale-105 2xl:translate-y-32 2xl:scale-110 2xl:hover:scale-115"
+      >
         <span className="sr-only">{product.title}</span>
         {assetImages.map((asset, index) => (
           <img
@@ -233,7 +229,7 @@ let RotatingProduct = memo(
             }}
           />
         ))}
-      </div>
+      </Link>
     );
   },
 );
