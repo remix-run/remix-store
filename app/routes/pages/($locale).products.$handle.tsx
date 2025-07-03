@@ -421,8 +421,8 @@ function SubscribeCustomerForm({
           <p className="text-red-brand">{errorMessage}</p>
         ) : (
           <p>
-            This item is currently out of stock. We&apos;ll email you as soon as
-            we have more.
+            This size is currently out of stock. Sign up to be notified by email
+            when restock this size.
           </p>
         )}
       </div>
