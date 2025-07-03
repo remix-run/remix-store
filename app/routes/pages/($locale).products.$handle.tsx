@@ -139,7 +139,6 @@ function ProductMain({ product }: { product: ProductLoaderData }) {
 
   // TODO: remove this before goes to prod
   // temporary fail state
-
   productOptions[0].optionValues[2].variant.availableForSale = false;
   // @ts-expect-error - TODO: remove this before goes to prod
   productOptions[0].optionValues[2].firstSelectableVariant.availableForSale =
