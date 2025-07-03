@@ -137,6 +137,14 @@ function ProductMain({ product }: { product: ProductLoaderData }) {
 
   const { productOptions, selectedVariant } = useProductOptions(product);
 
+  // TODO: remove this before goes to prod
+  // temporary fail state
+
+  productOptions[0].optionValues[2].variant.availableForSale = false;
+  // @ts-expect-error - TODO: remove this before goes to prod
+  productOptions[0].optionValues[2].firstSelectableVariant.availableForSale =
+    false;
+
   return (
     <>
       <div className="static top-(--header-height) mx-4 flex max-h-fit flex-col gap-6 text-white md:sticky md:mx-0 md:max-w-xl md:basis-1/3 lg:gap-9 lg:pt-32">
@@ -284,19 +292,14 @@ function ProductForm({
   selectedVariant,
   subscribeIfBackInStock,
 }: ProductFormProps) {
-  // TODO: remove this
-  if (selectedVariant.selectedOptions[0].value === "Large") {
-    selectedVariant.availableForSale = false;
-  }
-
   const showSubscribeForm =
     !selectedVariant.availableForSale && subscribeIfBackInStock;
 
   return (
-    <>
-      <div className="flex flex-col gap-4 md:min-w-[330px] lg:min-w-[480px] lg:flex-row lg:gap-3">
+    <div className="flex flex-col gap-4 md:min-w-[330px] lg:min-w-[480px]">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3 lg:gap-3">
         {productOptions.length > 0 ? (
-          <div className="flex w-full flex-col gap-4 lg:basis-2/3">
+          <div className="flex flex-col gap-4 lg:col-span-2">
             {productOptions.map((option) => (
               <ProductOptions key={option.name} option={option} />
             ))}
@@ -316,38 +319,39 @@ function ProductForm({
                 ]
               : []
           }
+          className="lg:col-span-1"
         >
           {selectedVariant?.availableForSale ? "Add to cart" : "Sold out"}
         </AddToCartButton>
       </div>
+
       {showSubscribeForm ? (
         <SubscribeCustomerForm selectedVariant={selectedVariant} />
       ) : null}
-    </>
+    </div>
   );
 }
+
 function SubscribeCustomerForm({
   selectedVariant,
 }: Pick<ProductFormProps, "selectedVariant">) {
-  const fetcher = useFetcher<{
+  let fetcher = useFetcher<{
     success?: boolean;
     message?: string;
     error?: string;
   }>();
-  const isHydrated = useHydrated();
-  const isSubmitting = fetcher.state === "submitting";
-  const isSuccess = fetcher.data?.success;
-  const errorMessage = fetcher.data?.error;
-  const successMessage = fetcher.data?.message;
+  let isHydrated = useHydrated();
+  let isSubmitting = fetcher.state === "submitting";
+  let isSuccess = fetcher.data?.success;
+  let errorMessage = fetcher.data?.error;
+  let successMessage = fetcher.data?.message;
 
   return (
-    <div className="flex flex-col gap-4 md:min-w-[330px] lg:min-w-[480px]">
+    <div className="flex flex-col gap-4">
       <fetcher.Form
-        // TODO: remove
-        noValidate
         method="post"
         action="/_resources/subscribe"
-        className="flex flex-col gap-4 lg:flex-row lg:gap-3"
+        className="grid grid-cols-1 gap-4 lg:grid-cols-3 lg:gap-3"
       >
         <input
           type="hidden"
@@ -369,7 +373,7 @@ function SubscribeCustomerForm({
           />
         )}
 
-        <div className="flex w-full flex-col">
+        <div className="flex flex-col lg:col-span-2">
           <label htmlFor="notify-email" className="sr-only">
             Email address for stock notifications
           </label>
@@ -380,25 +384,42 @@ function SubscribeCustomerForm({
             placeholder="run@remix.run"
             required
             disabled={isSubmitting || isSuccess}
-            className="focus-visible:ring-blue-brand w-full rounded-[54px] border-[3px] border-white bg-transparent px-6 py-4 text-lg font-semibold text-white outline-none placeholder:text-xl placeholder:text-white/60 focus-visible:ring-2 disabled:opacity-50"
+            className={cn(
+              "focus-visible:ring-blue-brand w-full rounded-[54px] border-[3px] px-6 py-4 text-lg font-semibold outline-none placeholder:text-xl placeholder:text-white/60 focus-visible:ring-2",
+              isSuccess
+                ? "border-green-brand text-green-brand autofill:text-green-brand"
+                : "border-white text-white",
+            )}
           />
         </div>
 
         <button
           type="submit"
           disabled={isSubmitting || isSuccess}
-          className="relative flex min-h-16 w-full items-center justify-center overflow-hidden rounded-[54px] bg-white px-6 py-4 text-xl font-semibold whitespace-nowrap text-black transition-colors duration-300 hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-50 lg:max-w-fit"
+          className={cn(
+            addToCartButtonVariants({
+              state: isSuccess ? "success" : "idle",
+              disabled: isSubmitting,
+            }),
+            "lg:col-span-1",
+          )}
         >
           <span className="absolute inset-0" />
-          {isSubmitting ? "Signing up..." : isSuccess ? "Done!" : "Notify me"}
+          {isSuccess ? (
+            <Icon name="check" className="add-to-cart-icon size-8" />
+          ) : isSubmitting ? (
+            "Signing up..."
+          ) : (
+            "Notify me"
+          )}
         </button>
       </fetcher.Form>
 
       <div className="text-xs text-white/60 lg:text-sm">
         {isSuccess ? (
-          <p className="text-green-400">{successMessage}</p>
+          <p className="">{successMessage}</p>
         ) : errorMessage ? (
-          <p className="text-red-400">{errorMessage}</p>
+          <p className="text-red-brand">{errorMessage}</p>
         ) : (
           <p>
             This item is currently out of stock. We&apos;ll email you as soon as
@@ -478,16 +499,16 @@ let addToCartButtonVariants = cva(
   ],
   {
     variants: {
-      pending: {
-        false: "bg-white text-black",
-        true: "bg-green-brand text-white",
+      state: {
+        idle: "bg-white text-black",
+        success: "bg-green-brand text-white",
       },
       disabled: {
         true: "bg-white/20 text-white/80",
       },
     },
     defaultVariants: {
-      pending: false,
+      state: "idle",
       disabled: false,
     },
   },
@@ -547,7 +568,13 @@ function AddToCartButton({
     <fetcher.Form
       method="post"
       action="/cart"
-      className={cn(addToCartButtonVariants({ pending, disabled }), className)}
+      className={cn(
+        addToCartButtonVariants({
+          state: pending ? "success" : "idle",
+          disabled,
+        }),
+        className,
+      )}
     >
       <input
         type="hidden"

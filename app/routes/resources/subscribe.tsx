@@ -48,6 +48,13 @@ export async function action({ request, context }: Route.ActionArgs) {
   ];
 
   try {
+    // TODO: remove this before goes to prod
+    // temporary fail state
+
+    if (email === "bad@shopify.com") {
+      throw new Error("Something went wrong. Please try again.");
+    }
+
     const customerClient = new ShopifyCustomer(context);
     const existingCustomer = await customerClient.getCustomerByEmail(email);
 
