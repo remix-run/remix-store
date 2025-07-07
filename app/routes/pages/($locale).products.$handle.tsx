@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from "react";
-import { useLayoutEffect } from "~/lib/hooks";
+import { useLayoutEffect, useHydrated } from "~/lib/hooks";
 import { data, Link, useFetcher, href } from "react-router";
-import type { ProductFragment } from "storefrontapi.generated";
 import {
   type OptimisticCartLineInput,
   type MappedProductOptions,
@@ -81,6 +80,8 @@ export async function loader(args: Route.LoaderArgs) {
   });
 }
 
+type ProductLoaderData = Route.ComponentProps["loaderData"]["product"];
+
 export default function Product({ loaderData }: Route.ComponentProps) {
   let { menu, product } = loaderData;
 
@@ -125,8 +126,14 @@ function MenuLink({ to, children }: { to: string; children: React.ReactNode }) {
   );
 }
 
-function ProductMain({ product }: { product: ProductFragment }) {
-  let { title, category, technicalDescription, customDescription } = product;
+function ProductMain({ product }: { product: ProductLoaderData }) {
+  let {
+    title,
+    category,
+    technicalDescription,
+    customDescription,
+    subscribeIfBackInStock,
+  } = product;
 
   const { productOptions, selectedVariant } = useProductOptions(product);
 
@@ -149,6 +156,7 @@ function ProductMain({ product }: { product: ProductFragment }) {
         <ProductForm
           productOptions={productOptions}
           selectedVariant={selectedVariant}
+          subscribeIfBackInStock={subscribeIfBackInStock}
         />
 
         {customDescription ? (
@@ -219,7 +227,7 @@ function ProductMain({ product }: { product: ProductFragment }) {
  * It also sets the search param to the selected variant without navigation
  * only when there are options and no search params are set in the url
  */
-function useProductOptions(product: ProductFragment) {
+function useProductOptions(product: ProductLoaderData) {
   const { options, selectedOrFirstAvailableVariant } = product;
 
   const hasOptions = options.length > 0;
@@ -263,39 +271,154 @@ function useProductOptions(product: ProductFragment) {
   return { productOptions, selectedVariant };
 }
 
+type ProductFormProps = {
+  subscribeIfBackInStock: boolean;
+  productOptions: MappedProductOptions[];
+  selectedVariant: NonNullable<
+    ProductLoaderData["selectedOrFirstAvailableVariant"]
+  >;
+};
+
 function ProductForm({
   productOptions,
   selectedVariant,
-}: {
-  productOptions: MappedProductOptions[];
-  selectedVariant: ProductFragment["selectedOrFirstAvailableVariant"];
-}) {
-  return (
-    <div className="flex flex-col gap-4 md:min-w-[330px] lg:min-w-[480px] lg:flex-row lg:gap-3">
-      {productOptions.length > 0 ? (
-        <div className="flex w-full flex-col gap-4 lg:basis-2/3">
-          {productOptions.map((option) => (
-            <ProductOptions key={option.name} option={option} />
-          ))}
-        </div>
-      ) : null}
+  subscribeIfBackInStock,
+}: ProductFormProps) {
+  const showSubscribeForm =
+    !selectedVariant.availableForSale && subscribeIfBackInStock;
 
-      <AddToCartButton
-        disabled={!selectedVariant || !selectedVariant.availableForSale}
-        lines={
-          selectedVariant
-            ? [
-                {
-                  merchandiseId: selectedVariant.id,
-                  quantity: 1,
-                  selectedVariant,
-                },
-              ]
-            : []
-        }
+  return (
+    <div className="flex flex-col gap-4 md:min-w-[330px] lg:min-w-[480px]">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3 lg:gap-3">
+        {productOptions.length > 0 ? (
+          <div className="flex flex-col gap-4 lg:col-span-2">
+            {productOptions.map((option) => (
+              <ProductOptions key={option.name} option={option} />
+            ))}
+          </div>
+        ) : null}
+
+        <AddToCartButton
+          disabled={!selectedVariant || !selectedVariant.availableForSale}
+          lines={
+            selectedVariant
+              ? [
+                  {
+                    merchandiseId: selectedVariant.id,
+                    quantity: 1,
+                    selectedVariant,
+                  },
+                ]
+              : []
+          }
+          className="lg:col-span-1"
+        >
+          {selectedVariant?.availableForSale ? "Add to cart" : "Sold out"}
+        </AddToCartButton>
+      </div>
+
+      {showSubscribeForm ? (
+        <SubscribeCustomerForm selectedVariant={selectedVariant} />
+      ) : null}
+    </div>
+  );
+}
+
+function SubscribeCustomerForm({
+  selectedVariant,
+}: Pick<ProductFormProps, "selectedVariant">) {
+  let fetcher = useFetcher<{
+    success?: boolean;
+    message?: string;
+    error?: string;
+  }>();
+  let isHydrated = useHydrated();
+  let isSubmitting = fetcher.state === "submitting";
+  let isSuccess = fetcher.data?.success;
+  let errorMessage = fetcher.data?.error;
+  let successMessage = fetcher.data?.message;
+
+  return (
+    <div className="flex flex-col gap-4">
+      <fetcher.Form
+        method="post"
+        action="/_resources/subscribe"
+        className="grid grid-cols-1 gap-4 lg:grid-cols-3 lg:gap-3"
       >
-        {selectedVariant?.availableForSale ? "Add to cart" : "Sold out"}
-      </AddToCartButton>
+        <input
+          type="hidden"
+          name="variant-handle"
+          value={selectedVariant.product.handle}
+        />
+        <input
+          type="hidden"
+          name="variant-title"
+          value={selectedVariant.title}
+        />
+
+        {!isHydrated && (
+          // if JS hasn't loaded yet, redirect to collections page after success
+          <input
+            type="hidden"
+            name="redirect"
+            value={href("/:locale?/collections/:handle", { handle: "all" })}
+          />
+        )}
+
+        <div className="flex flex-col lg:col-span-2">
+          <label htmlFor="notify-email" className="sr-only">
+            Email address for stock notifications
+          </label>
+          <input
+            id="notify-email"
+            type="email"
+            name="email"
+            placeholder="run@remix.run"
+            required
+            disabled={isSubmitting || isSuccess}
+            className={cn(
+              "focus-visible:ring-blue-brand w-full rounded-[54px] border-[3px] px-6 py-4 text-lg font-semibold outline-none placeholder:text-xl placeholder:text-white/60 focus-visible:ring-2",
+              isSuccess
+                ? "border-green-brand text-green-brand autofill:text-green-brand"
+                : "border-white text-white",
+            )}
+          />
+        </div>
+
+        <button
+          type="submit"
+          disabled={isSubmitting || isSuccess}
+          className={cn(
+            addToCartButtonVariants({
+              state: isSuccess ? "success" : "idle",
+              disabled: isSubmitting,
+            }),
+            "lg:col-span-1",
+          )}
+        >
+          <span className="absolute inset-0" />
+          {isSuccess ? (
+            <Icon name="check" className="add-to-cart-icon size-8" />
+          ) : isSubmitting ? (
+            "Signing up..."
+          ) : (
+            "Notify me"
+          )}
+        </button>
+      </fetcher.Form>
+
+      <div className="text-xs text-white/60 lg:text-sm">
+        {isSuccess ? (
+          <p className="">{successMessage}</p>
+        ) : errorMessage ? (
+          <p className="text-red-brand">{errorMessage}</p>
+        ) : (
+          <p>
+            This size is currently out of stock. Sign up to be notified by email
+            when restock this size.
+          </p>
+        )}
+      </div>
     </div>
   );
 }
@@ -322,7 +445,7 @@ function ProductOptions({ option }: { option: MappedProductOptions }) {
           className="w-[var(--radix-dropdown-menu-trigger-width)] rounded-4xl border border-gray-800 bg-gray-900 p-0"
           sideOffset={10}
         >
-          {option.optionValues.map((valueOption, i) => {
+          {option.optionValues.map((valueOption) => {
             const { name, variantUriQuery, selected, available } = valueOption;
 
             return (
@@ -368,16 +491,16 @@ let addToCartButtonVariants = cva(
   ],
   {
     variants: {
-      pending: {
-        false: "bg-white text-black",
-        true: "bg-green-brand text-white",
+      state: {
+        idle: "bg-white text-black",
+        success: "bg-green-brand text-white",
       },
       disabled: {
         true: "bg-white/20 text-white/80",
       },
     },
     defaultVariants: {
-      pending: false,
+      state: "idle",
       disabled: false,
     },
   },
@@ -437,7 +560,13 @@ function AddToCartButton({
     <fetcher.Form
       method="post"
       action="/cart"
-      className={cn(addToCartButtonVariants({ pending, disabled }), className)}
+      className={cn(
+        addToCartButtonVariants({
+          state: pending ? "success" : "idle",
+          disabled,
+        }),
+        className,
+      )}
     >
       <input
         type="hidden"
