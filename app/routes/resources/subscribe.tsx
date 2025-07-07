@@ -4,9 +4,9 @@ import { ShopifyCustomer } from "~/lib/data/subscribe.server";
 import * as z from "zod/v4";
 
 const subscribeSchema = z.object({
-  email: z.email("Please enter a valid email address"),
-  variantHandle: z.string("Variant handle is required"),
-  variantTitle: z.string("Variant title is required"),
+  email: z.email("Please enter a valid email address."),
+  variantHandle: z.string("Variant handle is required."),
+  variantTitle: z.string("Variant title is required."),
   redirect: z.string().nullish(),
 });
 
@@ -89,7 +89,7 @@ export async function action({ request, context }: Route.ActionArgs) {
 
     return data(
       {
-        error: error.message || "Something went wrong. Please try again.",
+        error: "Something went wrong. Please try again.",
         success: false,
       },
       { status: 500 },
