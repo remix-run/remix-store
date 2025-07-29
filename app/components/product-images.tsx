@@ -5,7 +5,6 @@ import {
   PrevButton,
   usePrevNextButtons,
 } from "~/components/carousel/arrow-buttons";
-import { Image as HydrogenImage } from "@shopify/hydrogen";
 import { cn } from "~/lib/cn";
 import { useRef, useState } from "react";
 import { useLayoutEffect, usePrefersReducedMotion } from "~/lib/hooks";

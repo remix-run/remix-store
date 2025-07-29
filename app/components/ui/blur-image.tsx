@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import { Image as HydrogenImage } from "@shopify/hydrogen";
 import { clsx } from "clsx";
 import type { ProductImageFragment } from "storefrontapi.generated";
@@ -18,24 +18,38 @@ export default function BlurImage({
   data,
   ...props
 }: BlurImageProps) {
-  const [loadState, setLoadState] = useState<
-    "idle" | "pending" | "loaded" | "error"
-  >("idle");
+  const imageRef = useRef<HTMLImageElement>(null);
+  const [loadState, setLoadState] = useState<"pending" | "loaded" | "error">(
+    "pending",
+  );
 
   // Add ?width=32 for a tiny preview
   const url = data.url;
   const previewUrl = url.includes("?") ? `${url}&width=32` : `${url}?width=32`;
 
-  useEffect(() => {
-    if (loadState !== "idle") return;
+  useLayoutEffect(() => {
+    const node = imageRef.current;
+    if (!node) return;
+    if (loadState !== "pending") return;
 
-    setLoadState("pending");
+    if (node.complete) {
+      setLoadState("loaded");
+      return;
+    }
 
-    let img = new Image();
-    img.addEventListener("load", () => setLoadState("loaded"), { once: true });
-    img.addEventListener("error", () => setLoadState("error"), { once: true });
-    img.src = previewUrl;
-  }, [loadState, previewUrl]);
+    node.onload = () => {
+      setLoadState("loaded");
+    };
+
+    node.onerror = () => {
+      setLoadState("error");
+    };
+
+    return () => {
+      node.onload = null;
+      node.onerror = null;
+    };
+  }, [loadState]);
 
   return (
     <div className={clsx("relative h-full w-full", className)}>
@@ -52,6 +66,7 @@ export default function BlurImage({
       />
       {/* Full image */}
       <HydrogenImage
+        ref={imageRef}
         data={data}
         {...props}
         className={clsx(
