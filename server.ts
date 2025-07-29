@@ -1,6 +1,7 @@
 // Virtual entry point for the app
 import { storefrontRedirect } from "@shopify/hydrogen";
 import { createRequestHandler } from "@shopify/remix-oxygen";
+import { unstable_RouterContextProvider } from "react-router";
 import { createAppLoadContext } from "~/lib/context";
 
 /**
@@ -19,6 +20,9 @@ export default {
         executionContext,
       );
 
+      let context = new unstable_RouterContextProvider();
+      Object.assign(context, appLoadContext);
+
       /**
        * Create a Remix request handler and pass
        * Hydrogen's Storefront client to the loader context.
@@ -27,7 +31,7 @@ export default {
         // eslint-disable-next-line import/no-unresolved
         build: await import("virtual:react-router/server-build"),
         mode: process.env.NODE_ENV,
-        getLoadContext: () => appLoadContext,
+        getLoadContext: () => context,
       });
 
       const response = await handleRequest(request);

@@ -1,4 +1,4 @@
-import type { AppLoadContext } from "react-router";
+import type { unstable_RouterContextProvider } from "react-router";
 import * as z from "zod/v4";
 
 /**
@@ -10,7 +10,7 @@ export class ShopifyCustomer {
     variables?: Record<string, any>,
   ) => Promise<T>;
 
-  constructor(context: AppLoadContext) {
+  constructor(context: Readonly<unstable_RouterContextProvider>) {
     const shopDomain = context.env.PUBLIC_STORE_DOMAIN;
     const adminAccessToken = context.env.ADMIN_ACCESS_TOKEN;
 

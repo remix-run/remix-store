@@ -1,4 +1,7 @@
-import type { AppLoadContext, EntryContext } from "react-router";
+import type {
+  EntryContext,
+  unstable_RouterContextProvider,
+} from "react-router";
 import { ServerRouter } from "react-router";
 import { isbot } from "isbot";
 import { renderToReadableStream } from "react-dom/server";
@@ -9,7 +12,7 @@ export default async function handleRequest(
   responseStatusCode: number,
   responseHeaders: Headers,
   reactRouterContext: EntryContext,
-  context: AppLoadContext,
+  context: unstable_RouterContextProvider,
 ) {
   const { nonce, header, NonceProvider } = createContentSecurityPolicy({
     fontSrc: ["'self'", "https://cdn.shopify.com"],

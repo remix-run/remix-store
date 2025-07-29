@@ -25,7 +25,8 @@ declare global {
 }
 
 declare module "react-router" {
-  interface AppLoadContext
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  interface unstable_RouterContextProvider
     extends Awaited<ReturnType<typeof createAppLoadContext>> {
     // to change context type, change the return of createAppLoadContext() instead
   }
