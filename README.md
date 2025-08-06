@@ -12,7 +12,15 @@ npm install
 
 ## Local development
 
-TODO: make this work without needing access to the Shopify
+### Environment setup
+
+Copy the example environment file to create your local environment:
+
+```bash
+cp .env.example .env
+```
+
+**Important:** The `.env.example` file contains real (public) tokens from https://shop.remix.run that are required to run the store locally. This is a **live public store** - any purchases made will place real orders that will actually charge your money and send you Remix merch. The `.env` file should never be committed to version control.
 
 ```bash
 npm run dev
@@ -90,3 +98,7 @@ The store-wide sales require 2 things in Shopify Admin:
 The data is fetched in [header.server.ts](app/lib/data/header.server.ts) and accessed via `useCartDiscounts` defined in [cart](app/components/cart.tsx).
 
 Note: there is a 1 hour cache on the header data, so updates will not be live without a redeploy.
+
+---
+
+Built with ❤️ by the [Remix](https://remix.run) team
