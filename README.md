@@ -1,6 +1,8 @@
 # Remix Store
 
-Welcome to the Remix Store built on Hydrogen!
+Welcome to the Remix Store built with Shopify, React Router, and Hydrogen!
+
+This is the codebase behind **[shop.remix.run](https://shop.remix.run)**. Run it locally to explore how to build a production headless Shopify store with modern web technologies.
 
 ## Getting Started
 
@@ -20,11 +22,13 @@ Copy the example environment file to create your local environment:
 cp .env.example .env
 ```
 
-**Important:** The `.env.example` file contains real (public) tokens from https://shop.remix.run that are required to run the store locally. This is a **live public store** - any purchases made will place real orders that will actually charge your money and send you Remix merch. The `.env` file should never be committed to version control.
+⚠️ **Important:** This connects to the live production store. Any purchases will charge real money and ship actual Remix merch.
 
 ```bash
 npm run dev
 ```
+
+You'll have a local version of the Remix Store running with real product data, inventory, and checkout functionality.
 
 ## Building for production
 
@@ -50,39 +54,53 @@ h2 link
 h2 pull
 ```
 
-## Shopify Admin
+## Data Structures in Shopify Admin
 
-Eventually these docs might make it somewhere else, but just trying to capture some quirks about how Shopify Admin feeds into this project
+Eventually these docs might make it somewhere else, but just trying to capture some quirks about how
+Shopify Admin feeds into this project.
 
 ### Hero
 
-The hero component uses data from the Hero metaobject, which as 3 fields:
+The hero component uses data from the Hero metaobject with 3 fields:
 
 1. Masthead
-2. Asset Images (the frames that drive the animation)
-3. A product to link to
+2. Asset Images (frames for animation)
+3. Product link
 
-See [product.server.ts](app/lib/data/product.server.ts) for more details on the product query.
+See [hero.server.ts](app/lib/data/hero.server.ts) for the GraphQL query.
 
 ### Lookbook
 
-The lookbook uses several "Lookbook Entry" metaobjects. Each entry has the following fields:
+Uses "Lookbook Entry" metaobjects with:
 
 1. Image
 2. Product (optional)
 
-There is a maximum number of entries to try to fetch. If we ever want more we need to both add more entries in Shopify Admin and update the graphql query.
+See [lookbook.server.ts](app/lib/data/lookbook.server.ts) for implementation.
 
-See [lookbook.server.ts](app/lib/data/lookbook.server.ts) for more details on the lookbook query.
+### Product Metafields
 
-### Product description
-
-There are 2 description fields for a product, both optional, both under "Product metafields":
+Products use custom metafields under "Product metafields":
 
 1. Description
 2. Technical Description
 
-The reason we don't use the main "Description" is because when querying with GraphQL, you don't receive rich text data for some reason.
+We use metafields instead of the default description to access rich text data via GraphQL.
+
+## Contributing
+
+This is the production codebase for shop.remix.run. We welcome feedback and bug reports via GitHub issues.
+
+See an issue you'd like to fix? Please open a PR!
+
+## License
+
+MIT License - see [LICENSE.md](LICENSE.md) for details.
+
+## Related Resources
+
+- [Hydrogen Documentation](https://shopify.dev/docs/api/hydrogen)
+- [React Router Documentation](https://reactrouter.com/)
 
 ### Store-wide sale
 
