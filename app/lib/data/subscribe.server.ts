@@ -1,5 +1,5 @@
 import type { AppLoadContext } from "react-router";
-import * as z from "zod/v4";
+import * as z from "zod";
 
 /**
  * Shopify Admin API client class.

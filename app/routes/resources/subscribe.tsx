@@ -1,7 +1,7 @@
 import { data, redirect } from "react-router";
 import type { Route } from "./+types/subscribe";
 import { ShopifyCustomer } from "~/lib/data/subscribe.server";
-import * as z from "zod/v4";
+import * as z from "zod";
 
 const subscribeSchema = z.object({
   email: z.email("Please enter a valid email address."),
