@@ -104,8 +104,10 @@ function HeaderMenuLink(props: HeaderMenuLinkProps) {
 function CartButton({ cart: originalCart }: Pick<NavbarProps, "cart">) {
   let cart = useOptimisticCart(originalCart);
   let totalQuantity = cart?.totalQuantity || 0;
+  let cartDiscounts = useCartDiscounts(cart);
+  if (!cartDiscounts) return null;
   let { totalCartDiscount, discountedSubtotalAmount, discountTitle } =
-    useCartDiscounts(cart);
+    cartDiscounts;
 
   if (!cart || totalQuantity === 0) {
     return (

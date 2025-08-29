@@ -244,14 +244,19 @@ function CartLineRemoveButton({
   );
 }
 
-export function useCartDiscounts({
-  discountAllocations,
-  cost,
-}: {
-  discountAllocations?: CartApiQueryFragment["discountAllocations"];
-  cost?: { subtotalAmount?: Partial<MoneyV2> };
-}) {
+export function useCartDiscounts(
+  cart:
+    | {
+        discountAllocations?: CartApiQueryFragment["discountAllocations"];
+        cost?: { subtotalAmount?: Partial<MoneyV2> };
+      }
+    | null
+    | undefined,
+) {
   let storeWideSale = useStoreWideSale();
+  if (!cart) return null;
+
+  let { discountAllocations, cost } = cart;
 
   let cartDiscounts = discountAllocations || [];
   let totalCartDiscount = cartDiscounts.reduce(

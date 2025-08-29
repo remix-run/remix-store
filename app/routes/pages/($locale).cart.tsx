@@ -109,8 +109,10 @@ export async function action({ request, context }: Route.ActionArgs) {
 export default function Cart() {
   let rootData = useRouteLoaderData<RootLoader>("root");
   let cart = useOptimisticCart(rootData?.cart);
+  let cartDiscounts = useCartDiscounts(cart);
+  if (!cartDiscounts) return null;
   let { totalCartDiscount, discountedSubtotalAmount, discountTitle } =
-    useCartDiscounts(cart);
+    cartDiscounts;
 
   // Note -- this empty cart state is the same as the root ErrorBoundary -- if we propagate it again it's probably a good time to turn it into a component
   if (!cart || cart.lines?.nodes?.length === 0) {
