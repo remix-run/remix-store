@@ -84,7 +84,7 @@
 
   --animate-pulse-radial: pulse-radial 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   --animate-spin: spin 3s linear infinite;
-  --animate-marquee: marquee 50s linear infinite;
+  --animate-marquee: marquee 25s linear infinite;
 
   @keyframes pulse-radial {
     0%,
@@ -101,7 +101,7 @@
       transform: translateX(-0%);
     }
     100% {
-      transform: translateX(-100%);
+      transform: translateX(-50%);
     }
   }
 }

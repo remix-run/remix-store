@@ -1,5 +1,6 @@
 import { Fragment } from "react";
 import { useRouteLoaderData } from "react-router";
+import { clsx } from "clsx";
 import type { RootLoader } from "~/root";
 
 export function useStoreWideSale() {
@@ -27,7 +28,12 @@ export function StoreWideSaleMarquee() {
   return (
     <div className="fixed top-0 left-0 z-20 overflow-hidden bg-black">
       <div className="bg-red-brand/25 flex h-12 w-full items-center whitespace-nowrap">
-        <div className="animate-marquee text-red-brand relative left-2 flex items-center gap-8 font-mono text-sm tracking-wide uppercase md:text-base lg:-left-4 lg:gap-12">
+        <div
+          className={clsx(
+            "animate-marquee text-red-brand relative left-2 flex items-center gap-8 font-mono text-sm tracking-wide uppercase md:text-base lg:-left-4 lg:gap-12",
+            "animation-duration-[60s] md:animation-duration-[45s] lg:animation-duration-[30s]",
+          )}
+        >
           {/* Repeat the text multiple times to ensure seamless scrolling */}
           {Array.from({ length: 10 }).map((_, i) => (
             // eslint-disable-next-line react/no-array-index-key -- chill React
