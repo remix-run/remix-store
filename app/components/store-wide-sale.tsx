@@ -27,7 +27,10 @@ export function StoreWideSaleMarquee() {
   const marqueeText = `${saleData.description}${saleData.endDateTime ? ` now thru ${formatEndDate(saleData.endDateTime)}` : ""}`;
 
   return (
-    <div className="fixed top-0 left-0 z-20 overflow-hidden bg-black">
+    <div
+      className="fixed top-0 left-0 z-20 overflow-hidden bg-black"
+      suppressHydrationWarning
+    >
       <div
         className="bg-red-brand/25 flex h-12 w-full items-center whitespace-nowrap"
         role="marquee"
