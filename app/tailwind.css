@@ -84,6 +84,7 @@
 
   --animate-pulse-radial: pulse-radial 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   --animate-spin: spin 3s linear infinite;
+  --animate-marquee: marquee 50s linear infinite;
 
   @keyframes pulse-radial {
     0%,
@@ -92,6 +93,15 @@
     }
     50% {
       background-size: 80% 80%;
+    }
+  }
+
+  @keyframes marquee {
+    0% {
+      transform: translateX(-0%);
+    }
+    100% {
+      transform: translateX(-100%);
     }
   }
 }
@@ -133,6 +143,10 @@
 
   @media (width >= theme(--breakpoint-md)) {
     --header-height: 136px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    --animate-marquee: none;
   }
 }
 

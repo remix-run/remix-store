@@ -30,6 +30,7 @@ import {
   CheckoutLink,
   useCartDiscounts,
 } from "./cart";
+import { StoreWideSaleMarquee, useStoreWideSale } from "./store-wide-sale";
 import { clsx } from "clsx";
 
 interface NavbarProps {
@@ -40,33 +41,44 @@ interface NavbarProps {
 const FREE_SHIPPING_THRESHOLD = 75;
 
 export function Navbar({ menu, cart }: NavbarProps) {
-  return (
-    <header className="fixed top-0 z-10 grid max-h-(--header-height) w-full grid-cols-2 items-center bg-linear-to-b from-black/100 to-black/0 p-4 md:grid-cols-3 md:p-9">
-      <Link
-        to={href("/")}
-        className="flex max-w-fit justify-start"
-        prefetch="intent"
-      >
-        <span className="sr-only">Home</span>
-        <RemixLogo animateOnScroll />
-      </Link>
-      <nav className="hidden justify-center md:flex">
-        <ul className="flex flex-nowrap gap-9">
-          {menu.items.map((item) => {
-            if (!item.url) return null;
-            return (
-              <li key={item.url} className="text-nowrap">
-                <HeaderMenuLink title={item.title} url={item.url} />
-              </li>
-            );
-          })}
-        </ul>
-      </nav>
+  const saleData = useStoreWideSale();
+  const hasActiveSale = Boolean(saleData);
 
-      <div className="flex justify-end">
-        <CartButton cart={cart} />
-      </div>
-    </header>
+  return (
+    <>
+      <StoreWideSaleMarquee />
+      <header
+        className={cn(
+          "fixed z-10 grid max-h-(--header-height) w-full grid-cols-2 items-center bg-linear-to-b from-black/100 to-black/0 p-4 md:grid-cols-3 md:p-9",
+          hasActiveSale ? "top-10" : "top-0",
+        )}
+      >
+        <Link
+          to={href("/")}
+          className="flex max-w-fit justify-start"
+          prefetch="intent"
+        >
+          <span className="sr-only">Home</span>
+          <RemixLogo animateOnScroll />
+        </Link>
+        <nav className="hidden justify-center md:flex">
+          <ul className="flex flex-nowrap gap-9">
+            {menu.items.map((item) => {
+              if (!item.url) return null;
+              return (
+                <li key={item.url} className="text-nowrap">
+                  <HeaderMenuLink title={item.title} url={item.url} />
+                </li>
+              );
+            })}
+          </ul>
+        </nav>
+
+        <div className="flex justify-end">
+          <CartButton cart={cart} />
+        </div>
+      </header>
+    </>
   );
 }
 

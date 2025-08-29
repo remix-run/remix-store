@@ -5,6 +5,7 @@ import { MENU_FRAGMENT } from "../fragments";
 export type StoreWideSaleData = {
   title: string;
   description: string;
+  endDateTime?: string;
 };
 
 export type HeaderData = {
@@ -45,6 +46,7 @@ export async function getHeaderData(
       storeWideSale = {
         title: title?.value ?? "",
         description: description?.value ?? "",
+        endDateTime: endDateTime?.value ?? undefined,
       };
     }
   }
