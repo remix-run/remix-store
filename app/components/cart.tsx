@@ -10,6 +10,7 @@ import { cn } from "~/lib/cn";
 
 import type { CartApiQueryFragment } from "storefrontapi.generated";
 import { AnimatedLinkSpread } from "./ui/animated-link";
+import type { MoneyV2 } from "@shopify/hydrogen/storefront-api-types";
 
 export function CartHeader({
   totalQuantity,
@@ -240,4 +241,33 @@ function CartLineRemoveButton({
       {children}
     </CartForm>
   );
+}
+
+export function calculateCartDiscounts({
+  discountAllocations,
+  cost,
+}: {
+  discountAllocations?: CartApiQueryFragment["discountAllocations"];
+  cost?: { subtotalAmount?: Partial<MoneyV2> };
+}) {
+  const cartDiscounts = discountAllocations || [];
+  const totalCartDiscount = cartDiscounts.reduce(
+    (sum: number, allocation) =>
+      sum + Number(allocation.discountedAmount.amount || 0),
+    0,
+  );
+
+  let subtotalAmount = cost?.subtotalAmount;
+  let discountedSubtotalAmount = subtotalAmount;
+  if (totalCartDiscount > 0 && subtotalAmount && subtotalAmount.amount) {
+    discountedSubtotalAmount = {
+      ...subtotalAmount,
+      amount: String(Number(subtotalAmount.amount) - totalCartDiscount),
+    };
+  }
+
+  return {
+    totalCartDiscount,
+    discountedSubtotalAmount,
+  };
 }

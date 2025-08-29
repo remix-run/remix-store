@@ -24,7 +24,12 @@ import {
   PopoverTrigger,
   PopoverClose,
 } from "~/components/ui/popover";
-import { CartHeader, CartLineItem, CheckoutLink } from "./cart";
+import {
+  CartHeader,
+  CartLineItem,
+  CheckoutLink,
+  calculateCartDiscounts,
+} from "./cart";
 import { clsx } from "clsx";
 
 interface NavbarProps {
@@ -120,9 +125,12 @@ function CartButton({ cart: originalCart }: Pick<NavbarProps, "cart">) {
   }
 
   let lines = cart.lines.nodes;
-  let subtotalAmount = cart.cost?.subtotalAmount;
+  let subtotalAmount = cart?.cost?.subtotalAmount;
   let checkoutUrl = cart.checkoutUrl;
   let isOptimistic = Boolean(cart.isOptimistic);
+
+  let { totalCartDiscount, discountedSubtotalAmount } =
+    calculateCartDiscounts(cart);
 
   let onImageClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     // Is this hacky?
@@ -187,6 +195,34 @@ function CartButton({ cart: originalCart }: Pick<NavbarProps, "cart">) {
                   />
                 ) : null}
               </div>
+
+              {/* Show cart-level discounts */}
+              {totalCartDiscount > 0 && (
+                <div className="flex w-full items-center justify-between">
+                  <p className="text-sm font-medium text-green-400">
+                    Automatic Discount
+                  </p>
+                  <p className="text-sm font-medium text-green-400">
+                    -${totalCartDiscount.toFixed(2)}
+                  </p>
+                </div>
+              )}
+
+              {/* Show total if there are discounts */}
+              {discountedSubtotalAmount && totalCartDiscount > 0 && (
+                <div className="flex w-full items-center justify-between border-t border-white/20 pt-1">
+                  <p className="font-title tracking-tightest text-base font-black uppercase">
+                    Total
+                  </p>
+                  <Money
+                    className={clsx(
+                      "text-sm font-bold",
+                      isOptimistic && "text-white/50",
+                    )}
+                    data={discountedSubtotalAmount}
+                  />
+                </div>
+              )}
               <p className="text-center text-xs text-white">
                 {subtotal < FREE_SHIPPING_THRESHOLD
                   ? `Add $${(FREE_SHIPPING_THRESHOLD - subtotal).toFixed(2)} more to get free shipping (U.S. only)`
