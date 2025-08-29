@@ -24,7 +24,13 @@ import {
   PopoverTrigger,
   PopoverClose,
 } from "~/components/ui/popover";
-import { CartHeader, CartLineItem, CheckoutLink } from "./cart";
+import {
+  CartHeader,
+  CartLineItem,
+  CheckoutLink,
+  useCartDiscounts,
+} from "./cart";
+import { StoreWideSaleMarquee, useStoreWideSale } from "./store-wide-sale";
 import { clsx } from "clsx";
 
 interface NavbarProps {
@@ -35,33 +41,44 @@ interface NavbarProps {
 const FREE_SHIPPING_THRESHOLD = 75;
 
 export function Navbar({ menu, cart }: NavbarProps) {
-  return (
-    <header className="fixed top-0 z-10 grid max-h-(--header-height) w-full grid-cols-2 items-center bg-linear-to-b from-black/100 to-black/0 p-4 md:grid-cols-3 md:p-9">
-      <Link
-        to={href("/")}
-        className="flex max-w-fit justify-start"
-        prefetch="intent"
-      >
-        <span className="sr-only">Home</span>
-        <RemixLogo animateOnScroll />
-      </Link>
-      <nav className="hidden justify-center md:flex">
-        <ul className="flex flex-nowrap gap-9">
-          {menu.items.map((item) => {
-            if (!item.url) return null;
-            return (
-              <li key={item.url} className="text-nowrap">
-                <HeaderMenuLink title={item.title} url={item.url} />
-              </li>
-            );
-          })}
-        </ul>
-      </nav>
+  const saleData = useStoreWideSale();
+  const hasActiveSale = Boolean(saleData);
 
-      <div className="flex justify-end">
-        <CartButton cart={cart} />
-      </div>
-    </header>
+  return (
+    <>
+      <StoreWideSaleMarquee />
+      <header
+        className={cn(
+          "fixed z-10 grid max-h-(--header-height) w-full grid-cols-2 items-center bg-linear-to-b from-black/100 to-black/0 p-4 md:grid-cols-3 md:p-9",
+          hasActiveSale ? "top-10" : "top-0",
+        )}
+      >
+        <Link
+          to={href("/")}
+          className="flex max-w-fit justify-start"
+          prefetch="intent"
+        >
+          <span className="sr-only">Home</span>
+          <RemixLogo animateOnScroll />
+        </Link>
+        <nav className="hidden justify-center md:flex">
+          <ul className="flex flex-nowrap gap-9">
+            {menu.items.map((item) => {
+              if (!item.url) return null;
+              return (
+                <li key={item.url} className="text-nowrap">
+                  <HeaderMenuLink title={item.title} url={item.url} />
+                </li>
+              );
+            })}
+          </ul>
+        </nav>
+
+        <div className="flex justify-end">
+          <CartButton cart={cart} />
+        </div>
+      </header>
+    </>
   );
 }
 
@@ -87,6 +104,10 @@ function HeaderMenuLink(props: HeaderMenuLinkProps) {
 function CartButton({ cart: originalCart }: Pick<NavbarProps, "cart">) {
   let cart = useOptimisticCart(originalCart);
   let totalQuantity = cart?.totalQuantity || 0;
+  let cartDiscounts = useCartDiscounts(cart);
+  if (!cartDiscounts) return null;
+  let { totalCartDiscount, discountedSubtotalAmount, discountTitle } =
+    cartDiscounts;
 
   if (!cart || totalQuantity === 0) {
     return (
@@ -120,7 +141,7 @@ function CartButton({ cart: originalCart }: Pick<NavbarProps, "cart">) {
   }
 
   let lines = cart.lines.nodes;
-  let subtotalAmount = cart.cost?.subtotalAmount;
+  let subtotalAmount = cart?.cost?.subtotalAmount;
   let checkoutUrl = cart.checkoutUrl;
   let isOptimistic = Boolean(cart.isOptimistic);
 
@@ -136,7 +157,8 @@ function CartButton({ cart: originalCart }: Pick<NavbarProps, "cart">) {
     e.currentTarget.dispatchEvent(event);
   };
 
-  let subtotal = Number(subtotalAmount?.amount);
+  let subtotal =
+    Number(discountedSubtotalAmount?.amount) || Number(subtotalAmount?.amount);
 
   return (
     <>
@@ -187,6 +209,34 @@ function CartButton({ cart: originalCart }: Pick<NavbarProps, "cart">) {
                   />
                 ) : null}
               </div>
+
+              {/* Show cart-level discounts */}
+              {totalCartDiscount > 0 && (
+                <div className="flex w-full items-center justify-between">
+                  <p className="text-sm font-medium text-green-400">
+                    {discountTitle}
+                  </p>
+                  <p className="text-sm font-medium text-green-400">
+                    -${totalCartDiscount.toFixed(2)}
+                  </p>
+                </div>
+              )}
+
+              {/* Show total if there are discounts */}
+              {discountedSubtotalAmount && totalCartDiscount > 0 && (
+                <div className="flex w-full items-center justify-between border-t border-white/20 pt-1">
+                  <p className="font-title tracking-tightest text-base font-black uppercase">
+                    Total
+                  </p>
+                  <Money
+                    className={clsx(
+                      "text-sm font-bold",
+                      isOptimistic && "text-white/50",
+                    )}
+                    data={discountedSubtotalAmount}
+                  />
+                </div>
+              )}
               <p className="text-center text-xs text-white">
                 {subtotal < FREE_SHIPPING_THRESHOLD
                   ? `Add $${(FREE_SHIPPING_THRESHOLD - subtotal).toFixed(2)} more to get free shipping (U.S. only)`

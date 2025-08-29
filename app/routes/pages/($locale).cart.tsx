@@ -10,7 +10,12 @@ import {
 import type { RootLoader } from "~/root";
 import { generateMeta } from "~/lib/meta";
 import { PageTitle } from "~/components/page-title";
-import { CartHeader, CartLineItem, CheckoutLink } from "~/components/cart";
+import {
+  CartHeader,
+  CartLineItem,
+  CheckoutLink,
+  useCartDiscounts,
+} from "~/components/cart";
 import { clsx } from "clsx";
 import { MatrixText } from "~/components/matrix-text";
 import { AnimatedLinkSpread } from "~/components/ui/animated-link";
@@ -102,8 +107,12 @@ export async function action({ request, context }: Route.ActionArgs) {
 }
 
 export default function Cart() {
-  const rootData = useRouteLoaderData<RootLoader>("root");
+  let rootData = useRouteLoaderData<RootLoader>("root");
   let cart = useOptimisticCart(rootData?.cart);
+  let cartDiscounts = useCartDiscounts(cart);
+  if (!cartDiscounts) return null;
+  let { totalCartDiscount, discountedSubtotalAmount, discountTitle } =
+    cartDiscounts;
 
   // Note -- this empty cart state is the same as the root ErrorBoundary -- if we propagate it again it's probably a good time to turn it into a component
   if (!cart || cart.lines?.nodes?.length === 0) {
@@ -142,9 +151,10 @@ export default function Cart() {
   let totalQuantity = cart.totalQuantity || 0;
 
   let lines = cart.lines.nodes;
-  let subtotalAmount = cart.cost?.subtotalAmount;
   let checkoutUrl = cart.checkoutUrl;
   let isOptimistic = Boolean(cart.isOptimistic);
+
+  const subtotalAmount = cart?.cost?.subtotalAmount;
 
   return (
     <main>
@@ -185,6 +195,33 @@ export default function Cart() {
                       />
                     ) : null}
                   </div>
+
+                  {totalCartDiscount > 0 && (
+                    <div className="flex w-full items-center justify-between">
+                      <p className="text-sm font-medium text-green-400">
+                        {discountTitle}
+                      </p>
+                      <p className="text-sm font-medium text-green-400">
+                        -${totalCartDiscount.toFixed(2)}
+                      </p>
+                    </div>
+                  )}
+
+                  {discountedSubtotalAmount && totalCartDiscount > 0 ? (
+                    <div className="flex w-full items-center justify-between border-t border-white/20 pt-2">
+                      <p className="font-title tracking-tightest text-base font-black uppercase md:text-xl">
+                        Total
+                      </p>
+                      <Money
+                        className={clsx(
+                          "text-base font-bold md:text-xl",
+                          isOptimistic && "text-white/50",
+                        )}
+                        data={discountedSubtotalAmount}
+                      />
+                    </div>
+                  ) : null}
+
                   <p className="text-center text-xs text-white/50">
                     Taxes & Shipping calculated at checkout
                   </p>
