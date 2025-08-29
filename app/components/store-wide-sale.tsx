@@ -16,7 +16,6 @@ function formatEndDate(dateString: string) {
       month: "short",
       day: "numeric",
     })
-    .toUpperCase()
     .replace(" ", ".");
 }
 
@@ -25,14 +24,21 @@ export function StoreWideSaleMarquee() {
 
   if (!saleData) return null;
 
+  const marqueeText = `${saleData.description}${saleData.endDateTime ? ` now thru ${formatEndDate(saleData.endDateTime)}` : ""}`;
+
   return (
     <div className="fixed top-0 left-0 z-20 overflow-hidden bg-black">
-      <div className="bg-red-brand/25 flex h-12 w-full items-center whitespace-nowrap">
+      <div
+        className="bg-red-brand/25 flex h-12 w-full items-center whitespace-nowrap"
+        role="marquee"
+        aria-label={marqueeText}
+      >
         <div
           className={clsx(
             "animate-marquee text-red-brand relative left-2 flex items-center gap-8 font-mono text-sm tracking-wide uppercase md:text-base lg:-left-4 lg:gap-12",
             "animation-duration-[60s] md:animation-duration-[45s] lg:animation-duration-[30s]",
           )}
+          aria-hidden="true"
         >
           {/* Repeat the text multiple times to ensure seamless scrolling */}
           {Array.from({ length: 10 }).map((_, i) => (
@@ -40,7 +46,7 @@ export function StoreWideSaleMarquee() {
             <Fragment key={i}>
               <span>{saleData.description}</span>
               {saleData.endDateTime ? (
-                <span>{`NOW THRU ${formatEndDate(saleData.endDateTime)}`}</span>
+                <span>{`now thru ${formatEndDate(saleData.endDateTime)}`}</span>
               ) : null}
             </Fragment>
           ))}
