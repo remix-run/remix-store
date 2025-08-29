@@ -14,7 +14,7 @@ import {
   CartHeader,
   CartLineItem,
   CheckoutLink,
-  calculateCartDiscounts,
+  useCartDiscounts,
 } from "~/components/cart";
 import { clsx } from "clsx";
 import { MatrixText } from "~/components/matrix-text";
@@ -107,8 +107,10 @@ export async function action({ request, context }: Route.ActionArgs) {
 }
 
 export default function Cart() {
-  const rootData = useRouteLoaderData<RootLoader>("root");
+  let rootData = useRouteLoaderData<RootLoader>("root");
   let cart = useOptimisticCart(rootData?.cart);
+  let { totalCartDiscount, discountedSubtotalAmount, discountTitle } =
+    useCartDiscounts(cart);
 
   // Note -- this empty cart state is the same as the root ErrorBoundary -- if we propagate it again it's probably a good time to turn it into a component
   if (!cart || cart.lines?.nodes?.length === 0) {
@@ -151,8 +153,6 @@ export default function Cart() {
   let isOptimistic = Boolean(cart.isOptimistic);
 
   const subtotalAmount = cart?.cost?.subtotalAmount;
-  const { totalCartDiscount, discountedSubtotalAmount } =
-    calculateCartDiscounts(cart);
 
   return (
     <main>
@@ -197,7 +197,7 @@ export default function Cart() {
                   {totalCartDiscount > 0 && (
                     <div className="flex w-full items-center justify-between">
                       <p className="text-sm font-medium text-green-400">
-                        Automatic Discount
+                        {discountTitle}
                       </p>
                       <p className="text-sm font-medium text-green-400">
                         -${totalCartDiscount.toFixed(2)}
@@ -205,7 +205,7 @@ export default function Cart() {
                     </div>
                   )}
 
-                  {discountedSubtotalAmount ? (
+                  {discountedSubtotalAmount && totalCartDiscount > 0 ? (
                     <div className="flex w-full items-center justify-between border-t border-white/20 pt-2">
                       <p className="font-title tracking-tightest text-base font-black uppercase md:text-xl">
                         Total

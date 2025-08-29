@@ -28,7 +28,7 @@ import {
   CartHeader,
   CartLineItem,
   CheckoutLink,
-  calculateCartDiscounts,
+  useCartDiscounts,
 } from "./cart";
 import { clsx } from "clsx";
 
@@ -92,6 +92,8 @@ function HeaderMenuLink(props: HeaderMenuLinkProps) {
 function CartButton({ cart: originalCart }: Pick<NavbarProps, "cart">) {
   let cart = useOptimisticCart(originalCart);
   let totalQuantity = cart?.totalQuantity || 0;
+  let { totalCartDiscount, discountedSubtotalAmount, discountTitle } =
+    useCartDiscounts(cart);
 
   if (!cart || totalQuantity === 0) {
     return (
@@ -129,9 +131,6 @@ function CartButton({ cart: originalCart }: Pick<NavbarProps, "cart">) {
   let checkoutUrl = cart.checkoutUrl;
   let isOptimistic = Boolean(cart.isOptimistic);
 
-  let { totalCartDiscount, discountedSubtotalAmount } =
-    calculateCartDiscounts(cart);
-
   let onImageClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     // Is this hacky?
     const event = new KeyboardEvent("keydown", {
@@ -144,7 +143,8 @@ function CartButton({ cart: originalCart }: Pick<NavbarProps, "cart">) {
     e.currentTarget.dispatchEvent(event);
   };
 
-  let subtotal = Number(subtotalAmount?.amount);
+  let subtotal =
+    Number(discountedSubtotalAmount?.amount) || Number(subtotalAmount?.amount);
 
   return (
     <>
@@ -200,7 +200,7 @@ function CartButton({ cart: originalCart }: Pick<NavbarProps, "cart">) {
               {totalCartDiscount > 0 && (
                 <div className="flex w-full items-center justify-between">
                   <p className="text-sm font-medium text-green-400">
-                    Automatic Discount
+                    {discountTitle}
                   </p>
                   <p className="text-sm font-medium text-green-400">
                     -${totalCartDiscount.toFixed(2)}

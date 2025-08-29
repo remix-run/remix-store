@@ -11,7 +11,8 @@ import {
   data,
   redirect,
 } from "react-router";
-import { FOOTER_QUERY, HEADER_QUERY } from "~/lib/fragments";
+import { FOOTER_QUERY } from "~/lib/fragments";
+import { getHeaderData } from "~/lib/data/header.server";
 import { AnimatedLinkSpread } from "~/components/ui/animated-link";
 import { Navbar } from "~/components/navbar";
 import { Footer } from "~/components/footer";
@@ -169,11 +170,8 @@ async function loadCriticalData({ context, request }: Route.LoaderArgs) {
   }
 
   const [header, cartData] = await Promise.all([
-    storefront.query(HEADER_QUERY, {
-      cache: storefront.CacheLong(),
-      variables: {
-        headerMenuHandle: "main-menu",
-      },
+    getHeaderData(storefront, {
+      headerMenuHandle: "main-menu",
     }),
     cart.get(),
   ]);

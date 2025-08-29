@@ -11,6 +11,7 @@ import { cn } from "~/lib/cn";
 import type { CartApiQueryFragment } from "storefrontapi.generated";
 import { AnimatedLinkSpread } from "./ui/animated-link";
 import type { MoneyV2 } from "@shopify/hydrogen/storefront-api-types";
+import { useStoreWideSale } from "./store-wide-sale";
 
 export function CartHeader({
   totalQuantity,
@@ -243,15 +244,17 @@ function CartLineRemoveButton({
   );
 }
 
-export function calculateCartDiscounts({
+export function useCartDiscounts({
   discountAllocations,
   cost,
 }: {
   discountAllocations?: CartApiQueryFragment["discountAllocations"];
   cost?: { subtotalAmount?: Partial<MoneyV2> };
 }) {
-  const cartDiscounts = discountAllocations || [];
-  const totalCartDiscount = cartDiscounts.reduce(
+  let storeWideSale = useStoreWideSale();
+
+  let cartDiscounts = discountAllocations || [];
+  let totalCartDiscount = cartDiscounts.reduce(
     (sum: number, allocation) =>
       sum + Number(allocation.discountedAmount.amount || 0),
     0,
@@ -267,6 +270,7 @@ export function calculateCartDiscounts({
   }
 
   return {
+    discountTitle: storeWideSale?.title ?? "Automatic Discount",
     totalCartDiscount,
     discountedSubtotalAmount,
   };
