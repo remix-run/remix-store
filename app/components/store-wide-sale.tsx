@@ -36,7 +36,7 @@ export function StoreWideSaleMarquee() {
         <div
           className={clsx(
             "animate-marquee text-red-brand relative left-2 flex items-center gap-8 font-mono text-sm tracking-wide uppercase md:text-base lg:-left-4 lg:gap-12",
-            "animation-duration-[60s] md:animation-duration-[45s] lg:animation-duration-[30s]",
+            "animation-duration-[70s] md:animation-duration-[55s] lg:animation-duration-[45s]",
           )}
           aria-hidden="true"
         >
