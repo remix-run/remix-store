@@ -105,9 +105,6 @@ function CartButton({ cart: originalCart }: Pick<NavbarProps, "cart">) {
   let cart = useOptimisticCart(originalCart);
   let totalQuantity = cart?.totalQuantity || 0;
   let cartDiscounts = useCartDiscounts(cart);
-  if (!cartDiscounts) return null;
-  let { totalCartDiscount, discountedSubtotalAmount, discountTitle } =
-    cartDiscounts;
 
   if (!cart || totalQuantity === 0) {
     return (
@@ -158,7 +155,8 @@ function CartButton({ cart: originalCart }: Pick<NavbarProps, "cart">) {
   };
 
   let subtotal =
-    Number(discountedSubtotalAmount?.amount) || Number(subtotalAmount?.amount);
+    Number(cartDiscounts?.discountedSubtotalAmount?.amount) ||
+    Number(subtotalAmount?.amount);
 
   return (
     <>
@@ -211,32 +209,34 @@ function CartButton({ cart: originalCart }: Pick<NavbarProps, "cart">) {
               </div>
 
               {/* Show cart-level discounts */}
-              {totalCartDiscount > 0 && (
-                <div className="flex w-full items-center justify-between">
-                  <p className="text-sm font-medium text-green-400">
-                    {discountTitle}
-                  </p>
-                  <p className="text-sm font-medium text-green-400">
-                    -${totalCartDiscount.toFixed(2)}
-                  </p>
-                </div>
-              )}
+              {cartDiscounts?.totalCartDiscount &&
+                cartDiscounts?.totalCartDiscount > 0 && (
+                  <div className="flex w-full items-center justify-between">
+                    <p className="text-sm font-medium text-green-400">
+                      {cartDiscounts?.discountTitle}
+                    </p>
+                    <p className="text-sm font-medium text-green-400">
+                      -${cartDiscounts.totalCartDiscount.toFixed(2)}
+                    </p>
+                  </div>
+                )}
 
               {/* Show total if there are discounts */}
-              {discountedSubtotalAmount && totalCartDiscount > 0 && (
-                <div className="flex w-full items-center justify-between border-t border-white/20 pt-1">
-                  <p className="font-title tracking-tightest text-base font-black uppercase">
-                    Total
-                  </p>
-                  <Money
-                    className={clsx(
-                      "text-sm font-bold",
-                      isOptimistic && "text-white/50",
-                    )}
-                    data={discountedSubtotalAmount}
-                  />
-                </div>
-              )}
+              {cartDiscounts?.discountedSubtotalAmount &&
+                cartDiscounts?.totalCartDiscount > 0 && (
+                  <div className="flex w-full items-center justify-between border-t border-white/20 pt-1">
+                    <p className="font-title tracking-tightest text-base font-black uppercase">
+                      Total
+                    </p>
+                    <Money
+                      className={clsx(
+                        "text-sm font-bold",
+                        isOptimistic && "text-white/50",
+                      )}
+                      data={cartDiscounts?.discountedSubtotalAmount}
+                    />
+                  </div>
+                )}
               <p className="text-center text-xs text-white">
                 {subtotal < FREE_SHIPPING_THRESHOLD
                   ? `Add $${(FREE_SHIPPING_THRESHOLD - subtotal).toFixed(2)} more to get free shipping (U.S. only)`

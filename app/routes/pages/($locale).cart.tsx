@@ -110,9 +110,6 @@ export default function Cart() {
   let rootData = useRouteLoaderData<RootLoader>("root");
   let cart = useOptimisticCart(rootData?.cart);
   let cartDiscounts = useCartDiscounts(cart);
-  if (!cartDiscounts) return null;
-  let { totalCartDiscount, discountedSubtotalAmount, discountTitle } =
-    cartDiscounts;
 
   // Note -- this empty cart state is the same as the root ErrorBoundary -- if we propagate it again it's probably a good time to turn it into a component
   if (!cart || cart.lines?.nodes?.length === 0) {
@@ -196,18 +193,20 @@ export default function Cart() {
                     ) : null}
                   </div>
 
-                  {totalCartDiscount > 0 && (
-                    <div className="flex w-full items-center justify-between">
-                      <p className="text-sm font-medium text-green-400">
-                        {discountTitle}
-                      </p>
-                      <p className="text-sm font-medium text-green-400">
-                        -${totalCartDiscount.toFixed(2)}
-                      </p>
-                    </div>
-                  )}
+                  {cartDiscounts?.totalCartDiscount &&
+                    cartDiscounts?.totalCartDiscount > 0 && (
+                      <div className="flex w-full items-center justify-between">
+                        <p className="text-sm font-medium text-green-400">
+                          {cartDiscounts?.discountTitle}
+                        </p>
+                        <p className="text-sm font-medium text-green-400">
+                          -${cartDiscounts.totalCartDiscount.toFixed(2)}
+                        </p>
+                      </div>
+                    )}
 
-                  {discountedSubtotalAmount && totalCartDiscount > 0 ? (
+                  {cartDiscounts?.discountedSubtotalAmount &&
+                  cartDiscounts?.totalCartDiscount > 0 ? (
                     <div className="flex w-full items-center justify-between border-t border-white/20 pt-2">
                       <p className="font-title tracking-tightest text-base font-black uppercase md:text-xl">
                         Total
@@ -217,7 +216,7 @@ export default function Cart() {
                           "text-base font-bold md:text-xl",
                           isOptimistic && "text-white/50",
                         )}
-                        data={discountedSubtotalAmount}
+                        data={cartDiscounts?.discountedSubtotalAmount}
                       />
                     </div>
                   ) : null}
