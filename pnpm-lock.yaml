@@ -156,6 +156,9 @@ importers:
       eslint-plugin-react-hooks:
         specifier: ^5.2.0
         version: 5.2.0(eslint@9.39.1(jiti@2.6.1))
+      globals:
+        specifier: ^16.5.0
+        version: 16.5.0
       happy-dom:
         specifier: ^18.0.1
         version: 18.0.1
@@ -1715,10 +1718,12 @@ packages:
   '@shopify/cli-kit@3.87.4':
     resolution: {integrity: sha512-lUvqmmFdv2YojSJdjpFHC/vgRHD8S1lvOm/LkmtfFy3RGY9abqvXwVaQIdntYf6CXyJVJqasxJU0Cm6Av3hHRQ==}
     engines: {node: '>=20.10.0'}
+    os: [darwin, linux, win32]
 
   '@shopify/cli@3.87.4':
     resolution: {integrity: sha512-LLUzhpDNFIuuRvNS8IU93/3lVfQffQTQupMFZd5L/ywAjU0ytfvfRUdJ9+rRzxUiLqR4AFArV2PuMG70ZImMdg==}
     engines: {node: '>=20.10.0'}
+    os: [darwin, linux, win32]
     hasBin: true
 
   '@shopify/graphql-client@1.4.1':
@@ -1764,6 +1769,7 @@ packages:
   '@shopify/oxygen-cli@4.6.18':
     resolution: {integrity: sha512-LxJUkHL1Oudxy712XHTBd1se3Gq2w+/FYVyj5rAmyiNSFfbXD3zHWHjB5zbeeFjbRIPhbJW3OgRjJgn7VIo8EA==}
     engines: {node: '>=18.12.0'}
+    os: [darwin, linux, win32]
     hasBin: true
     peerDependencies:
       '@oclif/core': ^3.26.5
@@ -1775,6 +1781,7 @@ packages:
   '@shopify/plugin-cloudflare@3.87.4':
     resolution: {integrity: sha512-YxOpj0GFtuUpXYpB3KMyB5+tkfaUotgVdfsV5Pm7NMR7K4kldZuee/nGs7BejNN8aaglEvOthdsotIxqvrRxSA==}
     engines: {node: '>=20.10.0'}
+    os: [darwin, linux, win32]
 
   '@sindresorhus/is@5.6.0':
     resolution: {integrity: sha512-TV7t8GKYaJWsn00tFDqBw8+Uqmr8A0fRU1tvTQhyZzGv0sJCGRQL3JGMI3ucuKo3XIZdUP+Lx7/gh2t3lewy7g==}
@@ -3486,6 +3493,10 @@ packages:
 
   globals@14.0.0:
     resolution: {integrity: sha512-oahGvuMGQlPw/ivIYBjVSrWAfWLBeku5tpPE2fOPLi+WHffIWbuh2tCjhyQhTBPMf5E9jDEH4FOmTYgYwbKwtQ==}
+    engines: {node: '>=18'}
+
+  globals@16.5.0:
+    resolution: {integrity: sha512-c/c15i26VrJ4IRt5Z89DnIzCGDn9EcebibhAOjw5ibqEHsE1wLUgkPn9RDmNcUKyU87GeaL633nyJ+pplFR2ZQ==}
     engines: {node: '>=18'}
 
   globalthis@1.0.4:
@@ -9809,6 +9820,8 @@ snapshots:
       serialize-error: 7.0.1
 
   globals@14.0.0: {}
+
+  globals@16.5.0: {}
 
   globalthis@1.0.4:
     dependencies:
