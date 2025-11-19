@@ -7,7 +7,7 @@ Welcome to the Remix Store built on Hydrogen!
 ### Install dependencies
 
 ```sh
-npm install
+pnpm install
 ```
 
 ## Local development
@@ -15,13 +15,13 @@ npm install
 TODO: make this work without needing access to the Shopify
 
 ```bash
-npm run dev
+pnpm run dev
 ```
 
 ## Building for production
 
 ```bash
-npm run build
+pnpm run build
 ```
 
 ### Connecting to the Shopify Store

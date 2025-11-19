@@ -18,8 +18,13 @@ jobs:
         with:
           node-version: 20
 
+      - name: 📦 Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
       - name: 📥 Install deps
-        uses: bahmutov/npm-install@v1
+        run: pnpm install --frozen-lockfile
 
       - name: 🔬 Lint
-        run: npm run lint && npm run typecheck
+        run: pnpm run lint && pnpm run typecheck
