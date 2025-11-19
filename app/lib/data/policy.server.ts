@@ -1,4 +1,4 @@
-import { Storefront } from "@shopify/hydrogen";
+import type { Storefront } from "@shopify/hydrogen";
 import type { Shop } from "@shopify/hydrogen/storefront-api-types";
 
 type PolicyKey = keyof Pick<

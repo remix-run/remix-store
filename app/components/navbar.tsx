@@ -49,7 +49,7 @@ export function Navbar({ menu, cart }: NavbarProps) {
       <StoreWideSaleMarquee />
       <header
         className={cn(
-          "fixed z-10 grid max-h-(--header-height) w-full grid-cols-2 items-center bg-linear-to-b from-black/100 to-black/0 p-4 md:grid-cols-3 md:p-9",
+          "max-h-(--header-height) bg-linear-to-b fixed z-10 grid w-full grid-cols-2 items-center from-black/100 to-black/0 p-4 md:grid-cols-3 md:p-9",
           hasActiveSale ? "top-10" : "top-0",
         )}
       >
@@ -158,8 +158,6 @@ function CartButton({ cart: originalCart }: Pick<NavbarProps, "cart">) {
     Number(cartDiscounts?.discountedSubtotalAmount?.amount) ||
     Number(subtotalAmount?.amount);
 
-  console.log("the subtotal is", subtotal);
-
   return (
     <>
       <CartCTALink quantity={totalQuantity} className="flex md:hidden" />
@@ -170,7 +168,7 @@ function CartButton({ cart: originalCart }: Pick<NavbarProps, "cart">) {
         </PopoverTrigger>
         <PopoverContent
           align="end"
-          className="bg-blue-brand max-w-min min-w-[380px] rounded-t-4xl rounded-b-[2.625rem] text-white"
+          className="bg-blue-brand rounded-t-4xl min-w-[380px] max-w-min rounded-b-[2.625rem] text-white"
         >
           <div className="flex items-center justify-between px-5 py-3">
             <CartHeader totalQuantity={totalQuantity} />
@@ -178,7 +176,7 @@ function CartButton({ cart: originalCart }: Pick<NavbarProps, "cart">) {
               <button
                 type="button"
                 aria-label="Close cart"
-                className="rounded-full p-1 text-white hover:bg-white/20 focus-visible:ring-2 focus-visible:ring-white/50 focus-visible:outline-none"
+                className="rounded-full p-1 text-white hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
               >
                 <Icon name="x" className="size-8" />
               </button>
@@ -336,7 +334,7 @@ function CartCTAInner({ quantity }: { quantity: number }) {
         <span>{quantity}</span>
         <span
           className={cn(
-            "overflow-hidden pr-0 whitespace-nowrap transition-all duration-300 ease-in-out",
+            "overflow-hidden whitespace-nowrap pr-0 transition-all duration-300 ease-in-out",
             "max-w-0 group-hover:max-w-[10ch] group-hover:pr-1",
             "group-data-[state=open]:max-w-[10ch] group-data-[state=open]:pr-1",
           )}

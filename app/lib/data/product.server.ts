@@ -1,4 +1,4 @@
-import { Storefront } from "@shopify/hydrogen";
+import type { Storefront } from "@shopify/hydrogen";
 
 import type { ProductQueryVariables } from "storefrontapi.generated";
 import { PRODUCT_SIDEBAR_MENU_QUERY } from "../fragments";

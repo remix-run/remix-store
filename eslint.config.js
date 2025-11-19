@@ -7,7 +7,6 @@ import globals from "globals";
 import typescriptEslint from "@typescript-eslint/eslint-plugin";
 import _import from "eslint-plugin-import";
 import tsParser from "@typescript-eslint/parser";
-import jest from "eslint-plugin-jest";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import js from "@eslint/js";
@@ -25,12 +24,13 @@ export default [
   {
     ignores: [
       "**/node_modules/",
+      "**/build/",
       "**/dist/",
       "**/*.graphql.d.ts",
       "**/*.graphql.ts",
       "**/*.generated.d.ts",
-      ".react-router",
-      "coverage",
+      "**/.react-router/",
+      "**/packages/hydrogen/dist/",
     ],
   },
   ...fixupConfigRules(
@@ -129,7 +129,6 @@ export default [
       "jsx-a11y/label-has-for": "off",
       "react/display-name": "off",
       "react/no-array-index-key": "warn",
-      "react/prop-types": "off",
       "react/react-in-jsx-scope": "off",
     },
   },
@@ -152,9 +151,7 @@ export default [
     languageOptions: {
       parser: tsParser,
       parserOptions: {
-        projectService: {
-          allowDefaultProject: [".graphqlrc.ts"],
-        },
+        project: "./tsconfig.json",
         tsconfigRootDir: __dirname,
         ecmaFeatures: {
           jsx: true,
@@ -175,55 +172,6 @@ export default [
     },
     rules: {
       "@typescript-eslint/ban-ts-comment": "off",
-      "@typescript-eslint/naming-convention": "off",
-      "@typescript-eslint/no-non-null-asserted-optional-chain": "off",
-    },
-  },
-  {
-    files: ["**/.eslintrc.cjs"],
-    languageOptions: {
-      globals: {
-        ...globals.node,
-      },
-    },
-  },
-  ...compat.extends("plugin:jest/recommended").map((config) => ({
-    ...config,
-    files: ["**/*.test.*"],
-  })),
-  {
-    files: ["**/*.test.*"],
-    plugins: {
-      jest,
-    },
-    languageOptions: {
-      globals: {
-        ...globals.node,
-        ...globals.jest,
-      },
-    },
-  },
-  {
-    files: ["**/*.server.*"],
-    rules: {
-      "react-hooks/rules-of-hooks": "off",
-    },
-  },
-  ...fixupConfigRules(
-    compat.extends(
-      "plugin:@typescript-eslint/eslint-recommended",
-      "plugin:@typescript-eslint/recommended",
-    ),
-  ).map((config) => ({
-    ...config,
-    files: ["**/*.ts", "**/*.tsx"],
-  })),
-  {
-    files: ["**/*.ts", "**/*.tsx"],
-    languageOptions: {
-      parser: tsParser,
-    },
-    rules: {
       "@typescript-eslint/explicit-module-boundary-types": "off",
       "@typescript-eslint/naming-convention": [
         "error",
@@ -256,10 +204,33 @@ export default [
       "@typescript-eslint/no-empty-object-type": "off",
       "@typescript-eslint/no-explicit-any": "off",
       "@typescript-eslint/no-non-null-assertion": "off",
+      "@typescript-eslint/no-non-null-asserted-optional-chain": "off",
       "@typescript-eslint/no-unused-vars": "off",
-      "react/prop-types": "off",
-      "jest/no-deprecated-functions": "off",
+      "@typescript-eslint/no-floating-promises": "error",
+      "@typescript-eslint/no-misused-promises": "error",
       "prefer-const": "off",
+    },
+  },
+  {
+    files: ["**/.eslintrc.cjs"],
+    languageOptions: {
+      globals: {
+        ...globals.node,
+      },
+    },
+  },
+  {
+    files: ["**/*.test.*"],
+    languageOptions: {
+      globals: {
+        ...globals.node,
+      },
+    },
+  },
+  {
+    files: ["**/*.server.*"],
+    rules: {
+      "react-hooks/rules-of-hooks": "off",
     },
   },
 ];

@@ -82,7 +82,7 @@ export function useFiltersSubmit() {
       }
     }
 
-    submit(formData, {
+    return submit(formData, {
       preventScrollReset: true,
       replace: true,
       method: "get",
