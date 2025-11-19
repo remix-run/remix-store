@@ -20,7 +20,7 @@ jobs:
           node-version: 24
 
       - name: 📥 Install deps
-        run: npm ci
+        run: npm ci --ignore-scripts
 
       - name: 🧪 Run tests
         run: npm run test -- run

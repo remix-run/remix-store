@@ -24,7 +24,7 @@ jobs:
           node-version: 24
 
       - name: 📥 Install deps
-        run: npm ci
+        run: npm ci --ignore-scripts
 
       - name: 💅 Format
         run: npm run format --if-present
