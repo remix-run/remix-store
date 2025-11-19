@@ -9,6 +9,8 @@ export type SortKey =
   | "price-low-to-high"
   | "newest";
 
+// just for the diff
+
 /**
  * The available product types for filtering.
  *
