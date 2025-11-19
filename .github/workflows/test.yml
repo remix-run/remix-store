@@ -11,16 +11,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: ⬇️ Checkout repo
-        uses: actions/checkout@v5
+        uses: actions/checkout@v4
 
       - name: ⎔ Setup node
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v4
         with:
-          cache: npm
-          node-version: 24
+          node-version: 20
+
+      - name: 📦 Setup pnpm
+        uses: pnpm/action-setup@v4
 
       - name: 📥 Install deps
-        run: npm ci --ignore-scripts
+        run: pnpm install --frozen-lockfile
 
       - name: 🧪 Run tests
-        run: npm run test -- run
+        run: pnpm run test -- run
