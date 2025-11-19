@@ -19,7 +19,7 @@ jobs:
           node-version: 20
 
       - name: 📥 Install deps
-        uses: bahmutov/npm-install@v1
+        run: npm ci
 
       - name: 🔬 Lint
         run: npm run lint && npm run typecheck
