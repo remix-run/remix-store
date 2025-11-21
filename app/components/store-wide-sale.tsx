@@ -24,7 +24,7 @@ export function StoreWideSaleMarquee() {
 
   if (!saleData) return null;
 
-  const marqueeText = `${saleData.description}${saleData.endDateTime ? ` now thru ${formatEndDate(saleData.endDateTime)}` : ""}`;
+  const marqueeText = `${saleData.title} ${saleData.description}${saleData.endDateTime ? ` now thru ${formatEndDate(saleData.endDateTime)}` : ""}`;
 
   return (
     <div
@@ -47,6 +47,7 @@ export function StoreWideSaleMarquee() {
           {Array.from({ length: 10 }).map((_, i) => (
             // eslint-disable-next-line react/no-array-index-key -- chill React
             <Fragment key={i}>
+              <span>{saleData.title}</span>
               <span>{saleData.description}</span>
               {saleData.endDateTime ? (
                 <span>{`now thru ${formatEndDate(saleData.endDateTime)}`}</span>

@@ -88,3 +88,5 @@ The store-wide sales require 2 things in Shopify Admin:
 2. An automatic discount
 
 The data is fetched in [header.server.ts](app/lib/data/header.server.ts) and accessed via `useCartDiscounts` defined in [cart](app/components/cart.tsx).
+
+Note: there is a 1 hour cache on the header data, so updates will not be live without a redeploy.
