@@ -21,15 +21,13 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-
-      - name: 📦 Setup pnpm
-        uses: pnpm/action-setup@v4
+          cache: npm
 
       - name: 📥 Install deps
-        run: pnpm install --frozen-lockfile
+        run: npm ci
 
       - name: 💅 Format
-        run: pnpm run format --if-present
+        run: npm run format --if-present
 
       - name: 🗝️ Commit changes
         run: |
