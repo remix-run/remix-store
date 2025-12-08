@@ -26,7 +26,7 @@ type Particle = {
 export function SnowField({
   density = 0.00008,
   sizeRange = [0.8, 2.2],
-  speedRange = [0.25, 0.7],
+  speedRange = [0.18, 0.5],
   opacityRange = [0.25, 0.9],
   drift = 0.15,
   className,
@@ -75,10 +75,7 @@ export function SnowField({
       canvas.height = Math.round(height * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-      let targetCount = Math.max(
-        12,
-        Math.floor(width * height * density),
-      );
+      let targetCount = Math.max(12, Math.floor(width * height * density));
 
       if (particles.length > targetCount) {
         particles.length = targetCount;
@@ -89,19 +86,21 @@ export function SnowField({
       }
     };
 
-    let render = () => {
+    let drawParticles = (move = false) => {
       ctx.clearRect(0, 0, width, height);
 
       for (let p of particles) {
-        p.y += p.vy;
-        p.x += p.vx;
+        if (move) {
+          p.y += p.vy;
+          p.x += p.vx;
 
-        if (p.y - p.radius > height) {
-          resetParticle(p, true);
+          if (p.y - p.radius > height) {
+            resetParticle(p, true);
+          }
+
+          if (p.x < -p.radius) p.x = width + p.radius;
+          else if (p.x > width + p.radius) p.x = -p.radius;
         }
-
-        if (p.x < -p.radius) p.x = width + p.radius;
-        else if (p.x > width + p.radius) p.x = -p.radius;
 
         ctx.globalAlpha = p.alpha;
         ctx.beginPath();
@@ -109,26 +108,42 @@ export function SnowField({
         ctx.fillStyle = "white";
         ctx.fill();
       }
+    };
 
+    let render = () => {
+      drawParticles(true);
       frameId = window.requestAnimationFrame(render);
     };
 
-    resize();
+    let handleResize = () => {
+      resize();
+      if (prefersReducedMotion) {
+        drawParticles(false);
+      }
+    };
 
-    if (prefersReducedMotion) {
-      ctx.clearRect(0, 0, width, height);
-      return;
-    }
-    let resizeObserver = new ResizeObserver(resize);
+    resize();
+    let resizeObserver = new ResizeObserver(handleResize);
     resizeObserver.observe(canvas);
 
-    frameId = window.requestAnimationFrame(render);
+    if (prefersReducedMotion) {
+      drawParticles(false);
+    } else {
+      frameId = window.requestAnimationFrame(render);
+    }
 
     return () => {
       resizeObserver.disconnect();
       window.cancelAnimationFrame(frameId);
     };
-  }, [density, sizeRange, speedRange, opacityRange, drift, prefersReducedMotion]);
+  }, [
+    density,
+    sizeRange,
+    speedRange,
+    opacityRange,
+    drift,
+    prefersReducedMotion,
+  ]);
 
   return (
     <canvas
@@ -138,4 +153,3 @@ export function SnowField({
     />
   );
 }
-
