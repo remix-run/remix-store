@@ -85,6 +85,21 @@ Products use custom metafields under "Product metafields":
 1. Description
 2. Technical Description
 
+### Store-wide sale
+
+The store-wide sales require 2 things in Shopify Admin:
+
+1. A metaobject with the following fields:
+   1. Title
+   2. Description
+   3. End date
+
+2. An automatic discount
+
+The data is fetched in [header.server.ts](app/lib/data/header.server.ts) and accessed via `useCartDiscounts` defined in [cart](app/components/cart.tsx).
+
+Note: there is a 1 hour cache on the header data, so updates will not be live without a redeploy.
+
 We use metafields instead of the default description to access rich text data via GraphQL.
 
 ## Contributing
@@ -101,21 +116,6 @@ MIT License - see [LICENSE.md](LICENSE.md) for details.
 
 - [Hydrogen Documentation](https://shopify.dev/docs/api/hydrogen)
 - [React Router Documentation](https://reactrouter.com/)
-
-### Store-wide sale
-
-The store-wide sales require 2 things in Shopify Admin:
-
-1. A metaobject with the following fields:
-   1. Title
-   2. Description
-   3. End date
-
-2. An automatic discount
-
-The data is fetched in [header.server.ts](app/lib/data/header.server.ts) and accessed via `useCartDiscounts` defined in [cart](app/components/cart.tsx).
-
-Note: there is a 1 hour cache on the header data, so updates will not be live without a redeploy.
 
 ---
 
