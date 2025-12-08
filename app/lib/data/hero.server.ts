@@ -71,7 +71,7 @@ let HERO_QUERY = `#graphql
     $country: CountryCode
     $language: LanguageCode
   ) @inContext(country: $country, language: $language) {
-    hero: metaobject(handle: {handle: "hero_1", type: "hero"}) {
+    hero: metaobject(handle: {handle: "hero_green_drop", type: "hero"}) {
       masthead: field(key: "masthead") {
         reference {
           __typename
