@@ -15,6 +15,7 @@ import { usePrefersReducedMotion, useScrollPercentage } from "~/lib/hooks";
 import { AnimatedLink } from "~/components/ui/animated-link";
 import { generateMeta } from "~/lib/meta";
 import { ProductGrid } from "~/components/product-grid";
+import { SnowField } from "~/components/snow-field";
 import type { Route } from "./+types/($locale)._index";
 
 export let FEATURED_COLLECTION_HANDLE = "remix-logo-apparel";
@@ -70,6 +71,9 @@ export default function Homepage({ loaderData }: Route.ComponentProps) {
 
   return (
     <>
+      <div className="pointer-events-none fixed inset-0 z-20">
+        <SnowField />
+      </div>
       <Hero {...hero} />
       <div className="relative">
         {firstEntry && (
