@@ -2,15 +2,6 @@ import { useEffect, useRef } from "react";
 import { clsx } from "clsx";
 import { usePrefersReducedMotion } from "~/lib/hooks";
 
-type SnowFieldProps = {
-  density?: number;
-  sizeRange?: [number, number];
-  speedRange?: [number, number];
-  opacityRange?: [number, number];
-  drift?: number;
-  className?: string;
-};
-
 type Particle = {
   x: number;
   y: number;
@@ -23,14 +14,13 @@ type Particle = {
 /**
  * Lightweight canvas snow effect tuned for gentle, low-cost particles.
  */
-export function SnowField({
-  density = 0.00008,
-  sizeRange = [0.8, 2.2],
-  speedRange = [0.18, 0.5],
-  opacityRange = [0.25, 0.9],
-  drift = 0.15,
-  className,
-}: SnowFieldProps) {
+const DENSITY = 0.00008;
+const SIZE_RANGE: [number, number] = [0.8, 2.2];
+const SPEED_RANGE: [number, number] = [0.18, 0.5];
+const OPACITY_RANGE: [number, number] = [0.25, 0.9];
+const DRIFT = 0.1;
+
+export function SnowField({ className }: { className?: string }) {
   let canvasRef = useRef<HTMLCanvasElement>(null);
   let prefersReducedMotion = usePrefersReducedMotion();
 
@@ -45,26 +35,7 @@ export function SnowField({
     let frameId = 0;
     let width = 0;
     let height = 0;
-    let dpr = typeof window !== "undefined" ? window.devicePixelRatio || 1 : 1;
-
-    let rand = (min: number, max: number) => Math.random() * (max - min) + min;
-
-    let createParticle = (): Particle => ({
-      x: rand(0, width),
-      y: rand(0, height),
-      radius: rand(sizeRange[0], sizeRange[1]),
-      vy: rand(speedRange[0], speedRange[1]),
-      vx: rand(-drift, drift),
-      alpha: rand(opacityRange[0], opacityRange[1]),
-    });
-
-    let resetParticle = (p: Particle, fromTop = false) => {
-      p.x = rand(0, width);
-      p.y = fromTop ? -p.radius : rand(0, height);
-      p.vy = rand(speedRange[0], speedRange[1]);
-      p.vx = rand(-drift, drift);
-      p.alpha = rand(opacityRange[0], opacityRange[1]);
-    };
+    let dpr = window.devicePixelRatio || 1;
 
     let resize = () => {
       width = canvas.clientWidth;
@@ -75,13 +46,13 @@ export function SnowField({
       canvas.height = Math.round(height * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-      let targetCount = Math.max(12, Math.floor(width * height * density));
+      let targetCount = Math.max(12, Math.floor(width * height * DENSITY));
 
       if (particles.length > targetCount) {
         particles.length = targetCount;
       } else {
         while (particles.length < targetCount) {
-          particles.push(createParticle());
+          particles.push(createParticle({ width, height }));
         }
       }
     };
@@ -95,7 +66,7 @@ export function SnowField({
           p.x += p.vx;
 
           if (p.y - p.radius > height) {
-            resetParticle(p, true);
+            resetParticle(p, { width });
           }
 
           if (p.x < -p.radius) p.x = width + p.radius;
@@ -115,15 +86,13 @@ export function SnowField({
       frameId = window.requestAnimationFrame(render);
     };
 
-    let handleResize = () => {
+    resize();
+    let resizeObserver = new ResizeObserver(() => {
       resize();
       if (prefersReducedMotion) {
         drawParticles(false);
       }
-    };
-
-    resize();
-    let resizeObserver = new ResizeObserver(handleResize);
+    });
     resizeObserver.observe(canvas);
 
     if (prefersReducedMotion) {
@@ -136,14 +105,7 @@ export function SnowField({
       resizeObserver.disconnect();
       window.cancelAnimationFrame(frameId);
     };
-  }, [
-    density,
-    sizeRange,
-    speedRange,
-    opacityRange,
-    drift,
-    prefersReducedMotion,
-  ]);
+  }, [prefersReducedMotion]);
 
   return (
     <canvas
@@ -152,4 +114,33 @@ export function SnowField({
       aria-hidden="true"
     />
   );
+}
+
+function createParticle({
+  width,
+  height,
+}: {
+  width: number;
+  height: number;
+}): Particle {
+  return {
+    x: rand(0, width),
+    y: rand(0, height),
+    radius: rand(SIZE_RANGE[0], SIZE_RANGE[1]),
+    vy: rand(SPEED_RANGE[0], SPEED_RANGE[1]),
+    vx: rand(-DRIFT, DRIFT),
+    alpha: rand(OPACITY_RANGE[0], OPACITY_RANGE[1]),
+  };
+}
+
+function resetParticle(p: Particle, { width }: { width: number }) {
+  p.x = rand(0, width);
+  p.y = -p.radius;
+  p.vy = rand(SPEED_RANGE[0], SPEED_RANGE[1]);
+  p.vx = rand(-DRIFT, DRIFT);
+  p.alpha = rand(OPACITY_RANGE[0], OPACITY_RANGE[1]);
+}
+
+function rand(min: number, max: number) {
+  return Math.random() * (max - min) + min;
 }
