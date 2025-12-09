@@ -75,7 +75,7 @@ export function Footer({ footer: footerPromise }: FooterProps) {
             <FooterLink
               to={href("/:locale?/collections/:handle", { handle: "all" })}
             >
-              Remix Soft Wear Catalog V.1
+              Remix Soft Wear Catalog V.1.2
             </FooterLink>
             <p>Designed in USA</p>
           </div>
