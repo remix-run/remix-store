@@ -130,7 +130,7 @@ function Hero({ masthead, assetImages, product }: HeroDataProps) {
   return (
     <div
       ref={heroRef}
-      className="relative h-screen max-h-[1200px] overflow-hidden bg-linear-[180deg,var(--color-black),#27273B] pt-24 md:top-7 md:h-[1200px] lg:h-[1600px] lg:max-h-[1600px] 2xl:h-[1800px] 2xl:max-h-[1800px]"
+      className="relative h-screen max-h-[1200px] overflow-hidden bg-linear-[180deg,var(--color-black),#162D1A] pt-24 md:top-7 md:h-[1200px] lg:h-[1600px] lg:max-h-[1600px] 2xl:h-[1800px] 2xl:max-h-[1800px]"
     >
       <div
         className="fixed w-full"
