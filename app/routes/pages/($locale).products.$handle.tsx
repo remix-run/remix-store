@@ -321,7 +321,7 @@ function SubscribeCustomerForm({
     <div className="flex flex-col gap-4">
       <fetcher.Form
         method="post"
-        action="/_resources/subscribe"
+        action={href("/:locale?/subscribe")}
         className="grid grid-cols-1 gap-4 lg:grid-cols-3 lg:gap-3"
       >
         <input
@@ -354,7 +354,12 @@ function SubscribeCustomerForm({
             name="email"
             placeholder="run@remix.run"
             required
-            disabled={isSubmitting || isSuccess}
+            disabled={isSubmitting}
+            onChange={() => {
+              if (isSuccess) {
+                fetcher.unstable_reset();
+              }
+            }}
             className={cn(
               "focus-visible:ring-blue-brand w-full rounded-[54px] border-[3px] px-6 py-4 text-lg font-semibold outline-none placeholder:text-xl placeholder:text-white/60 focus-visible:ring-2",
               isSuccess
@@ -366,7 +371,7 @@ function SubscribeCustomerForm({
 
         <button
           type="submit"
-          disabled={isSubmitting || isSuccess}
+          disabled={isSubmitting}
           className={cn(
             addToCartButtonVariants({
               state: isSuccess ? "success" : "idle",
@@ -427,7 +432,7 @@ function ProductOptions({
         </DropdownMenuTrigger>
         <DropdownMenuContent
           align="center"
-          className="w-[var(--radix-dropdown-menu-trigger-width)] rounded-4xl border border-gray-800 bg-gray-900 p-0"
+          className="w-(--radix-dropdown-menu-trigger-width) rounded-4xl border border-gray-800 bg-gray-900 p-0"
           sideOffset={10}
         >
           {option.optionValues.map((valueOption) => {
