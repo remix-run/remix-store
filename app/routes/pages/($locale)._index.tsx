@@ -1,4 +1,4 @@
-import { useState, useEffect, memo, useRef } from "react";
+import { useState, useEffect, memo, useRef, lazy, Suspense } from "react";
 import { Link, data, href } from "react-router";
 import { getCollectionQuery } from "~/lib/data/collection.server";
 import { Image as HydrogenImage } from "@shopify/hydrogen";
@@ -15,13 +15,13 @@ import { usePrefersReducedMotion, useScrollPercentage } from "~/lib/hooks";
 import { AnimatedLink } from "~/components/ui/animated-link";
 import { generateMeta } from "~/lib/meta";
 import { ProductGrid } from "~/components/product-grid";
-import { SnowField } from "~/components/snow-field";
+const SnowField = lazy(() => import("~/components/snow-field"));
 import type { Route } from "./+types/($locale)._index";
 
 export let FEATURED_COLLECTION_HANDLE = "remix-logo-apparel";
 
 export function meta({ matches }: Route.MetaArgs) {
-  const { siteUrl } = matches[0].data;
+  const { siteUrl } = matches[0].loaderData;
   return generateMeta({
     title: "Home",
     url: siteUrl,
@@ -47,6 +47,8 @@ export async function loader({ context }: Route.LoaderArgs) {
     lookbookEntriesQuery,
   ]);
 
+  let isDecember = new Date().getMonth() === 11;
+
   return data({
     hero,
     lookbookEntries,
@@ -54,6 +56,7 @@ export async function loader({ context }: Route.LoaderArgs) {
     products,
     collectionHandle,
     productsPageInfo,
+    isDecember,
   });
 }
 
@@ -65,15 +68,20 @@ export default function Homepage({ loaderData }: Route.ComponentProps) {
     products: initialProducts,
     collectionHandle,
     productsPageInfo,
+    isDecember,
   } = loaderData;
 
   let [firstEntry, ...restEntries] = lookbookEntries;
 
   return (
     <>
-      <div className="pointer-events-none fixed inset-0 z-20">
-        <SnowField />
-      </div>
+      {isDecember ? (
+        <div className="pointer-events-none fixed inset-0 z-20">
+          <Suspense fallback={null}>
+            <SnowField />
+          </Suspense>
+        </div>
+      ) : null}
       <Hero {...hero} />
       <div className="relative">
         {firstEntry && (

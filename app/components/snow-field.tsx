@@ -20,7 +20,7 @@ const SPEED_RANGE: [number, number] = [0.18, 0.5];
 const OPACITY_RANGE: [number, number] = [0.25, 0.9];
 const DRIFT = 0.1;
 
-export function SnowField({ className }: { className?: string }) {
+export default function SnowField({ className }: { className?: string }) {
   let canvasRef = useRef<HTMLCanvasElement>(null);
   let prefersReducedMotion = usePrefersReducedMotion();
 
