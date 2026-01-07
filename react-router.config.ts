@@ -14,9 +14,11 @@ function patchedHydrogenPreset() {
       return {
         ...config,
         future: {
-          v8_splitRouteModules: true,
-          v8_viteEnvironmentApi: true,
           v8_middleware: true,
+          v8_splitRouteModules: true,
+          v8_viteEnvironmentApi: false,
+          unstable_optimizeDeps: true,
+          unstable_subResourceIntegrity: false,
         } satisfies Config["future"],
       };
     },
@@ -25,9 +27,6 @@ function patchedHydrogenPreset() {
 
 export default {
   presets: [patchedHydrogenPreset()],
-  future: {
-    unstable_optimizeDeps: true,
-  },
   appDirectory: "app",
   buildDirectory: "dist",
   ssr: true,
