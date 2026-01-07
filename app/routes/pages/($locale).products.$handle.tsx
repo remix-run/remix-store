@@ -357,7 +357,7 @@ function SubscribeCustomerForm({
             disabled={isSubmitting}
             onChange={() => {
               if (isSuccess) {
-                fetcher.unstable_reset();
+                fetcher.reset();
               }
             }}
             className={cn(

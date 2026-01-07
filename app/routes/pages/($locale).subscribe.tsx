@@ -190,7 +190,7 @@ export default function Subscribe() {
                 disabled={isSubmitting}
                 onChange={() => {
                   if (isSuccess) {
-                    fetcher.unstable_reset();
+                    fetcher.reset();
                   }
                 }}
                 className={cn(
