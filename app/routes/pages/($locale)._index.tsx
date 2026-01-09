@@ -334,7 +334,7 @@ let loadRunnerImage = {
 
 function LoadRunner() {
   return (
-    <div className="flex h-[390px] items-center justify-center gap-4 bg-[#1E1EC4] md:h-[480px] lg:h-[800px]">
+    <div className="flex h-[390px] items-center justify-center gap-4 bg-[#162D1A] md:h-[480px] lg:h-[800px]">
       <div className="3xl:w-[50%] w-[65%] xl:w-[60%] 2xl:w-[55%]">
         <HydrogenImage
           className="relative left-1/2 h-full w-full max-w-[90%] -translate-x-1/2"
