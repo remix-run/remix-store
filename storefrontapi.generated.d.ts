@@ -229,53 +229,76 @@ export type LookbookImagesQueryVariables = StorefrontAPI.Exact<{
 }>;
 
 export type LookbookImagesQuery = {
-  lookbookEntries: {
-    nodes: Array<
-      Pick<StorefrontAPI.Metaobject, 'handle'> & {
-        fields: Array<
-          {__typename: 'MetaobjectField'} & {
-            reference?: StorefrontAPI.Maybe<
-              | {
-                  __typename:
-                    | 'Collection'
-                    | 'GenericFile'
-                    | 'Metaobject'
-                    | 'Model3d'
-                    | 'Page'
-                    | 'ProductVariant'
-                    | 'Video';
-                }
-              | ({__typename: 'MediaImage'} & Pick<
-                  StorefrontAPI.MediaImage,
-                  'id' | 'alt'
-                > & {
-                    presentation?: StorefrontAPI.Maybe<
-                      Pick<StorefrontAPI.MediaPresentation, 'id' | 'asJson'>
-                    >;
-                    image?: StorefrontAPI.Maybe<
-                      Pick<
-                        StorefrontAPI.Image,
-                        'id' | 'altText' | 'url' | 'width' | 'height'
-                      >
-                    >;
-                  })
-              | ({__typename: 'Product'} & Pick<
-                  StorefrontAPI.Product,
-                  'id' | 'handle' | 'title'
-                > & {
-                    priceRange: {
-                      minVariantPrice: Pick<
-                        StorefrontAPI.MoneyV2,
-                        'amount' | 'currencyCode'
+  lookbook?: StorefrontAPI.Maybe<
+    Pick<StorefrontAPI.Metaobject, 'handle'> & {
+      entries?: StorefrontAPI.Maybe<{
+        references?: StorefrontAPI.Maybe<{
+          nodes: Array<
+            | {
+                __typename:
+                  | 'Collection'
+                  | 'GenericFile'
+                  | 'MediaImage'
+                  | 'Model3d'
+                  | 'Page'
+                  | 'Product'
+                  | 'ProductVariant'
+                  | 'Video';
+              }
+            | ({__typename: 'Metaobject'} & Pick<
+                StorefrontAPI.Metaobject,
+                'handle'
+              > & {
+                  fields: Array<
+                    {__typename: 'MetaobjectField'} & {
+                      reference?: StorefrontAPI.Maybe<
+                        | {
+                            __typename:
+                              | 'Collection'
+                              | 'GenericFile'
+                              | 'Metaobject'
+                              | 'Model3d'
+                              | 'Page'
+                              | 'ProductVariant'
+                              | 'Video';
+                          }
+                        | ({__typename: 'MediaImage'} & Pick<
+                            StorefrontAPI.MediaImage,
+                            'id' | 'alt'
+                          > & {
+                              presentation?: StorefrontAPI.Maybe<
+                                Pick<
+                                  StorefrontAPI.MediaPresentation,
+                                  'id' | 'asJson'
+                                >
+                              >;
+                              image?: StorefrontAPI.Maybe<
+                                Pick<
+                                  StorefrontAPI.Image,
+                                  'id' | 'altText' | 'url' | 'width' | 'height'
+                                >
+                              >;
+                            })
+                        | ({__typename: 'Product'} & Pick<
+                            StorefrontAPI.Product,
+                            'id' | 'handle' | 'title'
+                          > & {
+                              priceRange: {
+                                minVariantPrice: Pick<
+                                  StorefrontAPI.MoneyV2,
+                                  'amount' | 'currencyCode'
+                                >;
+                              };
+                            })
                       >;
-                    };
-                  })
-            >;
-          }
-        >;
-      }
-    >;
-  };
+                    }
+                  >;
+                })
+          >;
+        }>;
+      }>;
+    }
+  >;
 };
 
 export type PolicyFragment = Pick<
@@ -810,7 +833,7 @@ interface GeneratedQueryTypes {
     return: HeroQuery;
     variables: HeroQueryVariables;
   };
-  '#graphql\n  #graphql\n  fragment ProductImage on Image {\n    id\n    altText\n    url\n    width\n    height\n  }\n\n  query LookbookImages (\n    $country: CountryCode\n    $language: LanguageCode\n  ) @inContext(country: $country, language: $language) {\n    lookbookEntries: metaobjects(type: "lookbook_entry", first: 5) {\n      nodes {\n        handle\n        fields {\n          __typename\n          reference {\n            __typename\n            ... on MediaImage {\n              id\n              alt\n              presentation {\n                id\n                asJson(format: IMAGE)\n              }\n              image {\n                ...ProductImage\n              }\n            }\n            ... on Product {\n              id\n              handle\n              title\n              priceRange {\n                minVariantPrice {\n                  amount\n                  currencyCode\n                }\n              }\n            }\n          }\n        }\n      }\n    }\n  }\n': {
+  '#graphql\n  #graphql\n  fragment ProductImage on Image {\n    id\n    altText\n    url\n    width\n    height\n  }\n\n  query LookbookImages (\n    $country: CountryCode\n    $language: LanguageCode\n  ) @inContext(country: $country, language: $language) {\n    lookbook: metaobject(handle: {handle: "lookbook_1", type: "lookbook"}) {\n      handle\n      entries: field(key: "lookbook") {\n        references(first: 100) {\n          nodes {\n            __typename\n            ... on Metaobject {\n              handle\n              fields {\n                __typename\n                reference {\n                  __typename\n                  ... on MediaImage {\n                    id\n                    alt\n                    presentation {\n                      id\n                      asJson(format: IMAGE)\n                    }\n                    image {\n                      ...ProductImage\n                    }\n                  }\n                  ... on Product {\n                    id\n                    handle\n                    title\n                    priceRange {\n                      minVariantPrice {\n                        amount\n                        currencyCode\n                      }\n                    }\n                  }\n                }\n              }\n            }\n          }\n        }\n      }\n    }\n  }\n': {
     return: LookbookImagesQuery;
     variables: LookbookImagesQueryVariables;
   };
