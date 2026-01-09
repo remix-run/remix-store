@@ -229,7 +229,7 @@ export default function Cart() {
                   <FreeShippingProgress amount={subtotalValue} />
 
                   <p className="text-center text-xs text-white/50">
-                    Taxes & Shipping calculated at checkout
+                    Taxes & Shipping details at checkout
                   </p>
                 </div>
                 <div className="w-full md:w-[240px]">
