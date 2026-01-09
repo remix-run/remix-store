@@ -66,6 +66,55 @@ export function CheckoutLink({
 
 type CartLine = OptimisticCartLine<CartApiQueryFragment["lines"]["nodes"][0]>;
 
+export function FreeShippingProgress({
+  amount,
+  threshold = 75,
+}: {
+  amount: number | null | undefined;
+  threshold?: number;
+}) {
+  let safeAmount = Number(amount) || 0;
+  let progress = Math.min(Math.max(safeAmount / threshold, 0), 1);
+  let remaining = Math.max(threshold - safeAmount, 0);
+  let achieved = progress >= 1;
+  let percentage = Math.round(progress * 100);
+
+  return (
+    <div
+      className="w-full space-y-2"
+      role="group"
+      aria-label="Free shipping progress"
+    >
+      <p className="text-sm font-medium text-white">
+        {achieved
+          ? "Your shipping is free!"
+          : `Add $${remaining.toFixed(2)} more for free shipping`}
+      </p>
+      <div
+        className="h-2 w-full overflow-hidden rounded-full bg-white/15"
+        role="presentation"
+      >
+        <div
+          className={cn(
+            "h-full rounded-full transition-[width,background-color] duration-300 ease-in-out",
+            achieved ? "bg-green-brand" : "bg-white",
+          )}
+          style={{ width: `${percentage}%` }}
+          role="progressbar"
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuenow={percentage}
+          aria-label={
+            achieved
+              ? "Free shipping unlocked"
+              : `Free shipping progress ${percentage} percent`
+          }
+        />
+      </div>
+    </div>
+  );
+}
+
 export function CartLineItem({
   line,
   isOptimistic,
