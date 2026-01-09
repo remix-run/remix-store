@@ -130,7 +130,7 @@ function Hero({ masthead, assetImages, product }: HeroDataProps) {
   return (
     <div
       ref={heroRef}
-      className="relative h-screen max-h-[1200px] overflow-hidden bg-linear-[180deg,var(--color-black),#27273B] pt-24 md:top-7 md:h-[1200px] lg:h-[1600px] lg:max-h-[1600px] 2xl:h-[1800px] 2xl:max-h-[1800px]"
+      className="relative h-screen max-h-[1200px] overflow-hidden bg-linear-[180deg,var(--color-black),#162D1A] pt-24 md:top-7 md:h-[1200px] lg:h-[1600px] lg:max-h-[1600px] 2xl:h-[1800px] 2xl:max-h-[1800px]"
     >
       <div
         className="fixed w-full"
@@ -314,7 +314,7 @@ function LookbookEntry({ image, product }: LookbookEntryProps) {
           prefetch="intent"
           animationType="icon"
           iconName="mail"
-          to="https://rmx.as/newsletter"
+          to={href("/:locale?/subscribe")}
           className={animatedLinkCss}
         >
           Coming Soon
@@ -334,7 +334,7 @@ let loadRunnerImage = {
 
 function LoadRunner() {
   return (
-    <div className="flex h-[390px] items-center justify-center gap-4 bg-[#1E1EC4] md:h-[480px] lg:h-[800px]">
+    <div className="flex h-[390px] items-center justify-center gap-4 bg-[#143126] md:h-[480px] lg:h-[800px]">
       <div className="3xl:w-[50%] w-[65%] xl:w-[60%] 2xl:w-[55%]">
         <HydrogenImage
           className="relative left-1/2 h-full w-full max-w-[90%] -translate-x-1/2"
