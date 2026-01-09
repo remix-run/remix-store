@@ -71,7 +71,7 @@ See [hero.server.ts](app/lib/data/hero.server.ts) for the GraphQL query.
 
 ### Lookbook
 
-Uses "Lookbook Entry" metaobjects with:
+Uses "Lookbook" metaobject which contains a field called "lookbook_entries" that is an array of references to "Lookbook Entry" metaobjects with:
 
 1. Image
 2. Product (optional)
