@@ -28,6 +28,7 @@ import {
   CartHeader,
   CartLineItem,
   CheckoutLink,
+  FreeShippingProgress,
   useCartDiscounts,
 } from "./cart";
 import { StoreWideSaleMarquee, useStoreWideSale } from "./store-wide-sale";
@@ -38,8 +39,6 @@ interface NavbarProps {
   cart: CartApiQueryFragment | null;
 }
 
-const FREE_SHIPPING_THRESHOLD = 75;
-
 export function Navbar({ menu, cart }: NavbarProps) {
   const saleData = useStoreWideSale();
   const hasActiveSale = Boolean(saleData);
@@ -49,7 +48,7 @@ export function Navbar({ menu, cart }: NavbarProps) {
       <StoreWideSaleMarquee />
       <header
         className={cn(
-          "max-h-(--header-height) bg-linear-to-b fixed z-10 grid w-full grid-cols-2 items-center from-black/100 to-black/0 p-4 md:grid-cols-3 md:p-9",
+          "max-h-(--header-height) bg-linear-to-b fixed z-10 grid w-full grid-cols-2 items-center from-black to-black/0 p-4 md:grid-cols-3 md:p-9",
           hasActiveSale ? "top-10" : "top-0",
         )}
       >
@@ -237,11 +236,7 @@ function CartButton({ cart: originalCart }: Pick<NavbarProps, "cart">) {
                     />
                   </div>
                 )}
-              <p className="text-center text-xs text-white">
-                {subtotal < FREE_SHIPPING_THRESHOLD
-                  ? `Add $${(FREE_SHIPPING_THRESHOLD - subtotal).toFixed(2)} more to get free shipping (U.S. only)`
-                  : "Free shipping on U.S. orders over $75"}
-              </p>
+              <FreeShippingProgress amount={subtotal} />
             </div>
             <CheckoutLink
               to={checkoutUrl ?? ""}

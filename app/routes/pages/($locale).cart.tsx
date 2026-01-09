@@ -15,6 +15,7 @@ import {
   CartHeader,
   CartLineItem,
   CheckoutLink,
+  FreeShippingProgress,
   useCartDiscounts,
 } from "~/components/cart";
 import { clsx } from "clsx";
@@ -153,6 +154,9 @@ export default function Cart() {
   let isOptimistic = Boolean(cart.isOptimistic);
 
   const subtotalAmount = cart?.cost?.subtotalAmount;
+  const subtotalValue =
+    Number(cartDiscounts?.discountedSubtotalAmount?.amount) ||
+    Number(subtotalAmount?.amount);
 
   return (
     <main>
@@ -222,8 +226,10 @@ export default function Cart() {
                     </div>
                   ) : null}
 
+                  <FreeShippingProgress amount={subtotalValue} />
+
                   <p className="text-center text-xs text-white/50">
-                    Taxes & Shipping calculated at checkout
+                    Taxes & Shipping details at checkout
                   </p>
                 </div>
                 <div className="w-full md:w-[240px]">
