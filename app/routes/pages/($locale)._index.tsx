@@ -314,7 +314,7 @@ function LookbookEntry({ image, product }: LookbookEntryProps) {
           prefetch="intent"
           animationType="icon"
           iconName="mail"
-          to="https://rmx.as/newsletter"
+          to={href("/:locale?/subscribe")}
           className={animatedLinkCss}
         >
           Coming Soon
