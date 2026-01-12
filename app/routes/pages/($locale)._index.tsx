@@ -235,7 +235,6 @@ let RotatingProduct = memo(
             className="absolute inset-0 mx-auto object-cover object-center"
             src={asset.image.url}
             alt=""
-            aria-disabled={"true"}
             style={{
               visibility: index === frameIndex ? "visible" : "hidden",
             }}
