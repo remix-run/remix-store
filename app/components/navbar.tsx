@@ -56,8 +56,8 @@ export function Navbar({ menu, cart }: NavbarProps) {
           to={href("/")}
           className="flex max-w-fit justify-start"
           prefetch="intent"
+          aria-label="Home"
         >
-          <span className="sr-only">Home</span>
           <RemixLogo animateOnScroll />
         </Link>
         <nav className="hidden justify-center md:flex">
