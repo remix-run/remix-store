@@ -17,17 +17,20 @@ jobs:
       - name: ⬇️ Checkout repo
         uses: actions/checkout@v4
 
+      - name: 📦 Setup pnpm
+        uses: pnpm/action-setup@v4
+
       - name: ⎔ Setup node
         uses: actions/setup-node@v4
         with:
           node-version: 24
-          cache: npm
+          cache: pnpm
 
       - name: 📥 Install deps
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: 💅 Format
-        run: npm run format --if-present
+        run: pnpm format
 
       - name: 🗝️ Commit changes
         run: |

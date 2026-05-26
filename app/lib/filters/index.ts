@@ -44,7 +44,7 @@ function usePendingSearchParams() {
   let [searchParams] = useSearchParams();
 
   const navigation = useNavigation();
-  if (navigation.state === "loading") {
+  if (navigation.state === "loading" && navigation.location) {
     searchParams = new URLSearchParams(navigation.location.search);
   }
 
