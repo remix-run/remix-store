@@ -9,5 +9,3 @@ node_modules
 .DS_STORE
 /coverage
 .react-router
-
-.cursor/
