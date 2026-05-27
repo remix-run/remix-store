@@ -1,0 +1,8 @@
+saveExact: true
+packageManagerStrict: true
+minimumReleaseAge: 10800
+minimumReleaseAgeExclude:
+  - react-router
+  - "@react-router/*"
+minimumReleaseAgeStrict: true
+trustPolicy: no-downgrade

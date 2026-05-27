@@ -18,12 +18,10 @@ import { Navbar } from "~/components/navbar";
 import { Footer } from "~/components/footer";
 import { Icon } from "~/components/icon";
 
-/* eslint-disable import/no-unresolved */
-import interUrl from "/font/inter-roman-latin-var.woff2?url";
-import interItalicUrl from "/font/inter-italic-latin-var.woff2?url";
-import jetBrainsMonoUrl from "/font/jet-brains-mono.woff2?url";
-import lexendZettaBlackUrl from "/font/lexend-zetta-black.woff2?url";
-/* eslint-enable import/no-unresolved */
+const interUrl = "/font/inter-roman-latin-var.woff2";
+const interItalicUrl = "/font/inter-italic-latin-var.woff2";
+const jetBrainsMonoUrl = "/font/jet-brains-mono.woff2";
+const lexendZettaBlackUrl = "/font/lexend-zetta-black.woff2";
 
 import tailwindCssSrc from "./tailwind.css?url";
 import { MatrixText } from "./components/matrix-text";

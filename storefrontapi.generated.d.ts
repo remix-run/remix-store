@@ -151,6 +151,7 @@ export type HeroQuery = {
       reference?: StorefrontAPI.Maybe<
         | {
             __typename:
+              | 'Article'
               | 'Collection'
               | 'GenericFile'
               | 'Metaobject'
@@ -178,6 +179,7 @@ export type HeroQuery = {
         nodes: Array<
           | {
               __typename:
+                | 'Article'
                 | 'Collection'
                 | 'GenericFile'
                 | 'Metaobject'
@@ -205,6 +207,7 @@ export type HeroQuery = {
       reference?: StorefrontAPI.Maybe<
         | {
             __typename:
+              | 'Article'
               | 'Collection'
               | 'GenericFile'
               | 'MediaImage'
@@ -236,6 +239,7 @@ export type LookbookImagesQuery = {
           nodes: Array<
             | {
                 __typename:
+                  | 'Article'
                   | 'Collection'
                   | 'GenericFile'
                   | 'MediaImage'
@@ -254,6 +258,7 @@ export type LookbookImagesQuery = {
                       reference?: StorefrontAPI.Maybe<
                         | {
                             __typename:
+                              | 'Article'
                               | 'Collection'
                               | 'GenericFile'
                               | 'Metaobject'
