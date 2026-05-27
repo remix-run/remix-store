@@ -135,7 +135,10 @@ export function Footer({ footer: footerPromise }: FooterProps) {
               <p>Remix is an engineering team</p>
               <p>Remix builds tools for a better web</p>
 
-              <nav className="flex items-center gap-4 py-1.5">
+              <nav
+                aria-label="Social links"
+                className="flex items-center gap-4 py-1.5"
+              >
                 <a
                   href="https://www.remix.run"
                   target="_blank"
@@ -169,7 +172,7 @@ export function Footer({ footer: footerPromise }: FooterProps) {
               </nav>
             </div>
 
-            <nav className="flex flex-col items-start gap-2">
+            <nav aria-label="Policies" className="flex flex-col items-start gap-2">
               <Suspense fallback={null}>
                 <Await resolve={footerPromise}>
                   {(footer) => {

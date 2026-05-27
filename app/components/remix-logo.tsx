@@ -26,7 +26,9 @@ export function RemixLogo({
       viewBox="0 0 700 180"
       fill="none"
       className={className}
+      role="img"
     >
+      <title>Home</title>
       <path
         className={clsx("fill-red-brand", letterCss)}
         d="M696.11,51.95h-46.39l-21.11,29.44-20.56-29.44h-49.73l44.73,60.82-48.62,63.04h46.39l24.72-33.61,24.72,33.61h49.73l-48.89-64.99,45-58.88Z"
