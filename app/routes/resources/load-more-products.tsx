@@ -118,7 +118,7 @@ export function useLoadMoreProducts({
             <input type="hidden" name="endCursor" value={endCursor} />
           )}
           <button
-            className="bg-blue-brand hover:text-blue-brand disabled:text-blue-brand w-full py-9 text-center text-xl font-bold text-white transition-colors hover:bg-white disabled:bg-white/80"
+            className="bg-blue-brand hover:text-blue-brand disabled:text-blue-brand w-full cursor-pointer py-9 text-center text-xl font-bold text-white transition-colors hover:bg-white disabled:cursor-wait disabled:bg-white/80"
             type="submit"
             disabled={isLoading}
           >

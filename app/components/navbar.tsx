@@ -17,6 +17,12 @@ import { useHydrated } from "~/lib/hooks";
 import { cn } from "~/lib/cn";
 import { AnimatedLink } from "~/components/ui/animated-link";
 import { RemixLogo } from "~/components/remix-logo";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "~/components/ui/dropdown-menu";
 
 import {
   Popover,
@@ -48,7 +54,7 @@ export function Navbar({ menu, cart }: NavbarProps) {
       <StoreWideSaleMarquee />
       <header
         className={cn(
-          "max-h-(--header-height) bg-linear-to-b fixed z-10 grid w-full grid-cols-2 items-center from-black to-black/0 p-4 md:grid-cols-3 md:p-9",
+          "max-h-(--header-height) bg-linear-to-b fixed z-10 grid w-full grid-cols-[auto_1fr_auto] items-center from-black to-black/0 p-4 md:p-9",
           hasActiveSale ? "top-10" : "top-0",
         )}
       >
@@ -60,7 +66,7 @@ export function Navbar({ menu, cart }: NavbarProps) {
           <span className="sr-only">Home</span>
           <RemixLogo animateOnScroll />
         </Link>
-        <nav className="hidden justify-center md:flex">
+        <nav className="hidden justify-center lg:flex">
           <ul className="flex flex-nowrap gap-9">
             {menu.items.map((item) => {
               if (!item.url) return null;
@@ -73,7 +79,8 @@ export function Navbar({ menu, cart }: NavbarProps) {
           </ul>
         </nav>
 
-        <div className="flex justify-end">
+        <div className="flex justify-end gap-2 md:gap-3">
+          <MobileMenu menu={menu} />
           <CartButton cart={cart} />
         </div>
       </header>
@@ -81,24 +88,72 @@ export function Navbar({ menu, cart }: NavbarProps) {
   );
 }
 
+function MobileMenu({ menu }: Pick<NavbarProps, "menu">) {
+  return (
+    <div className="flex lg:hidden">
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <button
+            type="button"
+            aria-label="Open navigation menu"
+            className="flex h-12 items-center justify-center rounded-[54px] bg-white px-5 py-2 text-black transition-colors hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 md:h-16 md:px-6 md:py-4"
+          >
+            <img
+              src="/brand/menu-01.svg"
+              alt=""
+              className="size-6 md:size-8"
+              draggable={false}
+            />
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent
+          align="center"
+          className="min-w-[220px] rounded-3xl bg-black/90 p-2 shadow-2xl ring-1 ring-white/10 backdrop-blur"
+        >
+          {menu.items.map((item) => {
+            if (!item.url) return null;
+            return (
+              <DropdownMenuItem key={item.url} asChild>
+                <HeaderMenuLink
+                  title={item.title}
+                  url={item.url}
+                  className="w-full rounded-2xl px-4 py-3 text-lg"
+                />
+              </DropdownMenuItem>
+            );
+          })}
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
+  );
+}
+
 type HeaderMenuLinkProps = {
   title: string;
   url: string;
-  onClick?: NavLinkProps["onClick"];
-};
-function HeaderMenuLink(props: HeaderMenuLinkProps) {
-  let { url } = useRelativeUrl(props.url);
+  className?: string;
+} & Omit<NavLinkProps, "children" | "className" | "to">;
+const HeaderMenuLink = forwardRef<HTMLAnchorElement, HeaderMenuLinkProps>(
+  function HeaderMenuLink(props, ref) {
+    let { title, url: itemUrl, className, ...navLinkProps } = props;
+    let { url } = useRelativeUrl(itemUrl);
 
-  return (
-    <NavLink
-      className="text-base/tight font-semibold no-underline"
-      to={url}
-      prefetch="intent"
-    >
-      {props.title}
-    </NavLink>
-  );
-}
+    return (
+      <NavLink
+        className={cn(
+          "text-base/tight font-semibold no-underline",
+          className,
+        )}
+        ref={ref}
+        to={url}
+        prefetch="intent"
+        {...navLinkProps}
+      >
+        {title}
+      </NavLink>
+    );
+  },
+);
 
 function CartButton({ cart: originalCart }: Pick<NavbarProps, "cart">) {
   let cart = useOptimisticCart(originalCart);

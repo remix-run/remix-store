@@ -131,7 +131,7 @@ function ProductImages({ images }: ProductImagesProps) {
   let baseCss = "max-h-[90%] object-cover object-center";
 
   return (
-    <ImageLayout className="group-hover:scale-105">
+    <ImageLayout className="group-hover:animate-product-image-bounce">
       <HydrogenImage
         data={firstImage}
         sizes={sizes}
@@ -220,7 +220,7 @@ function ImageLayout({ children, className }: LayoutProps) {
   return (
     <div
       className={clsx(
-        "relative flex w-[70%] items-center justify-center transition-transform group-hover:scale-105",
+        "relative flex w-[70%] items-center justify-center",
         className,
       )}
     >

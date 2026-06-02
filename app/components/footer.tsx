@@ -7,7 +7,9 @@ import { useLayoutEffect, usePrefersReducedMotion } from "~/lib/hooks";
 import { clsx } from "clsx";
 
 import loadRunner1 from "~/assets/images/load-runner-1.webp";
-import loadRunnerGif from "~/assets/images/load-runner.gif";
+
+let footerGradientStripCount = 33;
+let footerGradientStaggerMs = 80;
 
 interface FooterProps {
   footer: Promise<FooterQuery | null>;
@@ -60,10 +62,11 @@ export function Footer({ footer: footerPromise }: FooterProps) {
   let isVisible = prefersReducedMotion || visibleState !== "hidden";
 
   return (
-    <footer className="relative bg-black">
+    <footer className="relative isolate overflow-hidden bg-black">
+      <FooterGradientStrips />
       <div
         className={clsx(
-          "px-2 py-32 pb-16 font-mono text-xs/tight text-white uppercase transition-opacity duration-300",
+          "relative z-10 px-2 py-32 pb-16 font-mono text-xs/tight text-white uppercase transition-opacity duration-300",
           isVisible ? "opacity-100" : "opacity-30",
         )}
       >
@@ -75,7 +78,7 @@ export function Footer({ footer: footerPromise }: FooterProps) {
             <FooterLink
               to={href("/:locale?/collections/:handle", { handle: "all" })}
             >
-              Remix Soft Wear Catalog V.1.2
+              Remix Soft Wear Catalog V.1.4
             </FooterLink>
             <p>Designed in USA</p>
           </div>
@@ -83,10 +86,10 @@ export function Footer({ footer: footerPromise }: FooterProps) {
           <div className="flex flex-col items-center gap-5 md:gap-6 lg:flex-row">
             {/* Animated load runner */}
 
-            <Icon
-              name="remix-logo"
-              aria-label="Remix Logo"
-              className="h-[42px] w-[168px] md:h-[54px] md:w-[216px] lg:h-[65px] lg:w-[260px]"
+            <img
+              src="/brand/remix-wordmark-white.svg"
+              alt="Remix Logo"
+              className="h-auto w-[168px] md:w-[216px] lg:w-[260px]"
             />
 
             <div className="flex items-center gap-1">
@@ -110,10 +113,10 @@ export function Footer({ footer: footerPromise }: FooterProps) {
                 <img
                   alt=""
                   aria-hidden={true}
-                  src={loadRunnerGif}
+                  src="/brand/remix-runner-animated.svg"
                   loading="eager"
                   className={clsx(
-                    "relative size-full object-cover object-center",
+                    "relative left-1/2 top-1/2 size-3/4 -translate-x-1/2 -translate-y-1/2 object-contain object-center",
                     isVisible
                       ? "motion-safe:block motion-reduce:hidden"
                       : "hidden",
@@ -140,7 +143,7 @@ export function Footer({ footer: footerPromise }: FooterProps) {
                   href="https://www.remix.run"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="rounded-3xl border border-white px-1.5 py-1 transition-colors duration-300 hover:bg-white hover:text-black"
+                  className="rounded-3xl border border-white px-2 py-1 transition-colors duration-300 hover:bg-white hover:text-black"
                 >
                   remix.run
                 </a>
@@ -198,6 +201,41 @@ export function Footer({ footer: footerPromise }: FooterProps) {
         </div>
       </div>
     </footer>
+  );
+}
+
+function FooterGradientStrips() {
+  let centerIndex = Math.floor(footerGradientStripCount / 2);
+
+  return (
+    <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-0">
+      <div className="absolute inset-0 bg-black" />
+      <div className="absolute inset-x-0 top-0 z-10 h-48 bg-linear-to-b from-black via-black/90 to-transparent" />
+      <div className="absolute inset-x-[-18%] top-12 bottom-[-18%]">
+        <div className="relative flex h-full justify-center">
+          {Array.from({ length: footerGradientStripCount }).map((_, index) => {
+            let distanceFromCenter = Math.abs(index - centerIndex);
+
+            return (
+              <span
+                // eslint-disable-next-line react/no-array-index-key -- decorative staggered strips
+                key={index}
+                className="footer-gradient-strip"
+                style={
+                  {
+                    "--strip-delay": `${
+                      distanceFromCenter * footerGradientStaggerMs
+                    }ms`,
+                  } as React.CSSProperties
+                }
+              />
+            );
+          })}
+          <div className="footer-gradient-strip-shade" />
+        </div>
+      </div>
+      <div className="absolute inset-x-0 bottom-0 h-1/3 bg-linear-to-t from-black/30 to-transparent" />
+    </div>
   );
 }
 

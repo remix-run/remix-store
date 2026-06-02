@@ -76,8 +76,7 @@ export function links() {
     {
       rel: "icon",
       type: "image/svg+xml",
-      href: "/favicon.svg",
-      media: "(prefers-color-scheme: light)",
+      href: "/brand/remix-runner-animated.svg",
     },
     {
       rel: "icon",
