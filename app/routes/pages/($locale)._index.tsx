@@ -110,7 +110,7 @@ export default function Homepage({ loaderData }: Route.ComponentProps) {
 
 let heroHeight = 1600;
 
-function Hero({ assetImages, product }: HeroDataProps) {
+function Hero({ masthead, assetImages, product }: HeroDataProps) {
   const heroRef = useRef<HTMLDivElement>(null);
   let scrollPercentage = useScrollPercentage(heroRef);
 
@@ -139,8 +139,9 @@ function Hero({ assetImages, product }: HeroDataProps) {
           transform: `translate3d(0, -${translateY}px, 0)`,
         }}
       >
-        <img
-          src="/brand/hero-illuminated-sign.jpg"
+        <HydrogenImage
+          data={masthead}
+          sizes="100vw"
           alt=""
           aria-hidden="true"
           className="relative top-5 left-1/2 h-auto min-w-[185.5%] -translate-x-1/2 -translate-y-[42%] object-cover object-center sm:min-w-[175%] md:min-w-[159%] lg:max-w-[114.5%] lg:min-w-[114.5%] lg:-translate-y-[36%]"
