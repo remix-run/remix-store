@@ -98,12 +98,7 @@ function MobileMenu({ menu }: Pick<NavbarProps, "menu">) {
             aria-label="Open navigation menu"
             className="flex h-12 items-center justify-center rounded-[54px] bg-white px-5 py-2 text-black transition-colors hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 md:h-16 md:px-6 md:py-4"
           >
-            <img
-              src="/brand/menu-01.svg"
-              alt=""
-              className="size-6 md:size-8"
-              draggable={false}
-            />
+            <Icon name="menu" className="size-6 md:size-8" />
           </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent
@@ -140,10 +135,7 @@ const HeaderMenuLink = forwardRef<HTMLAnchorElement, HeaderMenuLinkProps>(
 
     return (
       <NavLink
-        className={cn(
-          "text-base/tight font-semibold no-underline",
-          className,
-        )}
+        className={cn("text-base/tight font-semibold no-underline", className)}
         ref={ref}
         to={url}
         prefetch="intent"

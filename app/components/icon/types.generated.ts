@@ -6,6 +6,7 @@ export const iconNames = [
   "x-logo",
   "remix-logo",
   "remix-glyphs",
+  "menu",
   "mail",
   "info",
   "github",
