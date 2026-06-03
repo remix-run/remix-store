@@ -108,22 +108,28 @@ export default function Homepage({ loaderData }: Route.ComponentProps) {
   );
 }
 
-let heroHeight = 1600;
+let defaultHeroHeight = 1600;
+let heroParallaxRatio = 0.5;
+let mastheadFadeSpeed = 4;
+let heroTextSwitchProgress = 0.3;
+let productFrameScrollSpeed = 1.5;
 
 function Hero({ masthead, assetImages, product }: HeroDataProps) {
   const heroRef = useRef<HTMLDivElement>(null);
   let scrollPercentage = useScrollPercentage(heroRef);
 
   let translateY = Math.floor(
-    (heroRef.current?.offsetHeight || 0) * scrollPercentage * 0.5,
+    (heroRef.current?.offsetHeight || 0) *
+      scrollPercentage *
+      heroParallaxRatio,
   );
-  let opacity = Math.max(0, 1 - scrollPercentage * 4);
+  let opacity = Math.max(0, 1 - scrollPercentage * mastheadFadeSpeed);
 
-  let highlightSwitch = scrollPercentage > 0.3;
+  let highlightSwitch = scrollPercentage > heroTextSwitchProgress;
 
   // Calculate which frame to show based on scroll percentage
   let frameIndex = Math.min(
-    Math.floor(scrollPercentage * 1.5 * assetImages.length),
+    Math.floor(scrollPercentage * productFrameScrollSpeed * assetImages.length),
     assetImages.length - 1,
   );
 
@@ -135,10 +141,11 @@ function Hero({ masthead, assetImages, product }: HeroDataProps) {
       <div
         className="fixed w-full"
         style={{
-          height: `${heroRef.current?.offsetHeight || heroHeight}px`,
+          height: `${heroRef.current?.offsetHeight || defaultHeroHeight}px`,
           transform: `translate3d(0, -${translateY}px, 0)`,
         }}
       >
+        {/* Art-directed masthead positioning keeps the Shopify-managed image anchored to the hero crop across breakpoints. */}
         <HydrogenImage
           data={masthead}
           sizes="100vw"
@@ -151,6 +158,7 @@ function Hero({ masthead, assetImages, product }: HeroDataProps) {
           }}
         />
 
+        {/* Text offsets are paired with the masthead crop so the copy sits over the sign artwork as the hero scrolls. */}
         <h1 className="mt-0 flex max-h-min w-full -translate-y-[240px] flex-nowrap items-start justify-between gap-8 px-4 text-2xl font-extrabold tracking-[-0.03em] text-white md:-translate-y-[288px] md:px-9 md:text-5xl lg:-translate-y-[386px] lg:justify-center lg:gap-64 lg:text-8xl xl:gap-80 xl:text-8xl 2xl:gap-96">
           <span className="sr-only">Remix</span>
           <HeroText highlight={!highlightSwitch}>
@@ -225,6 +233,7 @@ let RotatingProduct = memo(
         .catch(() => setImagesLoaded("error"));
     }, [assetImages, imagesLoaded, prefersReducedMotion]);
 
+    // Art-directed product offsets keep each scroll frame aligned with the masthead composition.
     return (
       <Link
         to={href("/:locale?/products/:handle", { handle: product.handle })}

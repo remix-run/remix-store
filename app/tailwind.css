@@ -223,6 +223,7 @@
 
   @media (prefers-reduced-motion: reduce) {
     animation: none;
+    transform: scale(1);
   }
 }
 
