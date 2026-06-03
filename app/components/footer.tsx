@@ -63,7 +63,7 @@ export function Footer({ footer: footerPromise }: FooterProps) {
 
   return (
     <footer className="relative isolate overflow-hidden bg-black">
-      <FooterGradientStrips />
+      <FooterGradientStrips animate={isVisible && !prefersReducedMotion} />
       <div
         className={clsx(
           "relative z-10 px-2 py-32 pb-16 font-mono text-xs/tight text-white uppercase transition-opacity duration-300",
@@ -204,7 +204,7 @@ export function Footer({ footer: footerPromise }: FooterProps) {
   );
 }
 
-function FooterGradientStrips() {
+function FooterGradientStrips({ animate }: { animate: boolean }) {
   let centerIndex = Math.floor(footerGradientStripCount / 2);
 
   return (
@@ -220,7 +220,10 @@ function FooterGradientStrips() {
               <span
                 // eslint-disable-next-line react/no-array-index-key -- decorative staggered strips
                 key={index}
-                className="footer-gradient-strip"
+                className={clsx(
+                  "relative z-0 block h-full min-h-[260px] w-[clamp(18px,4vw,72px)] origin-bottom scale-y-100 self-end rounded-none [background:linear-gradient(0deg,hsl(3_100%_61%)_8%,hsl(313_88%_62%)_22%,hsl(48_94%_62%)_38%,hsl(104_68%_60%)_56%,hsl(202_94%_60%)_78%,var(--color-black)_100%)] motion-reduce:scale-y-100",
+                  animate && "footer-gradient-strip-animated",
+                )}
                 style={
                   {
                     "--strip-delay": `${
@@ -231,7 +234,12 @@ function FooterGradientStrips() {
               />
             );
           })}
-          <div className="footer-gradient-strip-shade" />
+          <div
+            className={clsx(
+              "pointer-events-none absolute inset-0 z-[1] opacity-[0.85] [background:linear-gradient(180deg,rgb(0_0_0_/_1)_0%,rgb(0_0_0_/_0.82)_100%)] motion-reduce:opacity-[0.58]",
+              animate && "footer-gradient-strip-shade-animated",
+            )}
+          />
         </div>
       </div>
       <div className="absolute inset-x-0 bottom-0 h-1/3 bg-linear-to-t from-black/30 to-transparent" />
