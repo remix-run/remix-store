@@ -5,8 +5,7 @@ import { Icon } from "~/components/icon";
 import { Suspense, useRef, useState } from "react";
 import { useLayoutEffect, usePrefersReducedMotion } from "~/lib/hooks";
 import { clsx } from "clsx";
-
-import loadRunner1 from "~/assets/images/load-runner-1.webp";
+import { RemixRunner } from "~/components/remix-runner";
 
 let footerGradientStripCount = 33;
 let footerGradientStaggerMs = 80;
@@ -101,26 +100,12 @@ export function Footer({ footer: footerPromise }: FooterProps) {
                       "motion-safe:animate-spin motion-safe:border-4",
                   )}
                 />
-                <img
+                <RemixRunner
                   alt=""
                   aria-hidden={true}
-                  src={loadRunner1}
-                  className={clsx(
-                    "relative size-full object-cover object-center",
-                    isVisible ? "motion-safe:hidden" : "block",
-                  )}
-                />
-                <img
-                  alt=""
-                  aria-hidden={true}
-                  src="/brand/remix-runner-animated.svg"
+                  animate={isVisible}
                   loading="eager"
-                  className={clsx(
-                    "relative left-1/2 top-1/2 size-3/4 -translate-x-1/2 -translate-y-1/2 object-contain object-center",
-                    isVisible
-                      ? "motion-safe:block motion-reduce:hidden"
-                      : "hidden",
-                  )}
+                  className="relative left-1/2 top-1/2 size-3/4 -translate-x-1/2 -translate-y-1/2 object-contain object-center"
                 />
               </div>
 
