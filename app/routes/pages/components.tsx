@@ -9,14 +9,14 @@ import { cn } from "~/lib/cn";
 import { generateMeta } from "~/lib/meta";
 import type { Route } from "./+types/components";
 
-export function meta({ data, matches }: Route.MetaArgs) {
-  const selectedComponent = data?.selectedComponent;
+export function meta({ loaderData, matches }: Route.MetaArgs) {
+  const selectedComponent = loaderData.selectedComponent;
   const title = selectedComponent
     ? `${selectedComponent} | Component Library`
     : "Component Library";
 
-  // Try to get siteUrl from root data if available
-  const siteUrl = matches[0]?.data?.siteUrl;
+  // Try to get siteUrl from root loader data if available
+  const { siteUrl } = matches[0].loaderData;
 
   return generateMeta({
     title: title.charAt(0).toUpperCase() + title.slice(1),

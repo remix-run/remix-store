@@ -17,7 +17,7 @@ const subscribeSchema = z.object({
 });
 
 export function meta({ matches }: Route.MetaArgs) {
-  const { siteUrl } = matches[0].data;
+  const { siteUrl } = matches[0].loaderData;
 
   return generateMeta({
     title: "Subscribe",

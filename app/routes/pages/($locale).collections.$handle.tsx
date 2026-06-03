@@ -10,11 +10,11 @@ import { PageTitle } from "~/components/page-title";
 import ogImageSrc from "~/assets/images/social-collections.jpg";
 import type { Route } from "./+types/($locale).collections.$handle";
 
-export function meta({ data, matches }: Route.MetaArgs) {
-  if (!data) return generateMeta();
+export function meta({ loaderData, matches }: Route.MetaArgs) {
+  if (!loaderData) return generateMeta();
 
-  const { collection } = data;
-  const { siteUrl } = matches[0].data;
+  const { collection } = loaderData;
+  const { siteUrl } = matches[0].loaderData;
 
   return generateMeta({
     title: collection.seo?.title || collection.title,

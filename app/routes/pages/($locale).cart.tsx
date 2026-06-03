@@ -25,7 +25,7 @@ import { Icon } from "~/components/icon";
 import type { Route } from "./+types/($locale).cart";
 
 export function meta({ matches }: Route.MetaArgs) {
-  const rootData = matches[0].data;
+  const rootData = matches[0].loaderData;
   const { siteUrl, cart } = rootData;
   return generateMeta({
     title: cart?.totalQuantity ? `Cart (${cart?.totalQuantity})` : "Cart",

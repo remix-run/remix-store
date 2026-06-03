@@ -3,11 +3,11 @@ import { generateMeta } from "~/lib/meta";
 import { getPolicyData } from "~/lib/data/policy.server";
 import type { Route } from "./+types/($locale).policies.$handle";
 
-export function meta({ data, matches }: Route.MetaArgs) {
-  const { siteUrl } = matches[0].data;
+export function meta({ loaderData, matches }: Route.MetaArgs) {
+  const { siteUrl } = matches[0].loaderData;
 
   return generateMeta({
-    title: data?.policy.title,
+    title: loaderData.policy.title,
     url: siteUrl,
   });
 }

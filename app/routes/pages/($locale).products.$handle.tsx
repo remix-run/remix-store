@@ -33,11 +33,11 @@ import { cva } from "class-variance-authority";
 import { cn } from "~/lib/cn";
 import type { Route } from "./+types/($locale).products.$handle";
 
-export function meta({ data, matches }: Route.MetaArgs) {
-  if (!data) return generateMeta();
+export function meta({ loaderData, matches }: Route.MetaArgs) {
+  if (!loaderData) return generateMeta();
 
-  let { product } = data;
-  let { siteUrl } = matches[0].data;
+  let { product } = loaderData;
+  let { siteUrl } = matches[0].loaderData;
 
   let image = product.images.nodes[0].url;
 
