@@ -75,21 +75,19 @@ export function links() {
     })),
     {
       rel: "icon",
-      type: "image/svg+xml",
-      href: "/brand/remix-runner-animated.svg",
+      type: "image/png",
+      sizes: "32x32",
+      href: "/remix-favicon-32.png",
     },
     {
       rel: "icon",
       type: "image/svg+xml",
-      href: "/favicon-dark.svg",
-      media: "(prefers-color-scheme: dark)",
+      href: "/remix-favicon.svg",
     },
-    { rel: "shortcut icon", type: "image/x-icon", href: "/favicon.ico" },
     {
-      rel: "shortcut icon",
-      type: "image/x-icon",
-      href: "/favicon-dark.ico",
-      media: "(prefers-color-scheme: dark)",
+      rel: "apple-touch-icon",
+      sizes: "180x180",
+      href: "/remix-apple-touch-icon.png",
     },
   ];
 }
