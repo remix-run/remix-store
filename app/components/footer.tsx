@@ -86,10 +86,10 @@ export function Footer({ footer: footerPromise }: FooterProps) {
           <div className="flex flex-col items-center gap-5 md:gap-6 lg:flex-row">
             {/* Animated load runner */}
 
-            <img
-              src="/brand/remix-wordmark-white.svg"
-              alt="Remix Logo"
-              className="h-auto w-[168px] md:w-[216px] lg:w-[260px]"
+            <Icon
+              name="remix-logo"
+              aria-label="Remix Logo"
+              className="h-auto w-[168px] text-white md:w-[216px] lg:w-[260px]"
             />
 
             <div className="flex items-center gap-1">
