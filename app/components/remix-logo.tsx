@@ -16,7 +16,9 @@ export function RemixLogo({
 
   const letterCss = clsx(
     "transform transition-all duration-300 ease-in-out",
-    showMarkOnly ? "-translate-y-[140px] opacity-0" : "translate-y-0 opacity-100",
+    showMarkOnly
+      ? "-translate-y-[140px] opacity-0"
+      : "translate-y-0 opacity-100",
   );
 
   return (

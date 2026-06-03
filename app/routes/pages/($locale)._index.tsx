@@ -120,9 +120,7 @@ function Hero({ masthead, assetImages, product }: HeroDataProps) {
   let scrollPercentage = useScrollPercentage(heroRef);
 
   let translateY = Math.floor(
-    (heroRef.current?.offsetHeight || 0) *
-      scrollPercentage *
-      heroParallaxRatio,
+    (heroRef.current?.offsetHeight || 0) * scrollPercentage * heroParallaxRatio,
   );
   let opacity = Math.max(0, 1 - scrollPercentage * mastheadFadeSpeed);
 

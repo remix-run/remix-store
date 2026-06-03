@@ -193,7 +193,10 @@ function FooterGradientStrips({ animate }: { animate: boolean }) {
   let centerIndex = Math.floor(footerGradientStripCount / 2);
 
   return (
-    <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-0">
+    <div
+      aria-hidden="true"
+      className="pointer-events-none absolute inset-0 z-0"
+    >
       <div className="absolute inset-0 bg-black" />
       <div className="absolute inset-x-0 top-0 z-10 h-48 bg-linear-to-b from-black via-black/90 to-transparent" />
       <div className="absolute inset-x-[-18%] top-12 bottom-[-18%]">

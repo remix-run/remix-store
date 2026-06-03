@@ -248,8 +248,8 @@
 }
 
 @utility footer-gradient-strip-animated {
-  animation: footer-gradient-strip 5000ms cubic-bezier(0.8, 0, 0.2, 1)
-    infinite alternate both;
+  animation: footer-gradient-strip 5000ms cubic-bezier(0.8, 0, 0.2, 1) infinite
+    alternate both;
   animation-delay: calc(var(--strip-delay) - 5000ms);
 
   @media (prefers-reduced-motion: reduce) {

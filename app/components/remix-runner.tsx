@@ -24,7 +24,10 @@ export function RemixRunner({
         src="/brand/remix-runner.svg"
         width={runnerWidth}
         height={runnerHeight}
-        className={cn(className, animate ? "hidden motion-reduce:block" : "block")}
+        className={cn(
+          className,
+          animate ? "hidden motion-reduce:block" : "block",
+        )}
       />
       <img
         {...props}
