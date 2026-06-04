@@ -62,7 +62,7 @@ export function Navbar({ menu, cart }: NavbarProps) {
           <RemixLogo animateOnScroll />
         </Link>
         <nav className="hidden justify-center md:flex">
-          <ul className="flex flex-nowrap gap-9">
+          <ul className="flex flex-nowrap gap-5 lg:gap-7 xl:gap-9">
             {menu.items.map((item) => {
               if (!item.url) return null;
               return (
@@ -117,16 +117,16 @@ function CartButton({ cart: originalCart }: Pick<NavbarProps, "cart">) {
       <>
         <Link
           to="/collections/all"
-          className="group relative flex h-12 items-center justify-center gap-2 rounded-[54px] bg-white px-5 py-2 text-center text-base font-semibold text-black no-underline md:hidden"
+          className="group relative flex h-10 items-center justify-center gap-1.5 rounded-[54px] bg-white px-3 py-2 text-center text-sm font-semibold text-black no-underline md:hidden"
           prefetch="intent"
         >
           <Icon
             name="cart"
-            className="size-6"
+            className="size-5"
             fill="currentColor"
             aria-hidden="true"
           />
-          Shop All
+          Shop
         </Link>
 
         <AnimatedLink
@@ -328,7 +328,7 @@ function CartCTAInner({ quantity }: { quantity: number }) {
     <>
       <Icon
         name="cart"
-        className="size-6 md:size-8"
+        className="size-5 md:size-8"
         fill="currentColor"
         aria-hidden="true"
       />
@@ -353,7 +353,7 @@ function useCartCTAClassNames(className?: string) {
   return useMemo(
     () =>
       cn(
-        "group bg-blue-brand relative flex h-12 cursor-pointer items-center justify-center gap-2 rounded-[54px] px-5 py-2 pr-4 pl-5 text-center text-base font-semibold text-white no-underline md:h-16 md:gap-2.5 md:px-6 md:py-4 md:pr-5 md:pl-6 md:text-xl",
+        "group bg-blue-brand relative flex h-10 cursor-pointer items-center justify-center gap-1.5 rounded-[54px] px-3 py-2 text-center text-sm font-semibold text-white no-underline md:h-16 md:gap-2.5 md:px-6 md:py-4 md:pr-5 md:pl-6 md:text-xl",
         className,
       ),
     [className],

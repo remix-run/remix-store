@@ -13,9 +13,9 @@ interface MobileMenuProps {
 export function MobileMenu({ menu }: MobileMenuProps) {
   return (
     <DetailsMenu className="group relative flex md:hidden">
-      <summary className="flex h-12 cursor-pointer list-none items-center justify-center rounded-[54px] border-2 border-transparent bg-white px-5 py-2 text-black transition-colors select-none [&::-webkit-details-marker]:hidden hover:bg-gray-100 focus-visible:border-blue-brand focus-visible:bg-gray-100 focus-visible:outline-none md:h-16 md:px-6 md:py-4">
+      <summary className="flex h-10 cursor-pointer list-none items-center justify-center rounded-[54px] border-2 border-transparent bg-white px-3 py-2 text-black transition-colors select-none [&::-webkit-details-marker]:hidden hover:bg-gray-100 focus-visible:border-blue-brand focus-visible:bg-gray-100 focus-visible:outline-none md:h-16 md:px-6 md:py-4">
         <span className="sr-only">Navigation menu</span>
-        <Icon name="menu" className="size-6 md:size-8" />
+        <Icon name="menu" className="size-5 md:size-8" />
       </summary>
       <nav className="absolute top-[calc(100%+0.75rem)] right-0 z-50 min-w-[220px] rounded-3xl bg-black/90 p-2 shadow-2xl ring-1 ring-white/10 backdrop-blur">
         <ul className="flex flex-col gap-1">
