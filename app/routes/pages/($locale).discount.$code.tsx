@@ -12,11 +12,10 @@ import type { Route } from "./+types/($locale).discount.$code";
  *
  * ```
  */
-export async function loader({ request, context, params }: Route.LoaderArgs) {
+export async function loader({ url, context, params }: Route.LoaderArgs) {
   const { cart } = context;
   const { code } = params;
 
-  const url = new URL(request.url);
   const searchParams = new URLSearchParams(url.search);
   let redirectParam =
     searchParams.get("redirect") || searchParams.get("return_to") || "/";

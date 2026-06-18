@@ -1,7 +1,7 @@
 import type { Route } from "./+types/($locale).$";
 
-export async function loader({ request }: Route.LoaderArgs) {
-  throw new Response(`${new URL(request.url).pathname} not found`, {
+export async function loader({ url }: Route.LoaderArgs) {
+  throw new Response(`${url.pathname} not found`, {
     status: 404,
   });
 }

@@ -1,9 +1,7 @@
 import { parseGid } from "@shopify/hydrogen";
 import type { Route } from "./+types/[robots.txt]";
 
-export async function loader({ request, context }: Route.LoaderArgs) {
-  const url = new URL(request.url);
-
+export async function loader({ url, context }: Route.LoaderArgs) {
   const { shop } = await context.storefront.query(ROBOTS_QUERY);
 
   const shopId = parseGid(shop.id).id;

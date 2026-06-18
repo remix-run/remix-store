@@ -25,7 +25,7 @@ export function meta({ loaderData, matches }: Route.MetaArgs) {
   });
 }
 
-export async function loader({ request }: Route.LoaderArgs) {
+export async function loader({ url }: Route.LoaderArgs) {
   // TODO: turn this on only for the most prodest of environments
   if (process.env.NODE_ENV === "production") {
     throw new Response("Not found", { status: 404 });
@@ -40,7 +40,6 @@ export async function loader({ request }: Route.LoaderArgs) {
     return routePath;
   });
 
-  const url = new URL(request.url);
   const selectedComponent = url.pathname.split("/").at(-1);
 
   // Return the paths and selectedComponent as loader data

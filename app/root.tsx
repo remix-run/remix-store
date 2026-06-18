@@ -93,8 +93,7 @@ export function links() {
 }
 
 export async function loader(args: Route.LoaderArgs) {
-  let requestUrl = new URL(args.request.url);
-  let siteUrl = requestUrl.protocol + "//" + requestUrl.host;
+  let siteUrl = args.url.origin;
 
   // Start fetching non-critical data without blocking time to first byte
   const deferredData = loadDeferredData(args);
@@ -128,12 +127,11 @@ export async function loader(args: Route.LoaderArgs) {
   );
 }
 
-async function loadCriticalData({ context, request }: Route.LoaderArgs) {
+async function loadCriticalData({ context, url }: Route.LoaderArgs) {
   const { storefront, cart } = context;
 
   // Check for discount search parameter and apply it to cart
-  const requestUrl = new URL(request.url);
-  const searchParams = new URLSearchParams(requestUrl.search);
+  const searchParams = new URLSearchParams(url.search);
   const discountCode = searchParams.get("discount");
 
   if (discountCode) {
@@ -141,7 +139,7 @@ async function loadCriticalData({ context, request }: Route.LoaderArgs) {
     searchParams.delete("discount");
 
     // Build redirect URL with remaining parameters
-    const redirectUrl = `${requestUrl.pathname}?${searchParams}`;
+    const redirectUrl = `${url.pathname}?${searchParams}`;
 
     try {
       // Apply discount to cart

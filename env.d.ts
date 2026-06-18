@@ -1,16 +1,12 @@
 /// <reference types="vite/client" />
 /// <reference types="react-router" />
 /// <reference types="@shopify/oxygen-workers-types" />
+/// <reference types="@shopify/hydrogen/react-router-types" />
 
 // Enhance TypeScript's built-in typings.
 import "@total-typescript/ts-reset";
 
-import type {
-  HydrogenContext,
-  HydrogenSessionData,
-  HydrogenEnv,
-} from "@shopify/hydrogen";
-import type { createAppLoadContext } from "~/lib/context";
+import type { HydrogenSessionData, HydrogenEnv } from "@shopify/hydrogen";
 
 declare global {
   /**
@@ -25,13 +21,7 @@ declare global {
 }
 
 declare module "react-router" {
-  interface AppLoadContext extends Awaited<
-    ReturnType<typeof createAppLoadContext>
-  > {
-    // to change context type, change the return of createAppLoadContext() instead
-  }
-
   interface SessionData extends HydrogenSessionData {
-    // declare local additions to the Remix session data here
+    // declare local additions to the React Router session data here
   }
 }

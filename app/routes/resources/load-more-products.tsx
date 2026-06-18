@@ -6,8 +6,7 @@ import {
 import { useState, useEffect, useCallback } from "react";
 import type { Route } from "./+types/load-more-products";
 
-export async function loader({ request, context }: Route.LoaderArgs) {
-  let url = new URL(request.url);
+export async function loader({ url, context }: Route.LoaderArgs) {
   let searchParams = new URLSearchParams(url.search);
 
   let numberOfProducts = Number(searchParams.get("numberOfProducts"));

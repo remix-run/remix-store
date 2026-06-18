@@ -23,11 +23,10 @@ export function meta({ loaderData, matches }: Route.MetaArgs) {
   });
 }
 
-export async function loader({ params, request, context }: Route.LoaderArgs) {
+export async function loader({ params, url, context }: Route.LoaderArgs) {
   const { handle } = params;
   const { storefront } = context;
 
-  const url = new URL(request.url);
   const { searchParams } = url;
   const variables = { handle, ...getFilterQueryVariables(searchParams) };
 

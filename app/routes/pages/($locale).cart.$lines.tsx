@@ -19,7 +19,7 @@ import type { Route } from "./+types/($locale).cart.$lines";
  *
  * ```
  */
-export async function loader({ request, context, params }: Route.LoaderArgs) {
+export async function loader({ url, context, params }: Route.LoaderArgs) {
   const { cart } = context;
   const { lines } = params;
   if (!lines) return redirect(href("/:locale?/cart"));
@@ -34,7 +34,6 @@ export async function loader({ request, context, params }: Route.LoaderArgs) {
     };
   });
 
-  const url = new URL(request.url);
   const searchParams = new URLSearchParams(url.search);
 
   const discount = searchParams.get("discount");
