@@ -4,9 +4,6 @@ minimumReleaseAge: 10800
 minimumReleaseAgeExclude:
   - react-router
   - "@react-router/*"
-  - "@shopify/hydrogen@2026.4.4"
-  - "@shopify/cli-hydrogen@12.0.2"
-  - "@shopify/cli@4.2.0"
 minimumReleaseAgeStrict: true
 trustPolicy: no-downgrade
 trustPolicyExclude:

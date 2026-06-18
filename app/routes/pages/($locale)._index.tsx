@@ -157,7 +157,7 @@ function Hero({ masthead, assetImages, product }: HeroDataProps) {
           }}
         />
 
-        <h1 className="mt-0 flex max-h-min w-full -translate-y-[40px] flex-nowrap items-start justify-between gap-8 px-6 text-2xl font-extrabold tracking-[-0.03em] text-white md:-translate-y-[88px] md:px-9 md:text-5xl lg:-translate-y-[180px] lg:justify-center lg:gap-64 lg:text-8xl xl:gap-80 xl:gap-96">
+        <h1 className="mt-0 flex max-h-min w-full -translate-y-[40px] flex-nowrap items-start justify-between gap-8 px-6 text-2xl font-extrabold tracking-[-0.03em] text-white md:-translate-y-[288px] md:px-9 md:text-5xl lg:-translate-y-[386px] lg:justify-center lg:gap-64 lg:text-8xl xl:gap-80 xl:text-8xl 2xl:gap-96">
           <span className="sr-only">Remix</span>
           <HeroText highlight={!highlightSwitch}>
             software
