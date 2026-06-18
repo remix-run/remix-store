@@ -6,3 +6,6 @@ minimumReleaseAgeExclude:
   - "@react-router/*"
 minimumReleaseAgeStrict: true
 trustPolicy: no-downgrade
+trustPolicyExclude:
+  - chokidar@4.0.3
+  - semver@6.3.1
