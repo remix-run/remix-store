@@ -227,6 +227,38 @@
   }
 }
 
+@keyframes runner-brand-background {
+  0%,
+  100% {
+    background-color: var(--color-blue-brand);
+  }
+
+  20% {
+    background-color: var(--color-green-brand);
+  }
+
+  40% {
+    background-color: var(--color-red-brand);
+  }
+
+  60% {
+    background-color: var(--color-pink-brand);
+  }
+
+  80% {
+    background-color: var(--color-yellow-brand);
+  }
+}
+
+@utility runner-brand-background {
+  background-color: var(--color-blue-brand);
+  animation: runner-brand-background 14s ease-in-out infinite;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
 @keyframes footer-gradient-strip {
   0% {
     transform: scaleY(0.25);

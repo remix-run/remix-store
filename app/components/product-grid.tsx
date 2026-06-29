@@ -97,12 +97,12 @@ type ProductGridItemProps = {
 };
 
 function ProductGridItem({ product }: ProductGridItemProps) {
-  let { handle, title, price } = product;
+  let { handle, title, price, compareAtPrice } = product;
 
   return (
     <ProductGridItemLayout className="group">
       <ProductImages images={product.images.nodes} />
-      <div className="flex h-14 flex-col items-center justify-center gap-2.5 text-base/none text-white">
+      <div className="flex min-h-16 flex-col items-center justify-center gap-2.5 text-center text-base/none text-white">
         <Link
           prefetch="intent"
           to={href("/:locale?/products/:handle", { handle })}
@@ -111,7 +111,11 @@ function ProductGridItem({ product }: ProductGridItemProps) {
           <span className="absolute inset-0" />
           {title}
         </Link>
-        <ProductPrice price={price} />
+        <ProductPrice
+          price={price}
+          compareAtPrice={compareAtPrice}
+          layout="collection"
+        />
       </div>
     </ProductGridItemLayout>
   );
@@ -164,7 +168,7 @@ export type ProductPriceProps = {
    * Where the product is being used -- a bit hacky unfortunately
    * @default "product"
    */
-  layout?: "cart" | "product";
+  layout?: "cart" | "collection" | "product";
 };
 
 export function ProductPrice({
@@ -179,12 +183,19 @@ export function ProductPrice({
 
   if (compareAtPrice && priceAmount < compareAtPriceAmount) {
     return (
-      <div className="flex w-max flex-col items-end">
+      <div
+        className={clsx(
+          "flex w-max",
+          layout === "collection"
+            ? "flex-row items-baseline gap-1.5"
+            : "flex-col items-end",
+        )}
+      >
         <s
           className={clsx(
             "line-through",
             layout === "cart" && "text-white/50",
-            layout === "product" && "text-white",
+            (layout === "collection" || layout === "product") && "text-white",
           )}
         >
           <Money data={compareAtPrice} />
@@ -192,7 +203,8 @@ export function ProductPrice({
         <Money
           className={clsx(
             layout === "cart" && "text-white",
-            layout === "product" && "text-red-brand font-bold",
+            (layout === "collection" || layout === "product") &&
+              "text-red-brand font-bold",
           )}
           data={price}
         />

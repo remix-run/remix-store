@@ -16,6 +16,12 @@ export type CollectionProductFragment = Pick<
     minVariantPrice: Pick<StorefrontAPI.MoneyV2, 'amount' | 'currencyCode'>;
     maxVariantPrice: Pick<StorefrontAPI.MoneyV2, 'amount' | 'currencyCode'>;
   };
+  selectedOrFirstAvailableVariant?: StorefrontAPI.Maybe<{
+    price: Pick<StorefrontAPI.MoneyV2, 'amount' | 'currencyCode'>;
+    compareAtPrice?: StorefrontAPI.Maybe<
+      Pick<StorefrontAPI.MoneyV2, 'amount' | 'currencyCode'>
+    >;
+  }>;
   images: {
     nodes: Array<
       Pick<StorefrontAPI.Image, 'id' | 'altText' | 'url' | 'width' | 'height'>
@@ -62,6 +68,12 @@ export type CollectionQuery = {
                 'amount' | 'currencyCode'
               >;
             };
+            selectedOrFirstAvailableVariant?: StorefrontAPI.Maybe<{
+              price: Pick<StorefrontAPI.MoneyV2, 'amount' | 'currencyCode'>;
+              compareAtPrice?: StorefrontAPI.Maybe<
+                Pick<StorefrontAPI.MoneyV2, 'amount' | 'currencyCode'>
+              >;
+            }>;
             images: {
               nodes: Array<
                 Pick<
@@ -147,33 +159,6 @@ export type HeroQueryVariables = StorefrontAPI.Exact<{
 
 export type HeroQuery = {
   hero?: StorefrontAPI.Maybe<{
-    masthead?: StorefrontAPI.Maybe<{
-      reference?: StorefrontAPI.Maybe<
-        | {
-            __typename:
-              | 'Article'
-              | 'Collection'
-              | 'GenericFile'
-              | 'Metaobject'
-              | 'Model3d'
-              | 'Page'
-              | 'Product'
-              | 'ProductVariant'
-              | 'Video';
-          }
-        | ({__typename: 'MediaImage'} & Pick<
-            StorefrontAPI.MediaImage,
-            'id' | 'alt'
-          > & {
-              image?: StorefrontAPI.Maybe<
-                Pick<
-                  StorefrontAPI.Image,
-                  'id' | 'altText' | 'url' | 'width' | 'height'
-                >
-              >;
-            })
-      >;
-    }>;
     assetImages?: StorefrontAPI.Maybe<{
       references?: StorefrontAPI.Maybe<{
         nodes: Array<
@@ -826,7 +811,7 @@ export type StoreRobotsQueryVariables = StorefrontAPI.Exact<{
 export type StoreRobotsQuery = {shop: Pick<StorefrontAPI.Shop, 'id'>};
 
 interface GeneratedQueryTypes {
-  '#graphql\n  #graphql\n  fragment MoneyProductItem on MoneyV2 {\n    amount\n    currencyCode\n  }\n  fragment CollectionProduct on Product {\n    id\n    handle\n    title\n    priceRange {\n      minVariantPrice {\n        ...MoneyProductItem\n      }\n      maxVariantPrice {\n        ...MoneyProductItem\n      }\n    }\n    images(first: 2) {\n      nodes {\n        ...ProductImage\n      }\n    }\n  }\n  #graphql\n  fragment ProductImage on Image {\n    id\n    altText\n    url\n    width\n    height\n  }\n\n\n  query Collection(\n    $handle: String!\n    $country: CountryCode\n    $language: LanguageCode\n    $first: Int\n    $last: Int\n    $startCursor: String\n    $endCursor: String\n    $sortKey: ProductCollectionSortKeys\n    $reverse: Boolean\n    $filters: [ProductFilter!]\n  ) @inContext(country: $country, language: $language) {\n    collection(handle: $handle) {\n      id\n      handle\n      title\n      description\n      seo {\n        title\n      }\n      products(\n        first: $first,\n        last: $last,\n        before: $startCursor,\n        after: $endCursor\n        sortKey: $sortKey\n        reverse: $reverse\n        filters: $filters\n      ) {\n        nodes {\n          ...CollectionProduct \n        }\n        pageInfo {\n          hasPreviousPage\n          hasNextPage\n          endCursor\n          startCursor\n        }\n      }\n    }\n  }\n': {
+  '#graphql\n  #graphql\n  fragment MoneyProductItem on MoneyV2 {\n    amount\n    currencyCode\n  }\n  fragment CollectionProduct on Product {\n    id\n    handle\n    title\n    priceRange {\n      minVariantPrice {\n        ...MoneyProductItem\n      }\n      maxVariantPrice {\n        ...MoneyProductItem\n      }\n    }\n    selectedOrFirstAvailableVariant {\n      price {\n        ...MoneyProductItem\n      }\n      compareAtPrice {\n        ...MoneyProductItem\n      }\n    }\n    images(first: 2) {\n      nodes {\n        ...ProductImage\n      }\n    }\n  }\n  #graphql\n  fragment ProductImage on Image {\n    id\n    altText\n    url\n    width\n    height\n  }\n\n\n  query Collection(\n    $handle: String!\n    $country: CountryCode\n    $language: LanguageCode\n    $first: Int\n    $last: Int\n    $startCursor: String\n    $endCursor: String\n    $sortKey: ProductCollectionSortKeys\n    $reverse: Boolean\n    $filters: [ProductFilter!]\n  ) @inContext(country: $country, language: $language) {\n    collection(handle: $handle) {\n      id\n      handle\n      title\n      description\n      seo {\n        title\n      }\n      products(\n        first: $first,\n        last: $last,\n        before: $startCursor,\n        after: $endCursor\n        sortKey: $sortKey\n        reverse: $reverse\n        filters: $filters\n      ) {\n        nodes {\n          ...CollectionProduct \n        }\n        pageInfo {\n          hasPreviousPage\n          hasNextPage\n          endCursor\n          startCursor\n        }\n      }\n    }\n  }\n': {
     return: CollectionQuery;
     variables: CollectionQueryVariables;
   };
@@ -834,11 +819,11 @@ interface GeneratedQueryTypes {
     return: HeaderQuery;
     variables: HeaderQueryVariables;
   };
-  '#graphql\n  #graphql\n  fragment ProductImage on Image {\n    id\n    altText\n    url\n    width\n    height\n  }\n\n  query Hero (\n    $country: CountryCode\n    $language: LanguageCode\n  ) @inContext(country: $country, language: $language) {\n    hero: metaobject(handle: {handle: "remix-3-drop", type: "hero"}) {\n      masthead: field(key: "masthead") {\n        reference {\n          __typename\n          ... on MediaImage {\n            id\n            alt\n            image {\n              ...ProductImage\n            }\n          }\n        }\n      }\n      assetImages: field(key: "asset_images") {\n        references(first: 100) {\n          nodes {\n            __typename\n            ... on MediaImage {\n              id\n              alt\n              image {\n                ...ProductImage\n              }\n            }\n          }\n        }\n      }\n      product: field(key: "product") {\n        reference {\n          __typename\n          ... on Product {\n            handle\n            title\n          }\n        }\n      }\n    }\n  }\n': {
+  '#graphql\n  #graphql\n  fragment ProductImage on Image {\n    id\n    altText\n    url\n    width\n    height\n  }\n\n  query Hero (\n    $country: CountryCode\n    $language: LanguageCode\n  ) @inContext(country: $country, language: $language) {\n    hero: metaobject(handle: {handle: "remix-3-drop-playground", type: "hero"}) {\n      assetImages: field(key: "asset_images") {\n        references(first: 100) {\n          nodes {\n            __typename\n            ... on MediaImage {\n              id\n              alt\n              image {\n                ...ProductImage\n              }\n            }\n          }\n        }\n      }\n      product: field(key: "product") {\n        reference {\n          __typename\n          ... on Product {\n            handle\n            title\n          }\n        }\n      }\n    }\n  }\n': {
     return: HeroQuery;
     variables: HeroQueryVariables;
   };
-  '#graphql\n  #graphql\n  fragment ProductImage on Image {\n    id\n    altText\n    url\n    width\n    height\n  }\n\n  query LookbookImages (\n    $country: CountryCode\n    $language: LanguageCode\n  ) @inContext(country: $country, language: $language) {\n    lookbook: metaobject(handle: {handle: "lookbook_green_drop", type: "lookbook"}) {\n      handle\n      entries: field(key: "lookbook") {\n        references(first: 100) {\n          nodes {\n            __typename\n            ... on Metaobject {\n              handle\n              fields {\n                __typename\n                reference {\n                  __typename\n                  ... on MediaImage {\n                    id\n                    alt\n                    presentation {\n                      id\n                      asJson(format: IMAGE)\n                    }\n                    image {\n                      ...ProductImage\n                    }\n                  }\n                  ... on Product {\n                    id\n                    handle\n                    title\n                    priceRange {\n                      minVariantPrice {\n                        amount\n                        currencyCode\n                      }\n                    }\n                  }\n                }\n              }\n            }\n          }\n        }\n      }\n    }\n  }\n': {
+  '#graphql\n  #graphql\n  fragment ProductImage on Image {\n    id\n    altText\n    url\n    width\n    height\n  }\n\n  query LookbookImages (\n    $country: CountryCode\n    $language: LanguageCode\n  ) @inContext(country: $country, language: $language) {\n    lookbook: metaobject(handle: {handle: "lookbook-remix-racing", type: "lookbook"}) {\n      handle\n      entries: field(key: "lookbook") {\n        references(first: 100) {\n          nodes {\n            __typename\n            ... on Metaobject {\n              handle\n              fields {\n                __typename\n                reference {\n                  __typename\n                  ... on MediaImage {\n                    id\n                    alt\n                    presentation {\n                      id\n                      asJson(format: IMAGE)\n                    }\n                    image {\n                      ...ProductImage\n                    }\n                  }\n                  ... on Product {\n                    id\n                    handle\n                    title\n                    priceRange {\n                      minVariantPrice {\n                        amount\n                        currencyCode\n                      }\n                    }\n                  }\n                }\n              }\n            }\n          }\n        }\n      }\n    }\n  }\n': {
     return: LookbookImagesQuery;
     variables: LookbookImagesQueryVariables;
   };

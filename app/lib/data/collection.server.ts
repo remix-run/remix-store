@@ -12,6 +12,7 @@ export type CollectionProductData = Pick<
   "id" | "handle" | "title" | "images"
 > & {
   price: MoneyV2;
+  compareAtPrice?: MoneyV2 | null;
 };
 
 export type CollectionData = Pick<
@@ -42,13 +43,16 @@ export async function getCollectionQuery(
     ...collection,
     productsPageInfo: collection.products.pageInfo,
     products: products.map((fullProductNode) => {
-      const { priceRange, ...product } = fullProductNode;
+      const { priceRange, selectedOrFirstAvailableVariant, ...product } =
+        fullProductNode;
       return {
         id: product.id,
         handle: product.handle,
         title: product.title,
         images: product.images,
-        price: priceRange.maxVariantPrice,
+        price:
+          selectedOrFirstAvailableVariant?.price ?? priceRange.maxVariantPrice,
+        compareAtPrice: selectedOrFirstAvailableVariant?.compareAtPrice,
       };
     }),
   };
@@ -68,6 +72,14 @@ const COLLECTION_PRODUCT_FRAGMENT = `#graphql
         ...MoneyProductItem
       }
       maxVariantPrice {
+        ...MoneyProductItem
+      }
+    }
+    selectedOrFirstAvailableVariant {
+      price {
+        ...MoneyProductItem
+      }
+      compareAtPrice {
         ...MoneyProductItem
       }
     }

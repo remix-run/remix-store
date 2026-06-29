@@ -75,7 +75,7 @@ let LOOKBOOK_QUERY = `#graphql
     $country: CountryCode
     $language: LanguageCode
   ) @inContext(country: $country, language: $language) {
-    lookbook: metaobject(handle: {handle: "lookbook_green_drop", type: "lookbook"}) {
+    lookbook: metaobject(handle: {handle: "lookbook-remix-racing", type: "lookbook"}) {
       handle
       entries: field(key: "lookbook") {
         references(first: 100) {

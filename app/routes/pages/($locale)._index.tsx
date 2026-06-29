@@ -109,22 +109,11 @@ export default function Homepage({ loaderData }: Route.ComponentProps) {
   );
 }
 
-let defaultHeroHeight = 1600;
-let heroParallaxRatio = 0.5;
-let mastheadFadeSpeed = 4;
-let heroTextSwitchProgress = 0.3;
 let productFrameScrollSpeed = 1.5;
 
-function Hero({ masthead, assetImages, product }: HeroDataProps) {
+function Hero({ assetImages, product }: HeroDataProps) {
   const heroRef = useRef<HTMLDivElement>(null);
   let scrollPercentage = useScrollPercentage(heroRef);
-
-  let translateY = Math.floor(
-    (heroRef.current?.offsetHeight || 0) * scrollPercentage * heroParallaxRatio,
-  );
-  let opacity = Math.max(0, 1 - scrollPercentage * mastheadFadeSpeed);
-
-  let highlightSwitch = scrollPercentage > heroTextSwitchProgress;
 
   // Calculate which frame to show based on scroll percentage
   let frameIndex = Math.min(
@@ -133,57 +122,26 @@ function Hero({ masthead, assetImages, product }: HeroDataProps) {
   );
 
   return (
-    <div
-      ref={heroRef}
-      className="relative h-screen max-h-[1200px] overflow-hidden bg-black pt-24 md:top-7 md:h-[1200px] lg:h-[1600px] lg:max-h-[1600px] 2xl:h-[1800px] 2xl:max-h-[1800px]"
-    >
-      <div
-        className="fixed w-full"
-        style={{
-          height: `${heroRef.current?.offsetHeight || defaultHeroHeight}px`,
-          transform: `translate3d(0, -${translateY}px, 0)`,
-        }}
-      >
-        {/* Art-directed masthead positioning keeps the Shopify-managed image anchored to the hero crop across breakpoints. */}
-        <HydrogenImage
-          data={masthead}
-          sizes="100vw"
-          alt=""
-          aria-hidden="true"
-          className="relative top-5 left-1/2 h-auto min-w-[185.5%] -translate-x-1/2 -translate-y-[42%] object-cover object-center sm:min-w-[175%] md:min-w-[159%] lg:max-w-[114.5%] lg:min-w-[114.5%] lg:-translate-y-[36%]"
-          loading="eager"
-          style={{
-            opacity,
-          }}
-        />
-
-        <h1 className="mt-0 flex max-h-min w-full -translate-y-[40px] flex-nowrap items-start justify-between gap-8 px-6 text-2xl font-extrabold tracking-[-0.03em] text-white md:-translate-y-[288px] md:px-9 md:text-5xl lg:-translate-y-[386px] lg:justify-center lg:gap-64 lg:text-8xl xl:gap-80 xl:text-8xl 2xl:gap-96">
-          <span className="sr-only">Remix</span>
-          <HeroText highlight={!highlightSwitch}>
-            software
-            <br />
-            for
-            <br />
-            better
-            <br />
-            websites
-          </HeroText>
-          <HeroText highlight={highlightSwitch}>
-            soft wear
-            <br />
-            for
-            <br />
-            engineers
-            <br />
-            of all kinds
-          </HeroText>
-        </h1>
-
+    <div ref={heroRef} className="relative h-[200vh] bg-black">
+      <div className="sticky top-0 h-screen overflow-hidden">
         <RotatingProduct
           product={product}
           assetImages={assetImages}
           frameIndex={frameIndex}
         />
+        <div className="absolute bottom-8 left-5 z-10 flex max-w-[min(720px,calc(100vw-40px))] flex-col items-start gap-5 md:bottom-12 md:left-9 md:gap-7 lg:bottom-16">
+          <h1 className="font-title pr-[0.25em] text-4xl leading-none font-black tracking-[-0.23em] text-white md:text-6xl lg:text-7xl">
+            REMIX 3 RACING COLLECTION
+          </h1>
+          <AnimatedLink
+            animationType="icon"
+            iconName="fast-forward"
+            reloadDocument
+            to="https://checkout.remix.run/collections/remix-racing"
+          >
+            Shop New Items
+          </AnimatedLink>
+        </div>
       </div>
     </div>
   );
@@ -231,48 +189,38 @@ let RotatingProduct = memo(
         .catch(() => setImagesLoaded("error"));
     }, [assetImages, imagesLoaded, prefersReducedMotion]);
 
-    // Art-directed product offsets keep each scroll frame aligned with the masthead composition.
+    let images = assetImages.map((asset, index) => (
+      <img
+        key={asset.image.url}
+        className="absolute inset-0 h-full w-full object-cover object-center"
+        src={asset.image.url}
+        alt=""
+        aria-disabled={"true"}
+        style={{
+          visibility: index === frameIndex ? "visible" : "hidden",
+        }}
+      />
+    ));
+
+    if (!product) {
+      return (
+        <div className="absolute inset-0 h-full w-full select-none">
+          {images}
+        </div>
+      );
+    }
+
     return (
       <Link
         to={href("/:locale?/products/:handle", { handle: product.handle })}
-        className="3xl:scale-130 3xl:hover:scale-135 3xl:translate-y-56 absolute top-0 w-full translate-y-14 scale-125 transition-transform duration-200 select-none hover:scale-130 md:translate-y-12 lg:translate-y-20 lg:scale-100 lg:hover:scale-105 xl:scale-100 xl:hover:scale-105 2xl:translate-y-32 2xl:scale-110 2xl:hover:scale-115"
+        className="absolute inset-0 block h-full w-full select-none"
       >
         <span className="sr-only">{product.title}</span>
-        {assetImages.map((asset, index) => (
-          <img
-            key={asset.image.url}
-            className="absolute inset-0 mx-auto object-cover object-center"
-            src={asset.image.url}
-            alt=""
-            aria-disabled={"true"}
-            style={{
-              visibility: index === frameIndex ? "visible" : "hidden",
-            }}
-          />
-        ))}
+        {images}
       </Link>
     );
   },
 );
-
-function HeroText({
-  children,
-  highlight,
-}: {
-  children: React.ReactNode;
-  highlight: boolean;
-}) {
-  return (
-    <span
-      className={clsx(
-        "text-nowrap uppercase transition-opacity duration-200",
-        highlight ? "opacity-100" : "opacity-10",
-      )}
-    >
-      {children}
-    </span>
-  );
-}
 
 function LookbookEntry({ image, product }: LookbookEntryProps) {
   // This component makes heavy use of custom properties to ensure the
@@ -335,7 +283,7 @@ function LookbookEntry({ image, product }: LookbookEntryProps) {
 
 function LoadRunner() {
   return (
-    <div className="flex h-[390px] items-center justify-center gap-4 bg-[#143126] md:h-[480px] lg:h-[800px]">
+    <div className="runner-brand-background flex h-[390px] items-center justify-center gap-4 md:h-[480px] lg:h-[800px]">
       <div className="3xl:w-[50%] w-[65%] xl:w-[60%] 2xl:w-[55%]">
         <RemixRunner
           alt="Silhouette of a runner made of white circles"
