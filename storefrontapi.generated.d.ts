@@ -188,23 +188,23 @@ export type HeroQuery = {
         >;
       }>;
     }>;
-    product?: StorefrontAPI.Maybe<{
+    collection?: StorefrontAPI.Maybe<{
       reference?: StorefrontAPI.Maybe<
         | {
             __typename:
               | 'Article'
-              | 'Collection'
               | 'GenericFile'
               | 'MediaImage'
               | 'Metaobject'
               | 'Model3d'
               | 'Page'
+              | 'Product'
               | 'ProductVariant'
               | 'Video';
           }
-        | ({__typename: 'Product'} & Pick<
-            StorefrontAPI.Product,
-            'handle' | 'title'
+        | ({__typename: 'Collection'} & Pick<
+            StorefrontAPI.Collection,
+            'handle'
           >)
       >;
     }>;
@@ -819,7 +819,7 @@ interface GeneratedQueryTypes {
     return: HeaderQuery;
     variables: HeaderQueryVariables;
   };
-  '#graphql\n  #graphql\n  fragment ProductImage on Image {\n    id\n    altText\n    url\n    width\n    height\n  }\n\n  query Hero (\n    $country: CountryCode\n    $language: LanguageCode\n  ) @inContext(country: $country, language: $language) {\n    hero: metaobject(handle: {handle: "remix-3-drop-playground", type: "hero"}) {\n      assetImages: field(key: "asset_images") {\n        references(first: 100) {\n          nodes {\n            __typename\n            ... on MediaImage {\n              id\n              alt\n              image {\n                ...ProductImage\n              }\n            }\n          }\n        }\n      }\n      product: field(key: "product") {\n        reference {\n          __typename\n          ... on Product {\n            handle\n            title\n          }\n        }\n      }\n    }\n  }\n': {
+  '#graphql\n  #graphql\n  fragment ProductImage on Image {\n    id\n    altText\n    url\n    width\n    height\n  }\n\n  query Hero (\n    $country: CountryCode\n    $language: LanguageCode\n  ) @inContext(country: $country, language: $language) {\n    hero: metaobject(handle: {handle: "remix-3-drop-playground", type: "hero"}) {\n      assetImages: field(key: "asset_images") {\n        references(first: 100) {\n          nodes {\n            __typename\n            ... on MediaImage {\n              id\n              alt\n              image {\n                ...ProductImage\n              }\n            }\n          }\n        }\n      }\n      collection: field(key: "collection") {\n        reference {\n          __typename\n          ... on Collection {\n            handle\n          }\n        }\n      }\n    }\n  }\n': {
     return: HeroQuery;
     variables: HeroQueryVariables;
   };

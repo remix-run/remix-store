@@ -6,9 +6,8 @@ export type HeroData = {
   assetImages: Array<{
     image: ProductImageFragment;
   }>;
-  product?: {
+  collection: {
     handle: string;
-    title: string;
   };
 };
 
@@ -39,7 +38,10 @@ export async function getHeroData(storefront: Storefront): Promise<HeroData> {
     throw new Response("Hero data not found", { status: 404 });
   }
 
-  let product = hero?.product?.reference;
+  let collection = hero?.collection?.reference;
+  if (collection?.__typename !== "Collection") {
+    throw new Response("Hero collection not found", { status: 500 });
+  }
 
   let assetImagesNodes = hero?.assetImages?.references?.nodes;
   if (!assetImagesNodes || assetImagesNodes.length === 0) {
@@ -58,12 +60,9 @@ export async function getHeroData(storefront: Storefront): Promise<HeroData> {
 
   return {
     assetImages,
-    ...(product?.__typename === "Product" && {
-      product: {
-        handle: product.handle,
-        title: product.title,
-      },
-    }),
+    collection: {
+      handle: collection.handle,
+    },
   };
 }
 
@@ -88,12 +87,11 @@ let HERO_QUERY = `#graphql
           }
         }
       }
-      product: field(key: "product") {
+      collection: field(key: "collection") {
         reference {
           __typename
-          ... on Product {
+          ... on Collection {
             handle
-            title
           }
         }
       }

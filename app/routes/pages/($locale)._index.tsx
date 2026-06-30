@@ -1,5 +1,5 @@
 import { useState, useEffect, memo, useRef, lazy, Suspense } from "react";
-import { Link, data, href } from "react-router";
+import { data, href } from "react-router";
 import { getCollectionQuery } from "~/lib/data/collection.server";
 import { Image as HydrogenImage } from "@shopify/hydrogen";
 import {
@@ -111,7 +111,7 @@ export default function Homepage({ loaderData }: Route.ComponentProps) {
 
 let productFrameScrollSpeed = 1.5;
 
-function Hero({ assetImages, product }: HeroDataProps) {
+function Hero({ assetImages, collection }: HeroDataProps) {
   const heroRef = useRef<HTMLDivElement>(null);
   let scrollPercentage = useScrollPercentage(heroRef);
 
@@ -124,11 +124,7 @@ function Hero({ assetImages, product }: HeroDataProps) {
   return (
     <div ref={heroRef} className="relative h-[200vh] bg-black">
       <div className="sticky top-0 h-screen overflow-hidden">
-        <RotatingProduct
-          product={product}
-          assetImages={assetImages}
-          frameIndex={frameIndex}
-        />
+        <RotatingProduct assetImages={assetImages} frameIndex={frameIndex} />
         <div className="absolute bottom-8 left-5 z-10 flex max-w-[min(720px,calc(100vw-40px))] flex-col items-start gap-5 md:bottom-12 md:left-9 md:gap-7 lg:bottom-16">
           <h1 className="font-sans pr-[0.03em] text-4xl leading-none font-bold tracking-[-0.03em] text-white md:text-6xl lg:text-7xl">
             Remix 3 Racing Team Collection
@@ -136,8 +132,9 @@ function Hero({ assetImages, product }: HeroDataProps) {
           <AnimatedLink
             animationType="icon"
             iconName="fast-forward"
-            reloadDocument
-            to="https://checkout.remix.run/collections/remix-racing"
+            to={href("/:locale?/collections/:handle", {
+              handle: collection.handle,
+            })}
           >
             Shop New Items
           </AnimatedLink>
@@ -147,14 +144,14 @@ function Hero({ assetImages, product }: HeroDataProps) {
   );
 }
 
-type RotatingProductProps = Pick<HeroDataProps, "product" | "assetImages"> & {
+type RotatingProductProps = Pick<HeroDataProps, "assetImages"> & {
   frameIndex: number;
 };
 
 type LoadingState = "idle" | "pending" | "loaded" | "error";
 
 let RotatingProduct = memo(
-  ({ product, assetImages, frameIndex }: RotatingProductProps) => {
+  ({ assetImages, frameIndex }: RotatingProductProps) => {
     let [imagesLoaded, setImagesLoaded] = useState<LoadingState>("idle");
     let prefersReducedMotion = usePrefersReducedMotion();
 
@@ -202,22 +199,8 @@ let RotatingProduct = memo(
       />
     ));
 
-    if (!product) {
-      return (
-        <div className="absolute inset-0 h-full w-full select-none">
-          {images}
-        </div>
-      );
-    }
-
     return (
-      <Link
-        to={href("/:locale?/products/:handle", { handle: product.handle })}
-        className="absolute inset-0 block h-full w-full select-none"
-      >
-        <span className="sr-only">{product.title}</span>
-        {images}
-      </Link>
+      <div className="absolute inset-0 h-full w-full select-none">{images}</div>
     );
   },
 );
