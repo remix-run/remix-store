@@ -120,14 +120,16 @@ export function CartLineItem({
   isOptimistic,
   onImageClick,
   className,
-  layout,
+  direction,
+  tone,
 }: {
   line: CartLine;
   /** Cart optimistic state */
   isOptimistic: boolean;
   /** Callback for when the image is clicked */
   onImageClick?: React.MouseEventHandler<HTMLAnchorElement>;
-  layout?: ProductPriceProps["layout"];
+  direction?: ProductPriceProps["direction"];
+  tone?: ProductPriceProps["tone"];
   /** Additional className for the container */
   className?: string;
 }) {
@@ -187,7 +189,8 @@ export function CartLineItem({
       <ProductPrice
         price={totalAmount}
         compareAtPrice={compareAtPrice}
-        layout={layout}
+        direction={direction}
+        tone={tone}
       />
     </li>
   );

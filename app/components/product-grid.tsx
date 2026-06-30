@@ -1,6 +1,7 @@
 import { Await, href, Link } from "react-router";
 import { Image as HydrogenImage, Money } from "@shopify/hydrogen";
 import { clsx } from "clsx";
+import { cva } from "class-variance-authority";
 import { Suspense } from "react";
 
 import type { ProductImageFragment } from "storefrontapi.generated";
@@ -114,7 +115,7 @@ function ProductGridItem({ product }: ProductGridItemProps) {
         <ProductPrice
           price={price}
           compareAtPrice={compareAtPrice}
-          layout="collection"
+          direction="row"
         />
       </div>
     </ProductGridItemLayout>
@@ -164,17 +165,38 @@ function ProductImages({ images }: ProductImagesProps) {
 export type ProductPriceProps = {
   price: MoneyV2 | null;
   compareAtPrice?: MoneyV2 | null;
-  /**
-   * Where the product is being used -- a bit hacky unfortunately
-   * @default "product"
-   */
-  layout?: "cart" | "collection" | "product";
+  /** Arrangement of the struck-through original vs. sale price. @default "column" */
+  direction?: "row" | "column";
+  /** Sale-price emphasis. "muted" avoids shouting in dense lists (e.g. cart). @default "prominent" */
+  tone?: "prominent" | "muted";
 };
+
+let priceContainer = cva("flex w-max", {
+  variants: {
+    direction: {
+      row: "flex-row items-baseline gap-1.5",
+      column: "flex-col items-end",
+    },
+  },
+});
+
+let strikeThrough = cva("line-through", {
+  variants: {
+    tone: { prominent: "text-white", muted: "text-white/50" },
+  },
+});
+
+let salePrice = cva("", {
+  variants: {
+    tone: { prominent: "text-red-brand font-bold", muted: "text-white" },
+  },
+});
 
 export function ProductPrice({
   price,
   compareAtPrice,
-  layout = "product",
+  direction = "column",
+  tone = "prominent",
 }: ProductPriceProps) {
   if (!price) return null;
 
@@ -183,31 +205,11 @@ export function ProductPrice({
 
   if (compareAtPrice && priceAmount < compareAtPriceAmount) {
     return (
-      <div
-        className={clsx(
-          "flex w-max",
-          layout === "collection"
-            ? "flex-row items-baseline gap-1.5"
-            : "flex-col items-end",
-        )}
-      >
-        <s
-          className={clsx(
-            "line-through",
-            layout === "cart" && "text-white/50",
-            (layout === "collection" || layout === "product") && "text-white",
-          )}
-        >
+      <div className={priceContainer({ direction })}>
+        <s className={strikeThrough({ tone })}>
           <Money data={compareAtPrice} />
         </s>
-        <Money
-          className={clsx(
-            layout === "cart" && "text-white",
-            (layout === "collection" || layout === "product") &&
-              "text-red-brand font-bold",
-          )}
-          data={price}
-        />
+        <Money className={salePrice({ tone })} data={price} />
       </div>
     );
   }

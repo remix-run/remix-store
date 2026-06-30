@@ -195,7 +195,7 @@ function CartButton({ cart: originalCart }: Pick<NavbarProps, "cart">) {
                 isOptimistic={isOptimistic}
                 line={line}
                 onImageClick={onImageClick}
-                layout="cart"
+                tone="muted"
               />
             ))}
           </ul>
