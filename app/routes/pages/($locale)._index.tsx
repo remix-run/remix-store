@@ -131,7 +131,7 @@ function Hero({ assetImages, product }: HeroDataProps) {
         />
         <div className="absolute bottom-8 left-5 z-10 flex max-w-[min(720px,calc(100vw-40px))] flex-col items-start gap-5 md:bottom-12 md:left-9 md:gap-7 lg:bottom-16">
           <h1 className="font-sans pr-[0.02em] text-4xl leading-none font-black tracking-[-0.02em] text-white md:text-6xl lg:text-7xl">
-            Remix 3 Racing Collection
+            Remix 3 Racing Team Collection
           </h1>
           <AnimatedLink
             animationType="icon"
