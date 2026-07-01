@@ -135,7 +135,13 @@ function Hero({ assetImages, collection }: HeroDataProps) {
             to={href("/:locale?/collections/:handle", {
               handle: collection.handle,
             })}
+            className={clsx(
+              "[--offset-x:--spacing(5)] [--offset-y:--spacing(8)]",
+              "md:[--offset-x:--spacing(9)] md:[--offset-y:--spacing(12)]",
+              "lg:[--offset-y:--spacing(16)]",
+            )}
           >
+            <span className="absolute -bottom-(--offset-y) -left-(--offset-x) h-screen w-lvw" />
             Shop New Items
           </AnimatedLink>
         </div>
