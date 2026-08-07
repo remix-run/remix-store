@@ -12,11 +12,11 @@ test.describe("No-JS Functionality", () => {
     await page.goto("/");
 
     // Should show content
-    const main = page.locator("main").first();
+    const main = page.locator("main");
     await expect(main).toBeVisible();
 
-    // Should have navigation
-    const nav = page.getByRole("navigation");
+    // Should have at least one navigation element
+    const nav = page.getByRole("navigation").first();
     await expect(nav).toBeVisible();
   });
 
@@ -88,7 +88,9 @@ test.describe("No-JS Functionality", () => {
     await expect(page.getByText(/\$\d+/).first()).toBeVisible();
   });
 
-  test("add to cart form exists without JavaScript", async ({ page }) => {
+  test("add to cart form is functional without JavaScript", async ({
+    page,
+  }) => {
     await page.goto("/collections/all");
 
     const firstProduct = page
@@ -101,11 +103,24 @@ test.describe("No-JS Functionality", () => {
     await firstProduct.click();
     await page.waitForURL(/\/products\//);
 
-    // Should have add to cart form/button
-    const addToCart = page.getByRole("button", {
+    // Should have add to cart button within a form
+    const addToCartButton = page.getByRole("button", {
       name: /add to cart|add to bag/i,
     });
-    await expect(addToCart).toBeVisible();
+    await expect(addToCartButton).toBeVisible();
+
+    // Verify the button is inside a form with proper action
+    // This ensures no-JS add-to-cart would work via form submission
+    const form = page.locator("form").filter({
+      has: addToCartButton,
+    });
+
+    await expect(form).toBeVisible();
+
+    // Form should have an action attribute (required for no-JS submission)
+    const formAction = await form.getAttribute("action");
+    expect(formAction).toBeTruthy();
+    expect(formAction).toMatch(/\/cart/);
   });
 
   test("policy pages load without JavaScript", async ({ page }) => {

@@ -26,8 +26,10 @@ test.describe("SEO Assets", () => {
 
     expect(response?.status()).toBe(200);
 
-    // Should be XML
-    expect(response?.headers()["content-type"]).toMatch(/xml/);
+    // Should be XML - check content-type header (case-insensitive)
+    const headers = response?.headers() || {};
+    const contentType = headers["content-type"] || "";
+    expect(contentType.toLowerCase()).toContain("xml");
 
     const content = await page.textContent("body");
 

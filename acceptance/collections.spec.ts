@@ -71,15 +71,17 @@ test.describe("Collections", () => {
       name: /load more|show more|view more/i,
     });
 
-    if (await loadMore.isVisible()) {
+    const hasLoadMore = await loadMore.isVisible().catch(() => false);
+
+    if (hasLoadMore) {
       await loadMore.click();
 
-      // Wait for more products to load
-      await page.waitForTimeout(1000); // Brief wait for content
+      // Wait for network request to complete
+      await page.waitForLoadState("networkidle");
 
       // Should have more products after loading
       const newCount = await initialProducts.count();
-      expect(newCount).toBeGreaterThanOrEqual(initialCount);
+      expect(newCount).toBeGreaterThan(initialCount);
     }
     // If no load more button, collection might show all products (OK)
   });
