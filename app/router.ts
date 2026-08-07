@@ -1,0 +1,69 @@
+import { Renderer } from "remix/middleware/render";
+import { createElement, type RemixNode } from "remix/ui";
+import {
+  createRouter,
+  type Middleware,
+  type MiddlewareContext,
+} from "remix/router";
+
+import rootController from "./actions/controller.tsx";
+import { ErrorPage, NotFoundPage } from "./actions/pages.tsx";
+import { render } from "./middleware/render.tsx";
+import { storefront, type StorefrontOptions } from "./middleware/storefront.ts";
+import { routes } from "./routes.ts";
+
+export interface AppOptions {
+  storefront?: StorefrontOptions;
+}
+
+function createMiddleware(options: AppOptions = {}) {
+  return [render(), errorPages(), storefront(options.storefront)] as const;
+}
+
+function errorPages(): Middleware {
+  return async (context, next) => {
+    try {
+      return await next();
+    } catch (error) {
+      if (error instanceof Response) return error;
+      if (
+        context.request.signal.aborted &&
+        error === context.request.signal.reason
+      )
+        throw error;
+      console.error(error);
+      let renderPage = context.get(Renderer) as (
+        node: RemixNode,
+        init?: ResponseInit,
+      ) => Response;
+      return renderPage(createElement(ErrorPage, {}), { status: 500 });
+    }
+  };
+}
+
+type AppContext = MiddlewareContext<ReturnType<typeof createMiddleware>>;
+
+declare module "remix/router" {
+  interface RouterTypes {
+    context: AppContext;
+  }
+}
+
+export function createAppRouter(options: AppOptions = {}) {
+  let appRouter = createRouter<AppContext>({
+    middleware: createMiddleware(options),
+    defaultHandler(context) {
+      if (context.method !== "GET") {
+        return new Response(`Not Found: ${context.url.pathname}`, {
+          status: 404,
+        });
+      }
+      return context.render(createElement(NotFoundPage, {}), { status: 404 });
+    },
+  });
+
+  appRouter.map(routes, rootController);
+  return appRouter;
+}
+
+export const router = createAppRouter();
