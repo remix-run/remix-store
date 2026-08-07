@@ -69,7 +69,9 @@ export function usePrefersReducedMotion() {
  * @param ref - React ref to the element to measure
  * @returns A number between 0 and 1 representing the percentage scrolled past
  */
-export function useScrollPercentage(ref: React.RefObject<HTMLElement>) {
+export function useScrollPercentage<T extends HTMLElement>(
+  ref: React.RefObject<T | null>,
+) {
   let [scrollPercentage, setScrollPercentage] = useState(0);
   let prefersReducedMotion = usePrefersReducedMotion();
 
