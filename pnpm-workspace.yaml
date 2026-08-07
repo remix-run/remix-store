@@ -2,8 +2,13 @@ saveExact: true
 packageManagerStrict: true
 minimumReleaseAge: 10800
 minimumReleaseAgeExclude:
-  - react-router
-  - "@react-router/*"
+  - remix
+  - "@remix-run/*"
+  - "@shopify/hydrogen"
+  - "@hiogawa/vite-plugin-fullstack"
+  - vite
+  - typescript
+  - oxc-parser
 minimumReleaseAgeStrict: true
 trustPolicy: no-downgrade
 trustPolicyExclude:
