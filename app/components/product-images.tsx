@@ -145,7 +145,9 @@ function ImageCarousel({
   );
 }
 
-function useImageOpacities(containerRef: React.RefObject<HTMLElement>) {
+function useImageOpacities<T extends HTMLElement>(
+  containerRef: React.RefObject<T | null>,
+) {
   const [opacities, setOpacities] = useState<Map<string, number>>(new Map());
   let prefersReducedMotion = usePrefersReducedMotion();
 
