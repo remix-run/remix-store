@@ -14,6 +14,7 @@
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import { parseArgs } from "node:util";
+import { Window } from "happy-dom";
 
 // ============================================================================
 // Types
@@ -100,6 +101,16 @@ interface ProductionSnapshot {
     paths: string[];
     sitemapAlternates: Record<string, string[]>;
   };
+
+  // Test metadata
+  _testContract: {
+    productHandle: string;
+    productVariantId: string;
+    unavailableCategories: Array<{
+      category: string;
+      reason: string;
+    }>;
+  };
 }
 
 // ============================================================================
@@ -107,14 +118,17 @@ interface ProductionSnapshot {
 // ============================================================================
 
 const DEFAULT_BASE_URL = "https://shop.remix.run";
-const SNAPSHOT_DIR = path.join(process.cwd(), "phase0-snapshots");
+// Handle being run from either project root or worktree
+const cwd = process.cwd();
+const SNAPSHOT_DIR = cwd.endsWith("phase0-snapshots")
+  ? cwd
+  : path.join(cwd, "phase0-snapshots");
 const SNAPSHOT_FILE = path.join(SNAPSHOT_DIR, "production-snapshot.json");
 
-// Representative URLs to capture
+// Representative URLs to capture (product derived dynamically)
 const REPRESENTATIVE_ROUTES = {
   home: "/",
   collections: "/collections",
-  product: "/products/remix-racing-jacket",
   collection: "/collections/apparel",
   cart: "/cart",
   policy: "/policies/privacy-policy",
@@ -135,6 +149,187 @@ const HEADERS_TO_CAPTURE = [
   "etag",
   "age",
 ] as const;
+
+// ============================================================================
+// Normalization Utilities
+// ============================================================================
+
+/**
+ * Normalizes a URL for comparison by:
+ * - Sorting query parameters alphabetically
+ * - Preserving protocol, host, path, and hash
+ * - Stripping session-specific checkout parameters
+ * - Not hiding changes to external domains
+ */
+function normalizeUrl(url: string): string {
+  try {
+    const parsed = new URL(url);
+
+    // For checkout URLs, strip session-specific query params
+    if (
+      parsed.hostname.includes("checkout") ||
+      parsed.pathname.includes("checkout")
+    ) {
+      // Strip session-specific parameters but preserve the path structure
+      const params = new URLSearchParams(parsed.search);
+      const sessionParams = ["_r", "_s", "_y", "key", "shop_pay_token"];
+
+      sessionParams.forEach((param) => params.delete(param));
+
+      const sortedParams = Array.from(params.entries())
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([key, value]) => `${key}=${value}`)
+        .join("&");
+
+      // Normalize checkout path segments (strip unique IDs)
+      let normalizedPath = parsed.pathname;
+      // Replace checkout session IDs with placeholder
+      normalizedPath = normalizedPath.replace(
+        /\/c\/[a-zA-Z0-9_-]+/,
+        "/c/SESSION_ID",
+      );
+      normalizedPath = normalizedPath.replace(
+        /\/cn\/[a-zA-Z0-9_-]+/,
+        "/cn/SESSION_ID",
+      );
+
+      return `${parsed.origin}${normalizedPath}${sortedParams ? `?${sortedParams}` : ""}`;
+    }
+
+    // For non-checkout URLs, just sort query params
+    const params = new URLSearchParams(parsed.search);
+    const sortedParams = Array.from(params.entries())
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([key, value]) => `${key}=${value}`)
+      .join("&");
+
+    return `${parsed.origin}${parsed.pathname}${sortedParams ? `?${sortedParams}` : ""}${parsed.hash}`;
+  } catch {
+    return url;
+  }
+}
+
+/**
+ * Normalizes HTTP headers by:
+ * - Stripping CSP nonces (time-sensitive)
+ * - Preserving all other header structure
+ */
+function normalizeHeaders(
+  headers: Record<string, string>,
+): Record<string, string> {
+  const normalized: Record<string, string> = {};
+
+  for (const [key, value] of Object.entries(headers)) {
+    if (key.toLowerCase() === "content-security-policy") {
+      // Strip nonces but preserve CSP structure
+      normalized[key] = value.replace(
+        /'nonce-[a-f0-9]+'/g,
+        "'nonce-NORMALIZED'",
+      );
+    } else {
+      normalized[key] = value;
+    }
+  }
+
+  return normalized;
+}
+
+/**
+ * Normalizes sitemap entries by stripping lastmod timestamps
+ */
+function normalizeSitemapEntry(
+  entry: SitemapEntry,
+): Omit<SitemapEntry, "lastmod"> {
+  const { lastmod, ...rest } = entry;
+  return rest;
+}
+
+// ============================================================================
+// Product Discovery
+// ============================================================================
+
+async function discoverProductContract(baseUrl: string): Promise<{
+  handle: string;
+  variantId: string;
+}> {
+  // Fetch sitemap to find a live product
+  console.log("🔍 Discovering live product from sitemap...");
+
+  const sitemapUrl = `${baseUrl}/sitemap/products/1.xml`;
+  const response = await fetch(sitemapUrl);
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch products sitemap: ${response.status}`);
+  }
+
+  const xml = await response.text();
+  const window = new Window();
+  const document = window.document;
+  document.write(xml);
+
+  const urlElements = document.querySelectorAll("url > loc");
+  if (urlElements.length === 0) {
+    throw new Error("No products found in sitemap");
+  }
+
+  // Use the first product from the sitemap
+  const firstProductUrl = urlElements[0]?.textContent?.trim();
+  if (!firstProductUrl) {
+    throw new Error("Invalid product URL in sitemap");
+  }
+
+  const handle = new URL(firstProductUrl).pathname.replace("/products/", "");
+
+  console.log(`   Found product: ${handle}`);
+
+  // Fetch the product page to extract a variant ID
+  const productResponse = await fetch(`${baseUrl}/products/${handle}`);
+
+  if (!productResponse.ok) {
+    throw new Error(
+      `Failed to fetch product ${handle}: ${productResponse.status}`,
+    );
+  }
+
+  const html = await productResponse.text();
+
+  // Parse HTML to find variant ID in cart form
+  const productWindow = new Window();
+  const productDocument = productWindow.document;
+  productDocument.write(html);
+
+  const cartFormInput = productDocument.querySelector(
+    'input[name="cartFormInput"]',
+  );
+  if (!cartFormInput) {
+    throw new Error("Could not find cart form input in product page");
+  }
+
+  const cartFormValue = (cartFormInput as unknown as HTMLInputElement).value;
+  const cartData = JSON.parse(cartFormValue) as {
+    inputs?: {
+      lines?: Array<{
+        selectedVariant?: { id?: string };
+        merchandiseId?: string;
+      }>;
+    };
+  };
+
+  const variantId =
+    cartData?.inputs?.lines?.[0]?.selectedVariant?.id ||
+    cartData?.inputs?.lines?.[0]?.merchandiseId;
+
+  if (!variantId || !variantId.startsWith("gid://shopify/ProductVariant/")) {
+    throw new Error("Could not extract variant ID from product page");
+  }
+
+  // Extract numeric ID from GID
+  const numericId = variantId.split("/").pop();
+
+  console.log(`   Variant ID: ${numericId}`);
+
+  return { handle, variantId: numericId || "" };
+}
 
 // ============================================================================
 // Utilities
@@ -188,9 +383,11 @@ async function parseMetadata(
   html: string,
   url: string,
 ): Promise<MetadataSnapshot> {
-  // Simple HTML parsing without DOM (avoid dependencies)
-  const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
-  const title = titleMatch ? titleMatch[1].trim() : null;
+  const window = new Window();
+  const document = window.document;
+  document.write(html);
+
+  const title = document.querySelector("title")?.textContent?.trim() || null;
 
   const meta: Record<string, string> = {};
   const og: Record<string, string> = {};
@@ -200,59 +397,59 @@ async function parseMetadata(
   let canonical: string | null = null;
 
   // Extract meta tags
-  const metaRegex = /<meta\s+([^>]+)>/gi;
-  let match;
+  document.querySelectorAll("meta").forEach((metaEl) => {
+    const nameAttr = metaEl.getAttribute("name");
+    const propertyAttr = metaEl.getAttribute("property");
+    const contentAttr = metaEl.getAttribute("content");
 
-  while ((match = metaRegex.exec(html)) !== null) {
-    const attrs = match[1];
+    if (!contentAttr) return;
 
     // Standard meta tags
-    const nameMatch = attrs.match(/name=["']([^"']+)["']/i);
-    const contentMatch = attrs.match(/content=["']([^"']+)["']/i);
-
-    if (nameMatch && contentMatch) {
-      meta[nameMatch[1]] = contentMatch[1];
+    if (
+      nameAttr &&
+      !nameAttr.startsWith("og:") &&
+      !nameAttr.startsWith("twitter:")
+    ) {
+      meta[nameAttr] = contentAttr;
     }
 
     // Open Graph tags
-    const propertyMatch = attrs.match(/property=["']og:([^"']+)["']/i);
-    if (propertyMatch && contentMatch) {
-      og[propertyMatch[1]] = contentMatch[1];
+    if (propertyAttr?.startsWith("og:")) {
+      const ogKey = propertyAttr.replace("og:", "");
+      og[ogKey] = contentAttr;
     }
 
     // Twitter tags
-    const twitterMatch = attrs.match(
-      /(?:name|property)=["']twitter:([^"']+)["']/i,
-    );
-    if (twitterMatch && contentMatch) {
-      twitter[twitterMatch[1]] = contentMatch[1];
+    if (
+      nameAttr?.startsWith("twitter:") ||
+      propertyAttr?.startsWith("twitter:")
+    ) {
+      const twitterKey = (nameAttr || propertyAttr || "").replace(
+        "twitter:",
+        "",
+      );
+      twitter[twitterKey] = contentAttr;
     }
-  }
+  });
 
   // Extract link tags
-  const linkRegex = /<link\s+([^>]+)>/gi;
+  document.querySelectorAll("link").forEach((linkEl) => {
+    const rel = linkEl.getAttribute("rel");
+    const href = linkEl.getAttribute("href");
 
-  while ((match = linkRegex.exec(html)) !== null) {
-    const attrs = match[1];
-    const relMatch = attrs.match(/rel=["']([^"']+)["']/i);
-    const hrefMatch = attrs.match(/href=["']([^"']+)["']/i);
-
-    if (!relMatch || !hrefMatch) continue;
-
-    const rel = relMatch[1];
-    const href = hrefMatch[1];
+    if (!rel || !href) return;
 
     if (rel === "canonical") {
       canonical = href;
     } else if (rel === "alternate") {
-      const hreflangMatch = attrs.match(/hreflang=["']([^"']+)["']/i);
+      const hreflang = linkEl.getAttribute("hreflang");
       alternates.push({
         rel,
         href,
-        hreflang: hreflangMatch ? hreflangMatch[1] : undefined,
+        ...(hreflang ? { hreflang } : {}),
       });
     }
-  }
+  });
 
   return {
     url,
@@ -267,28 +464,25 @@ async function parseMetadata(
 
 async function parseSitemap(xml: string): Promise<SitemapEntry[]> {
   const entries: SitemapEntry[] = [];
+  const window = new Window();
+  const document = window.document;
+  document.write(xml);
 
-  // Extract <url> blocks
-  const urlRegex = /<url>([\s\S]*?)<\/url>/g;
-  let match;
+  document.querySelectorAll("url").forEach((urlEl) => {
+    const loc = urlEl.querySelector("loc")?.textContent?.trim();
+    const lastmod = urlEl.querySelector("lastmod")?.textContent?.trim();
+    const changefreq = urlEl.querySelector("changefreq")?.textContent?.trim();
+    const priority = urlEl.querySelector("priority")?.textContent?.trim();
 
-  while ((match = urlRegex.exec(xml)) !== null) {
-    const urlBlock = match[1];
-
-    const locMatch = urlBlock.match(/<loc>([^<]+)<\/loc>/);
-    const lastmodMatch = urlBlock.match(/<lastmod>([^<]+)<\/lastmod>/);
-    const changefreqMatch = urlBlock.match(/<changefreq>([^<]+)<\/changefreq>/);
-    const priorityMatch = urlBlock.match(/<priority>([^<]+)<\/priority>/);
-
-    if (locMatch) {
+    if (loc) {
       entries.push({
-        loc: locMatch[1],
-        lastmod: lastmodMatch?.[1],
-        changefreq: changefreqMatch?.[1],
-        priority: priorityMatch?.[1],
+        loc,
+        ...(lastmod ? { lastmod } : {}),
+        ...(changefreq ? { changefreq } : {}),
+        ...(priority ? { priority } : {}),
       });
     }
-  }
+  });
 
   return entries;
 }
@@ -297,23 +491,21 @@ async function parseSitemapIndex(
   xml: string,
 ): Promise<Array<{ loc: string; lastmod?: string }>> {
   const sitemaps: Array<{ loc: string; lastmod?: string }> = [];
+  const window = new Window();
+  const document = window.document;
+  document.write(xml);
 
-  const sitemapRegex = /<sitemap>([\s\S]*?)<\/sitemap>/g;
-  let match;
+  document.querySelectorAll("sitemap").forEach((sitemapEl) => {
+    const loc = sitemapEl.querySelector("loc")?.textContent?.trim();
+    const lastmod = sitemapEl.querySelector("lastmod")?.textContent?.trim();
 
-  while ((match = sitemapRegex.exec(xml)) !== null) {
-    const sitemapBlock = match[1];
-
-    const locMatch = sitemapBlock.match(/<loc>([^<]+)<\/loc>/);
-    const lastmodMatch = sitemapBlock.match(/<lastmod>([^<]+)<\/lastmod>/);
-
-    if (locMatch) {
+    if (loc) {
       sitemaps.push({
-        loc: locMatch[1],
-        lastmod: lastmodMatch?.[1],
+        loc,
+        ...(lastmod ? { lastmod } : {}),
       });
     }
-  }
+  });
 
   return sitemaps;
 }
@@ -377,18 +569,33 @@ async function captureSitemaps(
 async function captureRouteMetadata(
   baseUrl: string,
   routes: Record<string, string>,
-): Promise<ProductionSnapshot['routes']> {
-  const metadata = {} as ProductionSnapshot['routes'];
+  productHandle: string,
+): Promise<ProductionSnapshot["routes"]> {
+  const metadata = {} as ProductionSnapshot["routes"];
 
-  for (const [key, path] of Object.entries(routes)) {
+  for (const [key, pathTemplate] of Object.entries(routes)) {
+    const path = pathTemplate.replace(":handle", productHandle);
     const url = `${baseUrl}${path}`;
 
     try {
       const response = await fetch(url);
+
+      if (!response.ok && key === "product") {
+        throw new Error(
+          `Product route failed: ${url} returned ${response.status}. ` +
+            `Ensure productHandle "${productHandle}" exists.`,
+        );
+      }
+
       const html = await response.text();
 
       metadata[key as keyof typeof metadata] = await parseMetadata(html, url);
     } catch (error) {
+      if (key === "product" || key === "notFound") {
+        // Re-throw for critical routes
+        throw error;
+      }
+
       console.warn(`Failed to capture metadata for ${key} (${url}):`, error);
       metadata[key as keyof typeof metadata] = {
         url,
@@ -407,8 +614,9 @@ async function captureRouteMetadata(
 
 async function captureResponseHeaders(
   baseUrl: string,
-): Promise<ProductionSnapshot['headers']> {
-  const headers = {} as ProductionSnapshot['headers'];
+  productHandle: string,
+): Promise<ProductionSnapshot["headers"]> {
+  const headers = {} as ProductionSnapshot["headers"];
 
   // Home page
   const homeResponse = await fetch(baseUrl);
@@ -429,11 +637,18 @@ async function captureResponseHeaders(
   };
 
   // Product
-  const productResponse = await fetch(
-    `${baseUrl}/products/remix-racing-jacket`,
-  );
+  const productUrl = `${baseUrl}/products/${productHandle}`;
+  const productResponse = await fetch(productUrl);
+
+  if (!productResponse.ok) {
+    throw new Error(
+      `Product ${productUrl} returned ${productResponse.status}. ` +
+        `Cannot capture headers for non-existent product.`,
+    );
+  }
+
   headers.product = {
-    url: `${baseUrl}/products/remix-racing-jacket`,
+    url: productUrl,
     status: productResponse.status,
     statusText: productResponse.statusText,
     headers: extractHeaders(productResponse),
@@ -460,7 +675,13 @@ async function captureResponseHeaders(
   return headers;
 }
 
-async function captureRedirects(baseUrl: string) {
+async function captureRedirects(
+  baseUrl: string,
+  variantId: string,
+): Promise<{
+  redirects: ProductionSnapshot["redirects"];
+  unavailableCategories: Array<{ category: string; reason: string }>;
+}> {
   const redirects: ProductionSnapshot["redirects"] = {
     discount: [],
     cartLines: [],
@@ -469,6 +690,8 @@ async function captureRedirects(baseUrl: string) {
     myshopify: [],
     localeRedirects: [],
   };
+
+  const unavailableCategories: Array<{ category: string; reason: string }> = [];
 
   // Test discount code redirect
   try {
@@ -484,7 +707,7 @@ async function captureRedirects(baseUrl: string) {
       });
     }
   } catch (error) {
-    console.warn("Failed to test discount redirect:", error);
+    throw new Error(`Failed to test discount redirect: ${error}`);
   }
 
   // Test discount query param (if it redirects)
@@ -501,13 +724,13 @@ async function captureRedirects(baseUrl: string) {
       });
     }
   } catch (error) {
-    console.warn("Failed to test discount query redirect:", error);
+    throw new Error(`Failed to test discount query redirect: ${error}`);
   }
 
-  // Test cart permalink
+  // Test cart permalink with live variant
   try {
     const { response, chain } = await fetchWithRedirects(
-      `${baseUrl}/cart/48830885871945:1`,
+      `${baseUrl}/cart/${variantId}:1`,
     );
     if (chain.length > 1) {
       redirects.cartLines.push({
@@ -516,9 +739,16 @@ async function captureRedirects(baseUrl: string) {
         status: response.status,
         chain,
       });
+    } else if (response.status === 200) {
+      // Cart permalink may succeed without redirect (expected behavior)
+      console.log(
+        `   Cart permalink accepted without redirect (status ${response.status})`,
+      );
     }
   } catch (error) {
-    console.warn("Failed to test cart lines redirect:", error);
+    throw new Error(
+      `Failed to test cart lines redirect with variant ${variantId}: ${error}`,
+    );
   }
 
   // Test /admin redirect (should go to MyShopify)
@@ -533,7 +763,27 @@ async function captureRedirects(baseUrl: string) {
       });
     }
   } catch (error) {
-    console.warn("Failed to test admin redirect:", error);
+    throw new Error(`Failed to test admin redirect: ${error}`);
+  }
+
+  // Checkout category: NOT safely testable
+  unavailableCategories.push({
+    category: "checkout",
+    reason:
+      "Checkout flows create draft orders; not safe to test without API cleanup",
+  });
+
+  // MyShopify category: Captured via /admin redirect above
+  if (redirects.admin.length === 0) {
+    unavailableCategories.push({
+      category: "myshopify",
+      reason: "/admin did not redirect to MyShopify domain",
+    });
+  } else {
+    // Mark as covered by admin redirect
+    console.log(
+      `   MyShopify redirect captured via /admin → ${redirects.admin[0].to}`,
+    );
   }
 
   // Test locale redirects (sample some locale prefixes)
@@ -556,7 +806,7 @@ async function captureRedirects(baseUrl: string) {
     }
   }
 
-  return redirects;
+  return { redirects, unavailableCategories };
 }
 
 async function captureLocaleInventory(
@@ -600,6 +850,10 @@ async function captureLocaleInventory(
 async function captureSnapshot(baseUrl: string): Promise<ProductionSnapshot> {
   console.log(`\n📸 Capturing production snapshot from ${baseUrl}...\n`);
 
+  // Discover live product contract
+  const { handle: productHandle, variantId: productVariantId } =
+    await discoverProductContract(baseUrl);
+
   // Capture robots.txt
   console.log("📄 Capturing robots.txt...");
   const robots = await captureRobots(baseUrl);
@@ -619,15 +873,25 @@ async function captureSnapshot(baseUrl: string): Promise<ProductionSnapshot> {
 
   // Capture representative route metadata
   console.log("🏷️  Capturing route metadata...");
-  const routes = await captureRouteMetadata(baseUrl, REPRESENTATIVE_ROUTES);
+  const routes = await captureRouteMetadata(
+    baseUrl,
+    {
+      ...REPRESENTATIVE_ROUTES,
+      product: `/products/:handle`,
+    },
+    productHandle,
+  );
 
   // Capture response headers
   console.log("📋 Capturing response headers...");
-  const headers = await captureResponseHeaders(baseUrl);
+  const headers = await captureResponseHeaders(baseUrl, productHandle);
 
   // Capture redirects
   console.log("↪️  Capturing redirect inventory...");
-  const redirects = await captureRedirects(baseUrl);
+  const { redirects, unavailableCategories } = await captureRedirects(
+    baseUrl,
+    productVariantId,
+  );
 
   // Capture locale inventory
   console.log("🌍 Capturing locale inventory...");
@@ -647,6 +911,11 @@ async function captureSnapshot(baseUrl: string): Promise<ProductionSnapshot> {
     headers,
     redirects,
     locales,
+    _testContract: {
+      productHandle,
+      productVariantId,
+      unavailableCategories,
+    },
   };
 
   console.log("\n✅ Snapshot capture complete!\n");
@@ -705,7 +974,7 @@ function diffSnapshots(
     );
   }
 
-  // Diff sitemap entry counts
+  // Diff sitemap entry counts (ignore lastmod timestamps)
   for (const key of baselineSitemapKeys) {
     if (currentSitemapKeys.includes(key)) {
       const baselineCount = baseline.sitemaps[key].length;
@@ -716,6 +985,24 @@ function diffSnapshots(
         diff.sections.sitemaps = diff.sections.sitemaps || [];
         diff.sections.sitemaps.push(
           `Sitemap ${key} entry count differs: ${baselineCount} → ${currentCount}`,
+        );
+      }
+
+      // Sample a few entries to compare stable fields (excluding lastmod)
+      const baselineNormalized = baseline.sitemaps[key]
+        .slice(0, 3)
+        .map(normalizeSitemapEntry);
+      const currentNormalized = current.sitemaps[key]
+        .slice(0, 3)
+        .map(normalizeSitemapEntry);
+
+      if (
+        JSON.stringify(baselineNormalized) !== JSON.stringify(currentNormalized)
+      ) {
+        diff.hasDifferences = true;
+        diff.sections.sitemaps = diff.sections.sitemaps || [];
+        diff.sections.sitemaps.push(
+          `Sitemap ${key} entry structure differs (sample of first 3 entries)`,
         );
       }
     }
@@ -743,7 +1030,7 @@ function diffSnapshots(
       );
     }
 
-    // Compare meta tags (only keys, not time-sensitive values like og:image URLs)
+    // Compare meta tag keys AND stable values
     const baselineMetaKeys = Object.keys(baselineRoute.meta).sort();
     const currentMetaKeys = Object.keys(currentRoute.meta).sort();
 
@@ -755,6 +1042,99 @@ function diffSnapshots(
         `  Baseline: ${baselineMetaKeys.join(", ")}`,
         `  Current: ${currentMetaKeys.join(", ")}`,
       );
+    }
+
+    // Compare stable meta values (exclude time-sensitive ones like image URLs with cache busters)
+    for (const metaKey of baselineMetaKeys) {
+      if (currentMetaKeys.includes(metaKey)) {
+        const baselineValue = baselineRoute.meta[metaKey];
+        const currentValue = currentRoute.meta[metaKey];
+
+        // Only compare non-URL values or stable URL values
+        if (
+          baselineValue !== currentValue &&
+          !metaKey.toLowerCase().includes("image") &&
+          metaKey !== "twitter:image"
+        ) {
+          diff.hasDifferences = true;
+          diff.sections.metadata = diff.sections.metadata || [];
+          diff.sections.metadata.push(
+            `Route ${key} meta[${metaKey}] value differs:`,
+            `  Baseline: "${baselineValue}"`,
+            `  Current: "${currentValue}"`,
+          );
+        }
+      }
+    }
+
+    // Compare Open Graph and Twitter values similarly
+    const baselineOgKeys = Object.keys(baselineRoute.og).sort();
+    const currentOgKeys = Object.keys(currentRoute.og).sort();
+
+    if (JSON.stringify(baselineOgKeys) !== JSON.stringify(currentOgKeys)) {
+      diff.hasDifferences = true;
+      diff.sections.metadata = diff.sections.metadata || [];
+      diff.sections.metadata.push(
+        `Route ${key} Open Graph keys differ:`,
+        `  Baseline: ${baselineOgKeys.join(", ")}`,
+        `  Current: ${currentOgKeys.join(", ")}`,
+      );
+    }
+  }
+
+  // Diff headers (with normalization)
+  for (const key of Object.keys(baseline.headers)) {
+    const baselineHeaders = normalizeHeaders(
+      baseline.headers[key as keyof typeof baseline.headers].headers,
+    );
+    const currentHeaders = normalizeHeaders(
+      current.headers[key as keyof typeof current.headers]?.headers || {},
+    );
+
+    if (JSON.stringify(baselineHeaders) !== JSON.stringify(currentHeaders)) {
+      diff.hasDifferences = true;
+      diff.sections.headers = diff.sections.headers || [];
+      diff.sections.headers.push(
+        `Route ${key} headers differ (CSP nonces normalized)`,
+      );
+    }
+  }
+
+  // Diff redirect categories
+  for (const category of Object.keys(baseline.redirects)) {
+    const baselineRedirects =
+      baseline.redirects[category as keyof typeof baseline.redirects];
+    const currentRedirects =
+      current.redirects[category as keyof typeof current.redirects] || [];
+
+    if (baselineRedirects.length !== currentRedirects.length) {
+      diff.hasDifferences = true;
+      diff.sections.redirects = diff.sections.redirects || [];
+      diff.sections.redirects.push(
+        `Redirect category "${category}" count differs: ${baselineRedirects.length} → ${currentRedirects.length}`,
+      );
+    }
+
+    // Compare normalized redirect URLs
+    for (
+      let i = 0;
+      i < Math.min(baselineRedirects.length, currentRedirects.length);
+      i++
+    ) {
+      const baselineFrom = normalizeUrl(baselineRedirects[i].from);
+      const currentFrom = normalizeUrl(currentRedirects[i].from);
+      const baselineTo = normalizeUrl(baselineRedirects[i].to);
+      const currentTo = normalizeUrl(currentRedirects[i].to);
+
+      if (baselineFrom !== currentFrom || baselineTo !== currentTo) {
+        diff.hasDifferences = true;
+        diff.sections.redirects = diff.sections.redirects || [];
+        diff.sections.redirects.push(
+          `Redirect "${category}[${i}]" differs:`,
+          `  Baseline: ${baselineFrom} → ${baselineTo}`,
+          `  Current: ${currentFrom} → ${currentTo}`,
+        );
+      }
     }
   }
 

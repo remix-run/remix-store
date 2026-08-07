@@ -37,7 +37,7 @@ For key route types, we capture:
 
 - Home: `/`
 - Collections index: `/collections`
-- Sample product: `/products/remix-racing-jacket`
+- Sample product: Dynamically discovered from sitemap (e.g., `/products/load-in-parallel-t-shirt-black`)
 - Sample collection: `/collections/apparel`
 - Cart: `/cart`
 - Sample policy: `/policies/privacy-policy`
@@ -73,11 +73,18 @@ Full redirect chains for:
 
 - **Discount codes**: `/discount/:code` → cart with discount applied
 - **Discount query params**: `?discount=` handling
-- **Cart permalinks**: `/cart/:lines` → cart with pre-filled items
-- **Checkout routes**: Shopify checkout domain redirects
+- **Cart permalinks**: `/cart/:variantId:quantity` → checkout flow (uses live variant ID)
+- **Checkout routes**: NOT captured (creates draft orders; see unavailable categories)
 - **Admin routes**: `/admin` → MyShopify admin
-- **MyShopify domain rewrites**: Canonical domain enforcement
+- **MyShopify domain rewrites**: Captured via `/admin` redirect
 - **Locale redirects**: Behavior of locale-prefixed URLs (`/en-ca/`, `/fr-ca/`, etc.)
+
+**Unavailable Categories:**
+
+Some redirect categories cannot be safely tested without side effects:
+
+- `checkout`: Direct checkout flows create draft orders requiring API cleanup
+- Categories documented in `_testContract.unavailableCategories` with reasons
 
 ### Locale URL Inventory
 
@@ -157,22 +164,45 @@ Example CI workflow:
 
 The snapshot intentionally:
 
-- **Does NOT** diff specific meta content values that change frequently (e.g., og:image URLs with cache busters)
-- **Does** diff the presence/structure of meta tags
-- **Does** diff sitemap entry counts (allows for product inventory changes)
-- **Does** diff exact robots.txt content
+- **Normalizes** CSP nonces during diff (stripped to `'nonce-NORMALIZED'`)
+- **Normalizes** checkout session URLs (session IDs/parameters stripped)
+- **Normalizes** query parameter ordering (sorted alphabetically)
+- **Ignores** `lastmod` timestamps in sitemaps
+- **Ignores** `capturedAt` timestamps
+- **Compares** stable metadata values for description, title (not time-sensitive image URLs)
+- **Compares** sitemap entry counts and structure
+- **Compares** exact robots.txt content
 
 This balances contract verification with practical operational changes (adding/removing products is expected; changing the robots.txt policy is not).
+
+### Robust Parsing
+
+The script uses `happy-dom` (already a dev dependency) for HTML/XML parsing instead of regex, ensuring:
+
+- Correct handling of malformed or complex markup
+- Proper DOM traversal for meta tags, links, and sitemap entries
+- Type-safe element access
+
+### Live Product Discovery
+
+Instead of hardcoding product handles that may become unavailable:
+
+- Product handle is discovered from the first entry in `sitemap/products/1.xml`
+- Variant ID is extracted from the product page's cart form
+- Both are stored in `_testContract` for transparency
+- Cart permalink test uses the live variant ID
+
+This ensures the snapshot script never fails due to stale product references.
 
 ### Safe Redirects Only
 
 Redirect testing avoids:
 
-- Real checkout flows that could create draft orders
-- Discount codes that might have side effects
+- Real checkout flows that create draft orders (documented as unavailable)
+- Discount codes that might have side effects (uses synthetic `TESTCODE`)
 - Any mutations that touch customer data or inventory
 
-We test redirect mechanics only, using test codes that are expected to fail gracefully.
+We test redirect mechanics only. Unavailable categories are explicitly documented in the snapshot's `_testContract.unavailableCategories` field with reasons.
 
 ### Locale Inventory
 
