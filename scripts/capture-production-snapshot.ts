@@ -118,11 +118,12 @@ interface ProductionSnapshot {
 // ============================================================================
 
 const DEFAULT_BASE_URL = "https://shop.remix.run";
-// Handle being run from either project root or worktree
-const cwd = process.cwd();
-const SNAPSHOT_DIR = cwd.endsWith("phase0-snapshots")
-  ? cwd
-  : path.join(cwd, "phase0-snapshots");
+// Always use git root to handle worktrees correctly
+import { execSync } from "node:child_process";
+const PROJECT_ROOT = execSync("git rev-parse --show-toplevel", {
+  encoding: "utf-8",
+}).trim();
+const SNAPSHOT_DIR = path.join(PROJECT_ROOT, "phase0-snapshots");
 const SNAPSHOT_FILE = path.join(SNAPSHOT_DIR, "production-snapshot.json");
 
 // Representative URLs to capture (product derived dynamically)
