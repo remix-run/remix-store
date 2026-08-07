@@ -80,6 +80,14 @@ These tests **do not**:
 
 Cart operations are safe—they add/remove items in session state only.
 
+### In-Stock Product Discovery
+
+Cart tests use deterministic in-stock product discovery: they check up to 10 products from the collection to find one that's in stock. If no in-stock products are found, tests skip with an explicit message rather than silently failing. This ensures:
+
+- Tests don't hide failures in dynamic skips
+- Clear reporting when product availability affects test coverage
+- Resilience to inventory changes in production
+
 ## Behavioral Assertions
 
 Tests use **semantic queries** based on what users see:
@@ -87,14 +95,27 @@ Tests use **semantic queries** based on what users see:
 - ✅ `page.getByRole('button', { name: /add to cart/i })`
 - ✅ `page.getByText(/\$\d+/)`
 - ✅ `expect(page).toHaveURL(/\/products\//)`
+- ✅ `page.waitForLoadState('networkidle')` instead of arbitrary timeouts
 
-Avoid framework-specific selectors:
+Avoid framework-specific selectors and brittle patterns:
 
-- ❌ `.class-name`
+- ❌ `.class-name` or `[class*="..."]`
 - ❌ `[data-remix-...]`
 - ❌ `#react-root`
+- ❌ `page.waitForTimeout(1000)` (use proper Playwright waiting)
+- ❌ Hidden dynamic skips with `test.skip()` (use explicit skip messages)
 
 This ensures tests pass on both the current React Router 7 implementation and the future Remix 3 port.
+
+### No-JS Form Validation
+
+No-JavaScript tests verify **functional behavior**, not just presence:
+
+- Forms have proper `action` attributes for server-side submission
+- Buttons are within forms for no-JS functionality
+- Navigation works via standard links without JavaScript
+
+This validates true progressive enhancement, not just rendering.
 
 ## CI Integration
 
