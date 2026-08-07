@@ -2,24 +2,23 @@
 
 **Version:** Phase 0.5 – 2025-01-30
 
-This document defines the complete environment variable contract for the Remix Store migration from React Router 7 + Hydrogen 2026.4.4 to Remix 3 + framework-neutral Hydrogen preview.
-
-**Purpose:** Establish the final, unified environment variable contract that both deployment targets (Oxygen and Fly) will use post-migration, with explicit migration mapping from current variables.
+Defines the environment variable contract for migrating from React Router 7 + Hydrogen 2026.4.4 to Remix 3 + Hydrogen preview. Establishes deployment configuration for both Oxygen (Cloudflare Workers) and Fly (Node.js).
 
 ---
 
 ## Migration Mapping
 
-| Current (RR7 + Hydrogen) | Migrated (Remix 3 + Hydrogen) | Change Reason |
-|---|---|---|
-| `PUBLIC_STOREFRONT_API_TOKEN` | `PRIVATE_STOREFRONT_API_TOKEN` | **Rename for correctness**: Storefront API tokens must be server-only despite "public" in Shopify's naming convention. New name reflects actual security requirement. |
-| `PUBLIC_STOREFRONT_ID` | `PUBLIC_STOREFRONT_ID` | ✓ No change |
-| `PUBLIC_STORE_DOMAIN` | `PUBLIC_STORE_DOMAIN` | ✓ No change |
-| `PUBLIC_CHECKOUT_DOMAIN` | `PUBLIC_CHECKOUT_DOMAIN` | ✓ No change (remains optional) |
-| `SESSION_SECRET` | `SESSION_SECRET` | ✓ No change (server-only) |
-| — | `SHOP_ID` | **New (optional)**: For Shopify checkout path in robots.txt |
-| — | `PUBLIC_SHOPIFY_INBOX_ENABLED` | **New (optional)**: Enables Shopify Inbox widget (Tier 3 feature, not Phase 2 scope) |
-| — | `ADMIN_ACCESS_TOKEN` | **New (Phase 2.14)**: Required for subscribe/back-in-stock Admin API calls (server-only) |
+| Current (RR7)                 | Final (Remix 3)                | Classification | Change                                                |
+| ----------------------------- | ------------------------------ | -------------- | ----------------------------------------------------- |
+| `PUBLIC_STOREFRONT_API_TOKEN` | `PUBLIC_STOREFRONT_API_TOKEN`  | Public         | **Preserved**: Used for client-side consent/analytics |
+| —                             | `PRIVATE_STOREFRONT_API_TOKEN` | Private        | **New**: Server-only token for GraphQL queries        |
+| `PUBLIC_STORE_DOMAIN`         | `PUBLIC_STORE_DOMAIN`          | Public         | No change                                             |
+| `PUBLIC_STOREFRONT_ID`        | `PUBLIC_STOREFRONT_ID`         | Public         | No change                                             |
+| `PUBLIC_CHECKOUT_DOMAIN`      | `PUBLIC_CHECKOUT_DOMAIN`       | Public         | No change (optional)                                  |
+| `SESSION_SECRET`              | —                              | Private        | **Legacy**: Phase 2.17 audit required                 |
+| —                             | `SHOP_ID`                      | Public         | **Optional**: robots.txt only (queryable via API)     |
+
+**Key decision:** PUBLIC_STOREFRONT_API_TOKEN and PRIVATE_STOREFRONT_API_TOKEN are **distinct credentials** for different purposes (client consent vs server queries), not a rename. Both may be required depending on analytics implementation.
 
 ---
 
@@ -29,109 +28,98 @@ This document defines the complete environment variable contract for the Remix S
 
 #### `PUBLIC_STORE_DOMAIN`
 
-**Purpose:** Shopify store domain for Storefront API requests
-
-**Type:** String (domain without protocol)
+**Purpose:** Shopify store domain for API requests and CSP configuration
 
 **Example:** `example.myshopify.com`
 
-**Public/Private:** Public (safe to expose client-side)
-
-**Required by:** Storefront API client, SEO meta tags, analytics
+**Public/Private:** Public (safe client-side)
 
 **Configuration:**
-- **Local dev:** `.env` file
-- **Oxygen:** Environment variables in Shopify admin (storefront settings)
+
+- **Oxygen:** Storefront environment variables
 - **Fly:** `fly secrets set PUBLIC_STORE_DOMAIN=...`
 
-**Validation:** Must be a valid Shopify domain (ends with `.myshopify.com` or custom domain)
-
 **Evidence:**
-- Official: `app/middleware/storefront.ts` L32
-- Experimental: `app/data/storefront.server.ts` L20
+
+- Current: `app/root.tsx` L110, `app/entry.server.tsx` L23
+- Experimental: `app/data/storefront.server.ts` L17
 
 ---
 
 #### `PRIVATE_STOREFRONT_API_TOKEN`
 
-**Purpose:** Storefront API access token for GraphQL queries
-
-**Type:** String (Shopify Storefront API token)
+**Purpose:** Server-only Storefront API token for GraphQL queries
 
 **Public/Private:** **Private (server-only)**
 
-**Security:** Despite Shopify's "public Storefront API" terminology, tokens must never be exposed client-side. They enable:
-- Unrestricted query execution (rate limits apply)
-- Access to unpublished products/collections during development
-- Potential abuse if exposed
+**Security:** Must never be exposed client-side. Enables:
 
-**Required by:** Storefront API client (`createStorefrontClient`)
+- Server-side GraphQL queries via `createStorefrontClient({ type: 'private' })`
+- Access to rate-limited query execution
+- Metafields, navigation menus, and token-gated features
+
+Per [Shopify docs](https://shopify.dev/docs/api/storefront/latest#authentication):
+
+- **Private access**: "Used to query the API from a server or other private context, like a Hydrogen backend"
+- Distinct from public token used for client-side operations
+
+**Required by:** `createStorefrontClient` (private type)
 
 **Configuration:**
-- **Local dev:** `.env` file (never commit)
-- **Oxygen:** Secure environment variables in Shopify admin
+
+- **Oxygen:** Secure environment variables
 - **Fly:** `fly secrets set PRIVATE_STOREFRONT_API_TOKEN=...`
 
-**Migration note:** Renamed from `PUBLIC_STOREFRONT_API_TOKEN` (current) to correct misleading public/private classification.
+**Evidence:**
+
+- Experimental: `app/data/storefront.server.ts` L23, `app/middleware/storefront.ts` L85
+- Hydrogen docs: Both `publicStorefrontToken` and `privateStorefrontToken` shown
+
+---
+
+#### `PUBLIC_STOREFRONT_API_TOKEN`
+
+**Purpose:** Client-safe Storefront API token for consent and analytics configuration
+
+**Public/Private:** Public (intentionally client-usable)
+
+**Current usage:** Passed to Shopify Analytics consent config (`root.tsx` L118: `consent.storefrontAccessToken`)
+
+**Required by:** `@shopify/hydrogen` analytics consent (if used)
+
+**Configuration:**
+
+- **Oxygen:** Environment variables
+- **Fly:** `fly secrets set PUBLIC_STOREFRONT_API_TOKEN=...`
+
+**Migration decision:** Preserve if experimental analytics uses consent config; mark legacy/retired if analytics does not require it. Audit experimental `@shopify/hydrogen` analytics usage in Phase 1.1.
 
 **Evidence:**
-- Official: `app/middleware/storefront.ts` L33 (as `PUBLIC_STOREFRONT_API_TOKEN`)
-- Experimental: `app/data/storefront.server.ts` L23 (as `PRIVATE_STOREFRONT_API_TOKEN`)
+
+- Current: `app/root.tsx` L118 (consent config)
+- Shopify docs: "Public access: Used to query the API from a browser or mobile app"
 
 ---
 
 #### `PUBLIC_STOREFRONT_ID`
 
-**Purpose:** Shopify storefront ID for analytics tracking
+**Purpose:** Storefront ID for Shopify Analytics tracking
 
-**Type:** String (numeric storefront ID)
+**Example:** `1000020043` (numeric string)
 
-**Example:** `1000020043`
-
-**Public/Private:** Public (required client-side for Shopify Analytics)
-
-**Required by:** `@shopify/hydrogen` analytics (`getShopAnalytics`)
-
-**Default:** `'0'` if not set (experimental implementation); required in official implementation
+**Public/Private:** Public (required client-side)
 
 **Configuration:**
-- **Local dev:** `.env` file
-- **Oxygen:** Environment variables in Shopify admin
-- **Fly:** `fly secrets set PUBLIC_STOREFRONT_ID=...` (not actually secret, but centralized config)
+
+- **Oxygen:** Environment variables
+- **Fly:** `fly secrets set PUBLIC_STOREFRONT_ID=...`
+
+**Default:** `'0'` in experimental if not set
 
 **Evidence:**
-- Official: `app/root.tsx` L109 (loader)
+
+- Current: `app/root.tsx` L113 (`getShopAnalytics`)
 - Experimental: `app/data/storefront.server.ts` L30
-
----
-
-#### `SESSION_SECRET`
-
-**Purpose:** Secret key(s) for cookie session storage encryption
-
-**Type:** String or array of strings (for key rotation)
-
-**Example:** `s3cr3tk3y` (production: long random string)
-
-**Public/Private:** **Private (server-only)**
-
-**Security:** Used to sign and encrypt session cookies. Compromise allows:
-- Session hijacking
-- Cart takeover
-- Forged authentication state (if customer accounts added)
-
-**Required by:** `createCookieSessionStorage` (React Router session)
-
-**Configuration:**
-- **Local dev:** `.env` file (can use placeholder value)
-- **Oxygen:** Secure environment variables in Shopify admin
-- **Fly:** `fly secrets set SESSION_SECRET=...`
-
-**Key rotation:** React Router's `createCookieSessionStorage` accepts an array of secrets; first is used for signing, rest for validation (allows rotation without invalidating existing sessions).
-
-**Evidence:**
-- Official: `app/lib/context.ts` L12, `app/lib/session.ts` L19
-- Experimental: Phase 2.17 audit task (currently unclear usage)
 
 ---
 
@@ -139,268 +127,163 @@ This document defines the complete environment variable contract for the Remix S
 
 #### `PUBLIC_CHECKOUT_DOMAIN`
 
-**Purpose:** Custom checkout domain (e.g., `checkout.remix.run`) for checkout redirects
-
-**Type:** String (domain without protocol)
+**Purpose:** Custom checkout domain for CSP and consent configuration
 
 **Example:** `checkout.remix.run`
 
-**Public/Private:** Public (used in consent/analytics config)
+**Public/Private:** Public
 
-**Default:** Falls back to shop's primary domain if not set
+**Usage:** Content Security Policy (`entry.server.tsx` L31) and Shopify Analytics consent config (`root.tsx` L117)
 
-**Required by:** Checkout button redirects, Shopify Analytics consent configuration
+**Not used for:** Checkout URL construction (Shopify generates checkout URLs)
+
+**Default:** Falls back to shop's primary domain
 
 **Configuration:**
-- **Local dev:** `.env` file (optional)
-- **Oxygen:** Environment variables in Shopify admin (if custom checkout domain configured)
-- **Fly:** `fly secrets set PUBLIC_CHECKOUT_DOMAIN=...` (if needed)
+
+- **Oxygen:** Environment variables (if custom checkout domain configured)
+- **Fly:** `fly secrets set PUBLIC_CHECKOUT_DOMAIN=...`
 
 **Evidence:**
-- Official: `app/root.tsx` L117 (consent config)
-- Experimental: Phase 2.11 verification task
-- Docs: `SHOPIFY_CONTENT_MODEL_CONTRACT.md` L354
+
+- Current: `app/root.tsx` L117, `app/entry.server.tsx` L31
+- Shopify Hydrogen docs: Used in consent/CSP config
 
 ---
 
 #### `SHOP_ID`
 
-**Purpose:** Shopify shop ID for constructing checkout paths in robots.txt
+**Purpose:** Shopify shop GID for robots.txt checkout path blocking
 
-**Type:** String (numeric shop ID)
-
-**Example:** `12345678`
+**Example:** `12345678` (parsed from `gid://shopify/Shop/12345678`)
 
 **Public/Private:** Public
 
-**Default:** If not set, robots.txt omits the `/{shopId}/checkouts` disallow rule
+**Default:** Robots.txt omits `/{shopId}/checkouts` rule if not set
 
-**Required by:** `robots.txt` route to block shop-specific checkout URLs
+**Alternative:** Query `shop { id }` via Storefront API (current implementation in `app/routes/pages/[robots.txt].tsx` L6) and parse GID
 
 **Configuration:**
-- **Local dev:** `.env` file (optional)
-- **Oxygen:** Environment variables
+
+- **Oxygen:** Environment variables (optional)
 - **Fly:** `fly secrets set SHOP_ID=...` (optional)
 
 **Evidence:**
-- Official: `app/routes/pages/[robots.txt].tsx` L33, L73
-- Experimental: `app/data/storefront.server.ts` L27
+
+- Current: `app/routes/pages/[robots.txt].tsx` L8 (queries `shop.id`, parses GID)
+- Experimental: `app/data/storefront.server.ts` L27 (optional env fallback)
+
+**Migration decision:** Keep queryable in Phase 1.1; consider env var fallback for robots.txt route only
 
 ---
 
-#### `PUBLIC_SHOPIFY_INBOX_ENABLED`
+### Legacy Variables (Phase 2.17 Audit Required)
 
-**Purpose:** Feature flag to enable/disable Shopify Inbox chat widget
+#### `SESSION_SECRET`
 
-**Type:** String (`"true"` | `undefined`)
+**Purpose:** Secret key for signing cookie session storage (cart, discount codes)
 
-**Example:** `true`
+**Public/Private:** **Private (server-only)**
 
-**Public/Private:** Public (feature flag)
+**Current usage:**
 
-**Default:** `false` (widget disabled if not set or set to any value except `"true"`)
+- Signs session cookies via `createCookieSessionStorage` (`app/lib/session.ts` L20)
+- Receives **one secret** (not comma-separated): `[env.SESSION_SECRET]` (`app/lib/context.ts` L18)
+- Used for cart and discount code session storage
 
-**Required by:** Shopify Inbox widget conditional rendering
+**Experimental usage:**
 
-**Status:** **Not in Phase 2 scope** (Tier 3 backlog feature). Experimental repo has plumbing; official repo does not implement Shopify Inbox.
+- No `SESSION_SECRET` found in experimental repo
+- Uses unsigned Hydrogen cart cookies via `createCartCookie` (`app/data/cart.server.ts`)
+- No `createCookieSessionStorage` implementation
 
-**Configuration:**
-- **Local dev:** `.env` file (optional)
-- **Oxygen:** Environment variables
-- **Fly:** `fly secrets set PUBLIC_SHOPIFY_INBOX_ENABLED=true`
+**Migration decision:**
+
+- Classify as **legacy/pending Phase 2.17**
+- Not final-required (experimental does not use it)
+- Phase 2.17 task: Audit session requirements and document migration path
+
+**Security note:** Used for signing (not encryption) via React Router's `createCookieSessionStorage` which signs with `secrets` array (first active, rest for validation during rotation)
 
 **Evidence:**
-- Experimental: `app/data/storefront.server.ts` L33
-- Migration plan: `SHOPIFY_CONTENT_MODEL_CONTRACT.md` L415
+
+- Current: `app/lib/context.ts` L11-18, `app/lib/session.ts` L19-28
+- Experimental: No usage found (grep confirms no SESSION_SECRET)
 
 ---
 
-### Phase 2.14 Variables (Subscribe/Back-in-Stock)
+## Variable Summary
 
-#### `ADMIN_ACCESS_TOKEN`
-
-**Purpose:** Shopify Admin API access token for customer creation, tagging, and email marketing consent (subscribe + back-in-stock forms)
-
-**Type:** String (Shopify Admin API access token)
-
-**Public/Private:** **Private (server-only, highest sensitivity)**
-
-**Security:** Admin API tokens grant write access to store data. Must:
-- Never be logged
-- Never be exposed client-side
-- Be scoped to minimum required permissions (customer read/write, email marketing)
-- Include request rate limiting to prevent abuse
-- Avoid logging customer PII in error paths
-
-**Required by:** Phase 2.14 implementation (subscribe route, back-in-stock form)
-
-**Scopes required:**
-- `write_customers` (create/update customer records)
-- `read_customers` (check existing customers)
-
-**Configuration:**
-- **Local dev:** `.env` file (never commit; use development store token)
-- **Oxygen:** Secure environment variables in Shopify admin
-- **Fly:** `fly secrets set ADMIN_ACCESS_TOKEN=...`
-
-**Not yet configured:** This variable will be added in Phase 2.14. Included in this contract for completeness.
-
-**Evidence:**
-- Migration plan: Phase 2.14, L184
-- Parity plan: `REMIX_STORE_PARITY_PLAN.md` L276
-
----
-
-## Variable Classification Summary
-
-| Variable | Public/Private | Required/Optional | Phase | Configure Where |
-|---|---|---|---|---|
-| `PUBLIC_STORE_DOMAIN` | Public | Required | Now | Oxygen env, Fly secrets, `.env` |
-| `PRIVATE_STOREFRONT_API_TOKEN` | Private | Required | Now | Oxygen secure env, Fly secrets, `.env` |
-| `PUBLIC_STOREFRONT_ID` | Public | Required | Now | Oxygen env, Fly secrets, `.env` |
-| `SESSION_SECRET` | Private | Required | Now | Oxygen secure env, Fly secrets, `.env` |
-| `PUBLIC_CHECKOUT_DOMAIN` | Public | Optional | Now | Oxygen env, Fly secrets, `.env` |
-| `SHOP_ID` | Public | Optional | Now | Oxygen env, Fly secrets, `.env` |
-| `PUBLIC_SHOPIFY_INBOX_ENABLED` | Public | Optional | Not Phase 2 | Oxygen env, Fly secrets, `.env` |
-| `ADMIN_ACCESS_TOKEN` | Private | Required (2.14) | Phase 2.14 | Oxygen secure env, Fly secrets, `.env` |
+| Variable                       | Public/Private | Required    | Phase | Notes                                                 |
+| ------------------------------ | -------------- | ----------- | ----- | ----------------------------------------------------- |
+| `PUBLIC_STORE_DOMAIN`          | Public         | ✓           | Now   | Store domain                                          |
+| `PRIVATE_STOREFRONT_API_TOKEN` | Private        | ✓           | Now   | Server queries                                        |
+| `PUBLIC_STOREFRONT_API_TOKEN`  | Public         | Conditional | Now   | Consent config (if analytics uses it)                 |
+| `PUBLIC_STOREFRONT_ID`         | Public         | ✓           | Now   | Analytics tracking                                    |
+| `PUBLIC_CHECKOUT_DOMAIN`       | Public         | Optional    | Now   | CSP/consent config                                    |
+| `SHOP_ID`                      | Public         | Optional    | Now   | robots.txt (queryable via API)                        |
+| `SESSION_SECRET`               | Private        | Legacy      | 2.17  | Current only; experimental uses unsigned cart cookies |
 
 ---
 
 ## Oxygen vs. Fly Configuration
 
-### Oxygen (Cloudflare Workers runtime)
+### Oxygen (Cloudflare Workers)
 
-**Environment access:** Via `env` parameter in fetch handler (`server.ts` L11)
-
-**Configuration location:** Shopify admin → Hydrogen storefront settings → Environment variables
+**Environment access:** Via `env` parameter in fetch handler
 
 **Secure variables:**
+
 - `PRIVATE_STOREFRONT_API_TOKEN`
-- `SESSION_SECRET`
-- `ADMIN_ACCESS_TOKEN` (Phase 2.14)
 
-**Public variables:** All others (still configured via Oxygen env vars, not hardcoded)
+**Public variables:** All others (still configured via env vars, not hardcoded)
 
-**Runtime behavior:**
-- `app/runtime.ts` detects Worker runtime via `workerEnv` presence
-- Cache API available (`caches.open('hydrogen')`)
-- `waitUntil` available via execution context
+**Runtime:**
+
+- Detected via `workerEnv` presence (`app/runtime.ts`)
+- Cache API: `caches.open('hydrogen')`
+- `waitUntil`: Execution context
 
 ---
 
-### Fly (Node.js runtime)
+### Fly (Node.js)
 
 **Environment access:** Via `process.env` (fallback in `app/runtime.ts` L27)
 
-**Configuration location:** `fly secrets set KEY=value` for all variables
+**Configuration:** `fly secrets set KEY=value` for all variables
 
-**Secure variables:** Same as Oxygen (Fly encrypts all secrets)
+**Runtime:**
 
-**Runtime behavior:**
-- `app/runtime.ts` falls back to `process.env` when `workerEnv` undefined
-- No native Cache API → Phase 3.2 implements in-memory TTL cache adapter
-- `waitUntil` fallback: `void promise` (background tasks fire-and-forget)
-
----
-
-## Local Development
-
-**`.env` file:**
-
-```bash
-# Required
-PUBLIC_STORE_DOMAIN=example.myshopify.com
-PRIVATE_STOREFRONT_API_TOKEN=your-storefront-token
-PUBLIC_STOREFRONT_ID=1000020043
-SESSION_SECRET=local-dev-secret
-
-# Optional
-PUBLIC_CHECKOUT_DOMAIN=checkout.example.com
-SHOP_ID=12345678
-PUBLIC_SHOPIFY_INBOX_ENABLED=true
-
-# Phase 2.14 only
-# ADMIN_ACCESS_TOKEN=your-admin-token
-```
-
-**Never commit `.env`** — it is git-ignored. `.env.example` contains placeholder values and documentation.
-
----
-
-## Migration Checklist
-
-Phase 1.1 (Platform skeleton):
-
-- [x] Map environment variable contracts (this document)
-- [x] Update `.env.example` with final contract + inline docs
-- [ ] Rename `PUBLIC_STOREFRONT_API_TOKEN` → `PRIVATE_STOREFRONT_API_TOKEN` in codebase
-- [ ] Update `app/runtime.ts` documentation with env var access patterns
-- [ ] Configure Oxygen preview environment with new variable names
-- [ ] Validate `SESSION_SECRET` usage in experimental stack (Phase 2.17 audit task)
-
-Phase 2.14 (Subscribe/back-in-stock):
-
-- [ ] Add `ADMIN_ACCESS_TOKEN` to secure environment configs
-- [ ] Implement Admin API client with rate limiting
-- [ ] Validate no PII logging in error paths
-
-Phase 3.2 (Fly target):
-
-- [ ] Configure all environment variables via `fly secrets set`
-- [ ] Validate `process.env` fallback in `app/runtime.ts` works correctly
-- [ ] Test cache adapter behavior without Cache API
-
-Phase 4 (Cutover):
-
-- [ ] Update production Oxygen environment with new variable names
-- [ ] Rollback plan: keep old variable names as aliases during monitoring window
-- [ ] Post-cutover: remove old variable name aliases after 48h monitoring
+- Falls back to `process.env` when `workerEnv` undefined
+- No native Cache API → Phase 3.2 in-memory adapter
+- `waitUntil`: Fire-and-forget (`void promise`)
 
 ---
 
 ## Security Requirements
 
-1. **Never expose private variables client-side:**
-   - `PRIVATE_STOREFRONT_API_TOKEN`
-   - `SESSION_SECRET`
-   - `ADMIN_ACCESS_TOKEN`
-
+1. **Never expose private variables client-side:** `PRIVATE_STOREFRONT_API_TOKEN`
 2. **Never commit `.env` file** (git-ignored)
-
-3. **Never log variable values** in error messages or observability (scrub them)
-
-4. **Key rotation:**
-   - `SESSION_SECRET`: Use array of secrets for rotation without session invalidation
-   - `PRIVATE_STOREFRONT_API_TOKEN`: Rotate via Shopify admin; update all environments atomically
-   - `ADMIN_ACCESS_TOKEN`: Rotate quarterly; coordinate with Phase 2.14 implementation
-
-5. **Validate on startup:**
-   - Required variables present
-   - Domains valid format (no protocol, valid TLD)
-   - Tokens non-empty (don't validate format — Shopify API will fail gracefully)
+3. **Never log variable values** in errors/observability
+4. **Token rotation:** Update Oxygen/Fly environments atomically
 
 ---
 
-## Open Questions (to resolve before Phase 1.1)
+## Open Questions (Phase 1.1)
 
-1. **SESSION_SECRET experimental usage:** Phase 2.17 audit must confirm whether experimental stack uses session storage, and if so, how. Current status: "Unclear" per migration plan L83.
+1. **PUBLIC_STOREFRONT_API_TOKEN requirement:** Audit experimental analytics consent usage. If analytics does not use `consent.storefrontAccessToken`, mark legacy/retired.
 
-   **Resolution path:** Audit experimental `app/` for `createCookieSessionStorage` or equivalent; if absent, document retirement; if present, validate compatibility with official implementation.
+2. **SESSION_SECRET experimental equivalent:** Phase 2.17 must confirm cart session strategy (unsigned cookies vs signed sessions).
 
-2. **PUBLIC_CHECKOUT_DOMAIN requirement level:** Currently marked optional with fallback. Verify whether production Oxygen deployment requires explicit value for `checkout.remix.run` or if it auto-detects.
+3. **SHOP_ID source:** Prefer runtime query (`shop { id }`) over env var? Current queries it; experimental env fallback.
 
-   **Resolution path:** Phase 2.11 verification task; check current Oxygen production config.
-
-3. **SHOP_ID source:** Is this available via Storefront API query or must it be manually configured? If queryable, should it be runtime-fetched vs. env var?
-
-   **Resolution path:** Check Shopify Storefront API `shop { id }` field; if available, consider removing env var in favor of runtime query (cached).
+4. **PUBLIC_CHECKOUT_DOMAIN requirement:** Verify Oxygen production config (auto-detected or explicit?).
 
 ---
 
 ## References
 
-- Migration plan: `REMIX_STORE_MIGRATION_PLAN.md` §Phase 0.5 (L120)
-- Content model contract: `SHOPIFY_CONTENT_MODEL_CONTRACT.md` §Analytics & Tracking (L397)
-- Official implementation: `app/lib/context.ts`, `app/lib/session.ts`, `app/middleware/storefront.ts`
-- Experimental implementation: `app/runtime.ts`, `app/data/storefront.server.ts`
-- Security: Parity plan §Subscribe (L276), Migration plan §Phase 2.14 (L184)
+- Shopify Storefront API auth: https://shopify.dev/docs/api/storefront/latest#authentication
+- Hydrogen docs: https://shopify.dev/docs/api/hydrogen/latest
+- Current: `app/root.tsx`, `app/lib/context.ts`, `app/lib/session.ts`
+- Experimental: `app/data/storefront.server.ts`, `app/middleware/storefront.ts`, `app/data/cart.server.ts`
