@@ -49,8 +49,8 @@ importers:
         specifier: 2.12.7
         version: 2.12.7(graphql@16.14.0)
       isbot:
-        specifier: 5.1.40
-        version: 5.1.40
+        specifier: 5.2.1
+        version: 5.2.1
       react:
         specifier: 18.3.1
         version: 18.3.1
@@ -6957,10 +6957,10 @@ packages:
         integrity: sha512-xHjhDr3cNBK0BzdUJSPXZntQUx/mwMS5Rw4A7lPJ90XGAO6ISP/ePDNuo0vhqOZU+UD5JoodwCAAoZQd3FeAKw==,
       }
 
-  isbot@5.1.40:
+  isbot@5.2.1:
     resolution:
       {
-        integrity: sha512-yNeeynhhtIVRBk12tBV4eHNxwB42HzR4Q3Ea7vCOiJhImGaAIdIMrbJtacQlBizGLjUPw+akkFI5Dn9T70XoVQ==,
+        integrity: sha512-dJ+LpKyClQZ7NG+j3OensC/mAZkGpukE9YUrgPYvAZj2doVL0edfDgywTUh5CXa0o+nW9a1V9e5+CJTX8+SxRw==,
       }
     engines: { node: ">=18" }
 
@@ -11996,7 +11996,7 @@ snapshots:
       dedent: 1.7.2
       es-module-lexer: 1.7.0
       exit-hook: 2.2.1
-      isbot: 5.1.40
+      isbot: 5.2.1
       jsesc: 3.0.2
       lodash: 4.18.1
       p-map: 7.0.4
@@ -12274,7 +12274,7 @@ snapshots:
       "@shopify/hydrogen-react": 2026.4.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(three@0.182.0)(vite@6.4.2(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(yaml@2.9.0))
       content-security-policy-builder: 2.3.0
       flame-chart-js: 2.3.1
-      isbot: 5.1.40
+      isbot: 5.2.1
       react: 18.3.1
       react-router: 7.18.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       source-map-support: 0.5.21
@@ -14776,7 +14776,7 @@ snapshots:
 
   isarray@2.0.5: {}
 
-  isbot@5.1.40: {}
+  isbot@5.2.1: {}
 
   iserror@0.0.2: {}
 
