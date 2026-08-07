@@ -3,8 +3,9 @@
 **Generated:** 2025-01-17  
 **Status:** Cutover gate — every row must be verified closed or explicitly dropped-with-redirects  
 **Methodology:** Route-by-route and component-by-component comparison of:
-- Official app: `remix-store` (96 files audited)
-- Experimental app: `~/code/remix-3-hydrogen` (64 files audited)
+
+- Official app: `remix-store` origin/main (91 files in app/)
+- Experimental app: v3 platform skeleton
 - Migration plan: `REMIX_STORE_MIGRATION_PLAN.md`
 - Parity plan: `REMIX_STORE_PARITY_PLAN.md`
 
@@ -16,23 +17,24 @@
 **Port to v3:** 9  
 **Verify during port:** 3  
 **Drop with redirects:** 1 (pending human decision)  
-**Audit/document:** 2  
+**Audit/document:** 2
 
-### Critical Human Decision Required
+### Phase 2 Blocker: Locale/Markets Decision
 
-**LOCALE/MARKETS DISPOSITION (Gap #5):**  
+**LOCALE/MARKETS DISPOSITION (Gap #5) — BLOCKS PHASE 2 ROUTING WORK:**  
 The official store implements locale path prefix infrastructure (`($locale)` route wrapper, `getLocaleFromRequest()`, sitemap alternates for EN-US/EN-CA/FR-CA) but has **no user-facing locale selector** and no UI that consumes `pathPrefix`. The only external surface is SEO: sitemap advertises locale alternate URLs to search engines.
 
-**Decision needed:** Check Shopify admin for:
+**Decision required before Phase 2 begins:** Check Shopify admin for:
+
 1. Active Markets configuration (Canada market enabled/configured?)
 2. CA order volume (meaningful CA orders in last 90 days?)
 3. Merchandising intent (CA market actively maintained?)
 
-**If CA market is inactive:** Drop locale plumbing; implement permanent redirect `/^[a-z]{2}-[a-z]{2}(\/|$)/` → unprefixed path; remove sitemap alternates; fixed EN-US only.
+**Outcome A (CA inactive):** Drop locale plumbing in Phase 2; implement permanent redirect `/^[a-z]{2}-[a-z]{2}(\/|$)/` → unprefixed path; remove sitemap alternates; fixed EN-US only.
 
-**If CA market is active:** Keep locale infrastructure; port to v3; add to Phase 2.15.
+**Outcome B (CA active):** Port locale infrastructure to v3 in Phase 2.15; preserve SEO alternates; test Markets integration.
 
-**This audit leaves locale behavior unchanged** pending the Markets check. No code changes related to locales are made in Phase 0.3.
+**This decision blocks Phase 2 routing architecture.** Phase 0.3 leaves locale behavior unchanged; no code changes are made pending Markets check.
 
 ---
 
@@ -40,33 +42,33 @@ The official store implements locale path prefix infrastructure (`($locale)` rou
 
 ### Routes
 
-| # | Gap | Official Source | Experimental Status | Disposition | Phase 2 Task | Evidence |
-|---|---|---|---|---|---|---|
-| 1 | Subscribe route (`/subscribe`) | `app/routes/pages/($locale).subscribe.tsx` | Missing (no route, no controller) | **Build** | 2.14 | Admin API customer create/update, tag merge, single-opt-in email consent; `app/lib/data/subscribe.server.ts` (288 lines) |
-| 2 | Back-in-stock form (sold-out variants) | Product page component + subscribe server boundary | Missing (no UI, no server action) | **Build** | 2.14 | Conditional on `custom.subscribe_if_back_in_stock` metafield; shares Admin API boundary with subscribe route |
-| 3 | Cart permalink `/cart/:lines` | `app/routes/pages/($locale).cart.$lines.tsx` | Missing (no route) | **Verify during port** | 2.11 | Creates cart from URL, applies discount code from query, redirects to checkout; experimental app has `handleShopifyRoutes()` in middleware but needs explicit route verification |
-| 4 | Catch-all `$` → storefront-redirect | `app/routes/pages/($locale).$.tsx` | Present per parity plan | **Verify during port** | 2.11 | Fallback to Shopify storefront redirect API on 404; experimental app should have this in middleware |
-| 5 | Locale path prefix + `@inContext` | `app/routes/pages/($locale).tsx` + `app/lib/i18n.ts` | Missing (fixed EN-US) | **Human decision: drop with redirects OR port** | 2.15 | **REQUIRES MARKETS CHECK** — see Executive Summary; `getLocaleFromRequest()` parses `/xx-yy` prefix; sitemap emits EN-US/EN-CA/FR-CA alternates; no UI consumes `pathPrefix` |
-| 6 | `/components` styleguide | `app/routes/pages/components.tsx` | Missing (intentional) | **Drop on main now** | — | Internal dev-only route; **REMOVED IN THIS PR** per D6 |
-| 7 | `/components/animated-link` styleguide | `app/routes/pages/components.animated-link.tsx` | Missing (intentional) | **Drop on main now** | — | Internal dev-only route; **REMOVED IN THIS PR** per D6 |
+| #   | Gap                                    | Official Source                                      | Experimental Status               | Disposition                                    | Phase 2 Task | Evidence                                                                                                                                                                                                               |
+| --- | -------------------------------------- | ---------------------------------------------------- | --------------------------------- | ---------------------------------------------- | ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Subscribe route (`/subscribe`)         | `app/routes/pages/($locale).subscribe.tsx`           | Missing (no route, no controller) | **Build**                                      | 2.14         | Admin API customer create/update, tag merge, single-opt-in email consent; `app/lib/data/subscribe.server.ts` (288 lines)                                                                                               |
+| 2   | Back-in-stock form (sold-out variants) | Product page component + subscribe server boundary   | Missing (no UI, no server action) | **Build**                                      | 2.14         | Conditional on `custom.subscribe_if_back_in_stock` metafield; shares Admin API boundary with subscribe route                                                                                                           |
+| 3   | Cart permalink `/cart/:lines`          | `app/routes/pages/($locale).cart.$lines.tsx`         | Missing (no route)                | **Verify during port**                         | 2.11         | Creates cart from URL, applies discount code from query, redirects to checkout; experimental app has `handleShopifyRoutes()` in middleware but needs explicit route verification                                       |
+| 4   | Catch-all `$` → storefront-redirect    | `app/routes/pages/($locale).$.tsx`                   | Present per parity plan           | **Verify during port**                         | 2.11         | Fallback to Shopify storefront redirect API on 404; experimental app should have this in middleware                                                                                                                    |
+| 5   | Locale path prefix + `@inContext`      | `app/routes/pages/($locale).tsx` + `app/lib/i18n.ts` | Missing (fixed EN-US)             | **PHASE 2 BLOCKER: Markets decision required** | 2.15         | **BLOCKS** Phase 2 routing work — see Executive Summary; `getLocaleFromRequest()` parses `/xx-yy` prefix; sitemap emits EN-US/EN-CA/FR-CA alternates; no UI consumes `pathPrefix`; decision determines route structure |
+| 6   | `/components` styleguide               | `app/routes/pages/components.tsx`                    | Missing (intentional)             | **Drop on main now**                           | —            | Internal dev-only route; **REMOVED IN THIS PR** per D6 (103 lines)                                                                                                                                                     |
+| 7   | `/components/animated-link` styleguide | `app/routes/pages/components.animated-link.tsx`      | Missing (intentional)             | **Drop on main now**                           | —            | Internal dev-only route; **REMOVED IN THIS PR** per D6 (142 lines)                                                                                                                                                     |
 
 ### Features / Components
 
-| # | Gap | Official Source | Experimental Status | Disposition | Phase 2 Task | Evidence |
-|---|---|---|---|---|---|---|
-| 8 | Store-wide sale marquee | `app/components/store-wide-sale.tsx` (5.9K) | Missing (deferred in parity plan) | **Build** | 2.13 | Queries `custom.storewide_sale` shop metafield (title/desc/end_date); renders 48px fixed marquee above header; reduced-motion fallback |
-| 9 | Automatic discount label in cart | Header/cart integration with sale data | Missing (deferred) | **Build** | 2.13 | Uses sale title from metaobject as cart discount label; wired via `useCartDiscounts` hook in `app/components/cart.tsx` |
-| 10 | Seasonal snow (December) | `app/components/snow-field.tsx` (4.4K) | Missing (deferred) | **Build** | 2.16 | Canvas particle effect; date-gated December only; reduced-motion fallback; lazy-loaded on home route |
-| 11 | Session-secret-backed session | `app/lib/session.ts` (60 lines) | Unclear/unknown | **Audit** | 2.17 | `AppSession` class implementing `HydrogenSession`; uses `SESSION_SECRET` env var; determine what it protects in new stack vs. can retire |
-| 12 | Checkout domain handling | Env var + checkout redirect logic | Unclear/unknown | **Fold into env mapping** | 0.5 + 2.11 | `PUBLIC_CHECKOUT_DOMAIN` (checkout.remix.run); verify redirect behavior in experimental app; document in env var mapping (0.5) |
+| #   | Gap                              | Official Source                             | Experimental Status               | Disposition               | Phase 2 Task | Evidence                                                                                                                                                                                                                         |
+| --- | -------------------------------- | ------------------------------------------- | --------------------------------- | ------------------------- | ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 8   | Store-wide sale marquee          | `app/components/store-wide-sale.tsx` (5.9K) | Missing (deferred in parity plan) | **Build**                 | 2.13         | Queries `custom.storewide_sale` shop metafield (title/desc/end_date); renders 48px fixed marquee above header; reduced-motion fallback                                                                                           |
+| 9   | Automatic discount label in cart | Header/cart integration with sale data      | Missing (deferred)                | **Build**                 | 2.13         | Uses sale title from metaobject as cart discount label; wired via `useCartDiscounts` hook in `app/components/cart.tsx`                                                                                                           |
+| 10  | Seasonal snow (December)         | `app/components/snow-field.tsx` (4.4K)      | Missing (deferred)                | **Build**                 | 2.16         | Canvas particle effect; date-gated December only; reduced-motion fallback; lazy-loaded on home route                                                                                                                             |
+| 11  | Session-secret-backed session    | `app/lib/session.ts` (60 lines)             | Unclear/unknown                   | **Audit**                 | 2.17         | `AppSession` class implementing `HydrogenSession`; uses `SESSION_SECRET` env var; determine what it protects in new stack vs. can retire                                                                                         |
+| 12  | Checkout domain handling         | Env var + checkout redirect logic           | **Missing in experimental**       | **Fold into env mapping** | 0.5 + 2.11   | `PUBLIC_CHECKOUT_DOMAIN` (checkout.remix.run) **absent in experimental**; official app redirects checkout to custom domain; document in env var mapping (0.5); verify experimental middleware handles this or add explicit logic |
 
 ### Shared/Verification Items
 
-| # | Gap | Official Source | Experimental Status | Disposition | Phase 2 Task | Evidence |
-|---|---|---|---|---|---|---|
-| 13 | Discount code routes | `app/routes/pages/($locale).discount.$code.tsx` | Present (`app/actions/discounts.ts`) | **Verify during port** | 2.11 | `/discount/:code` and `?discount=` query handling; experimental app has controller; verify parity with official behavior |
-| 14 | Shopify standard redirects | Server entry integrations | Present per middleware | **Verify during port** | 2.11 | Checkout redirect, AJAX cart, `/admin`, MyShopify domain rewrites; experimental app uses `handleShopifyRoutes()` in `app/middleware/storefront.ts` |
-| 15 | Redirect inventory (0.2 fixtures) | Full production redirect map | Pending Phase 0.2 | **Validate against fixtures** | 2.10 + 2.11 | Snapshot-driven diff; official redirect behavior captured in 0.2 behavior snapshot; experimental app must match |
+| #   | Gap                               | Official Source                                 | Experimental Status                  | Disposition                   | Phase 2 Task | Evidence                                                                                                                                                                           |
+| --- | --------------------------------- | ----------------------------------------------- | ------------------------------------ | ----------------------------- | ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 13  | Discount code routes              | `app/routes/pages/($locale).discount.$code.tsx` | Present (`app/actions/discounts.ts`) | **Verify during port**        | 2.11         | `/discount/:code` and `?discount=` query handling; experimental app has controller; verify parity with official behavior                                                           |
+| 14  | Shopify standard redirects        | Server entry integrations                       | Present per middleware               | **Verify during port**        | 2.11         | Checkout redirect, AJAX cart, `/admin`, MyShopify domain rewrites; experimental app uses `handleShopifyRoutes()` in `app/middleware/storefront.ts`                                 |
+| 15  | Redirect inventory (0.2 fixtures) | Full production redirect map                    | **Depends on Phase 0.2 completion**  | **Validate against fixtures** | 2.10 + 2.11  | **Blocked on Phase 0.2 behavior snapshots**; snapshot-driven diff; official redirect behavior must be captured in 0.2 fixtures before Phase 2 can validate experimental app parity |
 
 ---
 
@@ -77,13 +79,14 @@ The official store implements locale path prefix infrastructure (`($locale)` rou
 ### Components Checked for Orphaning
 
 **NOT orphaned (still used):**
+
 - `app/components/ui/animated-link.tsx` — used in:
   - `app/components/navbar.tsx`
   - `app/root.tsx`
   - `app/routes/pages/($locale)._index.tsx` (home)
   - `app/routes/pages/($locale).cart.tsx`
   - **Only reference in removed route:** `app/routes/pages/components.animated-link.tsx`
-  
+
 - `app/components/ui/dropdown-menu.tsx` — used in:
   - `app/routes/pages/($locale).products.$handle.tsx` (product options)
   - **Only reference in removed route:** `app/routes/pages/components.tsx`
@@ -95,6 +98,7 @@ The official store implements locale path prefix infrastructure (`($locale)` rou
   - `app/components/mobile-menu.tsx`
 
 **Dependencies checked (all still used):**
+
 - `@radix-ui/react-dropdown-menu` — product page options
 - `@radix-ui/react-popover` — navbar cart trigger
 - `class-variance-authority` — AnimatedLink variants
@@ -147,6 +151,7 @@ app/routes/resources/
 ```
 
 **Missing from experimental:**
+
 - Locale wrapper (decision pending)
 - Subscribe route (build)
 - Cart permalink (verify middleware)
@@ -215,26 +220,28 @@ redirect.ts                                 ✓ Experimental has same-origin red
 
 ## File Count Summary
 
-| Area | Official (remix-store) | Experimental (remix-3-hydrogen) |
-|---|---|---|
-| **Total files** | ~96 audited | 64 audited |
-| **Routes** | 17 (15 after styleguide removal) | 10 route definitions |
-| **Components** | 20 | ~20 (different structure: assets/ + ui/) |
-| **Data/controllers** | 7 server files in lib/data/ | 8 controller files in actions/ + data/ |
-| **Middleware** | Integrated in server.ts | Explicit in app/middleware/ |
-| **Tests** | Vitest + Testing Library | remix test (unit + browser), Playwright e2e |
+| Area                 | Official (origin/main)           | Experimental (v3 skeleton)                  |
+| -------------------- | -------------------------------- | ------------------------------------------- |
+| **Total app/ files** | 91                               | Skeletal (minimal porting baseline)         |
+| **Routes**           | 17 (15 after styleguide removal) | 10 route definitions                        |
+| **Components**       | 20                               | ~20 (different structure: assets/ + ui/)    |
+| **Data/controllers** | 7 server files in lib/data/      | 8 controller files in actions/ + data/      |
+| **Middleware**       | Integrated in server.ts          | Explicit in app/middleware/                 |
+| **Tests**            | Vitest + Testing Library         | remix test (unit + browser), Playwright e2e |
 
 ---
 
 ## Changes Made in This PR
 
 ### Removed Files
-- `app/routes/pages/components.tsx` (97 lines)
-- `app/routes/pages/components.animated-link.tsx` (112 lines)
+
+- `app/routes/pages/components.tsx` (103 lines)
+- `app/routes/pages/components.animated-link.tsx` (142 lines)
 
 **Justification (per D6):** Internal dev-only styleguide routes; 404 in production; no longer maintained; removal does not affect production functionality.
 
 ### Orphan Check Results
+
 - **0 components removed** (all UI components still actively used)
 - **0 dependencies removed** (Radix, CVA, etc. still required by production routes)
 
@@ -245,25 +252,30 @@ redirect.ts                                 ✓ Experimental has same-origin red
 **Phase 2 must close every gap before merge to main.** This audit is the canonical tracking document.
 
 ### Build (9 items)
+
 - [ ] **2.14** Subscribe route + Admin API boundary (gaps #1, #2)
 - [ ] **2.13** Store-wide sale marquee + cart discount label (gaps #8, #9)
 - [ ] **2.16** Seasonal snow (gap #10)
 
 ### Verify During Port (3 items)
+
 - [ ] **2.11** Cart permalink `/cart/:lines` (gap #3)
 - [ ] **2.11** Catch-all `$` → storefront-redirect (gap #4)
 - [ ] **2.11** Discount code routes (gap #13)
 - [ ] **2.11** Shopify standard redirects (gap #14)
 
-### Human Decision Required (1 item)
-- [ ] **2.15** Locale/Markets disposition (gap #5) — **REQUIRES SHOPIFY ADMIN CHECK**
+### Phase 2 Blocker — Human Decision Required (1 item)
+
+- [ ] **BLOCKER:** Locale/Markets disposition (gap #5) — **MUST BE RESOLVED BEFORE PHASE 2 ROUTING WORK** — requires Shopify admin access to check CA market status
 
 ### Audit/Document (2 items)
+
 - [ ] **2.17** Session/secret audit (gap #11)
 - [ ] **0.5** Checkout domain handling (gap #12) — fold into env var mapping
 
-### Validation (per 0.2 fixtures)
-- [ ] **2.10 + 2.11** Redirect inventory diff driven to zero (gap #15)
+### Validation (depends on Phase 0.2 completion)
+
+- [ ] **2.10 + 2.11** Redirect inventory diff driven to zero (gap #15) — **BLOCKED** until Phase 0.2 behavior snapshots are complete
 
 ---
 
@@ -288,14 +300,19 @@ redirect.ts                                 ✓ Experimental has same-origin red
 ## Phase 2 Task Dependencies
 
 This audit establishes the ground truth for:
-- **2.11** Redirects/permalinks (gaps #3, #4, #13, #14, #15)
+
+- **2.11** Redirects/permalinks (gaps #3, #4, #12, #13, #14, #15) — **Gap #15 BLOCKED on Phase 0.2 completion**; gap #12 (PUBLIC_CHECKOUT_DOMAIN) absent in experimental
 - **2.13** Store-wide sale (gaps #8, #9)
 - **2.14** Subscribe + back-in-stock (gaps #1, #2)
-- **2.15** Locale disposition (gap #5) — **BLOCKS** locale-aware routes in Phase 2
+- **2.15** Locale disposition (gap #5) — **BLOCKS ALL PHASE 2 ROUTING WORK** — must be resolved before route architecture decisions
 - **2.16** Seasonal snow (gap #10)
 - **2.17** Session audit (gap #11)
 
-**Critical path:** Gap #5 (locale decision) should be resolved **before** Phase 2 routing work begins to avoid rework.
+**Critical path:**
+
+- **Gap #5 (locale) is a hard blocker** — must be resolved before Phase 2 begins to avoid rework of entire routing layer
+- **Gap #15 (redirects) depends on Phase 0.2** — behavior snapshot fixtures must be complete before redirect validation can proceed
+- **Gap #12 (checkout domain) requires env mapping** — PUBLIC_CHECKOUT_DOMAIN missing in experimental; needs Phase 0.5 documentation + Phase 2.11 implementation
 
 ---
 
