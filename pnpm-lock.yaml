@@ -24,13 +24,13 @@ importers:
         version: 1.1.23(@types/react-dom@19.2.4(@types/react@19.2.18))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       "@shopify/cli-hydrogen":
         specifier: 13.0.3
-        version: 13.0.3(@graphql-codegen/cli@5.0.7(@types/node@24.12.4)(graphql@16.14.0)(typescript@5.9.3))(@react-router/dev@7.18.2(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(react-router@7.18.2(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(typescript@5.9.3)(vite@6.4.3(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(yaml@2.9.0))(yaml@2.9.0))(@shopify/hydrogen-codegen@0.3.3(graphql@16.14.0))(@shopify/mini-oxygen@4.2.1(vite@6.4.3(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(yaml@2.9.0)))(@types/react@19.2.18)(graphql-config@5.1.6(@types/node@24.12.4)(graphql@16.14.0)(typescript@5.9.3))(graphql@16.14.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(vite@6.4.3(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(yaml@2.9.0))
+        version: 13.0.3(@graphql-codegen/cli@5.0.7(@types/node@24.12.4)(graphql@16.14.0)(typescript@5.9.3))(@react-router/dev@7.18.2(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(react-router@7.18.2(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(tsx@4.23.1)(typescript@5.9.3)(vite@6.4.3(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(tsx@4.23.1)(yaml@2.9.0))(yaml@2.9.0))(@shopify/hydrogen-codegen@0.3.3(graphql@16.14.0))(@shopify/mini-oxygen@4.2.1(vite@6.4.3(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(tsx@4.23.1)(yaml@2.9.0)))(@types/react@19.2.18)(graphql-config@5.1.6(@types/node@24.12.4)(graphql@16.14.0)(typescript@5.9.3))(graphql@16.14.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(vite@6.4.3(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(tsx@4.23.1)(yaml@2.9.0))
       "@shopify/hydrogen":
         specifier: 2026.4.4
-        version: 2026.4.4(@react-router/dev@7.18.2(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(react-router@7.18.2(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(typescript@5.9.3)(vite@6.4.3(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(yaml@2.9.0))(yaml@2.9.0))(react-dom@19.2.8(react@19.2.8))(react-router@7.18.2(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(react@19.2.8)(three@0.182.0)(vite@6.4.3(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(yaml@2.9.0))
+        version: 2026.4.4(@react-router/dev@7.18.2(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(react-router@7.18.2(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(tsx@4.23.1)(typescript@5.9.3)(vite@6.4.3(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(tsx@4.23.1)(yaml@2.9.0))(yaml@2.9.0))(react-dom@19.2.8(react@19.2.8))(react-router@7.18.2(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(react@19.2.8)(three@0.182.0)(vite@6.4.3(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(tsx@4.23.1)(yaml@2.9.0))
       "@tailwindcss/vite":
         specifier: 4.3.3
-        version: 4.3.3(vite@6.4.3(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(yaml@2.9.0))
+        version: 4.3.3(vite@6.4.3(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(tsx@4.23.1)(yaml@2.9.0))
       class-variance-authority:
         specifier: 0.7.1
         version: 0.7.1
@@ -82,10 +82,10 @@ importers:
         version: 5.0.7(@types/node@24.12.4)(graphql@16.14.0)(typescript@5.9.3)
       "@react-router/dev":
         specifier: 7.18.2
-        version: 7.18.2(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(react-router@7.18.2(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(typescript@5.9.3)(vite@6.4.3(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(yaml@2.9.0))(yaml@2.9.0)
+        version: 7.18.2(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(react-router@7.18.2(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(tsx@4.23.1)(typescript@5.9.3)(vite@6.4.3(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(tsx@4.23.1)(yaml@2.9.0))(yaml@2.9.0)
       "@react-router/fs-routes":
         specifier: 7.18.2
-        version: 7.18.2(@react-router/dev@7.18.2(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(react-router@7.18.2(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(typescript@5.9.3)(vite@6.4.3(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(yaml@2.9.0))(yaml@2.9.0))(typescript@5.9.3)
+        version: 7.18.2(@react-router/dev@7.18.2(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(react-router@7.18.2(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(tsx@4.23.1)(typescript@5.9.3)(vite@6.4.3(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(tsx@4.23.1)(yaml@2.9.0))(yaml@2.9.0))(typescript@5.9.3)
       "@shopify/cli":
         specifier: 4.5.2
         version: 4.5.2
@@ -94,7 +94,7 @@ importers:
         version: 0.3.3(graphql@16.14.0)
       "@shopify/mini-oxygen":
         specifier: 4.2.1
-        version: 4.2.1(vite@6.4.3(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(yaml@2.9.0))
+        version: 4.2.1(vite@6.4.3(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(tsx@4.23.1)(yaml@2.9.0))
       "@shopify/oxygen-workers-types":
         specifier: 4.2.0
         version: 4.2.0
@@ -176,6 +176,9 @@ importers:
       tailwindcss:
         specifier: 4.3.3
         version: 4.3.3
+      tsx:
+        specifier: 4.23.1
+        version: 4.23.1
       tw-animate-css:
         specifier: 1.4.0
         version: 1.4.0
@@ -184,16 +187,16 @@ importers:
         version: 5.9.3
       vite:
         specifier: 6.4.3
-        version: 6.4.3(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(yaml@2.9.0)
+        version: 6.4.3(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(tsx@4.23.1)(yaml@2.9.0)
       vite-plugin-icons-spritesheet:
         specifier: 3.1.0
-        version: 3.1.0(vite@6.4.3(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(yaml@2.9.0))
+        version: 3.1.0(vite@6.4.3(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(tsx@4.23.1)(yaml@2.9.0))
       vite-tsconfig-paths:
         specifier: 5.1.4
-        version: 5.1.4(typescript@5.9.3)(vite@6.4.3(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(yaml@2.9.0))
+        version: 5.1.4(typescript@5.9.3)(vite@6.4.3(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(tsx@4.23.1)(yaml@2.9.0))
       vitest:
         specifier: 4.1.10
-        version: 4.1.10(@opentelemetry/api@1.9.0)(@types/node@24.12.4)(@vitest/coverage-v8@4.1.10)(@vitest/ui@4.1.10)(happy-dom@20.11.1)(vite@6.4.3(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(yaml@2.9.0))
+        version: 4.1.10(@opentelemetry/api@1.9.0)(@types/node@24.12.4)(@vitest/coverage-v8@4.1.10)(@vitest/ui@4.1.10)(happy-dom@20.11.1)(vite@6.4.3(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(tsx@4.23.1)(yaml@2.9.0))
 
 packages:
   "@adobe/css-tools@4.5.0":
@@ -9551,6 +9554,14 @@ packages:
         integrity: sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w==,
       }
 
+  tsx@4.23.1:
+    resolution:
+      {
+        integrity: sha512-GQHnkIfxyx1wYCOS/wonik5MVRZU9hi1TEZmzGZSCJB1y9YgoZ8H6itNE/u4suE+yLmOzuE4E5S4TZ/ZX2wcWQ==,
+      }
+    engines: { node: ">=18.0.0" }
+    hasBin: true
+
   tw-animate-css@1.4.0:
     resolution:
       {
@@ -11949,7 +11960,7 @@ snapshots:
 
   "@radix-ui/rect@1.1.3": {}
 
-  "@react-router/dev@7.18.2(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(react-router@7.18.2(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(typescript@5.9.3)(vite@6.4.3(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(yaml@2.9.0))(yaml@2.9.0)":
+  "@react-router/dev@7.18.2(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(react-router@7.18.2(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(tsx@4.23.1)(typescript@5.9.3)(vite@6.4.3(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(tsx@4.23.1)(yaml@2.9.0))(yaml@2.9.0)":
     dependencies:
       "@babel/core": 7.29.6
       "@babel/generator": 7.29.1
@@ -11979,8 +11990,8 @@ snapshots:
       semver: 7.8.4
       tinyglobby: 0.2.17
       valibot: 1.4.2(typescript@5.9.3)
-      vite: 6.4.3(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(yaml@2.9.0)
-      vite-node: 3.2.4(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(yaml@2.9.0)
+      vite: 6.4.3(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(tsx@4.23.1)(yaml@2.9.0)
+      vite-node: 3.2.4(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(tsx@4.23.1)(yaml@2.9.0)
     optionalDependencies:
       typescript: 5.9.3
     transitivePeerDependencies:
@@ -11998,9 +12009,9 @@ snapshots:
       - tsx
       - yaml
 
-  "@react-router/fs-routes@7.18.2(@react-router/dev@7.18.2(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(react-router@7.18.2(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(typescript@5.9.3)(vite@6.4.3(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(yaml@2.9.0))(yaml@2.9.0))(typescript@5.9.3)":
+  "@react-router/fs-routes@7.18.2(@react-router/dev@7.18.2(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(react-router@7.18.2(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(tsx@4.23.1)(typescript@5.9.3)(vite@6.4.3(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(tsx@4.23.1)(yaml@2.9.0))(yaml@2.9.0))(typescript@5.9.3)":
     dependencies:
-      "@react-router/dev": 7.18.2(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(react-router@7.18.2(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(typescript@5.9.3)(vite@6.4.3(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(yaml@2.9.0))(yaml@2.9.0)
+      "@react-router/dev": 7.18.2(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(react-router@7.18.2(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(tsx@4.23.1)(typescript@5.9.3)(vite@6.4.3(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(tsx@4.23.1)(yaml@2.9.0))(yaml@2.9.0)
       minimatch: 9.0.9
     optionalDependencies:
       typescript: 5.9.3
@@ -12093,7 +12104,7 @@ snapshots:
 
   "@rtsao/scc@1.1.0": {}
 
-  "@shopify/cli-hydrogen@13.0.3(@graphql-codegen/cli@5.0.7(@types/node@24.12.4)(graphql@16.14.0)(typescript@5.9.3))(@react-router/dev@7.18.2(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(react-router@7.18.2(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(typescript@5.9.3)(vite@6.4.3(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(yaml@2.9.0))(yaml@2.9.0))(@shopify/hydrogen-codegen@0.3.3(graphql@16.14.0))(@shopify/mini-oxygen@4.2.1(vite@6.4.3(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(yaml@2.9.0)))(@types/react@19.2.18)(graphql-config@5.1.6(@types/node@24.12.4)(graphql@16.14.0)(typescript@5.9.3))(graphql@16.14.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(vite@6.4.3(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(yaml@2.9.0))":
+  "@shopify/cli-hydrogen@13.0.3(@graphql-codegen/cli@5.0.7(@types/node@24.12.4)(graphql@16.14.0)(typescript@5.9.3))(@react-router/dev@7.18.2(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(react-router@7.18.2(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(tsx@4.23.1)(typescript@5.9.3)(vite@6.4.3(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(tsx@4.23.1)(yaml@2.9.0))(yaml@2.9.0))(@shopify/hydrogen-codegen@0.3.3(graphql@16.14.0))(@shopify/mini-oxygen@4.2.1(vite@6.4.3(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(tsx@4.23.1)(yaml@2.9.0)))(@types/react@19.2.18)(graphql-config@5.1.6(@types/node@24.12.4)(graphql@16.14.0)(typescript@5.9.3))(graphql@16.14.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(vite@6.4.3(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(tsx@4.23.1)(yaml@2.9.0))":
     dependencies:
       "@ast-grep/napi": 0.34.1
       "@oclif/core": 3.26.5
@@ -12118,11 +12129,11 @@ snapshots:
       use-resize-observer: 9.1.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
     optionalDependencies:
       "@graphql-codegen/cli": 5.0.7(@types/node@24.12.4)(graphql@16.14.0)(typescript@5.9.3)
-      "@react-router/dev": 7.18.2(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(react-router@7.18.2(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(typescript@5.9.3)(vite@6.4.3(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(yaml@2.9.0))(yaml@2.9.0)
+      "@react-router/dev": 7.18.2(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(react-router@7.18.2(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(tsx@4.23.1)(typescript@5.9.3)(vite@6.4.3(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(tsx@4.23.1)(yaml@2.9.0))(yaml@2.9.0)
       "@shopify/hydrogen-codegen": 0.3.3(graphql@16.14.0)
-      "@shopify/mini-oxygen": 4.2.1(vite@6.4.3(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(yaml@2.9.0))
+      "@shopify/mini-oxygen": 4.2.1(vite@6.4.3(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(tsx@4.23.1)(yaml@2.9.0))
       graphql-config: 5.1.6(@types/node@24.12.4)(graphql@16.14.0)(typescript@5.9.3)
-      vite: 6.4.3(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(yaml@2.9.0)
+      vite: 6.4.3(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(tsx@4.23.1)(yaml@2.9.0)
     transitivePeerDependencies:
       - "@types/react"
       - bufferutil
@@ -12223,7 +12234,7 @@ snapshots:
       - graphql
       - graphql-sock
 
-  "@shopify/hydrogen-react@2026.4.3(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(three@0.182.0)(vite@6.4.3(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(yaml@2.9.0))":
+  "@shopify/hydrogen-react@2026.4.3(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(three@0.182.0)(vite@6.4.3(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(tsx@4.23.1)(yaml@2.9.0))":
     dependencies:
       "@google/model-viewer": 4.3.1(three@0.182.0)
       "@xstate/fsm": 2.0.0
@@ -12232,16 +12243,16 @@ snapshots:
       react: 19.2.8
       react-dom: 19.2.8(react@19.2.8)
       type-fest: 4.41.0
-      vite: 6.4.3(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(yaml@2.9.0)
+      vite: 6.4.3(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(tsx@4.23.1)(yaml@2.9.0)
       worktop: 0.7.3
     transitivePeerDependencies:
       - three
 
-  "@shopify/hydrogen@2026.4.4(@react-router/dev@7.18.2(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(react-router@7.18.2(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(typescript@5.9.3)(vite@6.4.3(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(yaml@2.9.0))(yaml@2.9.0))(react-dom@19.2.8(react@19.2.8))(react-router@7.18.2(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(react@19.2.8)(three@0.182.0)(vite@6.4.3(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(yaml@2.9.0))":
+  "@shopify/hydrogen@2026.4.4(@react-router/dev@7.18.2(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(react-router@7.18.2(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(tsx@4.23.1)(typescript@5.9.3)(vite@6.4.3(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(tsx@4.23.1)(yaml@2.9.0))(yaml@2.9.0))(react-dom@19.2.8(react@19.2.8))(react-router@7.18.2(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(react@19.2.8)(three@0.182.0)(vite@6.4.3(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(tsx@4.23.1)(yaml@2.9.0))":
     dependencies:
-      "@react-router/dev": 7.18.2(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(react-router@7.18.2(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(typescript@5.9.3)(vite@6.4.3(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(yaml@2.9.0))(yaml@2.9.0)
+      "@react-router/dev": 7.18.2(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(react-router@7.18.2(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(tsx@4.23.1)(typescript@5.9.3)(vite@6.4.3(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(tsx@4.23.1)(yaml@2.9.0))(yaml@2.9.0)
       "@shopify/graphql-client": 1.4.1
-      "@shopify/hydrogen-react": 2026.4.3(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(three@0.182.0)(vite@6.4.3(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(yaml@2.9.0))
+      "@shopify/hydrogen-react": 2026.4.3(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(three@0.182.0)(vite@6.4.3(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(tsx@4.23.1)(yaml@2.9.0))
       content-security-policy-builder: 2.3.0
       flame-chart-js: 2.3.1
       isbot: 5.2.1
@@ -12252,12 +12263,12 @@ snapshots:
       use-resize-observer: 9.1.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       worktop: 0.7.3
     optionalDependencies:
-      vite: 6.4.3(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(yaml@2.9.0)
+      vite: 6.4.3(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(tsx@4.23.1)(yaml@2.9.0)
     transitivePeerDependencies:
       - react-dom
       - three
 
-  "@shopify/mini-oxygen@4.2.1(vite@6.4.3(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(yaml@2.9.0))":
+  "@shopify/mini-oxygen@4.2.1(vite@6.4.3(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(tsx@4.23.1)(yaml@2.9.0))":
     dependencies:
       "@mjackson/node-fetch-server": 0.7.0
       body-parser: 1.20.4
@@ -12271,7 +12282,7 @@ snapshots:
       undici: 7.29.0
       ws: 8.21.1
     optionalDependencies:
-      vite: 6.4.3(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(yaml@2.9.0)
+      vite: 6.4.3(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(tsx@4.23.1)(yaml@2.9.0)
     transitivePeerDependencies:
       - bufferutil
       - supports-color
@@ -12373,12 +12384,12 @@ snapshots:
       "@tailwindcss/oxide-win32-arm64-msvc": 4.3.3
       "@tailwindcss/oxide-win32-x64-msvc": 4.3.3
 
-  "@tailwindcss/vite@4.3.3(vite@6.4.3(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(yaml@2.9.0))":
+  "@tailwindcss/vite@4.3.3(vite@6.4.3(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(tsx@4.23.1)(yaml@2.9.0))":
     dependencies:
       "@tailwindcss/node": 4.3.3
       "@tailwindcss/oxide": 4.3.3
       tailwindcss: 4.3.3
-      vite: 6.4.3(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(yaml@2.9.0)
+      vite: 6.4.3(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(tsx@4.23.1)(yaml@2.9.0)
 
   "@testing-library/dom@10.4.1":
     dependencies:
@@ -12661,7 +12672,7 @@ snapshots:
       obug: 2.1.4
       std-env: 4.2.0
       tinyrainbow: 3.1.1
-      vitest: 4.1.10(@opentelemetry/api@1.9.0)(@types/node@24.12.4)(@vitest/coverage-v8@4.1.10)(@vitest/ui@4.1.10)(happy-dom@20.11.1)(vite@6.4.3(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(yaml@2.9.0))
+      vitest: 4.1.10(@opentelemetry/api@1.9.0)(@types/node@24.12.4)(@vitest/coverage-v8@4.1.10)(@vitest/ui@4.1.10)(happy-dom@20.11.1)(vite@6.4.3(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(tsx@4.23.1)(yaml@2.9.0))
 
   "@vitest/expect@4.1.10":
     dependencies:
@@ -12672,13 +12683,13 @@ snapshots:
       chai: 6.2.2
       tinyrainbow: 3.1.1
 
-  "@vitest/mocker@4.1.10(vite@6.4.3(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(yaml@2.9.0))":
+  "@vitest/mocker@4.1.10(vite@6.4.3(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(tsx@4.23.1)(yaml@2.9.0))":
     dependencies:
       "@vitest/spy": 4.1.10
       estree-walker: 3.0.3
       magic-string: 0.30.21
     optionalDependencies:
-      vite: 6.4.3(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(yaml@2.9.0)
+      vite: 6.4.3(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(tsx@4.23.1)(yaml@2.9.0)
 
   "@vitest/pretty-format@4.1.10":
     dependencies:
@@ -12707,7 +12718,7 @@ snapshots:
       sirv: 3.0.2
       tinyglobby: 0.2.17
       tinyrainbow: 3.1.1
-      vitest: 4.1.10(@opentelemetry/api@1.9.0)(@types/node@24.12.4)(@vitest/coverage-v8@4.1.10)(@vitest/ui@4.1.10)(happy-dom@20.11.1)(vite@6.4.3(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(yaml@2.9.0))
+      vitest: 4.1.10(@opentelemetry/api@1.9.0)(@types/node@24.12.4)(@vitest/coverage-v8@4.1.10)(@vitest/ui@4.1.10)(happy-dom@20.11.1)(vite@6.4.3(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(tsx@4.23.1)(yaml@2.9.0))
 
   "@vitest/utils@4.1.10":
     dependencies:
@@ -16197,6 +16208,12 @@ snapshots:
 
   tslib@2.8.1: {}
 
+  tsx@4.23.1:
+    dependencies:
+      esbuild: 0.28.1
+    optionalDependencies:
+      fsevents: 2.3.3
+
   tw-animate-css@1.4.0: {}
 
   type-check@0.4.0:
@@ -16358,13 +16375,13 @@ snapshots:
     optionalDependencies:
       typescript: 5.9.3
 
-  vite-node@3.2.4(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(yaml@2.9.0):
+  vite-node@3.2.4(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(tsx@4.23.1)(yaml@2.9.0):
     dependencies:
       cac: 6.7.14
       debug: 4.4.3(supports-color@8.1.1)
       es-module-lexer: 1.7.0
       pathe: 2.0.3
-      vite: 6.4.3(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(yaml@2.9.0)
+      vite: 6.4.3(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(tsx@4.23.1)(yaml@2.9.0)
     transitivePeerDependencies:
       - "@types/node"
       - jiti
@@ -16379,26 +16396,26 @@ snapshots:
       - tsx
       - yaml
 
-  vite-plugin-icons-spritesheet@3.1.0(vite@6.4.3(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(yaml@2.9.0)):
+  vite-plugin-icons-spritesheet@3.1.0(vite@6.4.3(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(tsx@4.23.1)(yaml@2.9.0)):
     dependencies:
       chalk: 5.6.2
       glob: 11.1.0
       node-html-parser: 7.1.0
       tinyexec: 0.3.2
-      vite: 6.4.3(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(yaml@2.9.0)
+      vite: 6.4.3(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(tsx@4.23.1)(yaml@2.9.0)
 
-  vite-tsconfig-paths@5.1.4(typescript@5.9.3)(vite@6.4.3(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(yaml@2.9.0)):
+  vite-tsconfig-paths@5.1.4(typescript@5.9.3)(vite@6.4.3(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(tsx@4.23.1)(yaml@2.9.0)):
     dependencies:
       debug: 4.4.3(supports-color@8.1.1)
       globrex: 0.1.2
       tsconfck: 3.1.6(typescript@5.9.3)
     optionalDependencies:
-      vite: 6.4.3(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(yaml@2.9.0)
+      vite: 6.4.3(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(tsx@4.23.1)(yaml@2.9.0)
     transitivePeerDependencies:
       - supports-color
       - typescript
 
-  vite@6.4.3(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(yaml@2.9.0):
+  vite@6.4.3(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(tsx@4.23.1)(yaml@2.9.0):
     dependencies:
       esbuild: 0.25.12
       fdir: 6.5.0(picomatch@4.0.5)
@@ -16411,12 +16428,13 @@ snapshots:
       fsevents: 2.3.3
       jiti: 2.7.0
       lightningcss: 1.32.0
+      tsx: 4.23.1
       yaml: 2.9.0
 
-  vitest@4.1.10(@opentelemetry/api@1.9.0)(@types/node@24.12.4)(@vitest/coverage-v8@4.1.10)(@vitest/ui@4.1.10)(happy-dom@20.11.1)(vite@6.4.3(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(yaml@2.9.0)):
+  vitest@4.1.10(@opentelemetry/api@1.9.0)(@types/node@24.12.4)(@vitest/coverage-v8@4.1.10)(@vitest/ui@4.1.10)(happy-dom@20.11.1)(vite@6.4.3(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(tsx@4.23.1)(yaml@2.9.0)):
     dependencies:
       "@vitest/expect": 4.1.10
-      "@vitest/mocker": 4.1.10(vite@6.4.3(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(yaml@2.9.0))
+      "@vitest/mocker": 4.1.10(vite@6.4.3(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(tsx@4.23.1)(yaml@2.9.0))
       "@vitest/pretty-format": 4.1.10
       "@vitest/runner": 4.1.10
       "@vitest/snapshot": 4.1.10
@@ -16433,7 +16451,7 @@ snapshots:
       tinyexec: 1.2.4
       tinyglobby: 0.2.17
       tinyrainbow: 3.1.1
-      vite: 6.4.3(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(yaml@2.9.0)
+      vite: 6.4.3(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(tsx@4.23.1)(yaml@2.9.0)
       why-is-node-running: 2.3.0
     optionalDependencies:
       "@opentelemetry/api": 1.9.0

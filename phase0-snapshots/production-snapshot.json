@@ -1,0 +1,470 @@
+{
+  "capturedAt": "2026-08-07T21:11:11.061Z",
+  "baseUrl": "https://shop.remix.run",
+  "robots": "User-agent: *\nDisallow: /admin\nDisallow: /cart\nDisallow: /orders\nDisallow: /checkouts/\nDisallow: /checkout\nDisallow: /65541275819/checkouts\nDisallow: /65541275819/orders\nDisallow: /carts\nDisallow: /account\nDisallow: /collections/*sort_by*\nDisallow: /*/collections/*sort_by*\nDisallow: /collections/*+*\nDisallow: /collections/*%2B*\nDisallow: /collections/*%2b*\nDisallow: /*/collections/*+*\nDisallow: /*/collections/*%2B*\nDisallow: /*/collections/*%2b*\nDisallow: */collections/*filter*&*filter*\nDisallow: /blogs/*+*\nDisallow: /blogs/*%2B*\nDisallow: /blogs/*%2b*\nDisallow: /*/blogs/*+*\nDisallow: /*/blogs/*%2B*\nDisallow: /*/blogs/*%2b*\nDisallow: /*?*oseid=*\nDisallow: /*preview_theme_id*\nDisallow: /*preview_script_id*\nDisallow: /policies/\nDisallow: /*/*?*ls=*&ls=*\nDisallow: /*/*?*ls%3D*%3Fls%3D*\nDisallow: /*/*?*ls%3d*%3fls%3d*\nDisallow: /search\nAllow: /search/\nDisallow: /search/?*\nDisallow: /apple-app-site-association\nDisallow: /.well-known/shopify/monorail\nSitemap: https://shop.remix.run/sitemap.xml\n\n# Google adsbot ignores robots.txt unless specifically named!\nUser-agent: adsbot-google\nDisallow: /checkouts/\nDisallow: /checkout\nDisallow: /carts\nDisallow: /orders\nDisallow: /65541275819/checkouts\nDisallow: /65541275819/orders\nDisallow: /*?*oseid=*\nDisallow: /*preview_theme_id*\nDisallow: /*preview_script_id*\n\nUser-agent: Nutch\nDisallow: /\n\nUser-agent: AhrefsBot\nCrawl-delay: 10\nDisallow: /admin\nDisallow: /cart\nDisallow: /orders\nDisallow: /checkouts/\nDisallow: /checkout\nDisallow: /65541275819/checkouts\nDisallow: /65541275819/orders\nDisallow: /carts\nDisallow: /account\nDisallow: /collections/*sort_by*\nDisallow: /*/collections/*sort_by*\nDisallow: /collections/*+*\nDisallow: /collections/*%2B*\nDisallow: /collections/*%2b*\nDisallow: /*/collections/*+*\nDisallow: /*/collections/*%2B*\nDisallow: /*/collections/*%2b*\nDisallow: */collections/*filter*&*filter*\nDisallow: /blogs/*+*\nDisallow: /blogs/*%2B*\nDisallow: /blogs/*%2b*\nDisallow: /*/blogs/*+*\nDisallow: /*/blogs/*%2B*\nDisallow: /*/blogs/*%2b*\nDisallow: /*?*oseid=*\nDisallow: /*preview_theme_id*\nDisallow: /*preview_script_id*\nDisallow: /policies/\nDisallow: /*/*?*ls=*&ls=*\nDisallow: /*/*?*ls%3D*%3Fls%3D*\nDisallow: /*/*?*ls%3d*%3fls%3d*\nDisallow: /search\nAllow: /search/\nDisallow: /search/?*\nDisallow: /apple-app-site-association\nDisallow: /.well-known/shopify/monorail\nSitemap: https://shop.remix.run/sitemap.xml\n\nUser-agent: AhrefsSiteAudit\nCrawl-delay: 10\nDisallow: /admin\nDisallow: /cart\nDisallow: /orders\nDisallow: /checkouts/\nDisallow: /checkout\nDisallow: /65541275819/checkouts\nDisallow: /65541275819/orders\nDisallow: /carts\nDisallow: /account\nDisallow: /collections/*sort_by*\nDisallow: /*/collections/*sort_by*\nDisallow: /collections/*+*\nDisallow: /collections/*%2B*\nDisallow: /collections/*%2b*\nDisallow: /*/collections/*+*\nDisallow: /*/collections/*%2B*\nDisallow: /*/collections/*%2b*\nDisallow: */collections/*filter*&*filter*\nDisallow: /blogs/*+*\nDisallow: /blogs/*%2B*\nDisallow: /blogs/*%2b*\nDisallow: /*/blogs/*+*\nDisallow: /*/blogs/*%2B*\nDisallow: /*/blogs/*%2b*\nDisallow: /*?*oseid=*\nDisallow: /*preview_theme_id*\nDisallow: /*preview_script_id*\nDisallow: /policies/\nDisallow: /*/*?*ls=*&ls=*\nDisallow: /*/*?*ls%3D*%3Fls%3D*\nDisallow: /*/*?*ls%3d*%3fls%3d*\nDisallow: /search\nAllow: /search/\nDisallow: /search/?*\nDisallow: /apple-app-site-association\nDisallow: /.well-known/shopify/monorail\nSitemap: https://shop.remix.run/sitemap.xml\n\nUser-agent: MJ12bot\nCrawl-Delay: 10\n\nUser-agent: Pinterest\nCrawl-delay: 1",
+  "sitemapIndex": {
+    "url": "https://shop.remix.run/sitemap.xml",
+    "sitemaps": [
+      {
+        "loc": "https://shop.remix.run/sitemap/products/1.xml"
+      },
+      {
+        "loc": "https://shop.remix.run/sitemap/pages/1.xml"
+      },
+      {
+        "loc": "https://shop.remix.run/sitemap/collections/1.xml"
+      },
+      {
+        "loc": "https://shop.remix.run/sitemap/blogs/1.xml"
+      }
+    ]
+  },
+  "sitemaps": {
+    "products/1": [
+      {
+        "loc": "https://shop.remix.run/products/load-in-parallel-t-shirt-black",
+        "lastmod": "2026-08-07T21:06:39Z",
+        "changefreq": "weekly"
+      },
+      {
+        "loc": "https://shop.remix.run/products/load-in-parallel-t-shirt-white",
+        "lastmod": "2026-08-07T21:06:39Z",
+        "changefreq": "weekly"
+      },
+      {
+        "loc": "https://shop.remix.run/products/racing-jacket",
+        "lastmod": "2026-08-07T21:06:39Z",
+        "changefreq": "weekly"
+      },
+      {
+        "loc": "https://shop.remix.run/products/remix-tee",
+        "lastmod": "2026-08-07T21:06:39Z",
+        "changefreq": "weekly"
+      },
+      {
+        "loc": "https://shop.remix.run/products/racing-trucker-hat",
+        "lastmod": "2026-08-07T21:06:39Z",
+        "changefreq": "weekly"
+      },
+      {
+        "loc": "https://shop.remix.run/products/remix-better-web-hat",
+        "lastmod": "2026-08-07T21:06:39Z",
+        "changefreq": "weekly"
+      },
+      {
+        "loc": "https://shop.remix.run/products/remix-engineering-crewneck",
+        "lastmod": "2026-08-07T21:06:39Z",
+        "changefreq": "weekly"
+      },
+      {
+        "loc": "https://shop.remix.run/products/remix-engineering-crewneck-misprint",
+        "lastmod": "2026-08-07T21:06:39Z",
+        "changefreq": "weekly"
+      },
+      {
+        "loc": "https://shop.remix.run/products/remix-engineering-hat",
+        "lastmod": "2026-08-07T21:06:39Z",
+        "changefreq": "weekly"
+      },
+      {
+        "loc": "https://shop.remix.run/products/remix-engineering-hoodie",
+        "lastmod": "2026-08-07T21:06:39Z",
+        "changefreq": "weekly"
+      },
+      {
+        "loc": "https://shop.remix.run/products/remix-engineering-hoodie-grey",
+        "lastmod": "2026-08-07T21:06:39Z",
+        "changefreq": "weekly"
+      },
+      {
+        "loc": "https://shop.remix.run/products/remix-engineering-t-shirt",
+        "lastmod": "2026-08-07T21:06:39Z",
+        "changefreq": "weekly"
+      },
+      {
+        "loc": "https://shop.remix.run/products/remix-guitar-pick-bag-of-6",
+        "lastmod": "2026-08-07T21:06:39Z",
+        "changefreq": "weekly"
+      },
+      {
+        "loc": "https://shop.remix.run/products/remix-highlighter",
+        "lastmod": "2026-08-07T21:06:39Z",
+        "changefreq": "weekly"
+      },
+      {
+        "loc": "https://shop.remix.run/products/remix-notebook",
+        "lastmod": "2026-08-07T21:06:39Z",
+        "changefreq": "weekly"
+      },
+      {
+        "loc": "https://shop.remix.run/products/remix-sticker-pack-1",
+        "lastmod": "2026-08-07T21:06:39Z",
+        "changefreq": "weekly"
+      },
+      {
+        "loc": "https://shop.remix.run/products/remix-sticker-pack-no-2",
+        "lastmod": "2026-08-07T21:06:39Z",
+        "changefreq": "weekly"
+      },
+      {
+        "loc": "https://shop.remix.run/products/run-club-hoodie",
+        "lastmod": "2026-08-07T21:06:39Z",
+        "changefreq": "weekly"
+      },
+      {
+        "loc": "https://shop.remix.run/products/run-club-hoodie-grey",
+        "lastmod": "2026-08-07T21:06:39Z",
+        "changefreq": "weekly"
+      },
+      {
+        "loc": "https://shop.remix.run/products/run-club-long-sleeve-shirt-blue",
+        "lastmod": "2026-08-07T21:06:39Z",
+        "changefreq": "weekly"
+      },
+      {
+        "loc": "https://shop.remix.run/products/run-club-long-sleeve-shirt-white",
+        "lastmod": "2026-08-07T21:06:39Z",
+        "changefreq": "weekly"
+      },
+      {
+        "loc": "https://shop.remix.run/products/run-club-t-shirt",
+        "lastmod": "2026-08-07T21:06:39Z",
+        "changefreq": "weekly"
+      },
+      {
+        "loc": "https://shop.remix.run/products/run-club-water-bottle",
+        "lastmod": "2026-08-07T21:06:39Z",
+        "changefreq": "weekly"
+      },
+      {
+        "loc": "https://shop.remix.run/products/university-run-club-crewneck-athletic-heather",
+        "lastmod": "2026-08-07T21:06:39Z",
+        "changefreq": "weekly"
+      },
+      {
+        "loc": "https://shop.remix.run/products/university-run-club-sock-forest-green",
+        "lastmod": "2026-08-07T21:06:39Z",
+        "changefreq": "weekly"
+      },
+      {
+        "loc": "https://shop.remix.run/products/vintage-run-club-t-shirt-pine-green",
+        "lastmod": "2026-08-07T21:06:39Z",
+        "changefreq": "weekly"
+      }
+    ],
+    "pages/1": [
+      {
+        "loc": "https://shop.remix.run/pages/contact",
+        "lastmod": "2025-05-18T18:33:15Z",
+        "changefreq": "weekly"
+      },
+      {
+        "loc": "https://shop.remix.run/pages/home",
+        "lastmod": "2024-08-19T16:13:15Z",
+        "changefreq": "weekly"
+      }
+    ],
+    "collections/1": [
+      {
+        "loc": "https://shop.remix.run/collections/all",
+        "lastmod": "2026-08-04T14:09:17Z",
+        "changefreq": "weekly"
+      },
+      {
+        "loc": "https://shop.remix.run/collections/apparel",
+        "lastmod": "2026-08-04T14:09:17Z",
+        "changefreq": "weekly"
+      },
+      {
+        "loc": "https://shop.remix.run/collections/home-office",
+        "lastmod": "2026-07-31T21:18:59Z",
+        "changefreq": "weekly"
+      },
+      {
+        "loc": "https://shop.remix.run/collections/t-shirts",
+        "lastmod": "2026-08-04T14:09:17Z",
+        "changefreq": "weekly"
+      },
+      {
+        "loc": "https://shop.remix.run/collections/hoodies-sweaters",
+        "lastmod": "2026-07-31T21:18:59Z",
+        "changefreq": "weekly"
+      },
+      {
+        "loc": "https://shop.remix.run/collections/remix-racing",
+        "lastmod": "2026-08-04T14:09:17Z",
+        "changefreq": "weekly"
+      }
+    ],
+    "blogs/1": [
+      {
+        "loc": "https://shop.remix.run/blogs/news",
+        "lastmod": "2024-06-17T15:41:43Z",
+        "changefreq": "weekly"
+      }
+    ]
+  },
+  "routes": {
+    "home": {
+      "url": "https://shop.remix.run/",
+      "title": "Home | The Remix Store",
+      "meta": {
+        "viewport": "width=device-width,initial-scale=1",
+        "description": "Soft wear for engineers of all kinds",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Home",
+        "twitter:description": "Soft wear for engineers of all kinds",
+        "twitter:image": "https://cdn.shopify.com/oxygen-v2/34032/23847/49475/4167286/assets/social-main-CImsPPV8.jpg"
+      },
+      "og": {
+        "type": "website",
+        "title": "Home",
+        "description": "Soft wear for engineers of all kinds",
+        "image": "https://cdn.shopify.com/oxygen-v2/34032/23847/49475/4167286/assets/social-main-CImsPPV8.jpg",
+        "url": "https://shop.remix.run",
+        "site_name": "The Remix Store"
+      },
+      "twitter": {
+        "card": "summary_large_image",
+        "title": "Home",
+        "description": "Soft wear for engineers of all kinds",
+        "image": "https://cdn.shopify.com/oxygen-v2/34032/23847/49475/4167286/assets/social-main-CImsPPV8.jpg"
+      },
+      "canonical": null,
+      "alternates": []
+    },
+    "collections": {
+      "url": "https://shop.remix.run/collections",
+      "title": "Shop All | The Remix Store",
+      "meta": {
+        "viewport": "width=device-width,initial-scale=1",
+        "description": "Soft wear for engineers of all kinds",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Shop All",
+        "twitter:description": "Soft wear for engineers of all kinds",
+        "twitter:image": "https://cdn.shopify.com/oxygen-v2/34032/23847/49475/4167286/assets/social-collections-D7jPtDp_.jpg"
+      },
+      "og": {
+        "type": "website",
+        "title": "Shop All",
+        "description": "Soft wear for engineers of all kinds",
+        "image": "https://cdn.shopify.com/oxygen-v2/34032/23847/49475/4167286/assets/social-collections-D7jPtDp_.jpg",
+        "url": "https://shop.remix.run",
+        "site_name": "The Remix Store"
+      },
+      "twitter": {
+        "card": "summary_large_image",
+        "title": "Shop All",
+        "description": "Soft wear for engineers of all kinds",
+        "image": "https://cdn.shopify.com/oxygen-v2/34032/23847/49475/4167286/assets/social-collections-D7jPtDp_.jpg"
+      },
+      "canonical": null,
+      "alternates": []
+    },
+    "product": {
+      "url": "https://shop.remix.run/products/remix-racing-jacket",
+      "title": "Not Found",
+      "meta": {
+        "viewport": "width=device-width,initial-scale=1"
+      },
+      "og": {},
+      "twitter": {},
+      "canonical": null,
+      "alternates": []
+    },
+    "collection": {
+      "url": "https://shop.remix.run/collections/apparel",
+      "title": "Apparel | The Remix Store",
+      "meta": {
+        "viewport": "width=device-width,initial-scale=1",
+        "description": "Soft wear for engineers of all kinds",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Apparel",
+        "twitter:description": "Soft wear for engineers of all kinds",
+        "twitter:image": "https://cdn.shopify.com/oxygen-v2/34032/23847/49475/4167286/assets/social-collections-D7jPtDp_.jpg"
+      },
+      "og": {
+        "type": "website",
+        "title": "Apparel",
+        "description": "Soft wear for engineers of all kinds",
+        "image": "https://cdn.shopify.com/oxygen-v2/34032/23847/49475/4167286/assets/social-collections-D7jPtDp_.jpg",
+        "url": "https://shop.remix.run",
+        "site_name": "The Remix Store"
+      },
+      "twitter": {
+        "card": "summary_large_image",
+        "title": "Apparel",
+        "description": "Soft wear for engineers of all kinds",
+        "image": "https://cdn.shopify.com/oxygen-v2/34032/23847/49475/4167286/assets/social-collections-D7jPtDp_.jpg"
+      },
+      "canonical": null,
+      "alternates": []
+    },
+    "cart": {
+      "url": "https://shop.remix.run/cart",
+      "title": "Cart | The Remix Store",
+      "meta": {
+        "viewport": "width=device-width,initial-scale=1",
+        "description": "View your shopping cart and checkout",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Cart",
+        "twitter:description": "View your shopping cart and checkout",
+        "twitter:image": "https://cdn.shopify.com/oxygen-v2/34032/23847/49475/4167286/assets/social-main-CImsPPV8.jpg"
+      },
+      "og": {
+        "type": "website",
+        "title": "Cart",
+        "description": "View your shopping cart and checkout",
+        "image": "https://cdn.shopify.com/oxygen-v2/34032/23847/49475/4167286/assets/social-main-CImsPPV8.jpg",
+        "url": "https://shop.remix.run",
+        "site_name": "The Remix Store"
+      },
+      "twitter": {
+        "card": "summary_large_image",
+        "title": "Cart",
+        "description": "View your shopping cart and checkout",
+        "image": "https://cdn.shopify.com/oxygen-v2/34032/23847/49475/4167286/assets/social-main-CImsPPV8.jpg"
+      },
+      "canonical": null,
+      "alternates": []
+    },
+    "policy": {
+      "url": "https://shop.remix.run/policies/privacy-policy",
+      "title": "Privacy Policy | The Remix Store",
+      "meta": {
+        "viewport": "width=device-width,initial-scale=1",
+        "description": "Soft wear for engineers of all kinds",
+        "twitter:card": "summary_large_image",
+        "twitter:title": "Privacy Policy",
+        "twitter:description": "Soft wear for engineers of all kinds",
+        "twitter:image": "https://cdn.shopify.com/oxygen-v2/34032/23847/49475/4167286/assets/social-main-CImsPPV8.jpg"
+      },
+      "og": {
+        "type": "website",
+        "title": "Privacy Policy",
+        "description": "Soft wear for engineers of all kinds",
+        "image": "https://cdn.shopify.com/oxygen-v2/34032/23847/49475/4167286/assets/social-main-CImsPPV8.jpg",
+        "url": "https://shop.remix.run",
+        "site_name": "The Remix Store"
+      },
+      "twitter": {
+        "card": "summary_large_image",
+        "title": "Privacy Policy",
+        "description": "Soft wear for engineers of all kinds",
+        "image": "https://cdn.shopify.com/oxygen-v2/34032/23847/49475/4167286/assets/social-main-CImsPPV8.jpg"
+      },
+      "canonical": null,
+      "alternates": []
+    },
+    "notFound": {
+      "url": "https://shop.remix.run/this-route-does-not-exist-404-test",
+      "title": "Not Found",
+      "meta": {
+        "viewport": "width=device-width,initial-scale=1"
+      },
+      "og": {},
+      "twitter": {},
+      "canonical": null,
+      "alternates": []
+    }
+  },
+  "headers": {
+    "home": {
+      "url": "https://shop.remix.run",
+      "status": 200,
+      "statusText": "OK",
+      "headers": {
+        "content-type": "text/html",
+        "content-security-policy": "base-uri 'self'; default-src 'self' https://cdn.shopify.com 2d1167-3d.myshopify.com 'self' https://cdn.shopify.com https://shopify.com 'nonce-63fba4304f4e66c925ffd0434da845b8'; frame-ancestors 'none'; style-src 'self' 'unsafe-inline' https://cdn.shopify.com; connect-src 'self' https://cdn.shopify.com/ https://monorail-edge.shopifysvc.com https://checkout.remix.run https://2d1167-3d.myshopify.com; font-src 'self' https://cdn.shopify.com; img-src 'self' data: https://cdn.shopify.com 2d1167-3d.myshopify.com",
+        "strict-transport-security": "max-age=31536000",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    "collections": {
+      "url": "https://shop.remix.run/collections",
+      "status": 200,
+      "statusText": "OK",
+      "headers": {
+        "content-type": "text/html",
+        "content-security-policy": "base-uri 'self'; default-src 'self' https://cdn.shopify.com 2d1167-3d.myshopify.com 'self' https://cdn.shopify.com https://shopify.com 'nonce-246f91be7686b82e19684403844e96ce'; frame-ancestors 'none'; style-src 'self' 'unsafe-inline' https://cdn.shopify.com; connect-src 'self' https://cdn.shopify.com/ https://monorail-edge.shopifysvc.com https://checkout.remix.run https://2d1167-3d.myshopify.com; font-src 'self' https://cdn.shopify.com; img-src 'self' data: https://cdn.shopify.com 2d1167-3d.myshopify.com",
+        "strict-transport-security": "max-age=31536000",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    "product": {
+      "url": "https://shop.remix.run/products/remix-racing-jacket",
+      "status": 404,
+      "statusText": "Not Found",
+      "headers": {
+        "content-type": "text/html",
+        "content-security-policy": "base-uri 'self'; default-src 'self' https://cdn.shopify.com 2d1167-3d.myshopify.com 'self' https://cdn.shopify.com https://shopify.com 'nonce-a40226ecebe75697752c80b01ad097fa'; frame-ancestors 'none'; style-src 'self' 'unsafe-inline' https://cdn.shopify.com; connect-src 'self' https://cdn.shopify.com/ https://monorail-edge.shopifysvc.com https://checkout.remix.run https://2d1167-3d.myshopify.com; font-src 'self' https://cdn.shopify.com; img-src 'self' data: https://cdn.shopify.com 2d1167-3d.myshopify.com",
+        "strict-transport-security": "max-age=31536000",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    "cart": {
+      "url": "https://shop.remix.run/cart",
+      "status": 200,
+      "statusText": "OK",
+      "headers": {
+        "content-type": "text/html",
+        "content-security-policy": "base-uri 'self'; default-src 'self' https://cdn.shopify.com 2d1167-3d.myshopify.com 'self' https://cdn.shopify.com https://shopify.com 'nonce-d64ccf3cb292349c72845949ab4e548d'; frame-ancestors 'none'; style-src 'self' 'unsafe-inline' https://cdn.shopify.com; connect-src 'self' https://cdn.shopify.com/ https://monorail-edge.shopifysvc.com https://checkout.remix.run https://2d1167-3d.myshopify.com; font-src 'self' https://cdn.shopify.com; img-src 'self' data: https://cdn.shopify.com 2d1167-3d.myshopify.com",
+        "strict-transport-security": "max-age=31536000",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    "staticAsset": {
+      "url": "https://shop.remix.run/favicon.ico",
+      "status": 404,
+      "statusText": "Not Found",
+      "headers": {
+        "content-type": "text/html",
+        "content-security-policy": "base-uri 'self'; default-src 'self' https://cdn.shopify.com 2d1167-3d.myshopify.com 'self' https://cdn.shopify.com https://shopify.com 'nonce-429eb350e437aee4d2c566432b6bc3e7'; frame-ancestors 'none'; style-src 'self' 'unsafe-inline' https://cdn.shopify.com; connect-src 'self' https://cdn.shopify.com/ https://monorail-edge.shopifysvc.com https://checkout.remix.run https://2d1167-3d.myshopify.com; font-src 'self' https://cdn.shopify.com; img-src 'self' data: https://cdn.shopify.com 2d1167-3d.myshopify.com",
+        "strict-transport-security": "max-age=31536000",
+        "x-content-type-options": "nosniff"
+      }
+    }
+  },
+  "redirects": {
+    "discount": [
+      {
+        "from": "https://shop.remix.run/discount/TESTCODE",
+        "to": "https://shop.remix.run/",
+        "status": 200,
+        "chain": [
+          "https://shop.remix.run/discount/TESTCODE",
+          "https://shop.remix.run/"
+        ]
+      },
+      {
+        "from": "https://shop.remix.run/?discount=TESTCODE",
+        "to": "https://shop.remix.run/",
+        "status": 200,
+        "chain": [
+          "https://shop.remix.run/?discount=TESTCODE",
+          "https://shop.remix.run/"
+        ]
+      }
+    ],
+    "cartLines": [],
+    "checkout": [],
+    "admin": [
+      {
+        "from": "https://shop.remix.run/admin",
+        "to": "https://2d1167-3d.myshopify.com/admin",
+        "status": 400,
+        "chain": [
+          "https://shop.remix.run/admin",
+          "https://2d1167-3d.myshopify.com/admin"
+        ]
+      }
+    ],
+    "myshopify": [],
+    "localeRedirects": []
+  },
+  "locales": {
+    "discovered": [],
+    "paths": [],
+    "sitemapAlternates": {}
+  }
+}
