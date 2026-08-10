@@ -1,23 +1,41 @@
 import { css, type Handle, type RemixNode } from "remix/ui";
 
+import { Footer } from "../assets/footer.tsx";
+import {
+  FALLBACK_FOOTER_MENU,
+  FALLBACK_NAVIGATION_MENU,
+} from "../data/storefront.ts";
 import { DocumentAssetsProvider } from "./document-assets.tsx";
+import { Navbar } from "./navbar.tsx";
+import { ShellDataProvider } from "./shell-data.tsx";
 
 export interface DocumentProps {
+  canonicalUrl?: string;
   children?: RemixNode;
   description?: string;
   noIndex?: boolean;
+  socialImage?: string;
   title: string;
 }
 
 export function Document(handle: Handle<DocumentProps>) {
   return () => {
     let {
+      canonicalUrl,
       children,
       description = "Soft wear for engineers of all kinds",
       noIndex = false,
+      socialImage = "/social-main.jpg",
       title,
     } = handle.props;
     let assets = handle.context.get(DocumentAssetsProvider);
+    let shellData = handle.context.get(ShellDataProvider) ?? {
+      footerMenu: FALLBACK_FOOTER_MENU,
+      navigationMenu: FALLBACK_NAVIGATION_MENU,
+    };
+    let socialImageUrl = canonicalUrl
+      ? new URL(socialImage, canonicalUrl).href
+      : socialImage;
 
     return (
       <html lang="en">
@@ -31,6 +49,18 @@ export function Document(handle: Handle<DocumentProps>) {
           />
           <meta name="theme-color" content="#000000" />
           <meta name="color-scheme" content="dark" />
+          <meta property="og:type" content="website" />
+          <meta property="og:title" content={title} />
+          <meta property="og:description" content={description} />
+          <meta property="og:image" content={socialImageUrl} />
+          {canonicalUrl ? (
+            <meta property="og:url" content={canonicalUrl} />
+          ) : null}
+          <meta name="twitter:card" content="summary_large_image" />
+          <meta name="twitter:title" content={title} />
+          <meta name="twitter:description" content={description} />
+          <meta name="twitter:image" content={socialImageUrl} />
+          {canonicalUrl ? <link rel="canonical" href={canonicalUrl} /> : null}
           <link rel="preconnect" href="https://cdn.shopify.com" />
           <link rel="dns-prefetch" href="https://cdn.shopify.com" />
           <link
@@ -83,7 +113,11 @@ export function Document(handle: Handle<DocumentProps>) {
           ))}
           <title>{title}</title>
         </head>
-        <body mix={bodyStyle}>{children}</body>
+        <body mix={bodyStyle}>
+          <Navbar menu={shellData.navigationMenu} />
+          {children}
+          <Footer menu={shellData.footerMenu} />
+        </body>
       </html>
     );
   };

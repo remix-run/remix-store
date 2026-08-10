@@ -11,7 +11,7 @@ const testEnv = {
   ["PUBLIC_" + "STOREFRONT_API_TOKEN"]: "test-token",
 };
 
-function createTestApp(fetch?: typeof globalThis.fetch) {
+function createTestApp(fetch: typeof globalThis.fetch = shellMenuFetch) {
   return createApp({
     renderer: render({
       documentAssets: { css: [], entry: "/assets/entry.js", js: [] },
@@ -23,22 +23,47 @@ function createTestApp(fetch?: typeof globalThis.fetch) {
   });
 }
 
+const shellMenuFetch = (async () =>
+  new Response(
+    JSON.stringify({
+      data: {
+        menu: null,
+        footerMenu: null,
+        shop: { primaryDomain: { url: "https://example.com" } },
+      },
+    }),
+    { headers: { "Content-Type": "application/json" } },
+  )) as typeof globalThis.fetch;
+
 describe("platform skeleton", () => {
   it("server-renders live Storefront API data and a hydration entry", async () => {
     let calls = 0;
-    let mockFetch = (async () => {
+    let mockFetch = (async (_input, init) => {
       calls++;
-      return new Response(
-        JSON.stringify({
-          data: {
+      let query = JSON.parse(String(init?.body)).query as string;
+      let data = query.includes("RemixNavigation")
+        ? {
+            menu: {
+              items: [
+                {
+                  id: "all",
+                  title: "All Products",
+                  url: "https://example.myshopify.com/collections/all",
+                },
+              ],
+            },
+            footerMenu: null,
+            shop: { primaryDomain: { url: "https://shop.example.com" } },
+          }
+        : {
             shop: {
               name: "Test Remix Store",
               description: "A test storefront",
             },
-          },
-        }),
-        { headers: { "Content-Type": "application/json" } },
-      );
+          };
+      return new Response(JSON.stringify({ data }), {
+        headers: { "Content-Type": "application/json" },
+      });
     }) as typeof globalThis.fetch;
     let app = createTestApp(mockFetch);
 
@@ -48,8 +73,13 @@ describe("platform skeleton", () => {
     let html = await response.text();
 
     assert.equal(response.status, 200);
-    assert.equal(calls, 1);
+    assert.equal(calls, 2);
     assert.match(html, /Test Remix Store/);
+    assert.match(html, /Main navigation/);
+    assert.match(html, /All Products/);
+    assert.match(html, /Store policies/);
+    assert.match(html, /"exportName":"RemixLogo"/);
+    assert.match(html, /"exportName":"Footer"/);
     assert.match(html, /Hydration check: 0/);
     assert.match(html, /--color-blue-brand: #20aaff/);
     assert.doesNotMatch(html, /--color-blue:/);

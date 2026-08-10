@@ -5,10 +5,15 @@ import { BrandedState } from "../ui/branded-state.tsx";
 import { Document } from "../ui/document.tsx";
 
 export function HomePage(
-  handle: Handle<{ description?: string | null; shopName: string }>,
+  handle: Handle<{
+    canonicalUrl: string;
+    description?: string | null;
+    shopName: string;
+  }>,
 ) {
   return () => (
     <Document
+      canonicalUrl={handle.props.canonicalUrl}
       title={handle.props.shopName}
       description={handle.props.description ?? undefined}
     >
@@ -66,7 +71,7 @@ const mainStyle = css({
   margin: "0 auto",
   maxWidth: "70rem",
   minHeight: "100vh",
-  padding: "clamp(4rem, 12vw, 10rem) 1.5rem",
+  padding: "calc(var(--header-height) + 4rem) 1.5rem 8rem",
 });
 
 const eyebrowStyle = css({

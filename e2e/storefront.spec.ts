@@ -53,16 +53,30 @@ test("returns a real branded 404 response and navigates home", async ({
   expect(runtimeErrors).toEqual([]);
 });
 
-test.skip("renders the storefront shell and catalog entry point", async ({
+test("renders the storefront shell and catalog entry point", async ({
   page,
 }) => {
   let response = await page.goto("/");
 
   expect(response?.status()).toBe(200);
+  await expect(
+    page.getByRole("link", { name: "Remix Store home" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("navigation", { name: "Main navigation" }),
+  ).toBeAttached();
   await expect(page.locator("footer")).toBeVisible();
   await expect(
     page.locator('a[href*="/collections/all"]').first(),
   ).toBeVisible();
+  await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
+    "href",
+    new RegExp("/$"),
+  );
+  await expect(page.locator('meta[property="og:image"]')).toHaveAttribute(
+    "content",
+    new RegExp("/social-main\\.jpg$"),
+  );
 });
 
 test.skip("navigates from the catalog to a product", async ({ page }) => {
