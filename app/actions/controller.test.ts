@@ -1,6 +1,7 @@
 import * as assert from "remix/assert";
 import { describe, it } from "remix/test";
 
+import { MemoryStorefrontCache } from "../data/storefront-cache.ts";
 import { render } from "../middleware/render.tsx";
 import { createApp } from "../router.ts";
 import { routes } from "../routes.ts";
@@ -18,7 +19,7 @@ function createTestApp(fetch?: typeof globalThis.fetch) {
         return { href: "/assets/component.js", exportName: component.name };
       },
     }),
-    storefront: { env: testEnv, fetch },
+    storefront: { cache: new MemoryStorefrontCache(), env: testEnv, fetch },
   });
 }
 

@@ -8,8 +8,13 @@ export default createController(routes, {
   actions: {
     async home({ render, storefrontClient }) {
       let shop = await queryShop(storefrontClient);
+      if (!shop.ok) throw new Error(shop.message, { cause: shop.errors });
+
       return render(
-        <HomePage shopName={shop.name} description={shop.description} />,
+        <HomePage
+          shopName={shop.data.name}
+          description={shop.data.description}
+        />,
       );
     },
   },
