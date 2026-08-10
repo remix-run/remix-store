@@ -15,11 +15,19 @@ test("renders the storefront shell and catalog entry point", async ({
 });
 
 test("navigates from the catalog to a product", async ({ page }) => {
-  const { addToCart, title } = await openAvailableProduct(page);
+  await page.goto("/collections/all");
+
+  const productLink = page.locator('main a[href*="/products/"]').first();
+  await expect(productLink).toBeVisible();
+  const productName = (await productLink.innerText()).trim();
+
+  await productLink.click();
 
   await expect(page).toHaveURL(/\/products\//);
-  await expect(page.getByRole("heading", { name: title })).toBeVisible();
-  await expect(addToCart).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText(productName);
+  await expect(
+    page.getByRole("button", { name: /add to cart|sold out/i }),
+  ).toBeVisible();
 });
 
 test("adds an available product to the cart", async ({ page }) => {

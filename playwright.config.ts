@@ -5,6 +5,7 @@ const localBaseUrl = "http://localhost:3000";
 
 export default defineConfig({
   testDir: "./e2e",
+  failOnFlakyTests: Boolean(process.env.CI),
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 1 : 0,
   workers: 1,
