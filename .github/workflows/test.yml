@@ -27,3 +27,32 @@ jobs:
 
       - name: 🧪 Run tests
         run: pnpm test -- --run
+
+  e2e:
+    name: 🎭 End-to-end
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: ⬇️ Checkout repo
+        uses: actions/checkout@v4
+
+      - name: 📦 Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: ⎔ Setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: 📥 Install deps
+        run: pnpm install --frozen-lockfile
+
+      - name: 🎭 Install Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: 🔐 Configure local environment
+        run: cp .env.example .env
+
+      - name: 🎭 Run end-to-end tests
+        run: pnpm test:e2e
