@@ -9,7 +9,7 @@ This is the codebase behind **[shop.remix.run](https://shop.remix.run)**. Run it
 ### Install dependencies
 
 ```sh
-npm install
+pnpm install
 ```
 
 ## Local development
@@ -25,7 +25,7 @@ cp .env.example .env
 ⚠️ **Important:** This connects to the live production store. Any purchases will charge real money and ship actual Remix merch.
 
 ```bash
-npm run dev
+pnpm dev
 ```
 
 You'll have a local version of the Remix Store running with real product data, inventory, and checkout functionality.
@@ -33,8 +33,17 @@ You'll have a local version of the Remix Store running with real product data, i
 ## Building for production
 
 ```bash
-npm run build
+pnpm build
 ```
+
+## Testing
+
+```bash
+pnpm test
+pnpm test:e2e
+```
+
+The end-to-end suite starts the local storefront and covers the catalog, product, cart, SEO resources, 404 handling, and the no-JavaScript add-to-cart flow. It creates Shopify carts but never enters checkout. Set `BASE_URL` to test an existing deployment instead of starting the local server.
 
 ### Connecting to the Shopify Store
 
@@ -54,53 +63,17 @@ h2 link
 h2 pull
 ```
 
-## Data Structures in Shopify Admin
+## Shopify Admin data
 
-Eventually these docs might make it somewhere else, but just trying to capture some quirks about how
-Shopify Admin feeds into this project.
+The GraphQL queries are the source of truth for Shopify-side contracts. This table records the identifiers that must also be configured in Shopify Admin.
 
-### Hero
-
-The hero component uses data from the Hero metaobject with 3 fields:
-
-1. Masthead
-2. Asset Images (frames for animation)
-3. Product link
-
-See [hero.server.ts](app/lib/data/hero.server.ts) for the GraphQL query.
-
-### Lookbook
-
-Uses "Lookbook" metaobject which contains a field called "lookbook_entries" that is an array of references to "Lookbook Entry" metaobjects with:
-
-1. Image
-2. Product (optional)
-
-See [lookbook.server.ts](app/lib/data/lookbook.server.ts) for implementation.
-
-### Product Metafields
-
-Products use custom metafields under "Product metafields":
-
-1. Description
-2. Technical Description
-
-### Store-wide sale
-
-The store-wide sales require 2 things in Shopify Admin:
-
-1. A metaobject with the following fields:
-   1. Title
-   2. Description
-   3. End date
-
-2. An automatic discount
-
-The data is fetched in [header.server.ts](app/lib/data/header.server.ts) and accessed via `useCartDiscounts` defined in [cart](app/components/cart.tsx).
-
-Note: there is a 1 hour cache on the header data, so updates will not be live without a redeploy.
-
-We use metafields instead of the default description to access rich text data via GraphQL.
+| Surface         | Shopify configuration                                                                                                                        | Source                                                             |
+| --------------- | -------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| Home hero       | Metaobject type `hero`, handle `remix-3-drop-playground`; `asset_images` media references and a `collection` reference                       | [`hero.server.ts`](app/lib/data/hero.server.ts)                    |
+| Lookbook        | Metaobject type `lookbook`, handle `lookbook-remix-racing`; `lookbook` entries with a media image and optional product                       | [`lookbook.server.ts`](app/lib/data/lookbook.server.ts)            |
+| Navigation      | Menus named `main-menu`, `footer`, and `product-sidebar-menu`                                                                                | [`root.tsx`](app/root.tsx), [`fragments.ts`](app/lib/fragments.ts) |
+| Product content | `custom.description`, `custom.technical_description`, and `custom.subscribe_if_back_in_stock` metafields                                     | [`product.server.ts`](app/lib/data/product.server.ts)              |
+| Store-wide sale | `custom.storewide_sale` shop metafield referencing `title`, `description`, and `end_date_and_time`; paired with a Shopify automatic discount | [`header.server.ts`](app/lib/data/header.server.ts)                |
 
 ## Contributing
 

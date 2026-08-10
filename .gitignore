@@ -8,4 +8,7 @@ node_modules
 .shopify
 .DS_STORE
 /coverage
+/blob-report
+/playwright-report
+/test-results
 .react-router

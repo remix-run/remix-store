@@ -80,6 +80,9 @@ importers:
       "@graphql-codegen/cli":
         specifier: 5.0.7
         version: 5.0.7(@types/node@24.12.4)(graphql@16.14.0)(typescript@5.9.3)
+      "@playwright/test":
+        specifier: 1.62.1
+        version: 1.62.1
       "@react-router/dev":
         specifier: 7.18.2
         version: 7.18.2(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(react-router@7.18.2(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(typescript@5.9.3)(vite@6.4.3(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.32.0)(yaml@2.9.0))(yaml@2.9.0)
@@ -2359,6 +2362,14 @@ packages:
         integrity: sha512-lp4qAiMTD4sNWW4DbKLBkfiMZ4jbAboJIGOQr5DvciMRI494OapieI9qiODpOt0XBr1LjIDy1xAGAnVs5supTA==,
       }
     engines: { node: ">=14" }
+
+  "@playwright/test@1.62.1":
+    resolution:
+      {
+        integrity: sha512-DTcUc8qii+cpHvtOwggMtBRMjKZHXYWdw8syRYu2vtzuq4Wxphqq4NfCs5Zt44L6mA8rfDfj+PHnxFc/FeK6mQ==,
+      }
+    engines: { node: ">=20" }
+    hasBin: true
 
   "@pnpm/config.env-replace@1.1.0":
     resolution:
@@ -5997,6 +6008,14 @@ packages:
         integrity: sha512-OO0pH2lK6a0hZnAdau5ItzHPI6pUlvI7jMVnxUQRtw4owF2wk8lOSabtGDCTP4Ggrg2MbGnWO9X8K1t4+fGMDw==,
       }
 
+  fsevents@2.3.2:
+    resolution:
+      {
+        integrity: sha512-xiqMQR4xAeHTuB9uWm+fFRcIOgKBMiOBP+eXiyT7jsgVCq1bkVygt00oASowB7EdtpOHaaPgKt812P9ab+DDKA==,
+      }
+    engines: { node: ^8.16.0 || ^10.6.0 || >=11.0.0 }
+    os: [darwin]
+
   fsevents@2.3.3:
     resolution:
       {
@@ -8285,6 +8304,22 @@ packages:
       {
         integrity: sha512-y+ichcgc2LrADuhLNAx8DFjVfgz91pRxfZdI3UDhxHvcVEZsenLO+7XaU5vOp0u/7V/wZ+plyuQxtrDlZJ+yeg==,
       }
+
+  playwright-core@1.62.1:
+    resolution:
+      {
+        integrity: sha512-wPYSwEBJY9GHraISXqyqtx0na0LpO3XEX7jNDhntbex7tzUS7kLnZsOlFruFJB4Hi/rhDMjXGqHewDZ68nYZVw==,
+      }
+    engines: { node: ">=20" }
+    hasBin: true
+
+  playwright@1.62.1:
+    resolution:
+      {
+        integrity: sha512-0M+L3LAD8/nm554LOla9Ayx0j0tmFZ0FBcoQ7F1VuVHpM/XpiC8RcDzBQB8W5+hA8L22THxELzeF+2WcUzvcLg==,
+      }
+    engines: { node: ">=20" }
+    hasBin: true
 
   possible-typed-array-names@1.1.0:
     resolution:
@@ -11651,6 +11686,10 @@ snapshots:
 
   "@opentelemetry/semantic-conventions@1.28.0": {}
 
+  "@playwright/test@1.62.1":
+    dependencies:
+      playwright: 1.62.1
+
   "@pnpm/config.env-replace@1.1.0": {}
 
   "@pnpm/network.ca-file@1.0.2":
@@ -14145,6 +14184,9 @@ snapshots:
 
   fs.realpath@1.0.0: {}
 
+  fsevents@2.3.2:
+    optional: true
+
   fsevents@2.3.3:
     optional: true
 
@@ -15425,6 +15467,14 @@ snapshots:
       confbox: 0.2.4
       exsolve: 1.0.8
       pathe: 2.0.3
+
+  playwright-core@1.62.1: {}
+
+  playwright@1.62.1:
+    dependencies:
+      playwright-core: 1.62.1
+    optionalDependencies:
+      fsevents: 2.3.2
 
   possible-typed-array-names@1.1.0: {}
 

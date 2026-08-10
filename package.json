@@ -14,7 +14,8 @@
     "format": "prettier --write .",
     "test": "vitest",
     "test:ui": "vitest --ui",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@radix-ui/react-dropdown-menu": "2.1.24",
@@ -40,6 +41,7 @@
     "@eslint/eslintrc": "3.3.6",
     "@eslint/js": "9.39.4",
     "@graphql-codegen/cli": "5.0.7",
+    "@playwright/test": "1.62.1",
     "@react-router/dev": "7.18.2",
     "@react-router/fs-routes": "7.18.2",
     "@shopify/cli": "4.5.2",
