@@ -1,25 +1,29 @@
 import {
   createShopifyRequestContext,
   createStorefrontClient,
-  type StorefrontClient as HydrogenStorefrontClient,
+  type CacheInstance,
 } from "@shopify/hydrogen";
 import { createContextKey, type Middleware } from "remix/router";
 
+import { getStorefrontCache } from "../data/storefront-cache.ts";
+import { createRetryingStorefrontFetch } from "../data/storefront-fetch.ts";
+import type { AppStorefrontClient } from "../data/storefront.ts";
 import { getRuntime, type Env } from "../runtime.ts";
 
 export interface StorefrontOptions {
+  cache?: CacheInstance;
   env?: Env;
   fetch?: typeof globalThis.fetch;
 }
 
-export const StorefrontClient = createContextKey<HydrogenStorefrontClient>();
+export const StorefrontClient = createContextKey<AppStorefrontClient>();
 const storefrontProperty = { property: "storefrontClient" } as const;
 
 export function storefront(options: StorefrontOptions = {}): Middleware<
   readonly [
     {
       key: typeof StorefrontClient;
-      value: HydrogenStorefrontClient;
+      value: AppStorefrontClient;
       property: "storefrontClient";
     },
   ]
@@ -40,15 +44,19 @@ export function storefront(options: StorefrontOptions = {}): Middleware<
       request: context.request,
       i18n: { country: "US", language: "EN" },
     });
+    let storefrontFetch = createRetryingStorefrontFetch({
+      fetch: options.fetch,
+    });
+    let cache = options.cache ?? getStorefrontCache(context.request);
     let storefrontClient = createStorefrontClient({
       type: "public",
       requestContext,
       config: {
         storeDomain,
         publicStorefrontToken,
-        cache: runtime.cache,
+        cache,
         waitUntil: runtime.waitUntil,
-        fetch: options.fetch,
+        fetch: storefrontFetch,
       },
     });
 
