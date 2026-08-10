@@ -25,7 +25,7 @@ Only the domain and public Storefront token are imported because they are the cu
 
 ## Deployment behavior
 
-`.github/workflows/fly-deployment.yml` currently reacts to every branch push, deploys that commit to the single staging app, and verifies `/health` plus the server-rendered home page. Global concurrency cancels an older in-progress deployment when a newer push arrives.
+`.github/workflows/fly-deployment.yml` currently reacts to every branch push, performs a health-gated blue-green deployment to the single staging app, and verifies `/health` plus the server-rendered home page. Global concurrency cancels an older in-progress deployment when a newer push arrives.
 
 The workflow passes the Git commit SHA as `ASSET_BUILD_ID`, giving each release immutable Remix Asset URLs. After migration, restrict the workflow trigger to `main` and move credentials into a protected GitHub environment.
 

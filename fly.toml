@@ -11,7 +11,7 @@ kill_timeout = 15
   TRUST_PROXY = "true"
 
 [deploy]
-  strategy = "rolling"
+  strategy = "bluegreen"
   wait_timeout = "10m"
 
 [http_service]
