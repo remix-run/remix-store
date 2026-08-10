@@ -50,6 +50,10 @@ describe("platform skeleton", () => {
     assert.equal(calls, 1);
     assert.match(html, /Test Remix Store/);
     assert.match(html, /Hydration check: 0/);
+    assert.match(html, /--color-blue-brand: #20aaff/);
+    assert.doesNotMatch(html, /--color-blue:/);
+    assert.match(html, /inter-italic-latin-var\.woff2/);
+    assert.match(html, /lexend-zetta-black\.woff2/);
     assert.match(html, /"exportName":"Counter"/);
     assert.equal(response.headers.get("Cache-Control"), "private, no-store");
   });
@@ -87,6 +91,9 @@ describe("platform skeleton", () => {
     let response = await app.fetch(new Request("https://example.com/missing"));
 
     assert.equal(response.status, 404);
-    assert.match(await response.text(), /Page not found/);
+    let html = await response.text();
+    assert.match(html, /Page not found/);
+    assert.doesNotMatch(html, /\/brand\/matrix\/error-404\.png/);
+    assert.match(html, /Return home/);
   });
 });

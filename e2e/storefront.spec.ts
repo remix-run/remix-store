@@ -11,15 +11,46 @@ test("renders the current storefront skeleton", async ({ page }) => {
   await expect(
     page.getByRole("button", { name: /hydration check: 0/i }),
   ).toBeVisible();
+  expect(
+    await page.evaluate(() =>
+      getComputedStyle(document.documentElement).getPropertyValue(
+        "--color-blue-brand",
+      ),
+    ),
+  ).toBe("#20aaff");
+  expect(
+    await page.evaluate(() => getComputedStyle(document.body).fontFamily),
+  ).toContain("Inter");
 });
 
-test("returns a real branded 404 response", async ({ page }) => {
+test("returns a real branded 404 response and navigates home", async ({
+  page,
+}) => {
+  let runtimeErrors: string[] = [];
+  page.on("pageerror", (error) => runtimeErrors.push(error.message));
+
   let response = await page.goto("/this-route-must-not-exist");
 
   expect(response?.status()).toBe(404);
   await expect(
     page.getByRole("heading", { name: "Page not found" }),
   ).toBeVisible();
+  runtimeErrors.length = 0;
+
+  await page.getByRole("link", { name: "Return home" }).click();
+
+  await expect(page).toHaveURL("/");
+  await expect(
+    page.getByRole("button", { name: /hydration check: 0/i }),
+  ).toBeVisible();
+
+  await page.goBack();
+
+  await expect(page).toHaveURL("/this-route-must-not-exist");
+  await expect(
+    page.getByRole("heading", { name: "Page not found" }),
+  ).toBeVisible();
+  expect(runtimeErrors).toEqual([]);
 });
 
 test.skip("renders the storefront shell and catalog entry point", async ({
