@@ -1,3 +1,4 @@
+app = "remix-store"
 primary_region = "dfw"
 kill_signal = "SIGTERM"
 kill_timeout = 15
