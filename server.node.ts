@@ -6,7 +6,7 @@ import { assetServer } from "./app/assets.server.ts";
 import { router } from "./app/router.node.ts";
 import { initializeRuntime } from "./app/runtime.ts";
 
-const port = process.env.PORT ? Number.parseInt(process.env.PORT, 10) : 3000;
+const port = process.env.PORT ? Number.parseInt(process.env.PORT, 10) : 44100;
 
 const server = http.createServer(
   createRequestListener(
