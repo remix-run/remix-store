@@ -36,14 +36,13 @@ The Oxygen build produces a self-contained Worker at `dist/ssr/index.js` and bro
 ## Skeleton architecture
 
 - `app/routes.ts` defines the typed route contract.
-- `app/router.ts` maps routes and composes shared request middleware.
-- `app/router.node.ts` adds static files, Remix Assets, and Node rendering.
-- `app/router.oxygen.ts` adds Vite asset metadata and Oxygen rendering.
-- `app/assets.server.ts` owns the Node browser-asset pipeline.
+- `app/router.ts` owns the shared Fetch app, routes, middleware, and runtime boundary.
+- `app/node.server.ts` composes Node static files, Remix Assets, rendering, and routing.
 - `app/middleware/storefront.ts` creates a request-scoped Hydrogen Storefront client.
 - `app/middleware/render.tsx` contains runtime-neutral streaming SSR.
-- `server.node.ts` is the Node/Fly-compatible server entry.
-- `app/entry.server.ts` is the Oxygen Worker entry.
+- `app/runtime.ts` binds environment, cache, and `waitUntil` values to each request.
+- `server.node.ts` owns the Node/Fly-compatible HTTP lifecycle.
+- `app/entry.server.ts` composes and serves the Oxygen Worker runtime.
 - `app/entry.browser.ts` hydrates browser components on both targets.
 - `vite/remix-oxygen.ts` owns the temporary Remix 3/Oxygen build integration.
 

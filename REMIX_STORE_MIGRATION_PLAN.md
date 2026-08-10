@@ -265,4 +265,4 @@ Phase 2 builds: 2.13 sale · 2.14 subscribe/back-in-stock · 2.15 locales · 2.1
 Phase 3: 3.1 oxygen hardening · 3.2 node/fly target · 3.3 branch wiring
 Phase 4: cutover runbook (single owner, not parallelized)
 
-Rules for every sub-agent task: read `.agents/skills/remix/SKILL.md` and the relevant hydrogen skills first; follow the parity plan's conversion rules (no Tailwind/Radix/Embla/React-Router idioms); every PR runs build + typecheck + tests + acceptance suite against a preview deploy; no commits or pushes without explicit human sign-off on the PR flow.
+Rules for every sub-agent task: read `.agents/skills/remix-store/SKILL.md` and the relevant version-matched Hydrogen skill under `node_modules/@shopify/hydrogen/skills/`; follow the parity plan's conversion rules (no Tailwind/Radix/Embla/React-Router idioms); every PR runs build + typecheck + tests + acceptance suite against a preview deploy; no commits or pushes without explicit human sign-off on the PR flow.

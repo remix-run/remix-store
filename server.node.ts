@@ -2,28 +2,14 @@ import * as http from "node:http";
 
 import { createRequestListener } from "remix/node-fetch-server";
 
-import { assetServer } from "./app/assets.server.ts";
-import { router } from "./app/router.node.ts";
-import { initializeRuntime } from "./app/runtime.ts";
+import { app, closeNodeApp } from "./app/node.server.ts";
 
 const port = process.env.PORT ? Number.parseInt(process.env.PORT, 10) : 44100;
 
 const server = http.createServer(
-  createRequestListener(
-    async (request) => {
-      initializeRuntime(request, process.env);
-
-      try {
-        return await router.fetch(request);
-      } catch (error) {
-        if (!(request.signal.aborted && error === request.signal.reason)) {
-          console.error(error);
-        }
-        return new Response("Internal Server Error", { status: 500 });
-      }
-    },
-    { trustProxy: process.env.TRUST_PROXY === "true" },
-  ),
+  createRequestListener((request) => app.fetch(request, { env: process.env }), {
+    trustProxy: process.env.TRUST_PROXY === "true",
+  }),
 );
 
 server.listen(port, () => {
@@ -37,7 +23,7 @@ function shutdown() {
   shuttingDown = true;
 
   server.close(async (error) => {
-    await assetServer.close();
+    await closeNodeApp();
     process.exit(error ? 1 : 0);
   });
   server.closeAllConnections();

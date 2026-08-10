@@ -2,7 +2,7 @@ import * as assert from "remix/assert";
 import { describe, it } from "remix/test";
 
 import { render } from "../middleware/render.tsx";
-import { createAppRouter } from "../router.ts";
+import { createApp } from "../router.ts";
 import { routes } from "../routes.ts";
 
 const testEnv = {
@@ -10,8 +10,8 @@ const testEnv = {
   ["PUBLIC_" + "STOREFRONT_API_TOKEN"]: "test-token",
 };
 
-function createTestRouter(fetch?: typeof globalThis.fetch) {
-  return createAppRouter({
+function createTestApp(fetch?: typeof globalThis.fetch) {
+  return createApp({
     renderer: render({
       documentAssets: { css: [], entry: "/assets/entry.js", js: [] },
       resolveClientEntry(_entryId, component) {
@@ -39,9 +39,9 @@ describe("platform skeleton", () => {
         { headers: { "Content-Type": "application/json" } },
       );
     }) as typeof globalThis.fetch;
-    let router = createTestRouter(mockFetch);
+    let app = createTestApp(mockFetch);
 
-    let response = await router.fetch(
+    let response = await app.fetch(
       new Request("https://example.com" + routes.home.href()),
     );
     let html = await response.text();
@@ -63,12 +63,12 @@ describe("platform skeleton", () => {
         }),
         { headers: { "Content-Type": "application/json" } },
       )) as typeof globalThis.fetch;
-    let router = createTestRouter(mockFetch);
+    let app = createTestApp(mockFetch);
     let originalConsoleError = console.error;
     console.error = () => {};
 
     try {
-      let response = await router.fetch(
+      let response = await app.fetch(
         new Request("https://example.com" + routes.home.href()),
       );
       let html = await response.text();
@@ -82,11 +82,9 @@ describe("platform skeleton", () => {
   });
 
   it("returns a server-rendered 404 for unknown routes", async () => {
-    let router = createTestRouter();
+    let app = createTestApp();
 
-    let response = await router.fetch(
-      new Request("https://example.com/missing"),
-    );
+    let response = await app.fetch(new Request("https://example.com/missing"));
 
     assert.equal(response.status, 404);
     assert.match(await response.text(), /Page not found/);

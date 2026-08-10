@@ -1,17 +1,15 @@
 import * as assert from "remix/assert";
 import { after, describe, it } from "remix/test";
 
-import { assetServer } from "./assets.server.ts";
-import { router } from "./router.node.ts";
+import { app, browserEntryHref, closeNodeApp } from "./node.server.ts";
 
-after(async () => {
-  await assetServer.close();
-});
+after(closeNodeApp);
 
 describe("node platform", () => {
   it("compiles the shared browser entry with Remix Assets", async () => {
-    let href = await assetServer.getHref("app/entry.browser.ts");
-    let response = await router.fetch(new Request(`http://localhost${href}`));
+    let response = await app.fetch(
+      new Request(`http://localhost${browserEntryHref}`),
+    );
     let source = await response.text();
 
     assert.equal(response.status, 200);
@@ -20,7 +18,7 @@ describe("node platform", () => {
   });
 
   it("does not expose non-browser files through the asset mount", async () => {
-    let response = await router.fetch(
+    let response = await app.fetch(
       new Request("http://localhost/assets/node_modules/remix/package.json"),
     );
 
@@ -29,7 +27,7 @@ describe("node platform", () => {
   });
 
   it("serves public files before application routes", async () => {
-    let response = await router.fetch(
+    let response = await app.fetch(
       new Request("http://localhost/remix-favicon.svg"),
     );
 
