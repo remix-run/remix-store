@@ -1,6 +1,7 @@
 import * as path from "node:path";
 
 import { createAssetServer } from "remix/assets";
+import { compression } from "remix/middleware/compression";
 import { staticFiles } from "remix/middleware/static";
 import type { Middleware } from "remix/router";
 
@@ -60,20 +61,33 @@ export function closeNodeApp() {
 }
 
 function nodePlatform(): Middleware {
+  let compress = compression();
   let servePublicFiles = staticFiles("./public", { index: false });
 
-  return (context, next) =>
-    servePublicFiles(context, async () => {
-      let { pathname } = context.url;
-      if (pathname !== "/assets" && !pathname.startsWith("/assets/")) {
-        return next();
-      }
+  return (context, next) => {
+    if (context.url.pathname === "/health") {
+      return new Response("OK", {
+        headers: {
+          "Cache-Control": "no-store",
+          "Content-Type": "text/plain; charset=utf-8",
+        },
+      });
+    }
 
-      return (
-        (await assetServer.fetch(context.request)) ??
-        new Response("Not Found", { status: 404 })
-      );
-    });
+    return compress(context, async () =>
+      servePublicFiles(context, async () => {
+        let { pathname } = context.url;
+        if (pathname !== "/assets" && !pathname.startsWith("/assets/")) {
+          return next();
+        }
+
+        return (
+          (await assetServer.fetch(context.request)) ??
+          new Response("Not Found", { status: 404 })
+        );
+      }),
+    );
+  };
 }
 
 function titleCaseFileName(fileUrl: string): string {

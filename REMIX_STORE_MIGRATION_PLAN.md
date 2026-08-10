@@ -193,14 +193,14 @@ The experimental app is the **reference**, the official RR7 app is the **behavio
 - Add a short `vite/README` documenting the adapter's responsibilities (build order, `clientEntry()` transform, manifest inlining, hydration-export validation) — it is load-bearing and its source-scanning validation is fragile to refactors. Note the intent to replace it with an official Hydrogen/Oxygen adapter when one ships.
 - **Acceptance:** production-environment deploy from a test branch to Oxygen succeeds and passes the acceptance suite.
 
-### 3.2 Node/Fly target (harden and deploy the 1.3 foundation)
-- Keep `server.node.ts` + `remix/node-fetch-server` + `remix/assets` as the canonical Node path. Add compression without moving browser compilation into Vite; serve `public/` before application routes and retain immutable fingerprinted Remix Asset URLs in production.
-- Runtime gaps to close in `app/runtime.ts` consumers:
-  - **Cache:** Node has no `caches` API. Verify Storefront queries degrade gracefully, then add an in-memory TTL cache adapter honoring the same cache-control strategies (watch SFAPI rate limits and TTFB without it). Redis is a later option, not a launch requirement.
+### 3.2 Node/Fly target (in progress)
+- Keep `server.node.ts` + `remix/node-fetch-server` + `remix/assets` as the canonical Node path. Node responses use Remix compression; `public/` and browser assets still short-circuit before Storefront middleware.
+- The staging foundation includes a production-only Docker image, `fly.toml`, a cheap `/health` check, one warm Machine, graceful shutdown, and commit-derived `ASSET_BUILD_ID` fingerprinting.
+- Runtime hardening that remains before Fly can serve production traffic:
+  - **Cache:** Node has no `caches` API. Measure staging Storefront traffic, then add an in-memory TTL cache adapter for catalog strategies if query volume or TTFB requires it. Redis remains a later option.
   - **Env:** Node request runtime uses `process.env`. ✓
   - **waitUntil:** add a deliberate Node background-task policy before any feature relies on it; do not leave rejected promises unobserved.
-- Add an explicit release-derived `ASSET_BUILD_ID`, plus `Dockerfile` (Node 24 + pnpm, production install → run) and `fly.toml` (region, health check hitting a cheap route, min machines ≥ 1 to avoid cold-start TTFB, secrets via `fly secrets`).
-- **Acceptance:** `docker run` locally serves the store; Fly staging app passes the acceptance suite; SFAPI query volume is compared against Oxygen (cache adapter working); fingerprinted asset caching survives a release rollover.
+- **Acceptance:** the local Docker image serves the store; Fly staging passes health and home-page smoke checks; enabled acceptance cases pass against its URL; fingerprinted asset caching survives a release rollover.
 
 ### 3.3 Continuous dual-target validation (per D3)
 - Keep both runtime adapters and deployment configs in the application branch; do not create target-specific code branches.

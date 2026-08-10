@@ -34,7 +34,11 @@ pnpm preview:oxygen
 
 The end-to-end suite starts the native Node app by default. Set `BASE_URL` to run it against an existing Oxygen or Fly deployment. Skipped acceptance cases identify shopper surfaces that have not reached `v3` yet and must be enabled as those features land.
 
-The Oxygen build produces a self-contained Worker at `dist/ssr/index.js` and browser assets in `dist/client/`. The Node server compiles browser modules through `remix/assets` and is the foundation for the Fly deployment target.
+The Oxygen build produces a self-contained Worker at `dist/ssr/index.js` and browser assets in `dist/client/`. The Node server compiles browser modules through `remix/assets` for Fly.
+
+## Deployments
+
+Oxygen preview deployments use `.github/workflows/oxygen-deployment.yml`. Fly setup, secrets, local image verification, and continuous deployment are documented in [`FLY_DEPLOYMENT.md`](./FLY_DEPLOYMENT.md).
 
 ## Skeleton architecture
 

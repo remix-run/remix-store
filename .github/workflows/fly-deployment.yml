@@ -1,0 +1,45 @@
+name: Fly Deploy
+on: push
+
+permissions:
+  contents: read
+
+concurrency:
+  group: fly-deployment
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Deploy to Fly
+    if: vars.FLY_DEPLOY_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      FLY_APP_NAME: ${{ vars.FLY_APP_NAME }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup flyctl
+        uses: superfly/flyctl-actions/setup-flyctl@ed8efb33836e8b2096c7fd3ba1c8afe303ebbff1 # v1
+
+      - name: Deploy
+        run: >-
+          flyctl deploy
+          --app "$FLY_APP_NAME"
+          --build-arg "ASSET_BUILD_ID=$GITHUB_SHA"
+          --ha=false
+          --remote-only
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+      - name: Verify deployment
+        run: |
+          origin="https://${FLY_APP_NAME}.fly.dev"
+          curl --fail --show-error --silent \
+            --retry 12 --retry-all-errors --retry-delay 5 \
+            "$origin/health"
+          curl --fail --show-error --silent \
+            --retry 12 --retry-all-errors --retry-delay 5 \
+            "$origin/" | grep --fixed-strings --quiet "Remix Store"
+          echo "Verified $origin"

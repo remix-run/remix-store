@@ -6,6 +6,19 @@ import { app, browserEntryHref, closeNodeApp } from "./node.ts";
 after(closeNodeApp);
 
 describe("node platform", () => {
+  it("serves a cheap health check before Storefront middleware", async () => {
+    let response = await app.fetch(
+      new Request("http://localhost/health", {
+        headers: { "Accept-Encoding": "gzip" },
+      }),
+    );
+
+    assert.equal(response.status, 200);
+    assert.equal(response.headers.get("Cache-Control"), "no-store");
+    assert.equal(response.headers.get("Content-Encoding"), null);
+    assert.equal(await response.text(), "OK");
+  });
+
   it("compiles the shared browser entry with Remix Assets", async () => {
     let response = await app.fetch(
       new Request(`http://localhost${browserEntryHref}`),
