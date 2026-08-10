@@ -1,4 +1,4 @@
-primary_region = "ord"
+primary_region = "dfw"
 kill_signal = "SIGTERM"
 kill_timeout = 15
 

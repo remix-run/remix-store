@@ -1,6 +1,6 @@
 # Fly deployment
 
-`fly.toml` runs the native Node + Remix Assets target on one always-available 512 MB Machine in `ord`. The app name stays outside the repository so the same config can target staging now and production later.
+`fly.toml` runs the native Node + Remix Assets target on one always-available 512 MB Machine in `dfw`. The app name stays outside the repository so the same config can target staging now and production later.
 
 ## One-time setup
 
