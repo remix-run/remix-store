@@ -1,4 +1,4 @@
-import { router } from "./router.ts";
+import { router } from "./router.oxygen.ts";
 import {
   initializeRuntime,
   type Env,

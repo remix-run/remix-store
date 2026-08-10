@@ -13,11 +13,20 @@ import { storefront, type StorefrontOptions } from "./middleware/storefront.ts";
 import { routes } from "./routes.ts";
 
 export interface AppOptions {
+  platform?: Middleware;
+  renderer: ReturnType<typeof render>;
   storefront?: StorefrontOptions;
 }
 
-function createMiddleware(options: AppOptions = {}) {
-  return [render(), errorPages(), storefront(options.storefront)] as const;
+const passThrough: Middleware = (_context, next) => next();
+
+function createMiddleware(options: AppOptions) {
+  return [
+    options.platform ?? passThrough,
+    options.renderer,
+    errorPages(),
+    storefront(options.storefront),
+  ] as const;
 }
 
 function errorPages(): Middleware {
@@ -49,7 +58,7 @@ declare module "remix/router" {
   }
 }
 
-export function createAppRouter(options: AppOptions = {}) {
+export function createAppRouter(options: AppOptions) {
   let appRouter = createRouter<AppContext>({
     middleware: createMiddleware(options),
     defaultHandler(context) {
@@ -65,5 +74,3 @@ export function createAppRouter(options: AppOptions = {}) {
   appRouter.map(routes, rootController);
   return appRouter;
 }
-
-export const router = createAppRouter();

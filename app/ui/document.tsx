@@ -1,8 +1,6 @@
-import { mergeAssets } from "@hiogawa/vite-plugin-fullstack/runtime";
 import { css, type Handle, type RemixNode } from "remix/ui";
 
-import clientAssets from "../entry.browser.ts?assets=client";
-import serverAssets from "../entry.server.ts?assets=ssr";
+import { DocumentAssetsProvider } from "./document-assets.tsx";
 
 export interface DocumentProps {
   children?: RemixNode;
@@ -19,7 +17,7 @@ export function Document(handle: Handle<DocumentProps>) {
       noIndex = false,
       title,
     } = handle.props;
-    let assets = mergeAssets(clientAssets, serverAssets);
+    let assets = handle.context.get(DocumentAssetsProvider);
 
     return (
       <html lang="en">
@@ -37,7 +35,7 @@ export function Document(handle: Handle<DocumentProps>) {
           {assets.css.map((attributes) => (
             <link {...attributes} rel="stylesheet" />
           ))}
-          <script async src={clientAssets.entry} type="module"></script>
+          <script src={assets.entry} type="module"></script>
           {assets.js.map((attributes) => (
             <link {...attributes} rel="modulepreload" />
           ))}
