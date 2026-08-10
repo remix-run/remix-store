@@ -4,6 +4,7 @@ minimumReleaseAge: 10800
 minimumReleaseAgeExclude:
   - react-router
   - "@react-router/*"
+  - "@shopify/*"
 minimumReleaseAgeStrict: true
 trustPolicy: no-downgrade
 trustPolicyExclude:

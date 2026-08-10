@@ -1,0 +1,19 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "categories": {
+    "correctness": "error"
+  },
+  "env": {
+    "browser": true,
+    "node": true,
+    "worker": true
+  },
+  "ignorePatterns": [
+    ".agents",
+    ".shopify",
+    "build",
+    "dist",
+    "node_modules",
+    "*.generated.*"
+  ]
+}

@@ -180,12 +180,7 @@ const hexOffset = 3;
  * @param b Blue component (0-255)
  * @returns A character ('0'-'F' or ' ')
  */
-function getHexCharForPixelBrightness(
-  r: number,
-  g: number,
-  b: number,
-  minBrightness = 3,
-): string {
+function getHexCharForPixelBrightness(r: number, g: number, b: number): string {
   const averageBrightness = (r + g + b) / 3;
 
   const stepSizeForFullRange = 255 / 16;

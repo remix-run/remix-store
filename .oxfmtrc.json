@@ -1,0 +1,17 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "printWidth": 80,
+  "ignorePatterns": [
+    ".agents",
+    ".env",
+    ".git",
+    ".shopify",
+    "dist",
+    "node_modules",
+    "package-lock.json",
+    "pnpm-lock.yaml",
+    "*.generated.*",
+    "REMIX_STORE_MIGRATION_PLAN.md",
+    "REMIX_STORE_PARITY_PLAN.md"
+  ]
+}

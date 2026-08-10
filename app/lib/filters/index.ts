@@ -4,7 +4,10 @@ import { useNavigation, useSearchParams, useSubmit } from "react-router";
 export const SORT_KEY = "sort";
 
 export type SortKey =
-  "best-selling" | "price-high-to-low" | "price-low-to-high" | "newest";
+  | "best-selling"
+  | "price-high-to-low"
+  | "price-low-to-high"
+  | "newest";
 
 /**
  * The available product types for filtering.
