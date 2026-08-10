@@ -5,10 +5,6 @@ minimumReleaseAgeExclude:
   - remix
   - "@remix-run/*"
   - "@shopify/hydrogen"
-  - "@hiogawa/vite-plugin-fullstack"
-  - vite
-  - typescript
-  - oxc-parser
 minimumReleaseAgeStrict: true
 trustPolicy: no-downgrade
 trustPolicyExclude:
