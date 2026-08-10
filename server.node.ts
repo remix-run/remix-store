@@ -2,7 +2,7 @@ import * as http from "node:http";
 
 import { createRequestListener } from "remix/node-fetch-server";
 
-import { app, closeNodeApp } from "./app/node.server.ts";
+import { app, closeNodeApp } from "./app/node.ts";
 
 const port = process.env.PORT ? Number.parseInt(process.env.PORT, 10) : 44100;
 

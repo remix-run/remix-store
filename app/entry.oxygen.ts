@@ -1,7 +1,7 @@
 import { mergeAssets } from "@hiogawa/vite-plugin-fullstack/runtime";
 
 import clientAssets from "./entry.browser.ts?assets=client";
-import serverAssets from "./entry.server.ts?assets=ssr";
+import serverAssets from "./entry.oxygen.ts?assets=ssr";
 import { render, type RenderOptions } from "./middleware/render.tsx";
 import { createApp } from "./router.ts";
 import { type Env, type ExecutionContext } from "./runtime.ts";

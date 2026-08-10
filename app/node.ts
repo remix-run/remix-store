@@ -18,8 +18,9 @@ const assetServer = createAssetServer({
     "app/*path": "app/*path",
     "node_modules/*path": "node_modules/*path",
   },
+
   allow: ["app/assets/**", "app/entry.browser.ts", "node_modules/**"],
-  deny: ["app/**/*.server.*", "app/**/*.test.*", "app/**/*.spec.*"],
+  deny: ["app/**/*.test.*", "app/**/*.spec.*"],
   sourceMaps: isDevelopment ? "external" : undefined,
   minify: !isDevelopment,
   watch: isDevelopment ? { ignore: ["**/node_modules/**"] } : false,

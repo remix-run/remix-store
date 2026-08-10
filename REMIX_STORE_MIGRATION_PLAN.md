@@ -11,7 +11,7 @@ Companion document: [`REMIX_STORE_PARITY_PLAN.md`](./REMIX_STORE_PARITY_PLAN.md)
 | Framework | React Router 7 + `@shopify/hydrogen` 2026.4.4 (React components) | Remix 3 (`^3.0.0-beta.5`) + framework-neutral Hydrogen preview (`0.0.0-preview-116d5d7-20260730141607`) |
 | Styling | Tailwind 4, Radix, Embla, CVA | Remix `css()`/`mix`, native controls, no UI deps |
 | Build | Shopify CLI (`shopify hydrogen build`) + `@react-router/dev` | Vite 8 + app-owned adapter `vite/remix-oxygen.ts` (wraps `@hiogawa/vite-plugin-fullstack`) + MiniOxygen |
-| Server entry | `server.ts` worker via `@shopify/hydrogen/oxygen` | `app/entry.server.ts` fetch handler; `app/runtime.ts` abstracts env/waitUntil/cache with `process.env` fallback |
+| Server entry | `server.ts` worker via `@shopify/hydrogen/oxygen` | `app/entry.oxygen.ts` fetch handler; `app/runtime.ts` abstracts env/waitUntil/cache with `process.env` fallback |
 | Deploy | GitHub Actions → Oxygen on every push (storefront `1000020043`); `staging` branch exists | `shopify hydrogen deploy --preview` (manual) |
 | CI | format, lint, test, oxygen-deployment workflows | None |
 | Tests | Vitest + Testing Library | `remix test` (unit + browser), Playwright e2e |
@@ -124,9 +124,9 @@ Sequential; single owner recommended.
 ### 1.1 Skeleton
 - Create `v3` from `main` (D2: no history import). One reviewable change that removes the RR7 app (app/, server.ts, react-router config, Tailwind/Radix/Embla deps, Shopify CLI build scripts, codegen artifacts) and adds only the **platform**, ported from the experimental reference with a real review pass:
   - `vite/remix-oxygen.ts` — **line-by-line review**; it is load-bearing spike code (build order, `clientEntry()` transform, manifest inlining, hydration-export validation). Document it as part of the port (see 3.1).
-  - `app/runtime.ts`, `app/entry.server.ts`, `app/entry.browser.ts`
+  - `app/runtime.ts`, `app/entry.oxygen.ts`, `app/entry.browser.ts`
   - `app/routes.ts` / `app/router.ts` scaffolding + render and error-page middleware
-  - Storefront client middleware (`app/middleware/storefront.ts` + `app/data/storefront-*.server.ts`) — this is 2.2's surface, but the skeleton needs a working SFAPI query; land it minimal here, harden it in 2.2
+  - Storefront client middleware (`app/middleware/storefront.ts` + `app/data/storefront.ts`) — this is 2.2's surface, but the skeleton needs a working SFAPI query; land it minimal here, harden it in 2.2
   - A minimal document shell and placeholder home route proving **SSR + hydration + one live SFAPI query** end-to-end
 - Keep from the official repo: `.github/` (adapted in 1.2), `.env.example` (per 0.5), `LICENSE.md`, `README.md` (rewritten), prettier/editor config as desired.
 - Pin **exact** versions of `remix` and `@shopify/hydrogen` (no ranges). Verify the Hydrogen preview snapshot is durably installable from the committed lockfile; if it is a temporary tag, coordinate with the Hydrogen team on a stable preview channel before cutover.
@@ -171,7 +171,7 @@ The experimental app is the **reference**, the official RR7 app is the **behavio
 | # | Surface | Reference (experimental) | Behavioral spec (official) | Extra hardening focus |
 |---|---|---|---|---|
 | 2.1 | Tokens, fonts, icons, image helper, shared primitives (pills, page title, branded states) | `app/ui/shopify-image`, `page-title`, `branded-state` | `tailwind.css` tokens, `image-utils.ts`, `blur-image.tsx` | srcset/sizes correctness, focal points, font/asset provenance |
-| 2.2 | Storefront data layer: client, cache strategies, error handling (hardens the 1.1 minimal version) | `app/data/storefront-*.server.ts`, `middleware/storefront.ts` | `lib/context.ts`, `fragments.ts` | request scoping, cache key hygiene, SFAPI error surfaces |
+| 2.2 | Storefront data layer: client, cache strategies, error handling (hardens the 1.1 minimal version) | `app/data/storefront.ts`, `middleware/storefront.ts` | `lib/context.ts`, `fragments.ts` | request scoping, cache key hygiene, SFAPI error surfaces |
 | 2.3 | Shell: document, header/navbar, footer, preconnects/favicons/meta plumbing | `app/ui/document`, `ui/navbar`, `assets/navbar`, `assets/footer` | `navbar.tsx`, `footer.tsx`, `mobile-menu.tsx`, `meta.ts` | menu-data fallbacks, mobile menu a11y, scroll effects + reduced motion |
 | 2.4 | Home: hero, lookbook, runner, catalog transition | `app/actions/home`, `assets/home-hero` | `hero.server.ts`, `lookbook.server.ts` | metaobject validation/fallbacks, frame preload failure, scroll scrubbing |
 | 2.5 | Product grid + collections + load more | `app/actions/collections`, `ui/product-grid`, `ui/product-card` | `collection.server.ts`, `load-more-products.tsx` | cursor dedupe, GET fallback, back/forward, empty collection |
@@ -198,7 +198,7 @@ The experimental app is the **reference**, the official RR7 app is the **behavio
 ## Phase 3 — Deployment architecture (parallel with Phase 2)
 
 ### 3.1 Oxygen target (exists — harden it)
-- Keep `app/entry.server.ts` + `vite/remix-oxygen.ts` + MiniOxygen dev/preview vendored (D5). The line-by-line review happens in 1.1; this task adds the durable artifacts.
+- Keep `app/entry.oxygen.ts` + `vite/remix-oxygen.ts` + MiniOxygen dev/preview vendored (D5). The line-by-line review happens in 1.1; this task adds the durable artifacts.
 - Add a short `vite/README` documenting the adapter's responsibilities (build order, `clientEntry()` transform, manifest inlining, hydration-export validation) — it is load-bearing and its source-scanning validation is fragile to refactors. Note the intent to replace it with an official Hydrogen/Oxygen adapter when one ships.
 - **Acceptance:** production-environment deploy from a test branch to Oxygen succeeds and passes the acceptance suite.
 

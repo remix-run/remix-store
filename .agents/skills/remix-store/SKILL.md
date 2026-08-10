@@ -67,14 +67,14 @@ router and UI primitives.
 | `app/middleware/storefront.ts` | Request-scoped Shopify context and Storefront client |
 | `app/middleware/render.tsx` | Runtime-neutral streaming HTML renderer |
 | `app/runtime.ts` | Request-scoped env, cache, and `waitUntil`; outer error boundary |
-| `app/node.server.ts` | Node static files, Remix Assets, rendering, and router composition |
+| `app/node.ts` | Node static files, Remix Assets, rendering, and router composition |
 | `server.node.ts` | Node HTTP listener and shutdown lifecycle |
-| `app/entry.server.ts` | Oxygen assets, router composition, and Worker fetch handler |
+| `app/entry.oxygen.ts` | Oxygen assets, router composition, and Worker fetch handler |
 | `app/entry.browser.ts` | Browser hydration module loader |
 | `vite/remix-oxygen.ts` | Temporary, load-bearing Oxygen build adapter |
 
 Keep business routes, controllers, data, UI, and middleware runtime-neutral.
-Node-only imports belong behind `app/node.server.ts` or build tooling. Oxygen
+Node-only imports belong behind `app/node.ts` or build tooling. Oxygen
 runtime code uses Web APIs and receives bindings through the request runtime.
 Do not replace the explicit target composition with `typeof process` branches;
 bundlers still traverse Node imports.
@@ -84,8 +84,8 @@ The two asset pipelines are intentional:
 - Node resolves browser modules with `remix/assets`.
 - Oxygen resolves browser modules from Vite's fullstack asset manifests.
 
-Keep `server.node.ts` separate from `app/node.server.ts` so tests can import the
-Node app without starting an HTTP listener. Runtime adapters call the app's
+Keep `server.node.ts` separate from `app/node.ts` so tests can import the Node
+app without starting an HTTP listener. Runtime adapters call the app's
 `fetch(request, runtime)` boundary rather than the internal router directly.
 Treat `vite/remix-oxygen.ts` as
 vendored infrastructure: review changes carefully and always run an Oxygen
@@ -100,8 +100,8 @@ production build.
 - Put hydratable browser components under `app/assets/` and export them with
   `clientEntry(import.meta.url, component)`. Keep the `import.meta.url` shape;
   both asset pipelines transform or resolve it.
-- Keep server-only data in `*.server.ts` modules and out of the browser import
-  graph.
+- Keep server-only data outside the browser import graph. The Node asset
+  server's explicit `allow` list, not a filename suffix, defines that boundary.
 - Add request values through typed router context keys and middleware; avoid
   module-global request state.
 - Preserve abort signals, response status/headers, branded error pages, and

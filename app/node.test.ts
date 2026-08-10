@@ -1,7 +1,7 @@
 import * as assert from "remix/assert";
 import { after, describe, it } from "remix/test";
 
-import { app, browserEntryHref, closeNodeApp } from "./node.server.ts";
+import { app, browserEntryHref, closeNodeApp } from "./node.ts";
 
 after(closeNodeApp);
 

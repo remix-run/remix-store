@@ -37,12 +37,12 @@ The Oxygen build produces a self-contained Worker at `dist/ssr/index.js` and bro
 
 - `app/routes.ts` defines the typed route contract.
 - `app/router.ts` owns the shared Fetch app, routes, middleware, and runtime boundary.
-- `app/node.server.ts` composes Node static files, Remix Assets, rendering, and routing.
+- `app/node.ts` composes Node static files, Remix Assets, rendering, and routing.
 - `app/middleware/storefront.ts` creates a request-scoped Hydrogen Storefront client.
 - `app/middleware/render.tsx` contains runtime-neutral streaming SSR.
 - `app/runtime.ts` binds environment, cache, and `waitUntil` values to each request.
 - `server.node.ts` owns the Node/Fly-compatible HTTP lifecycle.
-- `app/entry.server.ts` composes and serves the Oxygen Worker runtime.
+- `app/entry.oxygen.ts` composes and serves the Oxygen Worker runtime.
 - `app/entry.browser.ts` hydrates browser components on both targets.
 - `vite/remix-oxygen.ts` owns the temporary Remix 3/Oxygen build integration.
 

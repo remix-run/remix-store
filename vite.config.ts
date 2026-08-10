@@ -9,7 +9,7 @@ export default defineConfig({
       ? [remixOxygen({ serverHandler: true })]
       : [
           oxygen({
-            entry: "./app/entry.server.ts",
+            entry: "./app/entry.oxygen.ts",
             previewEntry: "./dist/ssr/index.js",
           }),
           remixOxygen(),
