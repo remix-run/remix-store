@@ -1,6 +1,7 @@
 import { css, type Handle } from "remix/ui";
 
 import { Counter } from "../assets/counter.tsx";
+import { BrandedState } from "../ui/branded-state.tsx";
 import { Document } from "../ui/document.tsx";
 
 export function HomePage(
@@ -28,10 +29,16 @@ export function HomePage(
 export function NotFoundPage() {
   return () => (
     <Document title="Not found" noIndex>
-      <main mix={mainStyle}>
-        <p mix={eyebrowStyle}>404</p>
-        <h1 mix={headingStyle}>Page not found</h1>
-        <a href="/">Return home</a>
+      <main>
+        <BrandedState
+          kind="404"
+          heading="Page not found"
+          copy="The page you requested does not exist."
+          href="/"
+          icon="fast-forward"
+          linkLabel="Return home"
+          reverseIcon
+        />
       </main>
     </Document>
   );
@@ -40,10 +47,16 @@ export function NotFoundPage() {
 export function ErrorPage() {
   return () => (
     <Document title="Storefront unavailable" noIndex>
-      <main mix={mainStyle}>
-        <p mix={eyebrowStyle}>500</p>
-        <h1 mix={headingStyle}>Storefront unavailable</h1>
-        <p mix={copyStyle}>The storefront could not load. Please try again.</p>
+      <main>
+        <BrandedState
+          kind="500"
+          heading="Storefront unavailable"
+          copy="The storefront could not load. Please try again."
+          href="/"
+          icon="fast-forward"
+          linkLabel="Return home"
+          reverseIcon
+        />
       </main>
     </Document>
   );
