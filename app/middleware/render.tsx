@@ -4,9 +4,16 @@ import type { RemixNode } from "remix/ui";
 import { renderToStream, type RenderToStreamOptions } from "remix/ui/server";
 
 import {
+  FALLBACK_FOOTER_MENU,
+  FALLBACK_NAVIGATION_MENU,
+  type NavigationMenuData,
+} from "../data/storefront.ts";
+import { FooterMenuConfig, NavigationMenuConfig } from "./storefront.ts";
+import {
   DocumentAssetsProvider,
   type DocumentAssets,
 } from "../ui/document-assets.tsx";
+import { ShellDataProvider } from "../ui/shell-data.tsx";
 
 export interface RenderOptions {
   documentAssets: DocumentAssets;
@@ -18,9 +25,20 @@ export function render(options: RenderOptions) {
     let { request } = context;
 
     return function renderPage(node: RemixNode, init?: ResponseInit) {
+      let navigationMenu =
+        (context.get(NavigationMenuConfig) as NavigationMenuData | undefined) ??
+        FALLBACK_NAVIGATION_MENU;
+      let footerMenu =
+        (context.get(FooterMenuConfig) as NavigationMenuData | undefined) ??
+        FALLBACK_FOOTER_MENU;
       let stream = renderToStream(
         <DocumentAssetsProvider {...options.documentAssets}>
-          {node}
+          <ShellDataProvider
+            footerMenu={footerMenu}
+            navigationMenu={navigationMenu}
+          >
+            {node}
+          </ShellDataProvider>
         </DocumentAssetsProvider>,
         {
           frameSrc: request.url,

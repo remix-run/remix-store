@@ -5,7 +5,12 @@ import {
 import * as assert from "remix/assert";
 import { describe, it } from "remix/test";
 
-import { queryShop } from "./storefront.ts";
+import {
+  FALLBACK_FOOTER_MENU,
+  FALLBACK_NAVIGATION_MENU,
+  queryShellMenus,
+  queryShop,
+} from "./storefront.ts";
 
 describe("Storefront data", () => {
   it("returns shop data explicitly", async () => {
@@ -34,6 +39,89 @@ describe("Storefront data", () => {
         result.message,
         "The Storefront API did not return shop data.",
       );
+    }
+  });
+
+  it("normalizes internal menu links and policy routes", async () => {
+    let client = createTestClient(async () =>
+      storefrontResponse({
+        menu: {
+          items: [
+            {
+              id: "all",
+              title: "All Products",
+              url: "https://shop.example.com/collections/all?sort=best#grid",
+            },
+            {
+              id: "external",
+              title: "Remix",
+              url: "https://remix.run/",
+            },
+            {
+              id: "unsafe",
+              title: "Unsafe",
+              url: "javascript:alert(1)",
+            },
+            { id: "empty", title: "Empty", url: null },
+          ],
+        },
+        footerMenu: {
+          items: [
+            {
+              id: "privacy",
+              title: "Privacy Policy",
+              url: "https://example.myshopify.com/policies/privacy-policy",
+            },
+            {
+              id: "external-privacy",
+              title: "Privacy Policy",
+              url: "https://remix.run/privacy",
+            },
+          ],
+        },
+        shop: { primaryDomain: { url: "https://shop.example.com" } },
+      }),
+    );
+
+    let result = await queryShellMenus(client, "example.myshopify.com");
+
+    assert.deepEqual(result.navigationMenu.items, [
+      {
+        id: "all",
+        title: "All Products",
+        url: "/collections/all?sort=best#grid",
+      },
+      { id: "external", title: "Remix", url: "https://remix.run/" },
+      { id: "unsafe", title: "Unsafe", url: "/" },
+    ]);
+    assert.deepEqual(result.footerMenu.items, [
+      {
+        id: "privacy",
+        title: "Privacy Policy",
+        url: "/policies/privacy-policy",
+      },
+      {
+        id: "external-privacy",
+        title: "Privacy Policy",
+        url: "https://remix.run/privacy",
+      },
+    ]);
+  });
+
+  it("falls back when menu data is unavailable", async () => {
+    let client = createTestClient(async () => {
+      throw new TypeError("connection lost");
+    });
+    let originalConsoleError = console.error;
+    console.error = () => {};
+
+    try {
+      let result = await queryShellMenus(client, "example.myshopify.com");
+
+      assert.equal(result.navigationMenu, FALLBACK_NAVIGATION_MENU);
+      assert.equal(result.footerMenu, FALLBACK_FOOTER_MENU);
+    } finally {
+      console.error = originalConsoleError;
     }
   });
 
