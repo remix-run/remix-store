@@ -9,6 +9,10 @@ minimumReleaseAgeExclude:
   - vite
   - typescript
   - oxc-parser
+  - oxlint
+  - "@oxlint/*"
+  - oxfmt
+  - "@oxfmt/*"
 minimumReleaseAgeStrict: true
 trustPolicy: no-downgrade
 trustPolicyExclude:

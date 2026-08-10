@@ -119,12 +119,12 @@ Sequential; single owner recommended.
   - `app/routes.ts` / `app/router.ts` scaffolding + render and error-page middleware
   - Storefront client middleware (`app/middleware/storefront.ts` + `app/data/storefront.ts`) — this is 2.2's surface, but the skeleton needs a working SFAPI query; land it minimal here, harden it in 2.2
   - A minimal document shell and placeholder home route proving **SSR + hydration + one live SFAPI query** end-to-end
-- Keep from the official repo: `.github/` (adapted in 1.2), `.env.example`, `LICENSE.md`, `README.md` (rewritten), and prettier/editor config as desired.
+- Keep from the official repo: `.github/` (adapted in 1.2), `.env.example`, `LICENSE.md`, `README.md` (rewritten), and editor configuration as desired.
 - Pin **exact** versions of `remix` and `@shopify/hydrogen` (no ranges). Verify the Hydrogen preview snapshot is durably installable from the committed lockfile; if it is a temporary tag, coordinate with the Hydrogen team on a stable preview channel before cutover.
 - **Acceptance:** `pnpm i && pnpm dev`, `pnpm build`, `pnpm test`, `pnpm typecheck` all work in `remix-store` on `v3` against the real store env; the skeleton page renders live store data on a preview deploy.
 
 ### 1.2 CI + preview deploys on `v3`
-- Adapt the four workflows (format, lint, test, oxygen-deployment) to the new toolchain. The experimental repo has no lint/format setup — add a minimal one (prettier + typescript; skip the heavy ESLint stack unless the team wants it).
+- Adapt the four workflows (format, lint, test, oxygen-deployment) to the new toolchain. Keep linting and formatting minimal with Oxlint, Oxfmt, and TypeScript.
 - Oxygen deployment: confirm `shopify hydrogen deploy` works with the custom Vite build output (`dist/ssr/index.js` worker + `dist/client` assets) for storefront `1000020043` **preview environments** on `v3` pushes. Production env deploys remain bound to `main`.
 - Run the portable acceptance suite in CI, scoped to ported surfaces. Skipped unported cases are the explicit allowlist and must shrink to zero by the Phase 4 gate.
 - **Acceptance:** push to `v3` → green CI → live preview URL → scoped acceptance suite passes.

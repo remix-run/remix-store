@@ -1,7 +1,7 @@
 {
   "name": "remix-store",
-  "private": true,
   "version": "2024.4.7",
+  "private": true,
   "type": "module",
   "scripts": {
     "dev": "NODE_ENV=development node --env-file-if-exists=.env --watch --import remix/node-tsx server.node.ts",
@@ -13,9 +13,9 @@
     "preview:oxygen": "vite preview",
     "deploy": "pnpm deploy:oxygen",
     "deploy:oxygen": "shopify hydrogen deploy --preview",
-    "lint": "prettier --check .",
+    "lint": "oxlint . && oxfmt --check .",
     "typecheck": "tsc --noEmit && hydrogen gql check --fail-on-warn",
-    "format": "prettier --write .",
+    "format": "oxfmt .",
     "test": "NODE_ENV=test remix test",
     "test:e2e": "playwright test"
   },
@@ -31,8 +31,9 @@
     "@types/node": "24.12.4",
     "magic-string": "0.30.21",
     "oxc-parser": "0.141.0",
+    "oxfmt": "0.63.0",
+    "oxlint": "1.78.0",
     "playwright": "1.62.1",
-    "prettier": "3.9.6",
     "typescript": "6.0.3",
     "vite": "8.2.0"
   },

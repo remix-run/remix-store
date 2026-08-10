@@ -13,7 +13,8 @@ export type AppStorefrontClient = StorefrontClient<{
 }>;
 
 export type StorefrontQueryResult<T> =
-  { ok: true; data: T } | { ok: false; message: string; errors: unknown };
+  | { ok: true; data: T }
+  | { ok: false; message: string; errors: unknown };
 
 export const SHOP_QUERY = gql(`
   query PlatformSkeletonShop {
