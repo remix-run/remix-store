@@ -16,7 +16,8 @@
     "lint": "prettier --check .",
     "typecheck": "tsc --noEmit && hydrogen gql check --fail-on-warn",
     "format": "prettier --write .",
-    "test": "NODE_ENV=test remix test"
+    "test": "NODE_ENV=test remix test",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@shopify/hydrogen": "0.0.0-preview-116d5d7-20260730141607",

@@ -27,11 +27,14 @@ The example environment points at the live production store. Purchases create re
 pnpm lint
 pnpm typecheck
 pnpm test
+pnpm test:e2e
 pnpm build:oxygen
 pnpm preview:oxygen
 ```
 
-The Oxygen build produces a self-contained Worker at `dist/ssr/index.js` and browser assets in `dist/client/`. The Node server compiles browser modules through `remix/assets` and is the foundation for the later Fly deployment target.
+The end-to-end suite starts the native Node app by default. Set `BASE_URL` to run it against an existing Oxygen or Fly deployment. Skipped acceptance cases identify shopper surfaces that have not reached `v3` yet and must be enabled as those features land.
+
+The Oxygen build produces a self-contained Worker at `dist/ssr/index.js` and browser assets in `dist/client/`. The Node server compiles browser modules through `remix/assets` and is the foundation for the Fly deployment target.
 
 ## Skeleton architecture
 

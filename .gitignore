@@ -8,6 +8,9 @@ node_modules
 .shopify
 .DS_Store
 /coverage
+/blob-report
+/playwright-report
+/test-results
 .react-router
 storefront-graphql-env.d.ts
 customer-account-graphql-env.d.ts

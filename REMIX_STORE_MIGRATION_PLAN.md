@@ -4,6 +4,8 @@ Goal: make [`~/code/remix-store`](../remix-store) (github.com/remix-run/remix-st
 
 Companion document: [`REMIX_STORE_PARITY_PLAN.md`](./REMIX_STORE_PARITY_PLAN.md) — the design/feature parity spec. That document defines *what the storefront looks like and does*; this document defines *how the platform swap lands in the official repo and ships*.
 
+**Progress:** Phase 0 was intentionally narrowed and completed on `main` in #247. The Remix 3 skeleton and native Node/Remix Assets runtime landed on `v3` in #246 and #248. Current platform work is establishing continuous Fly deployment alongside the existing Oxygen previews.
+
 ## Current state
 
 | | `remix-store` (official) | `remix-3-hydrogen` (experimental) |
@@ -25,15 +27,17 @@ Design parity (Tiers 1–2 of the parity plan) is essentially complete in the ex
 
 **Do not bulk-import the experimental app either.** It is a spike — built as "let's see if we can get it working," not correctness-focused. Bulk-copying it would launder untested code through one unreviewable mega-commit. Instead:
 
-1. **Phase 0 work ships on `remix-store` `main` today** — cutover acceptance tooling, behavior snapshots, feature retirements (`/components`, possibly locales), and the definitive gap audit. Every item is valuable even if the migration slips.
+1. **Phase 0 was narrowed and completed on `main` in #247** — a portable Playwright acceptance baseline, removal of the unused `/components` route, and concise environment guidance. Separate snapshot, gap-audit, and content-contract artifacts were judged unnecessary.
 2. **A long-lived `v3` branch in `remix-store` starts from a minimal platform skeleton**, then features port over **one at a time** — each PR ports one surface from the experimental reference, passes a hardening checklist, gets fresh tests, and deploys to an Oxygen preview environment. The experimental repo is the *reference implementation*; the official RR7 app is the *behavioral spec*; correctness is established during the port, not assumed from the spike.
-3. **Both deployment targets live in `main` after cutover**; the two deployment branches stay thin (CI + config only), so per-target drift is structurally impossible.
+3. **Both deployment targets use the same branch contents.** During migration, branch pushes may deploy to Oxygen previews and the Fly staging app so runtime drift is caught continuously. After cutover, both workflows are restricted to `main`.
 
 ```
-remix-store main ── Phase 0 PRs (ship now) ──────────────────┐ freeze ─ merge v3 ─ main (v3 code)
-                 \                                           │              │
-                  v3 ─ skeleton ─ feature ports + hardening ─┘              ├─ deploy/oxygen
-                       (reference: remix-3-hydrogen · spec: old RR7 app)    └─ deploy/fly
+remix-store main ── Phase 0 complete ────────────────────────┐
+                 \                                           │
+                  v3 ─ platform ─ feature ports + hardening ─┴─ merge to main
+                       │
+                       ├─ Oxygen preview deployments
+                       └─ Fly staging deployments
 ```
 
 ## Decisions
@@ -43,10 +47,10 @@ remix-store main ── Phase 0 PRs (ship now) ───────────
 | # | Decision | Resolution |
 |---|---|---|
 | D1 | Feature scope | **Full feature parity.** Port subscribe, back-in-stock, store-wide sale, and seasonal snow. Only unused plumbing may be dropped (see the locale finding below and the gap audit). Cutover does not happen until the gap list is empty. |
-| D3 | Deployment-branch model | **Thin branches.** Adapters/configs for both targets live in `main`; `deploy/oxygen` and `deploy/fly` add only CI workflow + target config. `app/runtime.ts` already abstracts the runtime. |
+| D3 | Deployment workflow model | **Shared branch contents, two continuous deploys.** During migration, Oxygen preview and Fly staging workflows may run for every branch push. After cutover, restrict both to `main`; do not maintain target-specific code branches. |
 | — | Prerelease dependencies | **Accepted risk.** The store will ship on Remix 3 beta + Hydrogen preview builds by design. Pin exact versions; upgrades gated by the acceptance suite. |
 | — | Timeline posture | **`v3` is a long-lived branch.** No pressure to cut over early; cutover happens when full parity is verified, not before. |
-| D6 | `/components` styleguide route | **Drop — and drop it on `main` now** (Phase 0.3). The feature is no longer used. Remove `components.tsx` + `components.animated-link.tsx` and any components/deps orphaned by the removal; re-capture snapshots. |
+| D6 | `/components` styleguide route | **Dropped on `main` in #247.** The feature was no longer used and does not port to `v3`. |
 | D2 | Git history / import shape | **No history preservation, no bulk import.** `v3` starts from a minimal platform skeleton; everything else ports one feature at a time with a hardening pass and fresh tests. The experimental repo stays where it is as the porting reference. |
 | D4 | Cutover mechanics | **Merge `v3` → `main`.** `main` stays continuous for clones and CI; rollback = revert the merge commit. |
 | D5 | Vite adapter ownership | **Keep vendored** (`vite/remix-oxygen.ts`). No extraction planned — the expectation is the Hydrogen/Oxygen team eventually ships an official adapter; adopt it when it exists. Until then the vendored copy gets a line-by-line review in Phase 1 and its own documentation. |
@@ -64,11 +68,11 @@ The official store's i18n is **plumbing without a user-facing feature**:
 
 | Item | What's needed | Needed by |
 |---|---|---|
-| Locale/Markets check | Someone with Shopify admin access confirms Markets config and CA order volume → finalizes drop-vs-keep for locale plumbing | Phase 0.3 |
+| Locale/Markets check | Someone with Shopify admin access confirms Markets config and CA order volume → finalizes drop-vs-keep for locale plumbing | Phase 2.15 |
 
 ## Definitive feature-gap audit (seed list)
 
-What the official store has that the experimental app lacks today. Phase 0.3 turns this into the canonical tracked checklist; **cutover gate = every row verified closed or explicitly dropped-with-redirects.**
+What the official store has that the experimental app lacks today. This list and the parity plan are the working checklist; **cutover gate = every row verified closed or explicitly dropped-with-redirects.**
 
 | Gap | Official source | Experimental status | Disposition |
 |---|---|---|---|
@@ -79,43 +83,30 @@ What the official store has that the experimental app lacks today. Phase 0.3 tur
 | Locale path prefix + `@inContext` + sitemap alternates (EN-US/EN-CA/FR-CA) | `lib/i18n.ts`, `($locale)` routes, sitemap route | Missing (fixed EN-US) | **Drop with redirects** per locale finding, pending Markets check (2.15) |
 | Cart permalink `/cart/:lines`, checkout redirect, AJAX cart, `/admin` | `cart.$lines.tsx`, Hydrogen handlers | Present via `handleShopifyRoutes()` in `middleware/storefront.ts` | **Verify during port** (2.11) |
 | Catch-all `$` → Shopify storefront-redirect fallback on 404 | `($locale).$.tsx` + `storefrontRedirect` in `server.ts` | Present per parity plan (checkout compat) | **Verify during port** (2.11) |
-| `/components` internal styleguide | `components.tsx`, `components.animated-link.tsx` | Missing | **Drop on `main` now** (D6, Phase 0.3) |
+| `/components` internal styleguide | `components.tsx`, `components.animated-link.tsx` | Missing | **Dropped on `main` in #247** (D6) |
 | Session-secret-backed session (`SESSION_SECRET`) | `lib/session.ts` | Unclear | **Audit** (2.17) |
-| `PUBLIC_CHECKOUT_DOMAIN` handling (checkout.remix.run) | env + checkout redirect | Unclear | Fold into 0.5 env mapping + 2.11 verification |
+| `PUBLIC_CHECKOUT_DOMAIN` handling (checkout.remix.run) | env + checkout redirect | Unclear | Verify with checkout behavior in 2.11 |
 
-The audit (0.3) must also do a route-by-route and component-by-component sweep of the official app (~96 files) to catch anything not already named by the parity plan — the table above is a seed, not proof of completeness.
+Feature PRs must compare their surface against the official app as they port it. A separate exhaustive Phase 0 audit artifact was intentionally dropped; the table above remains a seed, not proof of completeness.
 
-## Phase 0 — Ship on `remix-store` `main` now (incremental, no migration dependency)
+## Phase 0 — Complete on `main` (#247)
 
-Each task is an independent PR to `main`. All are valuable regardless of migration timing.
+Phase 0 was deliberately reduced to artifacts that improve the active application and remain useful during the migration:
 
-### 0.1 Framework-agnostic acceptance suite
-- Playwright e2e suite that runs against any origin via a `BASE_URL` env var (local dev, Oxygen preview, staging, production).
-- Cover the parity plan's verification matrix: home hero/lookbook, product grid + load more, collection pages, product page variant selection, add-to-cart, cart drawer + full page, quantity/remove, discount code, policies, 404/500, robots/sitemap, no-JS form fallbacks (`javaScriptEnabled: false` projects).
-- Explicitly **do not** assert implementation details (class names, framework markers) — this suite must pass on both stacks.
-- CI job on `remix-store` runs it against production nightly so drift is caught before it corrupts the baseline.
-- **Acceptance:** suite green against current production.
+| Outcome | Status |
+|---|---|
+| Portable Playwright acceptance baseline | Landed on `main`; carried into `v3` with current skeleton and 404 checks enabled. Catalog, product, cart, SEO, and no-JavaScript cases remain skipped until their surfaces port. `BASE_URL` targets existing Oxygen or Fly deployments. |
+| Remove unused `/components` styleguide | Landed on `main`. The route does not exist in the new app. |
+| Environment guidance | Kept alongside the values in `.env.example`; deployment-specific secrets are documented when their consuming feature or target lands. |
 
-### 0.2 Production behavior snapshot (SEO/contract fixtures)
-- Script that captures and commits fixtures from https://shop.remix.run: `sitemap.xml` (+ per-type pages), `robots.txt`, per-route `<title>`/meta/OG/Twitter tags, canonical URLs, response headers (cache-control, CSP if any), and the full redirect inventory (`/discount/:code`, `?discount=`, `/cart/:lines`, checkout/admin/Shopify-standard redirects, MyShopify-domain rewrites).
-- Include the locale URL inventory (`/en-ca/...` etc.) — required input for D1.
-- **Acceptance:** committed fixtures + a diff script that compares any origin against them.
+The following standalone Phase 0 artifacts were intentionally dropped:
 
-### 0.3 Definitive feature-gap audit
-- Turn the seed gap list (above) into the canonical tracked checklist: route-by-route and component-by-component sweep of the official app, each row marked port / verify / drop-with-redirects, with an owner task in Phase 2.
-- Confirm the locale finding: check Shopify admin Markets config and CA order volume; finalize drop-vs-keep for locale plumbing.
-- **Drop `/components` on `main` now** (D6 resolved): remove `components.tsx`, `components.animated-link.tsx`, and anything orphaned by the removal (check `ui/dropdown-menu.tsx` and friends for remaining consumers before deleting).
-- If locales are dropped: ship the redirect + sitemap change **on `main` now** in its own PR, so snapshots (0.2) and the acceptance suite (0.1) converge on target behavior before the platform swap. Locales and `/components` are the only "retire on main" items — everything else ports.
-- **Acceptance:** gap checklist reviewed and agreed as the cutover gate; every row maps to a Phase 2 port/build task.
+- production behavior snapshots and a general-purpose diff script;
+- a separate exhaustive gap-audit document;
+- a separate Shopify content-model contract document; and
+- a separate environment-contract table.
 
-### 0.4 Shopify content-model contract doc
-- Document every Shopify-side dependency both stacks read: metaobject types/handles/fields (`hero` / `remix-3-drop-playground`, `lookbook` / `lookbook-remix-racing`, `storewide_sale`), menus (`main-menu`, `footer`, `product-sidebar-menu`), metafields (`custom.description`, `custom.technical_description`, `custom.subscribe_if_back_in_stock`), policy/page handles, collection handles, free-shipping threshold.
-- Lives in `remix-store` repo; is the shared contract the `v3` branch builds against.
-- **Acceptance:** doc reviewed; experimental app verified to match it (no code changes, discrepancies filed as Phase 2 tasks).
-
-### 0.5 Env var mapping
-- Map the env contracts: official (`PUBLIC_STOREFRONT_ID`, `PUBLIC_STOREFRONT_API_TOKEN`, `PUBLIC_STORE_DOMAIN`, `PUBLIC_CHECKOUT_DOMAIN`, `SESSION_SECRET`) ↔ experimental (`PUBLIC_STORE_DOMAIN`, `PRIVATE_STOREFRONT_API_TOKEN`, `PUBLIC_STOREFRONT_ID`, `SHOP_ID`, `PUBLIC_SHOPIFY_INBOX_ENABLED`). Decide the final contract, document each var's purpose and privacy level, and note which must be configured in Oxygen admin vs. Fly secrets.
-- **Acceptance:** one table in the repo; final `.env.example` agreed.
+The migration plan, parity plan, focused acceptance cases, and GraphQL documents become the maintained contract as each surface ports. Locale/Markets remains an explicit Phase 2.15 decision because it requires Shopify business context, not more repository inventory.
 
 ## Phase 1 — Platform skeleton on `remix-store` `v3` branch
 
@@ -128,14 +119,14 @@ Sequential; single owner recommended.
   - `app/routes.ts` / `app/router.ts` scaffolding + render and error-page middleware
   - Storefront client middleware (`app/middleware/storefront.ts` + `app/data/storefront.ts`) — this is 2.2's surface, but the skeleton needs a working SFAPI query; land it minimal here, harden it in 2.2
   - A minimal document shell and placeholder home route proving **SSR + hydration + one live SFAPI query** end-to-end
-- Keep from the official repo: `.github/` (adapted in 1.2), `.env.example` (per 0.5), `LICENSE.md`, `README.md` (rewritten), prettier/editor config as desired.
+- Keep from the official repo: `.github/` (adapted in 1.2), `.env.example`, `LICENSE.md`, `README.md` (rewritten), and prettier/editor config as desired.
 - Pin **exact** versions of `remix` and `@shopify/hydrogen` (no ranges). Verify the Hydrogen preview snapshot is durably installable from the committed lockfile; if it is a temporary tag, coordinate with the Hydrogen team on a stable preview channel before cutover.
 - **Acceptance:** `pnpm i && pnpm dev`, `pnpm build`, `pnpm test`, `pnpm typecheck` all work in `remix-store` on `v3` against the real store env; the skeleton page renders live store data on a preview deploy.
 
 ### 1.2 CI + preview deploys on `v3`
 - Adapt the four workflows (format, lint, test, oxygen-deployment) to the new toolchain. The experimental repo has no lint/format setup — add a minimal one (prettier + typescript; skip the heavy ESLint stack unless the team wants it).
 - Oxygen deployment: confirm `shopify hydrogen deploy` works with the custom Vite build output (`dist/ssr/index.js` worker + `dist/client` assets) for storefront `1000020043` **preview environments** on `v3` pushes. Production env deploys remain bound to `main`.
-- Wire the Phase 0.1 acceptance suite to run against each `v3` preview deploy in CI, scoped to ported surfaces (the unported remainder is the allowlist; it must shrink to zero by the Phase 4 gate).
+- Run the portable acceptance suite in CI, scoped to ported surfaces. Skipped unported cases are the explicit allowlist and must shrink to zero by the Phase 4 gate.
 - **Acceptance:** push to `v3` → green CI → live preview URL → scoped acceptance suite passes.
 
 ### 1.3 Native Node + Remix Assets boundary
@@ -151,7 +142,7 @@ The experimental app is the **reference**, the official RR7 app is the **behavio
 
 1. Ports one surface from the reference — no bulk-copying of multiple surfaces.
 2. Passes the hardening checklist below (the spike was not correctness-focused; this is where correctness is established).
-3. Ships fresh tests: unit/browser tests in-repo plus new cases in the 0.1 acceptance suite.
+3. Ships fresh tests: unit/browser tests in-repo plus enabled or new cases in the portable acceptance suite.
 4. Validates on the Oxygen preview deploy before merge.
 
 ### Hardening checklist (applies to every port)
@@ -179,8 +170,8 @@ The experimental app is the **reference**, the official RR7 app is the **behavio
 | 2.7 | Cart: store, drawer, full page, mutations, summary, empty state | `app/data/cart*`, `assets/cart*` | `cart.tsx`, `($locale).cart.tsx` | optimistic rollback, rapid updates, scoped errors, checkout gating, dialog a11y |
 | 2.8 | Policies/contact | `app/actions/policies` | `policy.server.ts` | merchant-HTML trust policy |
 | 2.9 | Errors: 404/500/matrix art + branded empty states | `actions/pages`, `assets/matrix-text` | `matrix-text.tsx`, root error boundary | SSR of error states, reduced motion |
-| 2.10 | SEO: meta, robots, sitemap | `actions/robots`, `actions/sitemap` | `meta.ts`, sitemap routes | 0.2 fixture diff driven to zero |
-| 2.11 | Redirects/permalinks/discounts/checkout compat: `/discount/:code`, `?discount=`, `/cart/:lines`, checkout (`PUBLIC_CHECKOUT_DOMAIN`), `/admin`, storefront-redirect 404 fallback, MyShopify-domain rewrites | `actions/discounts`, `middleware/storefront.ts` (`handleShopifyRoutes`) | `discount.$code.tsx`, `cart.$lines.tsx`, `server.ts` | verify the full 0.2 redirect inventory; same-origin safety |
+| 2.10 | SEO: meta, robots, sitemap | `actions/robots`, `actions/sitemap` | `meta.ts`, sitemap routes | enable and expand portable SEO acceptance cases |
+| 2.11 | Redirects/permalinks/discounts/checkout compat: `/discount/:code`, `?discount=`, `/cart/:lines`, checkout (`PUBLIC_CHECKOUT_DOMAIN`), `/admin`, storefront-redirect 404 fallback, MyShopify-domain rewrites | `actions/discounts`, `middleware/storefront.ts` (`handleShopifyRoutes`) | `discount.$code.tsx`, `cart.$lines.tsx`, `server.ts` | portable redirect acceptance cases; same-origin safety |
 | 2.12 | Analytics + consent | `app/assets/analytics`, `data/analytics` | analytics wiring | live event verification in Shopify admin against a preview deploy |
 
 ### Net-new builds (no experimental reference — build from the official implementation + parity plan)
@@ -193,7 +184,7 @@ The experimental app is the **reference**, the official RR7 app is the **behavio
 | 2.16 | Seasonal snow (December-only, reduced-motion fallback) | `snow-field.tsx` |
 | 2.17 | Session/secret audit: what does `SESSION_SECRET` protect in the new stack; carry over or document retirement | `lib/session.ts` |
 
-**Gate to Phase 4:** the 0.3 gap checklist fully closed; acceptance-suite allowlist (1.2) empty; SEO diff clean; analytics verified; one real end-to-end purchase completed and refunded on a preview/staging deploy. `v3` is long-lived — this gate has no deadline and cutover waits for it.
+**Gate to Phase 4:** every gap row resolved; the acceptance-suite skip list empty; SEO acceptance checks green; analytics verified; one real end-to-end purchase completed and refunded on a preview/staging deploy. `v3` is long-lived — this gate has no deadline and cutover waits for it.
 
 ## Phase 3 — Deployment architecture (parallel with Phase 2)
 
@@ -211,25 +202,25 @@ The experimental app is the **reference**, the official RR7 app is the **behavio
 - Add an explicit release-derived `ASSET_BUILD_ID`, plus `Dockerfile` (Node 24 + pnpm, production install → run) and `fly.toml` (region, health check hitting a cheap route, min machines ≥ 1 to avoid cold-start TTFB, secrets via `fly secrets`).
 - **Acceptance:** `docker run` locally serves the store; Fly staging app passes the acceptance suite; SFAPI query volume is compared against Oxygen (cache adapter working); fingerprinted asset caching survives a release rollover.
 
-### 3.3 Branch wiring (per D3)
-- `main`: both entrypoints + both configs, no production CI deploy ambiguity.
-- `deploy/oxygen`: `main` + the oxygen-deployment workflow bound to the production environment.
-- `deploy/fly`: `main` + a fly-deploy workflow (`flyctl deploy` on push).
-- Document the release flow: merge `main` → each deploy branch (fast-forward expected; any conflict is a smell that code leaked into a deploy branch).
-- **Acceptance:** a no-op merge from `main` to each branch triggers a correct deploy.
+### 3.3 Continuous dual-target validation (per D3)
+- Keep both runtime adapters and deployment configs in the application branch; do not create target-specific code branches.
+- During migration, run Oxygen preview and Fly staging deployment workflows on branch pushes so every platform change exercises both targets.
+- Run the portable acceptance suite against deployment URLs when each platform exposes one to the workflow.
+- After `v3` merges to `main`, restrict both deployment workflows to `main` and use protected GitHub environments for production credentials and approvals.
+- **Acceptance:** the same commit deploys successfully to Oxygen and Fly, and the enabled acceptance cases pass against both URLs.
 
 ## Phase 4 — Cutover
 
 Runs only after the Phase 2/3 gate is fully green — expect `v3` to live for a while first.
 
 1. **Freeze** feature PRs on `main` (security fixes only); announce a window.
-2. Rebase/merge latest `main` deltas into `v3` (there should be almost none post-Phase 0).
-3. Deploy `v3` to the **staging** Oxygen environment (existing `staging` branch convention); run the full gate: acceptance suite, SEO diff, analytics verification, Lighthouse/CWV comparison vs. production, manual checkout + refund, cart permalink and discount flows (real money paths).
-4. Configure production Oxygen env vars per 0.5 before merge.
-5. Merge `v3` → `main` (D4 resolved); production deploys via existing workflow. Immediately re-run the acceptance suite + SEO diff against production.
+2. Merge the latest `main` deltas into `v3` (there should be almost none post-Phase 0); do not rewrite the long-lived branch with a rebase.
+3. Deploy `v3` to staging on both Oxygen and Fly; run the full gate: acceptance suite, SEO review, analytics verification, Lighthouse/CWV comparison vs. production, manual checkout + refund, cart permalink and discount flows (real money paths).
+4. Verify production Oxygen and Fly environment values against `.env.example` before merge.
+5. Merge `v3` → `main` (D4 resolved); production deploys via the hardened workflows. Immediately re-run the acceptance suite and SEO checks against production.
 6. Monitor for 48h: Oxygen logs, Shopify analytics event volume (sudden drop = consent/analytics regression), Search Console coverage, conversion funnel.
 7. **Rollback plan:** revert the merge commit on `main` (auto-redeploys the old stack) — keep the old lockfile/toolchain functional until the monitoring window closes. Shopify-side content is shared by both stacks, so rollback is code-only.
-8. Create `deploy/oxygen` and `deploy/fly` from post-cutover `main` (Phase 3.3). Fly runs as a secondary target (e.g., fly-staging domain) until the team decides its production role.
+8. Restrict the Oxygen and Fly deployment workflows to `main` (Phase 3.3). Fly may remain a secondary target until the team decides its production role.
 
 ## Phase 5 — Post-cutover
 
@@ -249,20 +240,20 @@ Prerelease software (Remix 3 beta, Hydrogen preview) is an **accepted** risk —
 | Hydrogen preview snapshot becomes uninstallable | Medium | Blocks all builds | Verify durable install path in 1.1; coordinate stable preview channel; lockfile committed |
 | Remix 3 beta breaking changes mid-migration | Medium | Rework | Pin exact versions; upgrade only at phase boundaries with full suite; long-lived `v3` absorbs this without production exposure |
 | Spike-quality reference code carries latent bugs | High (by the author's own assessment) | Subtle production defects | Per-feature ports with the hardening checklist + fresh tests; RR7 app is the behavioral spec, not the spike; no bulk imports |
-| SEO regression on cutover (locales, sitemap, meta) | Medium | Organic traffic loss | 0.2 fixtures + 2.6 zero-diff gate + post-cutover Search Console monitoring |
-| Real-money flow regression (checkout, permalinks, discounts) | Low | Customer harm | Manual purchase test in gate; these paths get explicit e2e coverage in 0.1 |
+| SEO regression on cutover (locales, sitemap, meta) | Medium | Organic traffic loss | Portable SEO acceptance cases + pre-cutover review + post-cutover Search Console monitoring |
+| Real-money flow regression (checkout, permalinks, discounts) | Low | Customer harm | Manual purchase test in gate; these paths get explicit portable acceptance coverage |
 | Analytics/consent silently broken | Medium | Merch data loss | 2.5 live verification + event-volume monitoring post-cutover |
 | Vite adapter fragility (source-scanning validation) | Medium | Confusing build failures | 3.1 documentation; adapter changes require build + e2e in CI |
 | Node target SFAPI rate limiting (no Cache API) | Medium | Fly target slow/throttled | 3.2 cache adapter + query-volume comparison before Fly serves real traffic |
-| Deploy-branch drift | Low (with D3=a) | Divergent prod behavior | Thin branches; conflict-on-merge treated as a defect |
+| Deployment-target drift | Low | Node and Oxygen behavior diverges | Deploy the same branch commit to both targets and run the portable acceptance cases against each |
 
 ## Sub-agent task index
 
-Phase 0: 0.1 acceptance suite · 0.2 behavior snapshot · 0.3 gap audit + `/components` drop (+ locale drop if confirmed) · 0.4 content-model doc · 0.5 env mapping
+Phase 0 (complete in #247): portable acceptance baseline · `/components` removal · concise environment guidance
 Phase 1: 1.1 platform skeleton · 1.2 CI + preview deploys · 1.3 native Node + Remix Assets boundary
 Phase 2 ports: 2.1 tokens/primitives · 2.2 data layer · 2.3 shell · 2.4 home · 2.5 grid/collections · 2.6 product · 2.7 cart · 2.8 policies · 2.9 errors · 2.10 SEO · 2.11 redirects · 2.12 analytics
 Phase 2 builds: 2.13 sale · 2.14 subscribe/back-in-stock · 2.15 locales · 2.16 snow · 2.17 session audit
-Phase 3: 3.1 oxygen hardening · 3.2 node/fly target · 3.3 branch wiring
+Phase 3: 3.1 oxygen hardening · 3.2 node/fly target · 3.3 continuous dual-target validation
 Phase 4: cutover runbook (single owner, not parallelized)
 
 Rules for every sub-agent task: read `.agents/skills/remix-store/SKILL.md` and the relevant version-matched Hydrogen skill under `node_modules/@shopify/hydrogen/skills/`; follow the parity plan's conversion rules (no Tailwind/Radix/Embla/React-Router idioms); every PR runs build + typecheck + tests + acceptance suite against a preview deploy; no commits or pushes without explicit human sign-off on the PR flow.
