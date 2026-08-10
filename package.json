@@ -4,14 +4,19 @@
   "version": "2024.4.7",
   "type": "module",
   "scripts": {
-    "dev": "vite dev",
-    "build": "vite build",
-    "preview": "vite preview",
-    "deploy": "shopify hydrogen deploy --preview",
+    "dev": "NODE_ENV=development node --env-file-if-exists=.env --watch --import remix/node-tsx server.node.ts",
+    "start": "NODE_ENV=production node --env-file-if-exists=.env --import remix/node-tsx server.node.ts",
+    "dev:oxygen": "vite dev",
+    "build": "pnpm build:oxygen",
+    "build:oxygen": "vite build",
+    "preview": "pnpm preview:oxygen",
+    "preview:oxygen": "vite preview",
+    "deploy": "pnpm deploy:oxygen",
+    "deploy:oxygen": "shopify hydrogen deploy --preview",
     "lint": "prettier --check .",
     "typecheck": "tsc --noEmit && hydrogen gql check --fail-on-warn",
     "format": "prettier --write .",
-    "test": "NODE_ENV=test NODE_OPTIONS=--import=./test/assets-stub.js remix test"
+    "test": "NODE_ENV=test remix test"
   },
   "dependencies": {
     "@shopify/hydrogen": "0.0.0-preview-116d5d7-20260730141607",

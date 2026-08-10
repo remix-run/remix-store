@@ -1,6 +1,6 @@
 import { createController } from "remix/router";
 
-import { queryShop } from "../data/storefront.server.ts";
+import { queryShop } from "../data/storefront.ts";
 import { routes } from "../routes.ts";
 import { HomePage } from "./pages.tsx";
 

@@ -11,7 +11,7 @@ Companion document: [`REMIX_STORE_PARITY_PLAN.md`](./REMIX_STORE_PARITY_PLAN.md)
 | Framework | React Router 7 + `@shopify/hydrogen` 2026.4.4 (React components) | Remix 3 (`^3.0.0-beta.5`) + framework-neutral Hydrogen preview (`0.0.0-preview-116d5d7-20260730141607`) |
 | Styling | Tailwind 4, Radix, Embla, CVA | Remix `css()`/`mix`, native controls, no UI deps |
 | Build | Shopify CLI (`shopify hydrogen build`) + `@react-router/dev` | Vite 8 + app-owned adapter `vite/remix-oxygen.ts` (wraps `@hiogawa/vite-plugin-fullstack`) + MiniOxygen |
-| Server entry | `server.ts` worker via `@shopify/hydrogen/oxygen` | `app/entry.server.ts` fetch handler; `app/runtime.ts` abstracts env/waitUntil/cache with `process.env` fallback |
+| Server entry | `server.ts` worker via `@shopify/hydrogen/oxygen` | `app/entry.oxygen.ts` fetch handler; `app/runtime.ts` abstracts env/waitUntil/cache with `process.env` fallback |
 | Deploy | GitHub Actions → Oxygen on every push (storefront `1000020043`); `staging` branch exists | `shopify hydrogen deploy --preview` (manual) |
 | CI | format, lint, test, oxygen-deployment workflows | None |
 | Tests | Vitest + Testing Library | `remix test` (unit + browser), Playwright e2e |
@@ -124,9 +124,9 @@ Sequential; single owner recommended.
 ### 1.1 Skeleton
 - Create `v3` from `main` (D2: no history import). One reviewable change that removes the RR7 app (app/, server.ts, react-router config, Tailwind/Radix/Embla deps, Shopify CLI build scripts, codegen artifacts) and adds only the **platform**, ported from the experimental reference with a real review pass:
   - `vite/remix-oxygen.ts` — **line-by-line review**; it is load-bearing spike code (build order, `clientEntry()` transform, manifest inlining, hydration-export validation). Document it as part of the port (see 3.1).
-  - `app/runtime.ts`, `app/entry.server.ts`, `app/entry.browser.ts`
+  - `app/runtime.ts`, `app/entry.oxygen.ts`, `app/entry.browser.ts`
   - `app/routes.ts` / `app/router.ts` scaffolding + render and error-page middleware
-  - Storefront client middleware (`app/middleware/storefront.ts` + `app/data/storefront-*.server.ts`) — this is 2.2's surface, but the skeleton needs a working SFAPI query; land it minimal here, harden it in 2.2
+  - Storefront client middleware (`app/middleware/storefront.ts` + `app/data/storefront.ts`) — this is 2.2's surface, but the skeleton needs a working SFAPI query; land it minimal here, harden it in 2.2
   - A minimal document shell and placeholder home route proving **SSR + hydration + one live SFAPI query** end-to-end
 - Keep from the official repo: `.github/` (adapted in 1.2), `.env.example` (per 0.5), `LICENSE.md`, `README.md` (rewritten), prettier/editor config as desired.
 - Pin **exact** versions of `remix` and `@shopify/hydrogen` (no ranges). Verify the Hydrogen preview snapshot is durably installable from the committed lockfile; if it is a temporary tag, coordinate with the Hydrogen team on a stable preview channel before cutover.
@@ -137,6 +137,13 @@ Sequential; single owner recommended.
 - Oxygen deployment: confirm `shopify hydrogen deploy` works with the custom Vite build output (`dist/ssr/index.js` worker + `dist/client` assets) for storefront `1000020043` **preview environments** on `v3` pushes. Production env deploys remain bound to `main`.
 - Wire the Phase 0.1 acceptance suite to run against each `v3` preview deploy in CI, scoped to ported surfaces (the unported remainder is the allowlist; it must shrink to zero by the Phase 4 gate).
 - **Acceptance:** push to `v3` → green CI → live preview URL → scoped acceptance suite passes.
+
+### 1.3 Native Node + Remix Assets boundary
+- Make `remix/node-fetch-server` + `remix/assets` the default local development runtime so application code does not accumulate Vite-specific asset assumptions.
+- Keep shared routes, actions, UI, Storefront middleware, and streaming SSR runtime-neutral. Put Node asset resolution and Oxygen/Vite manifest resolution behind target-specific router composition.
+- Keep `pnpm dev:oxygen`, `pnpm build:oxygen`, and `pnpm preview:oxygen` as explicit Worker-runtime validation paths.
+- Add only the Node/Fly-compatible server foundation here; defer Docker, Fly configuration, production cache, compression, health checks, and deployment workflows to Phase 3.2.
+- **Acceptance:** the same server-rendered page and browser component work under native Node/Remix Assets and built Oxygen preview; both targets retain focused tests.
 
 ## Phase 2 — Feature-by-feature port with hardening (PRs into `v3`)
 
@@ -164,7 +171,7 @@ The experimental app is the **reference**, the official RR7 app is the **behavio
 | # | Surface | Reference (experimental) | Behavioral spec (official) | Extra hardening focus |
 |---|---|---|---|---|
 | 2.1 | Tokens, fonts, icons, image helper, shared primitives (pills, page title, branded states) | `app/ui/shopify-image`, `page-title`, `branded-state` | `tailwind.css` tokens, `image-utils.ts`, `blur-image.tsx` | srcset/sizes correctness, focal points, font/asset provenance |
-| 2.2 | Storefront data layer: client, cache strategies, error handling (hardens the 1.1 minimal version) | `app/data/storefront-*.server.ts`, `middleware/storefront.ts` | `lib/context.ts`, `fragments.ts` | request scoping, cache key hygiene, SFAPI error surfaces |
+| 2.2 | Storefront data layer: client, cache strategies, error handling (hardens the 1.1 minimal version) | `app/data/storefront.ts`, `middleware/storefront.ts` | `lib/context.ts`, `fragments.ts` | request scoping, cache key hygiene, SFAPI error surfaces |
 | 2.3 | Shell: document, header/navbar, footer, preconnects/favicons/meta plumbing | `app/ui/document`, `ui/navbar`, `assets/navbar`, `assets/footer` | `navbar.tsx`, `footer.tsx`, `mobile-menu.tsx`, `meta.ts` | menu-data fallbacks, mobile menu a11y, scroll effects + reduced motion |
 | 2.4 | Home: hero, lookbook, runner, catalog transition | `app/actions/home`, `assets/home-hero` | `hero.server.ts`, `lookbook.server.ts` | metaobject validation/fallbacks, frame preload failure, scroll scrubbing |
 | 2.5 | Product grid + collections + load more | `app/actions/collections`, `ui/product-grid`, `ui/product-card` | `collection.server.ts`, `load-more-products.tsx` | cursor dedupe, GET fallback, back/forward, empty collection |
@@ -191,18 +198,18 @@ The experimental app is the **reference**, the official RR7 app is the **behavio
 ## Phase 3 — Deployment architecture (parallel with Phase 2)
 
 ### 3.1 Oxygen target (exists — harden it)
-- Keep `app/entry.server.ts` + `vite/remix-oxygen.ts` + MiniOxygen dev/preview vendored (D5). The line-by-line review happens in 1.1; this task adds the durable artifacts.
+- Keep `app/entry.oxygen.ts` + `vite/remix-oxygen.ts` + MiniOxygen dev/preview vendored (D5). The line-by-line review happens in 1.1; this task adds the durable artifacts.
 - Add a short `vite/README` documenting the adapter's responsibilities (build order, `clientEntry()` transform, manifest inlining, hydration-export validation) — it is load-bearing and its source-scanning validation is fragile to refactors. Note the intent to replace it with an official Hydrogen/Oxygen adapter when one ships.
 - **Acceptance:** production-environment deploy from a test branch to Oxygen succeeds and passes the acceptance suite.
 
-### 3.2 Node/Fly target (new)
-- Add `server.node.ts`: standard Node server via `remix/node-fetch-server` importing the same `router`, with middleware order `compression()` → `staticFiles('./dist/client', immutable/fingerprinted)` → `staticFiles('./public')` → router. (See remix skill `references/middleware-and-server.md` §Node Server Setup.)
-- Runtime gaps to close in `app/runtime.ts` consumers (the abstraction already exists):
-  - **Cache:** Node has no `caches` API → `getRuntimeCache()` returns `undefined`. Verify `app/data/storefront-cache.server.ts` degrades gracefully, then add an in-memory TTL cache adapter honoring the same cache-control strategies (watch SFAPI rate limits and TTFB without it). Redis is a later option, not a launch requirement.
-  - **Env:** `getEnv()` already falls back to `process.env`. ✓
-  - **waitUntil:** `runInBackground()` already falls back to `void promise`. ✓
-- Add `Dockerfile` (node 24 + pnpm, build → prune → run) and `fly.toml` (region, health check hitting a cheap route, min machines ≥ 1 to avoid cold-start TTFB, secrets via `fly secrets`).
-- **Acceptance:** `docker run` locally serves the store; Fly staging app passes the acceptance suite; SFAPI query volume compared against Oxygen (cache adapter working).
+### 3.2 Node/Fly target (harden and deploy the 1.3 foundation)
+- Keep `server.node.ts` + `remix/node-fetch-server` + `remix/assets` as the canonical Node path. Add compression without moving browser compilation into Vite; serve `public/` before application routes and retain immutable fingerprinted Remix Asset URLs in production.
+- Runtime gaps to close in `app/runtime.ts` consumers:
+  - **Cache:** Node has no `caches` API. Verify Storefront queries degrade gracefully, then add an in-memory TTL cache adapter honoring the same cache-control strategies (watch SFAPI rate limits and TTFB without it). Redis is a later option, not a launch requirement.
+  - **Env:** Node request runtime uses `process.env`. ✓
+  - **waitUntil:** add a deliberate Node background-task policy before any feature relies on it; do not leave rejected promises unobserved.
+- Add an explicit release-derived `ASSET_BUILD_ID`, plus `Dockerfile` (Node 24 + pnpm, production install → run) and `fly.toml` (region, health check hitting a cheap route, min machines ≥ 1 to avoid cold-start TTFB, secrets via `fly secrets`).
+- **Acceptance:** `docker run` locally serves the store; Fly staging app passes the acceptance suite; SFAPI query volume is compared against Oxygen (cache adapter working); fingerprinted asset caching survives a release rollover.
 
 ### 3.3 Branch wiring (per D3)
 - `main`: both entrypoints + both configs, no production CI deploy ambiguity.
@@ -252,10 +259,10 @@ Prerelease software (Remix 3 beta, Hydrogen preview) is an **accepted** risk —
 ## Sub-agent task index
 
 Phase 0: 0.1 acceptance suite · 0.2 behavior snapshot · 0.3 gap audit + `/components` drop (+ locale drop if confirmed) · 0.4 content-model doc · 0.5 env mapping
-Phase 1: 1.1 platform skeleton · 1.2 CI + preview deploys
+Phase 1: 1.1 platform skeleton · 1.2 CI + preview deploys · 1.3 native Node + Remix Assets boundary
 Phase 2 ports: 2.1 tokens/primitives · 2.2 data layer · 2.3 shell · 2.4 home · 2.5 grid/collections · 2.6 product · 2.7 cart · 2.8 policies · 2.9 errors · 2.10 SEO · 2.11 redirects · 2.12 analytics
 Phase 2 builds: 2.13 sale · 2.14 subscribe/back-in-stock · 2.15 locales · 2.16 snow · 2.17 session audit
 Phase 3: 3.1 oxygen hardening · 3.2 node/fly target · 3.3 branch wiring
 Phase 4: cutover runbook (single owner, not parallelized)
 
-Rules for every sub-agent task: read `.agents/skills/remix/SKILL.md` and the relevant hydrogen skills first; follow the parity plan's conversion rules (no Tailwind/Radix/Embla/React-Router idioms); every PR runs build + typecheck + tests + acceptance suite against a preview deploy; no commits or pushes without explicit human sign-off on the PR flow.
+Rules for every sub-agent task: read `.agents/skills/remix-store/SKILL.md` and the relevant version-matched Hydrogen skill under `node_modules/@shopify/hydrogen/skills/`; follow the parity plan's conversion rules (no Tailwind/Radix/Embla/React-Router idioms); every PR runs build + typecheck + tests + acceptance suite against a preview deploy; no commits or pushes without explicit human sign-off on the PR flow.

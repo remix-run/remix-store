@@ -17,6 +17,8 @@ cp .env.example .env
 pnpm dev
 ```
 
+`pnpm dev` runs the framework-native Node server with `remix/assets`. Use `pnpm dev:oxygen` when testing the same application under MiniOxygen's Worker runtime.
+
 The example environment points at the live production store. Purchases create real orders and charge real money.
 
 ## Validation
@@ -25,20 +27,23 @@ The example environment points at the live production store. Purchases create re
 pnpm lint
 pnpm typecheck
 pnpm test
-pnpm build
-pnpm preview
+pnpm build:oxygen
+pnpm preview:oxygen
 ```
 
-The build produces a self-contained Oxygen worker at `dist/ssr/index.js` and browser assets in `dist/client/`.
+The Oxygen build produces a self-contained Worker at `dist/ssr/index.js` and browser assets in `dist/client/`. The Node server compiles browser modules through `remix/assets` and is the foundation for the later Fly deployment target.
 
 ## Skeleton architecture
 
 - `app/routes.ts` defines the typed route contract.
-- `app/router.ts` maps routes and composes request middleware.
+- `app/router.ts` owns the shared Fetch app, routes, middleware, and runtime boundary.
+- `app/node.ts` composes Node static files, Remix Assets, rendering, and routing.
 - `app/middleware/storefront.ts` creates a request-scoped Hydrogen Storefront client.
-- `app/middleware/render.tsx` renders Remix UI to streaming HTML.
-- `app/entry.server.ts` is the Oxygen Worker entry.
-- `app/entry.browser.ts` hydrates browser components.
+- `app/middleware/render.tsx` contains runtime-neutral streaming SSR.
+- `app/runtime.ts` binds environment, cache, and `waitUntil` values to each request.
+- `server.node.ts` owns the Node/Fly-compatible HTTP lifecycle.
+- `app/entry.oxygen.ts` composes and serves the Oxygen Worker runtime.
+- `app/entry.browser.ts` hydrates browser components on both targets.
 - `vite/remix-oxygen.ts` owns the temporary Remix 3/Oxygen build integration.
 
 ## License

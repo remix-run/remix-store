@@ -11,13 +11,23 @@ import { ErrorPage, NotFoundPage } from "./actions/pages.tsx";
 import { render } from "./middleware/render.tsx";
 import { storefront, type StorefrontOptions } from "./middleware/storefront.ts";
 import { routes } from "./routes.ts";
+import { fetchWithRuntime, type Runtime } from "./runtime.ts";
 
 export interface AppOptions {
+  platform?: Middleware;
+  renderer: ReturnType<typeof render>;
   storefront?: StorefrontOptions;
 }
 
-function createMiddleware(options: AppOptions = {}) {
-  return [render(), errorPages(), storefront(options.storefront)] as const;
+const passThrough: Middleware = (_context, next) => next();
+
+function createMiddleware(options: AppOptions) {
+  return [
+    options.platform ?? passThrough,
+    options.renderer,
+    errorPages(),
+    storefront(options.storefront),
+  ] as const;
 }
 
 function errorPages(): Middleware {
@@ -49,8 +59,8 @@ declare module "remix/router" {
   }
 }
 
-export function createAppRouter(options: AppOptions = {}) {
-  let appRouter = createRouter<AppContext>({
+export function createApp(options: AppOptions) {
+  let router = createRouter<AppContext>({
     middleware: createMiddleware(options),
     defaultHandler(context) {
       if (context.method !== "GET") {
@@ -62,8 +72,11 @@ export function createAppRouter(options: AppOptions = {}) {
     },
   });
 
-  appRouter.map(routes, rootController);
-  return appRouter;
-}
+  router.map(routes, rootController);
 
-export const router = createAppRouter();
+  return {
+    fetch(request: Request, runtime: Runtime = {}) {
+      return fetchWithRuntime(request, runtime, () => router.fetch(request));
+    },
+  };
+}
