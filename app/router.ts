@@ -7,6 +7,7 @@ import {
 } from "remix/router";
 
 import rootController from "./actions/controller.tsx";
+import collectionsController from "./actions/collections/controller.tsx";
 import { ErrorPage, NotFoundPage } from "./actions/pages.tsx";
 import { render } from "./middleware/render.tsx";
 import { storefront, type StorefrontOptions } from "./middleware/storefront.ts";
@@ -73,6 +74,7 @@ export function createApp(options: AppOptions) {
   });
 
   router.map(routes, rootController);
+  router.map(routes.collections, collectionsController);
 
   return {
     fetch(request: Request, runtime: Runtime = {}) {

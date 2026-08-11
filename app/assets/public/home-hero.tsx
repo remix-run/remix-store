@@ -6,8 +6,8 @@ import {
   type SerializableObject,
 } from "remix/ui";
 
-import type { ImageData } from "../data/storefront.ts";
-import { PillIcon, pillLinkStyle } from "../ui/pill-link.tsx";
+import type { ImageData } from "../../data/storefront.ts";
+import { PillIcon, pillLinkStyle } from "../../ui/public/pill-link.tsx";
 
 export interface HomeHeroProps extends SerializableObject {
   assetImages: ImageData[];

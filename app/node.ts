@@ -21,7 +21,7 @@ const assetServer = createAssetServer({
     "/node_modules/*path": "node_modules/*path",
   },
 
-  allowFiles: ["app/assets/**", "app/ui/pill-link.tsx", "app/entry.browser.ts"],
+  allowFiles: ["app/**/public/**", "app/entry.browser.ts"],
   allowPackages: ["remix"],
   denyFiles: ["app/**/*.test.*", "app/**/*.spec.*"],
   sourceMaps: isDevelopment ? "external" : undefined,

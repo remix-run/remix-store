@@ -7,7 +7,7 @@ import {
   type SerializableObject,
 } from "remix/ui";
 
-import type { NavigationMenuData } from "../data/storefront.ts";
+import type { NavigationMenuData } from "../../data/storefront.ts";
 
 export const RemixLogo = clientEntry(
   import.meta.url,

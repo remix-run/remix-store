@@ -47,6 +47,35 @@ export type ProductMoney = SerializableObject & {
   currencyCode: string;
 };
 
+export type ProductCardData = SerializableObject & {
+  compareAtPrice?: ProductMoney | null;
+  handle: string;
+  id: string;
+  images: ImageData[];
+  price?: ProductMoney | null;
+  priceRange: SerializableObject & {
+    maxVariantPrice: ProductMoney;
+    minVariantPrice: ProductMoney;
+  };
+  title: string;
+};
+
+export type ProductPageInfoData = SerializableObject & {
+  endCursor?: string | null;
+  hasNextPage: boolean;
+};
+
+export type CollectionData = SerializableObject & {
+  description: string;
+  handle: string;
+  id: string;
+  products: SerializableObject & {
+    nodes: ProductCardData[];
+    pageInfo: ProductPageInfoData;
+  };
+  title: string;
+};
+
 export type HomeHeroData = SerializableObject & {
   assetImages: ImageData[];
   collectionHandle: string;
@@ -68,6 +97,8 @@ export type HomeLookbookEntryData = SerializableObject & {
 export type HomeData = SerializableObject & {
   hero: HomeHeroData | null;
   lookbookEntries: HomeLookbookEntryData[];
+  pageInfo: ProductPageInfoData;
+  products: ProductCardData[];
   shop: {
     description?: string | null;
     name: string;
@@ -231,7 +262,74 @@ const NAVIGATION_QUERY = gql(`
   }
 `);
 
+const PRODUCT_CARD_FRAGMENT = gql(`
+  fragment RemixProductCard on Product {
+    id
+    handle
+    title
+    images(first: 2) {
+      nodes {
+        id
+        url
+        altText
+        width
+        height
+      }
+    }
+    selectedOrFirstAvailableVariant {
+      price {
+        amount
+        currencyCode
+      }
+      compareAtPrice {
+        amount
+        currencyCode
+      }
+    }
+    priceRange {
+      minVariantPrice {
+        amount
+        currencyCode
+      }
+      maxVariantPrice {
+        amount
+        currencyCode
+      }
+    }
+  }
+`);
+
+const COLLECTION_QUERY = gql(
+  `
+    query RemixCollection(
+      $handle: String!
+      $first: Int!
+      $after: String
+      $country: CountryCode
+      $language: LanguageCode
+    ) @inContext(country: $country, language: $language) {
+      collection(handle: $handle) {
+        id
+        handle
+        title
+        description
+        products(first: $first, after: $after) {
+          nodes {
+            ...RemixProductCard
+          }
+          pageInfo {
+            hasNextPage
+            endCursor
+          }
+        }
+      }
+    }
+  `,
+  [PRODUCT_CARD_FRAGMENT],
+);
+
 const STABLE_CACHE = Cache.long({ staleIfError: { days: 7 } });
+const CATALOG_CACHE = Cache.short({ staleIfError: { minutes: 5 } });
 
 type ShopData = StorefrontApi.ResultOf<typeof SHOP_QUERY>["shop"];
 type HomeQueryData = StorefrontApi.ResultOf<typeof HOME_QUERY>;
@@ -270,9 +368,10 @@ export async function queryHome(
   storefront: AppStorefrontClient,
 ): Promise<StorefrontQueryResult<HomeData>> {
   try {
-    let result = await storefront.graphql(HOME_QUERY, {
-      cache: STABLE_CACHE,
-    });
+    let [result, catalog] = await Promise.all([
+      storefront.graphql(HOME_QUERY, { cache: STABLE_CACHE }),
+      queryCollection(storefront, "all"),
+    ]);
     if (result.errors || !result.data) {
       return {
         ok: false,
@@ -287,6 +386,11 @@ export async function queryHome(
         shop: result.data.shop,
         hero: toHomeHeroData(result.data.hero),
         lookbookEntries: toHomeLookbookEntries(result.data.lookbook),
+        products: catalog.ok && catalog.data ? catalog.data.products.nodes : [],
+        pageInfo:
+          catalog.ok && catalog.data
+            ? catalog.data.products.pageInfo
+            : { hasNextPage: false, endCursor: null },
       },
     };
   } catch (error) {
@@ -299,6 +403,58 @@ export async function queryHome(
     return {
       ok: false,
       message: "The Storefront API home request failed.",
+      errors: error,
+    };
+  }
+}
+
+export async function queryCollection(
+  storefront: AppStorefrontClient,
+  handle: string,
+  pagination: { after?: string; first?: number } = {},
+): Promise<StorefrontQueryResult<CollectionData | null>> {
+  try {
+    let result = await storefront.graphql(COLLECTION_QUERY, {
+      variables: {
+        after: pagination.after,
+        first: pagination.first ?? 15,
+        handle,
+      },
+      cache: CATALOG_CACHE,
+    });
+    if (result.errors || !result.data) {
+      return {
+        ok: false,
+        message: "The Storefront API did not return collection data.",
+        errors: result.errors,
+      };
+    }
+
+    let collection = result.data.collection;
+    if (!collection) return { ok: true, data: null };
+    return {
+      ok: true,
+      data: {
+        id: collection.id,
+        handle: collection.handle,
+        title: collection.title,
+        description: collection.description,
+        products: {
+          nodes: collection.products.nodes.map(toProductCardData),
+          pageInfo: collection.products.pageInfo,
+        },
+      },
+    };
+  } catch (error) {
+    if (
+      !(error instanceof StorefrontApiError) &&
+      !(error instanceof StorefrontTimeoutError)
+    ) {
+      throw error;
+    }
+    return {
+      ok: false,
+      message: "The Storefront API collection request failed.",
       errors: error,
     };
   }
@@ -508,6 +664,49 @@ function toHomeLookbookEntries(
       ];
     }) ?? []
   );
+}
+
+function toProductCardData(product: {
+  handle: string;
+  id: string;
+  images: {
+    nodes: Array<{
+      altText?: string | null;
+      height?: number | null;
+      id?: string | null;
+      url: string;
+      width?: number | null;
+    }>;
+  };
+  priceRange: {
+    maxVariantPrice: ProductMoney;
+    minVariantPrice: ProductMoney;
+  };
+  selectedOrFirstAvailableVariant?: {
+    compareAtPrice?: ProductMoney | null;
+    price: ProductMoney;
+  } | null;
+  title: string;
+}): ProductCardData {
+  return {
+    id: product.id,
+    handle: product.handle,
+    title: product.title,
+    images: product.images.nodes.map((image) => ({
+      id: image.id,
+      url: image.url,
+      altText: image.altText,
+      width: image.width,
+      height: image.height,
+    })),
+    price: product.selectedOrFirstAvailableVariant?.price ?? null,
+    compareAtPrice:
+      product.selectedOrFirstAvailableVariant?.compareAtPrice ?? null,
+    priceRange: {
+      minVariantPrice: product.priceRange.minVariantPrice,
+      maxVariantPrice: product.priceRange.maxVariantPrice,
+    },
+  };
 }
 
 function toSerializableFocalPoint(

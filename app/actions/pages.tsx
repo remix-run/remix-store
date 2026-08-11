@@ -1,16 +1,19 @@
 import { css, type Handle } from "remix/ui";
 
-import { HomeHero } from "../assets/home-hero.tsx";
+import { CollectionProductGrid } from "../assets/public/collection-grid.tsx";
+import { HomeHero } from "../assets/public/home-hero.tsx";
 import type {
   HomeHeroData,
   HomeLookbookEntryData,
+  ProductCardData,
   ProductMoney,
+  ProductPageInfoData,
 } from "../data/storefront.ts";
 import { focalPointPosition } from "../lib/image-utils.ts";
 import { BrandedState } from "../ui/branded-state.tsx";
 import { Document } from "../ui/document.tsx";
-import { PillIcon, pillLinkStyle } from "../ui/pill-link.tsx";
-import { ShopifyImage } from "../ui/shopify-image.tsx";
+import { PillIcon, pillLinkStyle } from "../ui/public/pill-link.tsx";
+import { ShopifyImage } from "../ui/public/shopify-image.tsx";
 
 export function HomePage(
   handle: Handle<{
@@ -18,6 +21,8 @@ export function HomePage(
     description?: string | null;
     hero: HomeHeroData | null;
     lookbookEntries: HomeLookbookEntryData[];
+    pageInfo: ProductPageInfoData;
+    products: ProductCardData[];
     shopName: string;
   }>,
 ) {
@@ -45,7 +50,13 @@ export function HomePage(
             {remainingEntries.map((entry) => (
               <LookbookEntry key={entry.id} entry={entry} />
             ))}
-            <CatalogTransition />
+            {handle.props.products.length ? (
+              <CollectionProductGrid
+                action="/collections/all"
+                products={handle.props.products}
+                pageInfo={handle.props.pageInfo}
+              />
+            ) : null}
           </div>
         </main>
       </Document>
@@ -117,23 +128,6 @@ function RunnerPanel() {
           mix={runnerAnimatedStyle}
         />
       </div>
-    </section>
-  );
-}
-
-function CatalogTransition() {
-  return () => (
-    <section
-      aria-labelledby="catalog-heading"
-      aria-label="Product catalog migration placeholder"
-      mix={catalogTransitionStyle}
-    >
-      <p>Migration placeholder</p>
-      <h2 id="catalog-heading">Product catalog goes here</h2>
-      <p mix={catalogPlaceholderCopyStyle}>
-        Product listings will be added here as the storefront migration
-        continues.
-      </p>
     </section>
   );
 }
@@ -271,48 +265,4 @@ const runnerStaticStyle = css({
 const runnerAnimatedStyle = css({
   display: "block",
   "@media (prefers-reduced-motion: reduce)": { display: "none" },
-});
-
-const catalogTransitionStyle = css({
-  alignItems: "center",
-  background: "linear-gradient(180deg, #2d2d38 0%, var(--color-black) 75%)",
-  display: "flex",
-  flexDirection: "column",
-  gap: "24px",
-  justifyContent: "center",
-  minHeight: "560px",
-  padding: "96px 20px",
-  textAlign: "center",
-  "& > p:first-child": {
-    border: "2px dashed var(--color-blue-brand)",
-    borderRadius: "999px",
-    color: "var(--color-blue-brand)",
-    fontFamily: "var(--font-mono)",
-    fontSize: ".875rem",
-    letterSpacing: ".1em",
-    margin: 0,
-    padding: "10px 16px",
-    textTransform: "uppercase",
-  },
-  "& p": {
-    fontFamily: "var(--font-mono)",
-    letterSpacing: ".1em",
-    margin: 0,
-    textTransform: "uppercase",
-  },
-  "& h2": {
-    fontFamily: "var(--font-title)",
-    fontSize: "clamp(2rem, 7vw, 5rem)",
-    lineHeight: 1,
-    margin: 0,
-    maxWidth: "16ch",
-    textTransform: "uppercase",
-  },
-});
-
-const catalogPlaceholderCopyStyle = css({
-  color: "var(--color-gray-300)",
-  fontSize: ".875rem",
-  lineHeight: 1.5,
-  maxWidth: "42ch",
 });

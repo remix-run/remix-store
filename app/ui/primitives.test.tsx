@@ -3,7 +3,7 @@ import { describe, it } from "remix/test";
 import { renderToString } from "remix/ui/server";
 
 import { BrandedState } from "./branded-state.tsx";
-import { PillLink } from "./pill-link.tsx";
+import { PillLink } from "./public/pill-link.tsx";
 
 describe("shared storefront primitives", () => {
   it("renders an accessible pill link backed by the icon sprite", async () => {

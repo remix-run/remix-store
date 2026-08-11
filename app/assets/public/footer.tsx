@@ -6,7 +6,7 @@ import {
   type SerializableObject,
 } from "remix/ui";
 
-import type { NavigationMenuData } from "../data/storefront.ts";
+import type { NavigationMenuData } from "../../data/storefront.ts";
 
 const FOOTER_GRADIENT_STRIP_COUNT = 33;
 const FOOTER_GRADIENT_STAGGER_MS = 80;
