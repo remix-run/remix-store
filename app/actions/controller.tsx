@@ -17,6 +17,8 @@ export default createController(routes, {
           description={home.data.shop.description}
           hero={home.data.hero}
           lookbookEntries={home.data.lookbookEntries}
+          products={home.data.products}
+          pageInfo={home.data.pageInfo}
         />,
       );
     },

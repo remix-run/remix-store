@@ -6,7 +6,7 @@ import {
   responsiveImageWidths,
   ShopifyImage,
   shopifyImageUrl,
-} from "./shopify-image.tsx";
+} from "./public/shopify-image.tsx";
 
 describe("Shopify images", () => {
   it("sizes Shopify CDN and mock.shop images while preserving parameters", () => {

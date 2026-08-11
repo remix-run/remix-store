@@ -3,7 +3,7 @@ import { describe, it } from "remix/test";
 import { render } from "remix/ui/test";
 
 import type { NavigationMenuData } from "../data/storefront.ts";
-import { MobileMenu } from "./navbar.tsx";
+import { MobileMenu } from "./public/navbar.tsx";
 
 const menu: NavigationMenuData = {
   items: [

@@ -1,8 +1,8 @@
 import { css, type Handle } from "remix/ui";
 
-import { MobileMenu, RemixLogo } from "../assets/navbar.tsx";
+import { MobileMenu, RemixLogo } from "../assets/public/navbar.tsx";
 import type { NavigationMenuData } from "../data/storefront.ts";
-import { PillLink } from "./pill-link.tsx";
+import { PillLink } from "./public/pill-link.tsx";
 
 interface NavbarProps {
   menu: NavigationMenuData;

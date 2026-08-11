@@ -1,6 +1,6 @@
 import { css, type Handle, type RemixNode } from "remix/ui";
 
-import { Footer } from "../assets/footer.tsx";
+import { Footer } from "../assets/public/footer.tsx";
 import {
   FALLBACK_FOOTER_MENU,
   FALLBACK_NAVIGATION_MENU,

@@ -4,7 +4,7 @@ Goal: make [`~/code/remix-store`](../remix-store) (github.com/remix-run/remix-st
 
 Companion document: [`REMIX_STORE_PARITY_PLAN.md`](./REMIX_STORE_PARITY_PLAN.md) — the design/feature parity spec. That document defines *what the storefront looks like and does*; this document defines *how the platform swap lands in the official repo and ships*.
 
-**Progress:** Phase 0 was intentionally narrowed and completed on `main` in #247. The Remix 3 skeleton and native Node/Remix Assets runtime landed on `v3` in #246 and #248. Current platform work is establishing continuous Fly deployment alongside the existing Oxygen previews.
+**Progress:** Phase 0 was intentionally narrowed and completed on `main` in #247. The Remix 3 skeleton and native Node/Remix Assets runtime landed on `v3` in #246 and #248. Phase 2.1–2.5 are now complete on `v3`: shared primitives, Storefront data, shell, home, and collections/catalog with load more. Browser-reachable source now follows the colocated `app/**/public/**` convention, which keeps the Node asset boundary narrow while the platform work continues toward continuous Fly deployment alongside Oxygen previews.
 
 ## Current state
 
@@ -132,6 +132,7 @@ Sequential; single owner recommended.
 ### 1.3 Native Node + Remix Assets boundary
 - Make `remix/node-fetch-server` + `remix/assets` the default local development runtime so application code does not accumulate Vite-specific asset assumptions.
 - Keep shared routes, actions, UI, Storefront middleware, and streaming SSR runtime-neutral. Put Node asset resolution and Oxygen/Vite manifest resolution behind target-specific router composition.
+- Keep browser-reachable modules in colocated `app/**/public/**` directories. The Node asset server allows those directories plus the root browser entry only; server-only source stays outside that public import graph.
 - Keep `pnpm dev:oxygen`, `pnpm build:oxygen`, and `pnpm preview:oxygen` as explicit Worker-runtime validation paths.
 - Add only the Node/Fly-compatible server foundation here; defer Docker, Fly configuration, production cache, compression, health checks, and deployment workflows to Phase 3.2.
 - **Acceptance:** the same server-rendered page and browser component work under native Node/Remix Assets and built Oxygen preview; both targets retain focused tests.

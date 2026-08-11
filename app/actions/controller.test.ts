@@ -55,67 +55,69 @@ describe("platform skeleton", () => {
             footerMenu: null,
             shop: { primaryDomain: { url: "https://shop.example.com" } },
           }
-        : {
-            shop: {
-              name: "Test Remix Store",
-              description: "A test storefront",
-            },
-            hero: {
-              assetImages: {
-                references: {
-                  nodes: [
-                    {
-                      __typename: "MediaImage",
-                      id: "hero-media",
-                      image: {
-                        id: "hero-image",
-                        url: "https://cdn.shopify.com/hero.jpg",
-                        altText: "Racing collection",
-                        width: 1600,
-                        height: 900,
+        : query.includes("RemixCollection")
+          ? collectionData()
+          : {
+              shop: {
+                name: "Test Remix Store",
+                description: "A test storefront",
+              },
+              hero: {
+                assetImages: {
+                  references: {
+                    nodes: [
+                      {
+                        __typename: "MediaImage",
+                        id: "hero-media",
+                        image: {
+                          id: "hero-image",
+                          url: "https://cdn.shopify.com/hero.jpg",
+                          altText: "Racing collection",
+                          width: 1600,
+                          height: 900,
+                        },
                       },
-                    },
-                  ],
+                    ],
+                  },
+                },
+                collection: {
+                  reference: { __typename: "Collection", handle: "racing" },
                 },
               },
-              collection: {
-                reference: { __typename: "Collection", handle: "racing" },
-              },
-            },
-            lookbook: {
-              entries: {
-                references: {
-                  nodes: [
-                    {
-                      __typename: "Metaobject",
-                      id: "lookbook-entry",
-                      fields: [
-                        {
-                          key: "image",
-                          reference: {
-                            __typename: "MediaImage",
-                            id: "lookbook-media",
-                            presentation: {
-                              asJson: {
-                                focalPoint: { x: 0.4, y: 0.6 },
+              lookbook: {
+                entries: {
+                  references: {
+                    nodes: [
+                      {
+                        __typename: "Metaobject",
+                        id: "lookbook-entry",
+                        fields: [
+                          {
+                            key: "image",
+                            reference: {
+                              __typename: "MediaImage",
+                              id: "lookbook-media",
+                              presentation: {
+                                asJson: {
+                                  focalPoint: { x: 0.4, y: 0.6 },
+                                },
+                              },
+                              image: {
+                                id: "lookbook-image",
+                                url: "https://cdn.shopify.com/lookbook.jpg",
+                                altText: "Lookbook",
+                                width: 1200,
+                                height: 1600,
                               },
                             },
-                            image: {
-                              id: "lookbook-image",
-                              url: "https://cdn.shopify.com/lookbook.jpg",
-                              altText: "Lookbook",
-                              width: 1200,
-                              height: 1600,
-                            },
                           },
-                        },
-                      ],
-                    },
-                  ],
+                        ],
+                      },
+                    ],
+                  },
                 },
               },
-            },
-          };
+            };
       return new Response(JSON.stringify({ data }), {
         headers: { "Content-Type": "application/json" },
       });
@@ -128,7 +130,7 @@ describe("platform skeleton", () => {
     let html = await response.text();
 
     assert.equal(response.status, 200);
-    assert.equal(calls, 2);
+    assert.equal(calls, 3);
     assert.match(html, /Test Remix Store/);
     assert.match(html, /Main navigation/);
     assert.match(html, /All Products/);
@@ -142,7 +144,7 @@ describe("platform skeleton", () => {
     assert.match(html, /cdn\.shopify\.com\/lookbook\.jpg/);
     assert.match(html, /Coming Soon/);
     assert.match(html, /object-position: 40% 60%/);
-    assert.match(html, /Product catalog goes here/);
+    assert.match(html, /Test catalog product/);
     assert.match(html, /--color-blue-brand: #20aaff/);
     assert.doesNotMatch(html, /--color-blue:/);
     assert.match(html, /inter-italic-latin-var\.woff2/);
@@ -190,3 +192,30 @@ describe("platform skeleton", () => {
     assert.match(html, /Return home/);
   });
 });
+
+function collectionData() {
+  return {
+    collection: {
+      id: "gid://shopify/Collection/1",
+      handle: "all",
+      title: "All products",
+      description: "The complete catalog",
+      products: {
+        nodes: [
+          {
+            id: "gid://shopify/Product/1",
+            handle: "test-catalog-product",
+            title: "Test catalog product",
+            images: { nodes: [] },
+            selectedOrFirstAvailableVariant: null,
+            priceRange: {
+              minVariantPrice: { amount: "20.00", currencyCode: "USD" },
+              maxVariantPrice: { amount: "20.00", currencyCode: "USD" },
+            },
+          },
+        ],
+        pageInfo: { hasNextPage: false, endCursor: null },
+      },
+    },
+  };
+}

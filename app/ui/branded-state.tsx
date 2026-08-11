@@ -1,6 +1,9 @@
 import { css, type Handle } from "remix/ui";
 
-import { MatrixText, type MatrixTextKind } from "../assets/matrix-text.tsx";
+import {
+  MatrixText,
+  type MatrixTextKind,
+} from "../assets/public/matrix-text.tsx";
 
 export function BrandedState(
   handle: Handle<{
