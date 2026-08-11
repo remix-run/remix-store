@@ -400,6 +400,7 @@ describe("cart interactions", () => {
     assert.ok(checkout instanceof HTMLAnchorElement);
     assert.equal(checkout.getAttribute("aria-disabled"), null);
     assert.equal(checkout.textContent, "Updating cart…");
+    assert.equal(checkout.querySelector("svg"), null);
 
     await act(() => increase.click());
     await waitFor(() => api.requests.length === 2, act);
@@ -423,6 +424,7 @@ describe("cart interactions", () => {
     );
     assert.equal(quantity.hasAttribute("data-pending"), false);
     assert.equal(checkout.textContent, "Check out");
+    assert.ok(checkout.querySelector("svg") instanceof SVGElement);
   });
 
   it("rolls back a rejected quantity and renders its error beside the line", async (t) => {

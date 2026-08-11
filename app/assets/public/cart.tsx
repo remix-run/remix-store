@@ -590,7 +590,7 @@ function CartView(handle: Handle<CartViewProps>) {
               {cart.checkoutUrl ? (
                 <a href={cart.checkoutUrl} mix={drawerCheckoutStyle}>
                   <span>{cartPending ? "Updating cart…" : "Check out"}</span>
-                  <SpriteIcon name="fast-forward" />
+                  {cartPending ? null : <SpriteIcon name="fast-forward" />}
                 </a>
               ) : null}
             </>
@@ -628,7 +628,7 @@ function CartView(handle: Handle<CartViewProps>) {
               {cart.checkoutUrl ? (
                 <a href={cart.checkoutUrl} mix={checkoutStyle}>
                   <span>{cartPending ? "Updating cart…" : "Check out"}</span>
-                  <SpriteIcon name="fast-forward" />
+                  {cartPending ? null : <SpriteIcon name="fast-forward" />}
                 </a>
               ) : null}
             </>
