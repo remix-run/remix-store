@@ -3,9 +3,9 @@ import { describe, it } from "remix/test";
 
 import { routes } from "../../routes.ts";
 import {
+  analyticsShopData,
   createStorefrontFetch,
   createTestApp,
-  graphqlResponse,
   navigationData,
   type StorefrontRequestBody,
 } from "../../testing/storefront.ts";
@@ -128,15 +128,12 @@ describe("collection routes", () => {
   });
 
   it("rejects oversized cursors before querying the catalog", async () => {
-    let calls = 0;
-    let app = createTestApp(async () => {
-      calls++;
-      return graphqlResponse({
-        menu: null,
-        footerMenu: null,
-        shop: { primaryDomain: null },
-      });
-    });
+    let app = createTestApp(
+      createStorefrontFetch({
+        RemixAnalyticsShop: analyticsShopData,
+        RemixNavigation: navigationData,
+      }),
+    );
     let url = new URL(
       routes.collections.show.href({ handle: "racing" }),
       "https://example.com",
@@ -146,7 +143,6 @@ describe("collection routes", () => {
     let result = await app.fetch(new Request(url));
 
     assert.equal(result.status, 400);
-    assert.equal(calls, 1);
   });
 });
 
@@ -154,6 +150,7 @@ function storefrontFetch(
   collection: (body: StorefrontRequestBody) => unknown,
 ): typeof globalThis.fetch {
   return createStorefrontFetch({
+    RemixAnalyticsShop: analyticsShopData,
     RemixCollection: collection,
     RemixNavigation: navigationData,
   });

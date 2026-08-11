@@ -53,6 +53,13 @@ export function navigationData() {
   };
 }
 
+export function analyticsShopData() {
+  return {
+    shop: { id: "gid://shopify/Shop/test" },
+    localization: { country: { currency: { isoCode: "USD" } } },
+  };
+}
+
 export interface StorefrontRequestBody {
   query: string;
   variables: Record<string, unknown>;

@@ -6,9 +6,16 @@ import { renderToStream, type RenderToStreamOptions } from "remix/ui/server";
 import {
   FALLBACK_FOOTER_MENU,
   FALLBACK_NAVIGATION_MENU,
+  type AnalyticsShop,
   type NavigationMenuData,
 } from "../data/storefront.ts";
-import { FooterMenuConfig, NavigationMenuConfig } from "./storefront.ts";
+import type { CartInitialData } from "../data/cart.ts";
+import {
+  AnalyticsShopConfig,
+  CartInitialDataConfig,
+  FooterMenuConfig,
+  NavigationMenuConfig,
+} from "./storefront.ts";
 import {
   DocumentAssetsProvider,
   type DocumentAssets,
@@ -31,9 +38,19 @@ export function render(options: RenderOptions) {
       let footerMenu =
         (context.get(FooterMenuConfig) as NavigationMenuData | undefined) ??
         FALLBACK_FOOTER_MENU;
+      let cartInitialData = (context.get(CartInitialDataConfig) as
+        | CartInitialData
+        | undefined) ?? { cart: null };
+      let analyticsShop =
+        (context.get(AnalyticsShopConfig) as
+          | AnalyticsShop
+          | null
+          | undefined) ?? null;
       let stream = renderToStream(
         <DocumentAssetsProvider {...options.documentAssets}>
           <ShellDataProvider
+            analyticsShop={analyticsShop}
+            cartInitialData={cartInitialData}
             footerMenu={footerMenu}
             navigationMenu={navigationMenu}
           >

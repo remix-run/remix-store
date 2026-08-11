@@ -2,7 +2,7 @@ import * as assert from "remix/assert";
 import { describe, it } from "remix/test";
 import { renderToString } from "remix/ui/server";
 
-import { BrandedState } from "./branded-state.tsx";
+import { BrandedState } from "./public/branded-state.tsx";
 import { PillLink } from "./public/pill-link.tsx";
 
 describe("shared storefront primitives", () => {

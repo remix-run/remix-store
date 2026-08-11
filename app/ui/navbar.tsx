@@ -1,10 +1,12 @@
 import { css, type Handle } from "remix/ui";
 
+import { CartShell } from "../assets/public/cart.tsx";
 import { MobileMenu, RemixLogo } from "../assets/public/navbar.tsx";
+import type { CartInitialData } from "../data/cart.ts";
 import type { NavigationMenuData } from "../data/storefront.ts";
-import { PillLink } from "./public/pill-link.tsx";
 
 interface NavbarProps {
+  cartInitialData?: CartInitialData;
   menu: NavigationMenuData;
 }
 
@@ -27,15 +29,7 @@ export function Navbar(handle: Handle<NavbarProps>) {
 
       <div mix={actionsStyle}>
         <MobileMenu menu={handle.props.menu} />
-        <PillLink
-          href="/collections/all"
-          icon="cart"
-          iconAlwaysVisible
-          iconPosition="left"
-          expandedText="All"
-        >
-          Shop
-        </PillLink>
+        <CartShell initialData={handle.props.cartInitialData} />
       </div>
     </header>
   );

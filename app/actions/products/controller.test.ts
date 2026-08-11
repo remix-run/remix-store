@@ -3,16 +3,18 @@ import { describe, it } from "remix/test";
 
 import { routes } from "../../routes.ts";
 import {
+  analyticsShopData,
   createStorefrontFetch,
   createTestApp,
   navigationData,
 } from "../../testing/storefront.ts";
 
 describe("product routes", () => {
-  it("resolves URL options and renders safe, no-JS variant links", async () => {
+  it("resolves URL options and renders safe, no-JS variant and cart controls", async () => {
     let variables: Record<string, unknown> | undefined;
     let app = createTestApp(
       createStorefrontFetch({
+        RemixAnalyticsShop: analyticsShopData,
         RemixNavigation: navigationData,
         RemixProduct(body) {
           variables = body.variables;
@@ -31,6 +33,10 @@ describe("product routes", () => {
       { name: "ref", value: "campaign" },
     ]);
     assert.match(html, /<title>Test Product<\/title>/);
+    assert.match(
+      html,
+      /rel="canonical" href="https:\/\/example\.com\/products\/test-product"/,
+    );
     assert.match(html, /<h1[^>]*>Test Product<\/h1>/);
     assert.match(
       html,
@@ -39,12 +45,17 @@ describe("product routes", () => {
     assert.match(html, /Blue — Sold out/);
     assert.match(html, /Technical Description/);
     assert.match(html, /Technical detail/);
+    assert.match(html, /action="\/api\/cart" method="post"/);
+    assert.match(html, /name="merchandiseId"/);
+    assert.match(html, /name="quantity" value="1"/);
+    assert.match(html, />Add to cart<\/button>/);
     assert.doesNotMatch(html, /javascript:alert/);
   });
 
   it("renders the branded 404 when a product is missing", async () => {
     let app = createTestApp(
       createStorefrontFetch({
+        RemixAnalyticsShop: analyticsShopData,
         RemixNavigation: navigationData,
         RemixProduct: () => ({ product: null }),
       }),

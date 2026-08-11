@@ -1,7 +1,9 @@
 import { css, type Handle } from "remix/ui";
 
+import { CartPageContent } from "../assets/public/cart.tsx";
 import { CollectionProductGrid } from "../assets/public/collection-grid.tsx";
 import { HomeHero } from "../assets/public/home-hero.tsx";
+import type { CartInitialData } from "../data/cart.ts";
 import type {
   HomeHeroData,
   HomeLookbookEntryData,
@@ -11,7 +13,7 @@ import type {
 } from "../data/storefront.ts";
 import { focalPointPosition } from "../lib/image-utils.ts";
 import { routes } from "../routes.ts";
-import { BrandedState } from "../ui/branded-state.tsx";
+import { BrandedState } from "../ui/public/branded-state.tsx";
 import { Document } from "../ui/document.tsx";
 import { PillIcon, pillLinkStyle } from "../ui/public/pill-link.tsx";
 import { ShopifyImage } from "../ui/public/shopify-image.tsx";
@@ -146,6 +148,18 @@ function lookbookPrice(price: ProductMoney): string {
   }).format(amount);
 }
 
+export function CartPage(
+  handle: Handle<{ canonicalUrl?: string; initialData: CartInitialData }>,
+) {
+  return () => (
+    <Document canonicalUrl={handle.props.canonicalUrl} title="Cart" noIndex>
+      <main mix={cartMainStyle}>
+        <CartPageContent initialData={handle.props.initialData} />
+      </main>
+    </Document>
+  );
+}
+
 export function NotFoundPage() {
   return () => (
     <Document title="Not found" noIndex>
@@ -181,6 +195,8 @@ export function ErrorPage() {
     </Document>
   );
 }
+
+const cartMainStyle = css({ minHeight: "70vh" });
 
 const editorialStyle = css({ position: "relative" });
 

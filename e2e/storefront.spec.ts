@@ -27,7 +27,7 @@ test("keeps product details when navigating from the home page", async ({
   await productRegion.locator('a[href^="/products/"]').click();
 
   await expect(page).toHaveURL(/\/products\//);
-  await expect(page.locator("main h1")).toHaveText(productName!);
+  await expect(page.locator("main h1")).toHaveText(productName);
 });
 
 test("returns a real branded 404 response and navigates home", async ({
@@ -97,10 +97,11 @@ test("navigates from the catalog to a product", async ({ page }) => {
 
   await expect(page).toHaveURL(/\/products\//);
   await expect(page.getByRole("heading", { level: 1 })).toHaveText(productName);
+  await expect(
+    page.getByRole("button", { name: /add to cart|sold out/i }),
+  ).toBeVisible();
 });
 
-// Cart and SEO acceptance cases should be added with those routes. Do not keep
-// placeholder tests skipped: a green suite must describe only shipped behavior.
 test("product pages preserve their canonical URL", async ({ page }) => {
   await page.goto("/collections/all");
   let productPath = await page

@@ -1,5 +1,8 @@
-import type { FrameContent } from "remix/ui";
-import { run } from "remix/ui";
+import { initializeShopifyScripts } from "@shopify/hydrogen";
+import { navigate as remixNavigate, run, type FrameContent } from "remix/ui";
+
+import { configureOpenCartAction } from "./assets/public/cart.tsx";
+import { routeTemplates } from "./lib/public/route-templates.ts";
 
 let app = run({
   async loadModule(moduleUrl, exportName) {
@@ -58,4 +61,14 @@ app.addEventListener("error", (event) => {
   console.error("Hydration error:", event.error);
 });
 
-await app.ready();
+await Promise.all([
+  app.ready(),
+  initializeShopifyScripts({
+    routes: routeTemplates,
+    navigate(url) {
+      remixNavigate(url);
+    },
+  }),
+]);
+
+configureOpenCartAction();
