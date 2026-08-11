@@ -1,6 +1,7 @@
 import {
   Cache,
   formatMoney,
+  getSelectedProductOptions,
   gql,
   StorefrontApiError,
   StorefrontTimeoutError,
@@ -322,11 +323,119 @@ const COLLECTION_QUERY = gql(
   [PRODUCT_CARD_FRAGMENT],
 );
 
+const PRODUCT_VARIANT_FRAGMENT = gql(`
+  fragment RemixProductVariant on ProductVariant {
+    availableForSale
+    compareAtPrice {
+      amount
+      currencyCode
+    }
+    id
+    image {
+      id
+      url
+      altText
+      width
+      height
+    }
+    price {
+      amount
+      currencyCode
+    }
+    product {
+      handle
+      title
+    }
+    selectedOptions {
+      name
+      value
+    }
+    title
+  }
+`);
+
+const PRODUCT_QUERY = gql(
+  `
+    query RemixProduct(
+      $handle: String!
+      $selectedOptions: [SelectedOptionInput!]!
+    ) {
+      product(handle: $handle) {
+        id
+        handle
+        title
+        description
+        requiresSellingPlan
+        category {
+          name
+        }
+        seo {
+          title
+          description
+        }
+        customDescription: metafield(namespace: "custom", key: "description") {
+          value
+        }
+        technicalDescription: metafield(
+          namespace: "custom"
+          key: "technical_description"
+        ) {
+          value
+        }
+        priceRange {
+          minVariantPrice {
+            amount
+            currencyCode
+          }
+        }
+        encodedVariantExistence
+        encodedVariantAvailability
+        options {
+          name
+          optionValues {
+            name
+            firstSelectableVariant {
+              ...RemixProductVariant
+            }
+          }
+        }
+        selectedOrFirstAvailableVariant(
+          selectedOptions: $selectedOptions
+          ignoreUnknownOptions: true
+          caseInsensitiveMatch: true
+        ) {
+          ...RemixProductVariant
+        }
+        adjacentVariants(
+          selectedOptions: $selectedOptions
+          ignoreUnknownOptions: true
+          caseInsensitiveMatch: true
+        ) {
+          ...RemixProductVariant
+        }
+        images(first: 8) {
+          nodes {
+            id
+            url
+            altText
+            width
+            height
+          }
+        }
+      }
+    }
+  `,
+  [PRODUCT_VARIANT_FRAGMENT],
+);
+
 const STABLE_CACHE = Cache.long({ staleIfError: { days: 7 } });
 const CATALOG_CACHE = Cache.short({ staleIfError: { minutes: 5 } });
 
 type ShopData = StorefrontApi.ResultOf<typeof SHOP_QUERY>["shop"];
 type HomeQueryData = StorefrontApi.ResultOf<typeof HOME_QUERY>;
+export type ProductData = NonNullable<
+  StorefrontApi.ResultOf<typeof PRODUCT_QUERY>["product"]
+>;
 
 export async function queryShop(
   storefront: AppStorefrontClient,
@@ -449,6 +558,43 @@ export async function queryCollection(
     return {
       ok: false,
       message: "The Storefront API collection request failed.",
+      errors: error,
+    };
+  }
+}
+
+export async function queryProduct(
+  storefront: AppStorefrontClient,
+  handle: string,
+  searchParams: URLSearchParams,
+): Promise<StorefrontQueryResult<ProductData | null>> {
+  try {
+    let result = await storefront.graphql(PRODUCT_QUERY, {
+      variables: {
+        handle,
+        selectedOptions: getSelectedProductOptions({ searchParams }),
+      },
+      cache: CATALOG_CACHE,
+    });
+    if (result.errors || !result.data) {
+      return {
+        ok: false,
+        message: "The Storefront API did not return product data.",
+        errors: result.errors,
+      };
+    }
+
+    return { ok: true, data: result.data.product };
+  } catch (error) {
+    if (
+      !(error instanceof StorefrontApiError) &&
+      !(error instanceof StorefrontTimeoutError)
+    ) {
+      throw error;
+    }
+    return {
+      ok: false,
+      message: "The Storefront API product request failed.",
       errors: error,
     };
   }

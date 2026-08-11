@@ -25,6 +25,23 @@ test("renders the current storefront skeleton", async ({ page }) => {
   ).toContain("Inter");
 });
 
+test("keeps product details when navigating from the home page", async ({
+  page,
+}) => {
+  await page.goto("/");
+
+  let productRegion = page
+    .locator('main section[aria-label]:has(a[href^="/products/"])')
+    .first();
+  let productName = await productRegion.getAttribute("aria-label");
+  expect(productName).toBeTruthy();
+
+  await productRegion.locator('a[href^="/products/"]').click();
+
+  await expect(page).toHaveURL(/\/products\//);
+  await expect(page.locator("main h1")).toHaveText(productName!);
+});
+
 test("returns a real branded 404 response and navigates home", async ({
   page,
 }) => {

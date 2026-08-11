@@ -6,4 +6,7 @@ export const routes = route({
     index: get("/collections"),
     show: get("/collections/:handle"),
   },
+  products: {
+    show: get("/products/:handle"),
+  },
 });
