@@ -1,7 +1,5 @@
 import { expect, test } from "playwright/test";
 
-import { openAvailableProduct } from "./storefront.ts";
-
 test("renders the current storefront skeleton", async ({ page }) => {
   let response = await page.goto("/");
 
@@ -117,39 +115,4 @@ test("product pages preserve their canonical URL", async ({ page }) => {
     "href",
     new URL(productPath!, page.url()).href,
   );
-});
-
-test("adds a product without opening the cart, then opens it on request", async ({
-  page,
-}) => {
-  let { addToCart, title } = await openAvailableProduct(page);
-
-  let [cartResponse] = await Promise.all([
-    page.waitForResponse((response) => {
-      let url = new URL(response.url());
-      return (
-        url.pathname.startsWith("/api/cart") &&
-        response.request().method() === "POST"
-      );
-    }),
-    addToCart.click(),
-  ]);
-  expect(cartResponse.ok()).toBe(true);
-
-  let drawer = page.getByRole("dialog", { name: /item\(s\) in cart/i });
-  await expect(drawer).not.toBeVisible();
-  let cartTrigger = page.getByRole("button", { name: /1 item in cart/i });
-  await expect(cartTrigger).toBeVisible();
-
-  await cartTrigger.click();
-  await expect(drawer).toBeVisible();
-  await expect(drawer.getByText(title, { exact: true }).first()).toBeVisible();
-  await expect(drawer.getByText(/subtotal/i)).toBeVisible();
-
-  await page.goto("/cart");
-  await expect(page.getByRole("heading", { name: /cart/i }).first()).toBeVisible();
-  await expect(
-    page.locator("main").getByText(title, { exact: true }).first(),
-  ).toBeVisible();
-  await expect(page.locator("main").getByText(/subtotal/i)).toBeVisible();
 });

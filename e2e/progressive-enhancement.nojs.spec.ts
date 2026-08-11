@@ -12,13 +12,25 @@ test("catalog navigation and add-to-cart work without JavaScript", async ({
 
   await expect(form).toBeVisible();
 
-  await Promise.all([page.waitForURL(/\/products\//), addToCart.click()]);
+  let [cartResponse] = await Promise.all([
+    page.waitForResponse((response) => {
+      return (
+        new URL(response.url()).pathname === "/api/cart" &&
+        response.request().method() === "POST"
+      );
+    }),
+    addToCart.click(),
+  ]);
 
   // The native cart POST redirects back to the product page and persists the
   // cart cookie, so the server-rendered cart page must contain the added item.
+  expect(cartResponse.status()).toBe(303);
+  await expect(page).toHaveURL(/\/products\//);
   await expect(addToCart).toBeVisible();
   await page.goto("/cart");
-  await expect(page.getByRole("heading", { name: /cart/i }).first()).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: /cart/i }).first(),
+  ).toBeVisible();
   await expect(
     page.locator("main").getByText(title, { exact: true }).first(),
   ).toBeVisible();

@@ -141,6 +141,26 @@ Object.defineProperty(window, "Shopify", {
 });
 
 describe("cart interactions", () => {
+  it("reveals the cart trigger label by width without fading it", (t) => {
+    useDesktopCartViewport(t);
+    t.after(resetBrowserCartStore);
+
+    let { $, cleanup } = render(
+      <CartShell initialData={createCartInitialData()} />,
+    );
+    t.after(cleanup);
+
+    let trigger = $('button[aria-controls="cart-drawer"]');
+    assert.ok(trigger instanceof HTMLButtonElement);
+    let expandedLabel = trigger.querySelector("[data-expanded-label]");
+    assert.ok(expandedLabel instanceof HTMLSpanElement);
+    assert.equal(getComputedStyle(expandedLabel).opacity, "1");
+    assert.equal(
+      getComputedStyle(expandedLabel).transitionProperty,
+      "max-width",
+    );
+  });
+
   it("uses server data without fetching and supports every drawer trigger", async (t) => {
     useDesktopCartViewport(t);
     let api = createCartApiMock(t);
@@ -162,13 +182,6 @@ describe("cart interactions", () => {
     assert.ok(initialTrigger instanceof HTMLButtonElement);
     assert.match(initialTrigger.textContent ?? "", /1Item in cart/);
     assert.equal(initialTrigger.getAttribute("aria-expanded"), "false");
-    let expandedLabel = initialTrigger.querySelector("[data-expanded-label]");
-    assert.ok(expandedLabel instanceof HTMLSpanElement);
-    assert.equal(getComputedStyle(expandedLabel).opacity, "1");
-    assert.equal(
-      getComputedStyle(expandedLabel).transitionProperty,
-      "max-width",
-    );
 
     await flushAsync(act);
     assert.equal(api.requests.length, 0);

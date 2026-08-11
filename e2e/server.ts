@@ -3,6 +3,7 @@ import * as http from "node:http";
 import { createRequestListener } from "remix/node-fetch-server";
 
 import { app, closeNodeApp } from "../app/node.ts";
+import { createCart } from "../test/cart-fixtures.ts";
 
 const appPort = 44_110;
 const storefrontPort = 44_111;
@@ -90,9 +91,30 @@ function storefrontData(operation: string | undefined): unknown {
       };
     case "RemixProduct":
       return { product: product() };
+    case "RemixAnalyticsShop":
+      return {
+        shop: { id: "gid://shopify/Shop/test" },
+        localization: { country: { currency: { isoCode: "USD" } } },
+      };
+    case "CartCreate":
+      return {
+        cartCreate: { cart: cart(), userErrors: [], warnings: [] },
+      };
+    case "Cart":
+      return { cart: cart() };
     default:
       throw new Error(`Unexpected Storefront operation: ${operation}`);
   }
+}
+
+function cart() {
+  let value = createCart();
+  let line = value.lines.nodes[0];
+  if (line?.merchandise) {
+    line.merchandise.id = "variant";
+    line.merchandise.product.title = "Test product";
+  }
+  return value;
 }
 
 function productCard() {
