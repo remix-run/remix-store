@@ -7,9 +7,11 @@ test("renders the current storefront skeleton", async ({ page }) => {
 
   expect(response?.status()).toBe(200);
   await expect(page.locator("main")).toBeVisible();
-  await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   await expect(
-    page.getByRole("button", { name: /hydration check: 0/i }),
+    page.getByRole("heading", { name: "Remix 3 Racing Team Collection" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "Shop New Items" }),
   ).toBeVisible();
   expect(
     await page.evaluate(() =>
@@ -41,7 +43,7 @@ test("returns a real branded 404 response and navigates home", async ({
 
   await expect(page).toHaveURL("/");
   await expect(
-    page.getByRole("button", { name: /hydration check: 0/i }),
+    page.getByRole("heading", { name: "Remix 3 Racing Team Collection" }),
   ).toBeVisible();
 
   await page.goBack();
