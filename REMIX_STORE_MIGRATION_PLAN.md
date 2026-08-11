@@ -95,7 +95,7 @@ Phase 0 was deliberately reduced to artifacts that improve the active applicatio
 
 | Outcome | Status |
 |---|---|
-| Portable Playwright acceptance baseline | Landed on `main`; carried into `v3` with current skeleton and 404 checks enabled. Catalog, product, cart, SEO, and no-JavaScript cases remain skipped until their surfaces port. `BASE_URL` targets existing Oxygen or Fly deployments. |
+| Portable Playwright acceptance baseline | Landed on `main`; carried into `v3` with deterministic local Storefront fixtures. Tests cover only shipped surfaces, skipped tests are disallowed, and `BASE_URL` targets existing Oxygen or Fly deployments. |
 | Remove unused `/components` styleguide | Landed on `main`. The route does not exist in the new app. |
 | Environment guidance | Kept alongside the values in `.env.example`; deployment-specific secrets are documented when their consuming feature or target lands. |
 
@@ -126,7 +126,7 @@ Sequential; single owner recommended.
 ### 1.2 CI + preview deploys on `v3`
 - Adapt the four workflows (format, lint, test, oxygen-deployment) to the new toolchain. Keep linting and formatting minimal with Oxlint, Oxfmt, and TypeScript.
 - Oxygen deployment: confirm `shopify hydrogen deploy` works with the custom Vite build output (`dist/ssr/index.js` worker + `dist/client` assets) for storefront `1000020043` **preview environments** on `v3` pushes. Production env deploys remain bound to `main`.
-- Run the portable acceptance suite in CI, scoped to ported surfaces. Skipped unported cases are the explicit allowlist and must shrink to zero by the Phase 4 gate.
+- Run the portable acceptance suite in CI, scoped to ported surfaces. Skipped tests are disallowed; add acceptance cases as each surface ships.
 - **Acceptance:** push to `v3` → green CI → live preview URL → scoped acceptance suite passes.
 
 ### 1.3 Native Node + Remix Assets boundary
@@ -185,7 +185,7 @@ The experimental app is the **reference**, the official RR7 app is the **behavio
 | 2.16 | Seasonal snow (December-only, reduced-motion fallback) | `snow-field.tsx` |
 | 2.17 | Session/secret audit: what does `SESSION_SECRET` protect in the new stack; carry over or document retirement | `lib/session.ts` |
 
-**Gate to Phase 4:** every gap row resolved; the acceptance-suite skip list empty; SEO acceptance checks green; analytics verified; one real end-to-end purchase completed and refunded on a preview/staging deploy. `v3` is long-lived — this gate has no deadline and cutover waits for it.
+**Gate to Phase 4:** every gap row resolved; SEO acceptance checks green; analytics verified; one real end-to-end purchase completed and refunded on a preview/staging deploy. `v3` is long-lived — this gate has no deadline and cutover waits for it.
 
 ## Phase 3 — Deployment architecture (parallel with Phase 2)
 

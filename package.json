@@ -17,8 +17,9 @@
     "lint": "oxlint . && oxfmt --check .",
     "typecheck": "tsc --noEmit && hydrogen gql check --fail-on-warn",
     "format": "oxfmt .",
-    "test": "NODE_ENV=test remix test",
-    "test:e2e": "playwright test"
+    "test": "NODE_ENV=test remix test && pnpm test:no-skips",
+    "test:e2e": "playwright test && pnpm test:no-skips",
+    "test:no-skips": "node scripts/check-test-skips.mjs"
   },
   "dependencies": {
     "@shopify/hydrogen": "0.0.0-preview-116d5d7-20260730141607",

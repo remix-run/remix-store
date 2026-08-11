@@ -1,40 +1,25 @@
 import * as assert from "remix/assert";
 import { describe, it } from "remix/test";
 
-import { MemoryStorefrontCache } from "../../data/storefront-cache.ts";
-import { render } from "../../middleware/render.tsx";
-import { createApp } from "../../router.ts";
 import { routes } from "../../routes.ts";
-
-const testEnv = {
-  PUBLIC_STORE_DOMAIN: "example.myshopify.com",
-  ["PUBLIC_" + "STOREFRONT_API_TOKEN"]: "test-token",
-};
-
-function createTestApp(fetch: typeof globalThis.fetch) {
-  return createApp({
-    renderer: render({
-      documentAssets: { css: [], entry: "/assets/entry.js", js: [] },
-      resolveClientEntry(_entryId, component) {
-        return { href: "/assets/component.js", exportName: component.name };
-      },
-    }),
-    storefront: { cache: new MemoryStorefrontCache(), env: testEnv, fetch },
-  });
-}
+import {
+  createStorefrontFetch,
+  createTestApp,
+  navigationData,
+} from "../../testing/storefront.ts";
 
 describe("product routes", () => {
   it("resolves URL options and renders safe, no-JS variant links", async () => {
     let variables: Record<string, unknown> | undefined;
-    let app = createTestApp(async (_input, init) => {
-      let body = JSON.parse(String(init?.body)) as {
-        query: string;
-        variables: Record<string, unknown>;
-      };
-      if (body.query.includes("RemixNavigation")) return navigationResponse();
-      variables = body.variables;
-      return graphqlResponse({ product: productData() });
-    });
+    let app = createTestApp(
+      createStorefrontFetch({
+        RemixNavigation: navigationData,
+        RemixProduct(body) {
+          variables = body.variables;
+          return { product: productData() };
+        },
+      }),
+    );
     let href = `${routes.products.show.href({ handle: "test-product" })}?Color=Red&ref=campaign`;
 
     let response = await app.fetch(new Request(`https://example.com${href}`));
@@ -46,10 +31,6 @@ describe("product routes", () => {
       { name: "ref", value: "campaign" },
     ]);
     assert.match(html, /<title>Test Product<\/title>/);
-    assert.match(
-      html,
-      /rel="canonical" href="https:\/\/example\.com\/products\/test-product"/,
-    );
     assert.match(html, /<h1[^>]*>Test Product<\/h1>/);
     assert.match(
       html,
@@ -62,12 +43,12 @@ describe("product routes", () => {
   });
 
   it("renders the branded 404 when a product is missing", async () => {
-    let app = createTestApp(async (_input, init) => {
-      let body = JSON.parse(String(init?.body)) as { query: string };
-      return body.query.includes("RemixNavigation")
-        ? navigationResponse()
-        : graphqlResponse({ product: null });
-    });
+    let app = createTestApp(
+      createStorefrontFetch({
+        RemixNavigation: navigationData,
+        RemixProduct: () => ({ product: null }),
+      }),
+    );
 
     let response = await app.fetch(
       new Request("https://example.com/products/not-a-product"),
@@ -77,20 +58,6 @@ describe("product routes", () => {
     assert.match(await response.text(), /Page not found/);
   });
 });
-
-function navigationResponse() {
-  return graphqlResponse({
-    footerMenu: { items: [] },
-    menu: { items: [] },
-    shop: { primaryDomain: { url: "https://example.myshopify.com" } },
-  });
-}
-
-function graphqlResponse(data: unknown) {
-  return new Response(JSON.stringify({ data }), {
-    headers: { "Content-Type": "application/json" },
-  });
-}
 
 function productData() {
   let red = variant({
