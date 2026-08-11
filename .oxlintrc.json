@@ -8,5 +8,12 @@
     "node": true,
     "worker": true
   },
-  "ignorePatterns": ["dist", "node_modules", "*.generated.*"]
+  "ignorePatterns": [
+    ".agents",
+    ".shopify",
+    "build",
+    "dist",
+    "node_modules",
+    "*.generated.*"
+  ]
 }
