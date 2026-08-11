@@ -11,25 +11,36 @@ import { createApp } from "./router.ts";
 const nodeEnv = process.env.NODE_ENV ?? "development";
 const isDevelopment = nodeEnv === "development";
 const buildId = process.env.ASSET_BUILD_ID;
+const isHmr = Boolean(isDevelopment && process.env.REMIX_NODE_HMR);
 
 const assetServer = createAssetServer({
   basePath: "/assets",
   rootDir: process.cwd(),
   fileMap: {
-    "app/*path": "app/*path",
-    "node_modules/*path": "node_modules/*path",
+    "/app/*path": "app/*path",
+    "/node_modules/*path": "node_modules/*path",
   },
 
-  allow: [
-    "app/assets/**",
-    "app/ui/pill-link.tsx",
-    "app/entry.browser.ts",
-    "node_modules/**",
-  ],
-  deny: ["app/**/*.test.*", "app/**/*.spec.*"],
+  allowFiles: ["app/assets/**", "app/ui/pill-link.tsx", "app/entry.browser.ts"],
+  allowPackages: ["remix"],
+  denyFiles: ["app/**/*.test.*", "app/**/*.spec.*"],
   sourceMaps: isDevelopment ? "external" : undefined,
   minify: !isDevelopment,
-  watch: isDevelopment ? { ignore: ["**/node_modules/**"] } : false,
+  watch: isDevelopment
+    ? { ignore: ["dist/**", "node_modules/**", "test-results/**"] }
+    : false,
+  hmr: isHmr
+    ? async () =>
+        (await import("remix/node-hmr/runtime")).createBrowserHmrChannel()
+    : undefined,
+  scripts: {
+    define: {
+      "process.env.NODE_ENV": JSON.stringify(nodeEnv),
+    },
+    loaders: isHmr
+      ? [(await import("remix/ui-hmr/assets")).uiHmr()]
+      : undefined,
+  },
   ...(buildId ? { fingerprint: { buildId } } : {}),
 });
 

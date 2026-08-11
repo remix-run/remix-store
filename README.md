@@ -17,7 +17,7 @@ cp .env.example .env
 pnpm dev
 ```
 
-`pnpm dev` runs the framework-native Node server with `remix/assets`. Use `pnpm dev:oxygen` when testing the same application under MiniOxygen's Worker runtime.
+`pnpm dev` runs the framework-native Node server with `remix/assets`. For UI-heavy work, use `pnpm hmr` to preserve browser state while hot-updating client and server modules. Use `pnpm dev:oxygen` when testing the same application under MiniOxygen's Worker runtime.
 
 The example environment points at the live production store. Purchases create real orders and charge real money.
 
