@@ -68,6 +68,29 @@ describe("Storefront API fetch", () => {
     assert.equal(calls, 1);
   });
 
+  it("stops before retrying when aborted during the delay", async () => {
+    let calls = 0;
+    let controller = new AbortController();
+    let storefrontFetch = createRetryingStorefrontFetch({
+      delayMs: 10_000,
+      fetch: async () => {
+        calls++;
+        return new Response(null, { status: 503 });
+      },
+    });
+    let request = storefrontFetch(endpoint, {
+      ...graphqlRequest("query Test { shop { id } }"),
+      signal: controller.signal,
+    });
+
+    await Promise.resolve();
+    let reason = new DOMException("Aborted", "AbortError");
+    controller.abort(reason);
+
+    await assert.rejects(request, (error: unknown) => error === reason);
+    assert.equal(calls, 1);
+  });
+
   it("does not retry mutations", async () => {
     let calls = 0;
     let storefrontFetch = createRetryingStorefrontFetch({

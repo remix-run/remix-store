@@ -1,7 +1,7 @@
 import { defineConfig, devices } from "playwright/test";
 
 const externalBaseUrl = process.env.BASE_URL;
-const localBaseUrl = "http://localhost:44100";
+const localBaseUrl = "http://localhost:44110";
 
 export default defineConfig({
   testDir: "./e2e",
@@ -15,8 +15,8 @@ export default defineConfig({
   webServer: externalBaseUrl
     ? undefined
     : {
-        command: "pnpm dev",
-        reuseExistingServer: !process.env.CI,
+        command: "node --import remix/node-tsx e2e/server.ts",
+        reuseExistingServer: false,
         timeout: 120_000,
         url: localBaseUrl,
       },

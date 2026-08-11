@@ -128,8 +128,9 @@ production build.
 ## Tests and validation
 
 Use Remix's test APIs (`remix/test`, `remix/assert`) and existing tests as the
-model. Inject Storefront `fetch` and environment values rather than contacting
-Shopify in unit tests.
+model. Also load the project `testing-practices` skill when writing, reviewing,
+or refactoring tests. Inject Storefront `fetch` and environment values rather
+than contacting Shopify in unit tests.
 
 Run the checks relevant to the change; before handing off a complete app change,
 run all four:

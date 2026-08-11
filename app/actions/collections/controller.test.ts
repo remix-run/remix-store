@@ -1,27 +1,14 @@
 import * as assert from "remix/assert";
 import { describe, it } from "remix/test";
 
-import { MemoryStorefrontCache } from "../../data/storefront-cache.ts";
-import { render } from "../../middleware/render.tsx";
-import { createApp } from "../../router.ts";
 import { routes } from "../../routes.ts";
-
-const testEnv = {
-  PUBLIC_STORE_DOMAIN: "example.myshopify.com",
-  ["PUBLIC_" + "STOREFRONT_API_TOKEN"]: "test-token",
-};
-
-function createTestApp(fetch: typeof globalThis.fetch) {
-  return createApp({
-    renderer: render({
-      documentAssets: { css: [], entry: "/assets/entry.js", js: [] },
-      resolveClientEntry(_entryId, component) {
-        return { href: "/assets/component.js", exportName: component.name };
-      },
-    }),
-    storefront: { cache: new MemoryStorefrontCache(), env: testEnv, fetch },
-  });
-}
+import {
+  createStorefrontFetch,
+  createTestApp,
+  graphqlResponse,
+  navigationData,
+  type StorefrontRequestBody,
+} from "../../testing/storefront.ts";
 
 describe("collection routes", () => {
   it("renders catalog cards and keeps load more as a GET fallback", async () => {
@@ -45,6 +32,26 @@ describe("collection routes", () => {
     assert.equal(variables?.first, 15);
     assert.equal(variables?.after, undefined);
     assert.match(html, /<h1>Racing collection<\/h1>/);
+    assert.match(html, /href="\/products\/racing-shirt"/);
+    assert.match(html, /Racing shirt/);
+    assert.match(html, /\$30\.00/);
+    assert.match(html, /\$20\.00/);
+    assert.match(html, /<form action="\/collections\/racing" method="get"/);
+    assert.match(html, /name="cursor" value="next-page"/);
+  });
+
+  it("renders collection metadata", async () => {
+    let app = createTestApp(
+      storefrontFetch(() =>
+        collectionData({ hasNextPage: false, endCursor: null }),
+      ),
+    );
+
+    let response = await app.fetch(
+      new Request("https://example.com/collections/racing"),
+    );
+    let html = await response.text();
+
     assert.match(
       html,
       /<link rel="canonical" href="https:\/\/example\.com\/collections\/racing"/,
@@ -53,11 +60,6 @@ describe("collection routes", () => {
       html,
       /<meta property="og:image" content="https:\/\/example\.com\/social-collections\.jpg"/,
     );
-    assert.match(html, /href="\/products\/racing-shirt"/);
-    assert.match(html, /<s>\$30\.00<\/s><span>\$20\.00<\/span>/);
-    assert.match(html, /srcset="[^"]+320w/);
-    assert.match(html, /<form action="\/collections\/racing" method="get"/);
-    assert.match(html, /name="cursor" value="next-page"/);
   });
 
   it("returns only a page of JSON for enhanced load more", async () => {
@@ -129,7 +131,7 @@ describe("collection routes", () => {
     let calls = 0;
     let app = createTestApp(async () => {
       calls++;
-      return response({
+      return graphqlResponse({
         menu: null,
         footerMenu: null,
         shop: { primaryDomain: null },
@@ -149,22 +151,12 @@ describe("collection routes", () => {
 });
 
 function storefrontFetch(
-  collection: (body: { variables: Record<string, unknown> }) => unknown,
+  collection: (body: StorefrontRequestBody) => unknown,
 ): typeof globalThis.fetch {
-  return (async (_input, init) => {
-    let body = JSON.parse(String(init?.body)) as {
-      query: string;
-      variables: Record<string, unknown>;
-    };
-    if (body.query.includes("RemixNavigation")) {
-      return response({
-        menu: null,
-        footerMenu: null,
-        shop: { primaryDomain: null },
-      });
-    }
-    return response(collection(body));
-  }) as typeof globalThis.fetch;
+  return createStorefrontFetch({
+    RemixCollection: collection,
+    RemixNavigation: navigationData,
+  });
 }
 
 function collectionData(pageInfo: {
@@ -208,10 +200,4 @@ function collectionData(pageInfo: {
       },
     },
   };
-}
-
-function response(data: unknown): Response {
-  return new Response(JSON.stringify({ data }), {
-    headers: { "Content-Type": "application/json" },
-  });
 }

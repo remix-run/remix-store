@@ -8,7 +8,9 @@ import { describe, it } from "remix/test";
 import {
   FALLBACK_FOOTER_MENU,
   FALLBACK_NAVIGATION_MENU,
+  queryCollection,
   queryHome,
+  queryProduct,
   queryShellMenus,
   queryShop,
 } from "./storefront.ts";
@@ -167,6 +169,110 @@ describe("Storefront data", () => {
     assert.deepEqual(result.data.lookbookEntries, []);
   });
 
+  it("maps collection cards and preserves pagination variables", async () => {
+    let requestBody: { variables?: Record<string, unknown> } | undefined;
+    let client = createTestClient(async (_input, init) => {
+      requestBody = JSON.parse(String(init?.body));
+      return storefrontResponse({
+        collection: {
+          id: "collection",
+          handle: "racing",
+          title: "Racing",
+          description: "Racing apparel",
+          products: {
+            nodes: [
+              {
+                id: "product",
+                handle: "shirt",
+                title: "Shirt",
+                images: { nodes: [] },
+                selectedOrFirstAvailableVariant: {
+                  price: { amount: "20.00", currencyCode: "USD" },
+                  compareAtPrice: { amount: "30.00", currencyCode: "USD" },
+                },
+                priceRange: {
+                  maxVariantPrice: { amount: "25.00", currencyCode: "USD" },
+                },
+              },
+            ],
+            pageInfo: { hasNextPage: true, endCursor: "next" },
+          },
+        },
+      });
+    });
+
+    let result = await queryCollection(client, "racing", {
+      after: "current",
+      first: 8,
+    });
+
+    assert.deepEqual(requestBody?.variables, {
+      after: "current",
+      country: "US",
+      first: 8,
+      handle: "racing",
+      language: "EN",
+    });
+    assert.equal(result.ok, true);
+    if (!result.ok || !result.data) return;
+    assert.deepEqual(result.data.products.nodes[0], {
+      compareAtPrice: "$30.00",
+      handle: "shirt",
+      id: "product",
+      images: [],
+      isOnSale: true,
+      price: "$20.00",
+      title: "Shirt",
+    });
+    assert.deepEqual(result.data.products.pageInfo, {
+      hasNextPage: true,
+      endCursor: "next",
+    });
+  });
+
+  it("returns collection and product GraphQL failures explicitly", async () => {
+    let client = createTestClient(async () =>
+      storefrontResponse(null, [{ message: "Upstream failure" }]),
+    );
+
+    let collection = await queryCollection(client, "racing");
+    let product = await queryProduct(client, "shirt", new URLSearchParams());
+
+    assert.equal(collection.ok, false);
+    if (!collection.ok) {
+      assert.equal(
+        collection.message,
+        "The Storefront API did not return collection data.",
+      );
+    }
+    assert.equal(product.ok, false);
+    if (!product.ok) {
+      assert.equal(
+        product.message,
+        "The Storefront API did not return product data.",
+      );
+    }
+  });
+
+  it("returns missing collection and product data without an error", async () => {
+    let collectionClient = createTestClient(async () =>
+      storefrontResponse({ collection: null }),
+    );
+    let productClient = createTestClient(async () =>
+      storefrontResponse({ product: null }),
+    );
+
+    let collection = await queryCollection(collectionClient, "missing");
+    let product = await queryProduct(
+      productClient,
+      "missing",
+      new URLSearchParams(),
+    );
+
+    assert.deepEqual(collection, { ok: true, data: null });
+    assert.deepEqual(product, { ok: true, data: null });
+  });
+
   it("normalizes internal menu links and policy routes", async () => {
     let client = createTestClient(async () =>
       storefrontResponse({
@@ -233,21 +339,16 @@ describe("Storefront data", () => {
     ]);
   });
 
-  it("falls back when menu data is unavailable", async () => {
+  it("falls back when menu data is unavailable", async (t) => {
     let client = createTestClient(async () => {
       throw new TypeError("connection lost");
     });
-    let originalConsoleError = console.error;
-    console.error = () => {};
+    t.mock.method(console, "error", () => {});
 
-    try {
-      let result = await queryShellMenus(client, "example.myshopify.com");
+    let result = await queryShellMenus(client, "example.myshopify.com");
 
-      assert.equal(result.navigationMenu, FALLBACK_NAVIGATION_MENU);
-      assert.equal(result.footerMenu, FALLBACK_FOOTER_MENU);
-    } finally {
-      console.error = originalConsoleError;
-    }
+    assert.equal(result.navigationMenu, FALLBACK_NAVIGATION_MENU);
+    assert.equal(result.footerMenu, FALLBACK_FOOTER_MENU);
   });
 
   it("returns transport failures instead of exposing them", async () => {
