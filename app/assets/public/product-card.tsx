@@ -1,6 +1,6 @@
 import { css, type Handle } from "remix/ui";
 
-import type { ProductCardData, ProductMoney } from "../../data/storefront.ts";
+import type { ProductCardData } from "../../data/storefront.ts";
 import { ShopifyImage } from "../../ui/public/shopify-image.tsx";
 
 const PRODUCT_IMAGE_SIZES =
@@ -24,7 +24,7 @@ export function ProductCard(handle: Handle<{ product: ProductCardData }>) {
             {firstImage ? (
               <ShopifyImage
                 image={firstImage}
-                alt={firstImage.altText ?? product.title}
+                alt=""
                 sizes={PRODUCT_IMAGE_SIZES}
               />
             ) : (
@@ -43,7 +43,7 @@ export function ProductCard(handle: Handle<{ product: ProductCardData }>) {
             <ProductPrice
               price={product.price}
               compareAtPrice={product.compareAtPrice}
-              priceRange={product.priceRange}
+              isOnSale={product.isOnSale}
             />
           </div>
         </a>
@@ -67,50 +67,22 @@ export function ProductCardSkeleton() {
 
 function ProductPrice(
   handle: Handle<{
-    compareAtPrice?: ProductMoney | null;
-    price?: ProductMoney | null;
-    priceRange: ProductCardData["priceRange"];
+    compareAtPrice?: string | null;
+    isOnSale: boolean;
+    price: string;
   }>,
 ) {
   return () => {
-    let { compareAtPrice, price, priceRange } = handle.props;
-    if (
-      price &&
-      compareAtPrice &&
-      Number(price.amount) < Number(compareAtPrice.amount)
-    ) {
-      return (
-        <p mix={salePriceStyle}>
-          <s>{formatPrice(compareAtPrice)}</s>
-          <span>{formatPrice(price)}</span>
-        </p>
-      );
-    }
-    if (price) return <p mix={priceStyle}>{formatPrice(price)}</p>;
-
-    let isRange =
-      priceRange.minVariantPrice.amount !== priceRange.maxVariantPrice.amount ||
-      priceRange.minVariantPrice.currencyCode !==
-        priceRange.maxVariantPrice.currencyCode;
-    return (
-      <p mix={priceStyle}>
-        {isRange
-          ? `${formatPrice(priceRange.minVariantPrice)}–${formatPrice(priceRange.maxVariantPrice)}`
-          : formatPrice(priceRange.minVariantPrice)}
+    let { compareAtPrice, isOnSale, price } = handle.props;
+    return isOnSale && compareAtPrice ? (
+      <p mix={salePriceStyle}>
+        <s>{compareAtPrice}</s>
+        <span>{price}</span>
       </p>
+    ) : (
+      <p mix={priceStyle}>{price}</p>
     );
   };
-}
-
-function formatPrice(money: ProductMoney): string {
-  let amount = Number(money.amount);
-  if (!Number.isFinite(amount)) return "Price unavailable";
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: money.currencyCode,
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(amount);
 }
 
 const cardStyle = css({ minWidth: 0, position: "relative" });

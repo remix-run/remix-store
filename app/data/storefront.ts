@@ -1,5 +1,6 @@
 import {
   Cache,
+  formatMoney,
   gql,
   StorefrontApiError,
   StorefrontTimeoutError,
@@ -48,15 +49,12 @@ export type ProductMoney = SerializableObject & {
 };
 
 export type ProductCardData = SerializableObject & {
-  compareAtPrice?: ProductMoney | null;
+  compareAtPrice?: string | null;
   handle: string;
   id: string;
   images: ImageData[];
-  price?: ProductMoney | null;
-  priceRange: SerializableObject & {
-    maxVariantPrice: ProductMoney;
-    minVariantPrice: ProductMoney;
-  };
+  isOnSale: boolean;
+  price: string;
   title: string;
 };
 
@@ -287,10 +285,6 @@ const PRODUCT_CARD_FRAGMENT = gql(`
       }
     }
     priceRange {
-      minVariantPrice {
-        amount
-        currencyCode
-      }
       maxVariantPrice {
         amount
         currencyCode
@@ -680,7 +674,6 @@ function toProductCardData(product: {
   };
   priceRange: {
     maxVariantPrice: ProductMoney;
-    minVariantPrice: ProductMoney;
   };
   selectedOrFirstAvailableVariant?: {
     compareAtPrice?: ProductMoney | null;
@@ -688,6 +681,16 @@ function toProductCardData(product: {
   } | null;
   title: string;
 }): ProductCardData {
+  let price =
+    product.selectedOrFirstAvailableVariant?.price ??
+    product.priceRange.maxVariantPrice;
+  let compareAtPrice =
+    product.selectedOrFirstAvailableVariant?.compareAtPrice ?? null;
+  let formattedPrice = formatMoney(price, { locale: "en-US" });
+  let formattedCompareAtPrice = compareAtPrice
+    ? formatMoney(compareAtPrice, { locale: "en-US" })
+    : null;
+
   return {
     id: product.id,
     handle: product.handle,
@@ -699,13 +702,11 @@ function toProductCardData(product: {
       width: image.width,
       height: image.height,
     })),
-    price: product.selectedOrFirstAvailableVariant?.price ?? null,
-    compareAtPrice:
-      product.selectedOrFirstAvailableVariant?.compareAtPrice ?? null,
-    priceRange: {
-      minVariantPrice: product.priceRange.minVariantPrice,
-      maxVariantPrice: product.priceRange.maxVariantPrice,
-    },
+    price: formattedPrice.toString(),
+    compareAtPrice: formattedCompareAtPrice?.toString() ?? null,
+    isOnSale:
+      formattedCompareAtPrice !== null &&
+      formattedPrice.numericAmount < formattedCompareAtPrice.numericAmount,
   };
 }
 

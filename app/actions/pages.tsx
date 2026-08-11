@@ -10,6 +10,7 @@ import type {
   ProductPageInfoData,
 } from "../data/storefront.ts";
 import { focalPointPosition } from "../lib/image-utils.ts";
+import { routes } from "../routes.ts";
 import { BrandedState } from "../ui/branded-state.tsx";
 import { Document } from "../ui/document.tsx";
 import { PillIcon, pillLinkStyle } from "../ui/public/pill-link.tsx";
@@ -40,7 +41,9 @@ export function HomePage(
         <main>
           <HomeHero
             assetImages={hero?.assetImages ?? []}
-            collectionHref={`/collections/${encodeURIComponent(collectionHandle)}`}
+            collectionHref={routes.collections.show.href({
+              handle: collectionHandle,
+            })}
             heading="Remix 3 Racing Team Collection"
             cta="Shop New Items"
           />
@@ -52,7 +55,7 @@ export function HomePage(
             ))}
             {handle.props.products.length ? (
               <CollectionProductGrid
-                action="/collections/all"
+                action={routes.collections.show.href({ handle: "all" })}
                 products={handle.props.products}
                 pageInfo={handle.props.pageInfo}
               />

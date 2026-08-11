@@ -6,10 +6,12 @@ import type {
   ProductPageInfoData,
 } from "../../data/storefront.ts";
 import { PageTitle } from "../../assets/public/page-title.tsx";
+import { routes } from "../../routes.ts";
 import { Document } from "../../ui/document.tsx";
 
 export function CollectionPage(
   handle: Handle<{
+    canonicalUrl: string;
     description: string;
     handle: string;
     pageInfo: ProductPageInfoData;
@@ -18,12 +20,19 @@ export function CollectionPage(
   }>,
 ) {
   return () => (
-    <Document title={handle.props.title} description={handle.props.description}>
+    <Document
+      canonicalUrl={handle.props.canonicalUrl}
+      title={handle.props.title}
+      description={handle.props.description}
+      socialImage="/social-collections.jpg"
+    >
       <main>
         <PageTitle title={handle.props.title} />
         {handle.props.products.length ? (
           <CollectionProductGrid
-            action={`/collections/${encodeURIComponent(handle.props.handle)}`}
+            action={routes.collections.show.href({
+              handle: handle.props.handle,
+            })}
             products={handle.props.products}
             pageInfo={handle.props.pageInfo}
           />

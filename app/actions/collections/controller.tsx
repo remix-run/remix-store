@@ -1,3 +1,4 @@
+import { Accept } from "remix/headers/accept";
 import { createController } from "remix/router";
 import { redirect } from "remix/response/redirect";
 
@@ -31,14 +32,18 @@ export default createController(routes.collections, {
       }
 
       if (cursor && acceptsJson(request)) {
-        return Response.json({
-          products: collection.data.products.nodes,
-          pageInfo: collection.data.products.pageInfo,
-        });
+        return Response.json(
+          {
+            products: collection.data.products.nodes,
+            pageInfo: collection.data.products.pageInfo,
+          },
+          { headers: { "Cache-Control": "private, no-store" } },
+        );
       }
 
       return render(
         <CollectionPage
+          canonicalUrl={url.origin + routes.collections.show.href(params)}
           handle={collection.data.handle}
           title={collection.data.title}
           description={collection.data.description}
@@ -52,9 +57,7 @@ export default createController(routes.collections, {
 
 function acceptsJson(request: Request): boolean {
   return (
-    request.headers
-      .get("Accept")
-      ?.split(",")
-      .some((value) => value.trim().startsWith("application/json")) ?? false
+    (Accept.from(request.headers.get("Accept")).get("application/json") ?? 0) >
+    0
   );
 }

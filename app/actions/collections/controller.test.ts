@@ -45,7 +45,16 @@ describe("collection routes", () => {
     assert.equal(variables?.first, 15);
     assert.equal(variables?.after, undefined);
     assert.match(html, /<h1>Racing collection<\/h1>/);
+    assert.match(
+      html,
+      /<link rel="canonical" href="https:\/\/example\.com\/collections\/racing"/,
+    );
+    assert.match(
+      html,
+      /<meta property="og:image" content="https:\/\/example\.com\/social-collections\.jpg"/,
+    );
     assert.match(html, /href="\/products\/racing-shirt"/);
+    assert.match(html, /<s>\$30\.00<\/s><span>\$20\.00<\/span>/);
     assert.match(html, /srcset="[^"]+320w/);
     assert.match(html, /<form action="\/collections\/racing" method="get"/);
     assert.match(html, /name="cursor" value="next-page"/);
@@ -74,10 +83,31 @@ describe("collection routes", () => {
 
     assert.equal(response.status, 200);
     assert.equal(response.headers.get("Content-Type"), "application/json");
+    assert.equal(response.headers.get("Cache-Control"), "private, no-store");
     assert.equal(variables?.first, 8);
     assert.equal(variables?.after, "current-page");
     assert.equal(data.products[0]?.id, "gid://shopify/Product/1");
     assert.equal(data.pageInfo.hasNextPage, false);
+  });
+
+  it("honors an Accept header that explicitly rejects JSON", async () => {
+    let app = createTestApp(
+      storefrontFetch(() =>
+        collectionData({ hasNextPage: false, endCursor: null }),
+      ),
+    );
+    let url = new URL(
+      `${routes.collections.show.href({ handle: "racing" })}?cursor=current-page`,
+      "https://example.com",
+    );
+
+    let response = await app.fetch(
+      new Request(url, { headers: { Accept: "application/json;q=0" } }),
+    );
+    let html = await response.text();
+
+    assert.equal(response.status, 200);
+    assert.match(html, /<h1>Racing collection<\/h1>/);
   });
 
   it("renders a branded 404 when the collection is missing", async () => {
@@ -166,7 +196,7 @@ function collectionData(pageInfo: {
             },
             selectedOrFirstAvailableVariant: {
               price: { amount: "20.00", currencyCode: "USD" },
-              compareAtPrice: null,
+              compareAtPrice: { amount: "30.00", currencyCode: "USD" },
             },
             priceRange: {
               minVariantPrice: { amount: "20.00", currencyCode: "USD" },
