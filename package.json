@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "NODE_ENV=development node --env-file-if-exists=.env --watch --import remix/node-tsx server.node.ts",
+    "hmr": "NODE_ENV=development node --env-file-if-exists=.env hmr.node.ts",
     "start": "NODE_ENV=production node --env-file-if-exists=.env --import remix/node-tsx server.node.ts",
     "dev:oxygen": "vite dev",
     "build": "pnpm build:oxygen",
@@ -21,7 +22,7 @@
   },
   "dependencies": {
     "@shopify/hydrogen": "0.0.0-preview-116d5d7-20260730141607",
-    "remix": "3.0.0-beta.5"
+    "remix": "github:remix-run/remix#preview/main&path:packages/remix"
   },
   "devDependencies": {
     "@hiogawa/vite-plugin-fullstack": "0.0.11",

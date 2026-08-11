@@ -40,6 +40,20 @@ async function resolveFrameResponse(
   return response.body ?? response.text();
 }
 
+if (import.meta.hot) {
+  import.meta.hot.on("server:update", async () => {
+    try {
+      await app.ready();
+      await app.frames.top.reload();
+    } catch (error) {
+      console.error(
+        "Error reloading the top frame after a server update:",
+        error,
+      );
+    }
+  });
+}
+
 app.addEventListener("error", (event) => {
   console.error("Hydration error:", event.error);
 });
