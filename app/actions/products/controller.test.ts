@@ -16,6 +16,18 @@ describe("product routes", () => {
       createStorefrontFetch({
         RemixAnalyticsShop: analyticsShopData,
         RemixNavigation: navigationData,
+        RemixProductNavigation: () => ({
+          menu: {
+            items: [
+              {
+                id: "all-products",
+                title: "All products",
+                url: "https://example.com/collections/all",
+              },
+            ],
+          },
+          shop: { primaryDomain: { url: "https://example.com" } },
+        }),
         RemixProduct(body) {
           variables = body.variables;
           return { product: productData() };
@@ -38,6 +50,9 @@ describe("product routes", () => {
       /rel="canonical" href="https:\/\/example\.com\/products\/test-product"/,
     );
     assert.match(html, /<h1[^>]*>Test Product<\/h1>/);
+    assert.match(html, /aria-label="Product collections"/);
+    assert.match(html, /href="\/collections\/all">All products<\/a>/);
+    assert.match(html, /<shop-pay-button[^>]*variants="111:1"/);
     assert.match(
       html,
       /href="\/products\/test-product\?ref=campaign&amp;Color=Blue"/,
@@ -49,7 +64,9 @@ describe("product routes", () => {
     assert.match(html, /name="merchandiseId"/);
     assert.match(html, /name="quantity" value="1"/);
     assert.match(html, />Add to cart<\/button>/);
-    assert.doesNotMatch(html, /javascript:alert/);
+    assert.doesNotMatch(html, /aria-label="Previous image"/);
+    assert.doesNotMatch(html, /aria-label="Next image"/);
+    assert.doesNotMatch(html, /href="javascript:/);
   });
 
   it("renders the branded 404 when a product is missing", async () => {
@@ -57,6 +74,7 @@ describe("product routes", () => {
       createStorefrontFetch({
         RemixAnalyticsShop: analyticsShopData,
         RemixNavigation: navigationData,
+        RemixProductNavigation: () => ({ menu: null, shop: null }),
         RemixProduct: () => ({ product: null }),
       }),
     );
@@ -73,13 +91,13 @@ describe("product routes", () => {
 function productData() {
   let red = variant({
     availableForSale: true,
-    id: "gid://shopify/ProductVariant/red",
+    id: "gid://shopify/ProductVariant/111",
     image: image("red"),
     selectedOptions: [{ name: "Color", value: "Red" }],
   });
   let blue = variant({
     availableForSale: false,
-    id: "gid://shopify/ProductVariant/blue",
+    id: "gid://shopify/ProductVariant/222",
     image: image("blue"),
     selectedOptions: [{ name: "Color", value: "Blue" }],
   });
