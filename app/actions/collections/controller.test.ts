@@ -3,6 +3,7 @@ import { describe, it } from "remix/test";
 
 import { routes } from "../../routes.ts";
 import {
+  analyticsShopData,
   createStorefrontFetch,
   createTestApp,
   graphqlResponse,
@@ -146,7 +147,7 @@ describe("collection routes", () => {
     let result = await app.fetch(new Request(url));
 
     assert.equal(result.status, 400);
-    assert.equal(calls, 1);
+    assert.equal(calls, 2);
   });
 });
 
@@ -154,6 +155,7 @@ function storefrontFetch(
   collection: (body: StorefrontRequestBody) => unknown,
 ): typeof globalThis.fetch {
   return createStorefrontFetch({
+    RemixAnalyticsShop: analyticsShopData,
     RemixCollection: collection,
     RemixNavigation: navigationData,
   });

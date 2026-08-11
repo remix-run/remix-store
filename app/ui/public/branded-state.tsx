@@ -3,7 +3,7 @@ import { css, type Handle } from "remix/ui";
 import {
   MatrixText,
   type MatrixTextKind,
-} from "../assets/public/matrix-text.tsx";
+} from "../../assets/public/matrix-text.tsx";
 
 export function BrandedState(
   handle: Handle<{

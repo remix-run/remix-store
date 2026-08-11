@@ -22,7 +22,7 @@ const assetServer = createAssetServer({
   },
 
   allowFiles: ["app/**/public/**", "app/entry.browser.ts"],
-  allowPackages: ["remix"],
+  allowPackages: ["remix", "@shopify/hydrogen"],
   denyFiles: ["app/**/*.test.*", "app/**/*.spec.*"],
   sourceMaps: isDevelopment ? "external" : undefined,
   minify: !isDevelopment,

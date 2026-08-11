@@ -1,6 +1,7 @@
 import { formatMoney } from "@shopify/hydrogen";
 import { css, type Handle } from "remix/ui";
 
+import { ProductAddToCart } from "../../assets/public/product-add-to-cart.tsx";
 import type { ProductData } from "../../data/storefront.ts";
 import { routes } from "../../routes.ts";
 import { RichText } from "../../ui/rich-text.tsx";
@@ -96,6 +97,16 @@ export function ProductPage(
                 <p mix={availabilityStyle}>
                   This product requires a selling plan.
                 </p>
+              ) : null}
+
+              {selectedVariant &&
+              !product.requiresSellingPlan &&
+              selectedVariant.availableForSale ? (
+                <ProductAddToCart
+                  merchandiseId={selectedVariant.id}
+                  available={selectedVariant.availableForSale}
+                  label="Add to cart"
+                />
               ) : null}
 
               {product.customDescription ? (

@@ -2,7 +2,12 @@ import { createController } from "remix/router";
 
 import { queryHome } from "../data/storefront.ts";
 import { routes } from "../routes.ts";
-import { HomePage } from "./pages.tsx";
+import { CartPage, HomePage } from "./pages.tsx";
+function noStoreResponseInit(init?: ResponseInit): ResponseInit {
+  let headers = new Headers(init?.headers);
+  headers.set("Cache-Control", "private, no-store");
+  return { ...init, headers };
+}
 
 export default createController(routes, {
   actions: {
@@ -20,6 +25,15 @@ export default createController(routes, {
           products={home.data.products}
           pageInfo={home.data.pageInfo}
         />,
+      );
+    },
+    async cart({ cartInitialData, render, request }) {
+      return render(
+        <CartPage
+          canonicalUrl={new URL(request.url).origin + routes.cart.href()}
+          initialData={cartInitialData}
+        />,
+        noStoreResponseInit(),
       );
     },
   },

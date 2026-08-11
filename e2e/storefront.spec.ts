@@ -1,5 +1,7 @@
 import { expect, test } from "playwright/test";
 
+import { openAvailableProduct } from "./storefront.ts";
+
 test("renders the current storefront skeleton", async ({ page }) => {
   let response = await page.goto("/");
 
@@ -27,7 +29,7 @@ test("keeps product details when navigating from the home page", async ({
   await productRegion.locator('a[href^="/products/"]').click();
 
   await expect(page).toHaveURL(/\/products\//);
-  await expect(page.locator("main h1")).toHaveText(productName!);
+  await expect(page.locator("main h1")).toHaveText(productName);
 });
 
 test("returns a real branded 404 response and navigates home", async ({
@@ -97,10 +99,11 @@ test("navigates from the catalog to a product", async ({ page }) => {
 
   await expect(page).toHaveURL(/\/products\//);
   await expect(page.getByRole("heading", { level: 1 })).toHaveText(productName);
+  await expect(
+    page.getByRole("button", { name: /add to cart|sold out/i }),
+  ).toBeVisible();
 });
 
-// Cart and SEO acceptance cases should be added with those routes. Do not keep
-// placeholder tests skipped: a green suite must describe only shipped behavior.
 test("product pages preserve their canonical URL", async ({ page }) => {
   await page.goto("/collections/all");
   let productPath = await page
@@ -114,4 +117,39 @@ test("product pages preserve their canonical URL", async ({ page }) => {
     "href",
     new URL(productPath!, page.url()).href,
   );
+});
+
+test("adds a product without opening the cart, then opens it on request", async ({
+  page,
+}) => {
+  let { addToCart, title } = await openAvailableProduct(page);
+
+  let [cartResponse] = await Promise.all([
+    page.waitForResponse((response) => {
+      let url = new URL(response.url());
+      return (
+        url.pathname.startsWith("/api/cart") &&
+        response.request().method() === "POST"
+      );
+    }),
+    addToCart.click(),
+  ]);
+  expect(cartResponse.ok()).toBe(true);
+
+  let drawer = page.getByRole("dialog", { name: /item\(s\) in cart/i });
+  await expect(drawer).not.toBeVisible();
+  let cartTrigger = page.getByRole("button", { name: /1 item in cart/i });
+  await expect(cartTrigger).toBeVisible();
+
+  await cartTrigger.click();
+  await expect(drawer).toBeVisible();
+  await expect(drawer.getByText(title, { exact: true }).first()).toBeVisible();
+  await expect(drawer.getByText(/subtotal/i)).toBeVisible();
+
+  await page.goto("/cart");
+  await expect(page.getByRole("heading", { name: /cart/i }).first()).toBeVisible();
+  await expect(
+    page.locator("main").getByText(title, { exact: true }).first(),
+  ).toBeVisible();
+  await expect(page.locator("main").getByText(/subtotal/i)).toBeVisible();
 });

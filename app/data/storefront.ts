@@ -467,6 +467,66 @@ export async function queryShop(
   }
 }
 
+export type AnalyticsShop = SerializableObject & {
+  channel: "hydrogen";
+  currency: string;
+  myshopifyDomain: string;
+  shopId: string;
+  storefrontId: string;
+};
+
+const ANALYTICS_SHOP_QUERY = gql(`
+  query RemixAnalyticsShop($country: CountryCode, $language: LanguageCode)
+  @inContext(country: $country, language: $language) {
+    shop {
+      id
+    }
+    localization {
+      country {
+        currency {
+          isoCode
+        }
+      }
+    }
+  }
+`);
+
+/**
+ * Fetches the shop ID and currency required to render Shopify script tags
+ * (the Standard Actions bus the cart store mutates through). Returns null on
+ * failure so a query outage never blocks the cart — the no-JS form path still
+ * works without the scripts.
+ */
+export async function queryAnalyticsShop(
+  storefront: AppStorefrontClient,
+  storefrontId: string,
+  myshopifyDomain: string,
+): Promise<AnalyticsShop | null> {
+  try {
+    let result = await storefront.graphql(ANALYTICS_SHOP_QUERY, {
+      cache: STABLE_CACHE,
+    });
+    let shopId = result.data?.shop?.id;
+    let currency = result.data?.localization?.country?.currency.isoCode;
+    if (result.errors || !shopId || !currency) {
+      if (result.errors) {
+        console.error("[hydrogen] Analytics shop query failed", result.errors);
+      }
+      return null;
+    }
+    return {
+      channel: "hydrogen",
+      currency,
+      myshopifyDomain,
+      shopId,
+      storefrontId,
+    };
+  } catch (error) {
+    console.error("[hydrogen] Analytics shop query failed", error);
+    return null;
+  }
+}
+
 export async function queryHome(
   storefront: AppStorefrontClient,
 ): Promise<StorefrontQueryResult<HomeData>> {
@@ -874,6 +934,6 @@ function homeHeroImageUrl(source: string): string {
   }
 }
 
-function normalizeStoreDomain(value: string): string {
+export function normalizeStoreDomain(value: string): string {
   return new URL(value.includes("://") ? value : `https://${value}`).host;
 }

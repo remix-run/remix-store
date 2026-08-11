@@ -3,12 +3,13 @@ import { describe, it } from "remix/test";
 
 import { routes } from "../routes.ts";
 import {
+  analyticsShopData,
   createStorefrontFetch,
   createTestApp,
-  navigationData,
 } from "../testing/storefront.ts";
 
 const shellMenuFetch = createStorefrontFetch({
+  RemixAnalyticsShop: analyticsShopData,
   RemixNavigation: navigationData,
 });
 
@@ -80,27 +81,30 @@ describe("platform skeleton", () => {
 function fetchHome() {
   let app = createTestApp(
     createStorefrontFetch({
+      RemixAnalyticsShop: analyticsShopData,
       RemixCollection: collectionData,
       RemixHomeEditorial: homeData,
-      RemixNavigation() {
-        return {
-          menu: {
-            items: [
-              {
-                id: "all",
-                title: "All Products",
-                url: "https://example.myshopify.com/collections/all",
-              },
-            ],
-          },
-          footerMenu: null,
-          shop: { primaryDomain: { url: "https://shop.example.com" } },
-        };
-      },
+      RemixNavigation: navigationData,
     }),
   );
 
   return app.fetch(new Request("https://example.com" + routes.home.href()));
+}
+
+function navigationData() {
+  return {
+    menu: {
+      items: [
+        {
+          id: "all",
+          title: "All Products",
+          url: "https://example.myshopify.com/collections/all",
+        },
+      ],
+    },
+    footerMenu: null,
+    shop: { primaryDomain: { url: "https://shop.example.com" } },
+  };
 }
 
 function homeData() {

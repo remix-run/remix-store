@@ -1,7 +1,13 @@
+import {
+  getShopifyScriptTags,
+  type ShopifyScriptTagDescriptor,
+  type ShopifyScriptTagDescriptors,
+} from "@shopify/hydrogen";
 import { css, type Handle, type RemixNode } from "remix/ui";
 
 import { Footer } from "../assets/public/footer.tsx";
 import {
+  type AnalyticsShop,
   FALLBACK_FOOTER_MENU,
   FALLBACK_NAVIGATION_MENU,
 } from "../data/storefront.ts";
@@ -30,12 +36,15 @@ export function Document(handle: Handle<DocumentProps>) {
     } = handle.props;
     let assets = handle.context.get(DocumentAssetsProvider);
     let shellData = handle.context.get(ShellDataProvider) ?? {
+      analyticsShop: null,
+      cartInitialData: undefined,
       footerMenu: FALLBACK_FOOTER_MENU,
       navigationMenu: FALLBACK_NAVIGATION_MENU,
     };
     let socialImageUrl = canonicalUrl
       ? new URL(socialImage, canonicalUrl).href
       : socialImage;
+    let shopifyScripts = getShopifyScripts(shellData.analyticsShop);
 
     return (
       <html lang="en">
@@ -111,14 +120,70 @@ export function Document(handle: Handle<DocumentProps>) {
           {assets.js.map((attributes) => (
             <link {...attributes} rel="modulepreload" />
           ))}
+          {shopifyScripts.links.map((descriptor) => (
+            <ShopifyTag descriptor={descriptor} />
+          ))}
           <title>{title}</title>
         </head>
         <body mix={bodyStyle}>
-          <Navbar menu={shellData.navigationMenu} />
+          <Navbar
+            cartInitialData={shellData.cartInitialData}
+            menu={shellData.navigationMenu}
+          />
           {children}
           <Footer menu={shellData.footerMenu} />
+          {shopifyScripts.scripts.map((descriptor) => (
+            <ShopifyTag descriptor={descriptor} />
+          ))}
         </body>
       </html>
+    );
+  };
+}
+
+const EMPTY_SHOPIFY_SCRIPT_TAGS: ShopifyScriptTagDescriptors = {
+  links: [],
+  scripts: [],
+  tags: [],
+};
+
+function getShopifyScripts(
+  analyticsShop?: AnalyticsShop | null,
+): ShopifyScriptTagDescriptors {
+  if (!analyticsShop?.shopId || !analyticsShop.myshopifyDomain) {
+    return EMPTY_SHOPIFY_SCRIPT_TAGS;
+  }
+  return getShopifyScriptTags({
+    analytics: { channel: analyticsShop.channel },
+    i18n: {
+      country: "US",
+      language: "EN",
+      currency: analyticsShop.currency,
+    },
+    shop: {
+      myshopifyDomain: analyticsShop.myshopifyDomain,
+      shopId: analyticsShop.shopId,
+      storefrontId: analyticsShop.storefrontId,
+    },
+  });
+}
+
+function ShopifyTag(
+  handle: Handle<{ descriptor: ShopifyScriptTagDescriptor }>,
+) {
+  return () => {
+    let descriptor = handle.props.descriptor;
+    if (descriptor.tagName === "link") {
+      let { crossorigin, ...attributes } = descriptor.attributes;
+      return <link {...attributes} crossOrigin={crossorigin || undefined} />;
+    }
+    let { crossorigin, ...attributes } = descriptor.attributes ?? {};
+    return (
+      <script
+        {...attributes}
+        crossOrigin={crossorigin || undefined}
+        innerHTML={descriptor.innerHTML}
+      />
     );
   };
 }
@@ -131,6 +196,7 @@ const bodyStyle = css({
   lineHeight: 1.5,
   margin: 0,
   overflowX: "hidden",
+  "&:has(dialog#cart-drawer[open])": { overflow: "hidden" },
   "& *": { boxSizing: "border-box" },
   "& a": { color: "inherit", transition: "color 180ms ease" },
   "& a:hover": { color: "var(--color-blue-brand)" },
@@ -230,6 +296,22 @@ const globalStyles = `
   }
   @keyframes footer-runner-spin {
     to { transform: rotate(360deg); }
+  }
+  @starting-style {
+    dialog#cart-drawer[open] {
+      opacity: 0;
+      transform: translateX(24px);
+    }
+    dialog#cart-drawer[open]::backdrop {
+      background: transparent;
+    }
+  }
+  @media (max-width: 809px) {
+    @starting-style {
+      dialog#cart-drawer[open] {
+        transform: translateX(100%);
+      }
+    }
   }
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {

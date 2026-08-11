@@ -1,16 +1,25 @@
 import { expect, test } from "playwright/test";
 
-test("catalog navigation works without JavaScript", async ({ page }) => {
-  let response = await page.goto("/collections/all");
+import { openAvailableProduct } from "./storefront.ts";
 
-  expect(response?.status()).toBe(200);
-  let productLink = page.locator('main a[href^="/products/"]').first();
-  let productName = (await productLink.locator("h3").innerText()).trim();
-  await expect(productLink).toBeVisible();
-  await productLink.click();
+test("catalog navigation and add-to-cart work without JavaScript", async ({
+  page,
+}) => {
+  let { addToCart, title } = await openAvailableProduct(page);
+  let form = page
+    .locator('form[action="/api/cart"]')
+    .filter({ has: addToCart });
 
-  await expect(page).toHaveURL(/\/products\//);
+  await expect(form).toBeVisible();
+
+  await Promise.all([page.waitForURL(/\/products\//), addToCart.click()]);
+
+  // The native cart POST redirects back to the product page and persists the
+  // cart cookie, so the server-rendered cart page must contain the added item.
+  await expect(addToCart).toBeVisible();
+  await page.goto("/cart");
+  await expect(page.getByRole("heading", { name: /cart/i }).first()).toBeVisible();
   await expect(
-    page.getByRole("heading", { level: 1, name: productName }),
+    page.locator("main").getByText(title, { exact: true }).first(),
   ).toBeVisible();
 });
