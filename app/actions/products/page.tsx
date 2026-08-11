@@ -27,90 +27,85 @@ export function ProductPage(
         description={product.seo.description ?? product.description}
         socialImage={images[0]?.url}
       >
-        <main>
-          {/* TODO(remix-ui): Remove this compatibility wrapper once upstream
-              frame reconciliation stops dropping a destination sibling while
-              disposing old clientEntry boundaries. */}
-          <div mix={productPageStyle}>
-            <section aria-label="Product images" mix={galleryStyle}>
-              {images.length ? (
-                images.map((image, index) => (
-                  <div key={image.id} mix={imageFrameStyle}>
-                    <ShopifyImage
-                      image={image}
-                      alt={image.altText ?? `${product.title} product image`}
-                      loading={index === 0 ? "eager" : "lazy"}
-                      sizes="(min-width: 1024px) 52vw, 100vw"
-                    />
-                  </div>
-                ))
-              ) : (
-                <div
-                  aria-label="Product image unavailable"
-                  mix={imageFallbackStyle}
-                />
-              )}
-            </section>
+        <main mix={productPageStyle}>
+          <section aria-label="Product images" mix={galleryStyle}>
+            {images.length ? (
+              images.map((image, index) => (
+                <div key={image.id} mix={imageFrameStyle}>
+                  <ShopifyImage
+                    image={image}
+                    alt={image.altText ?? `${product.title} product image`}
+                    loading={index === 0 ? "eager" : "lazy"}
+                    sizes="(min-width: 1024px) 52vw, 100vw"
+                  />
+                </div>
+              ))
+            ) : (
+              <div
+                aria-label="Product image unavailable"
+                mix={imageFallbackStyle}
+              />
+            )}
+          </section>
 
-            <section mix={detailsStyle}>
-              {product.category?.name ? (
-                <p mix={categoryStyle}>{product.category.name}</p>
+          <section mix={detailsStyle}>
+            {product.category?.name ? (
+              <p mix={categoryStyle}>{product.category.name}</p>
+            ) : null}
+            <h1 mix={titleStyle}>{product.title}</h1>
+            <p aria-live="polite" mix={priceStyle}>
+              {selectedVariant?.compareAtPrice ? (
+                <s>{formatPrice(selectedVariant.compareAtPrice)}</s>
               ) : null}
-              <h1 mix={titleStyle}>{product.title}</h1>
-              <p aria-live="polite" mix={priceStyle}>
-                {selectedVariant?.compareAtPrice ? (
-                  <s>{formatPrice(selectedVariant.compareAtPrice)}</s>
-                ) : null}
-                <span>{formatPrice(price)}</span>
+              <span>{formatPrice(price)}</span>
+            </p>
+
+            {productOptions(product, handle.props.search).map((option) => (
+              <details key={option.name} mix={optionStyle}>
+                <summary>{option.selectedName ?? option.name}</summary>
+                <div>
+                  {option.values.map((value) =>
+                    value.exists ? (
+                      <a
+                        key={value.name}
+                        href={value.href}
+                        aria-current={value.selected ? "true" : undefined}
+                        data-sold-out={!value.available || undefined}
+                      >
+                        {value.name}
+                        {!value.available ? " — Sold out" : ""}
+                      </a>
+                    ) : (
+                      <span key={value.name} aria-disabled="true">
+                        {value.name}
+                      </span>
+                    ),
+                  )}
+                </div>
+              </details>
+            ))}
+
+            {selectedVariant && !selectedVariant.availableForSale ? (
+              <p mix={availabilityStyle}>This variant is sold out.</p>
+            ) : null}
+            {product.requiresSellingPlan ? (
+              <p mix={availabilityStyle}>
+                This product requires a selling plan.
               </p>
+            ) : null}
 
-              {productOptions(product, handle.props.search).map((option) => (
-                <details key={option.name} mix={optionStyle}>
-                  <summary>{option.selectedName ?? option.name}</summary>
-                  <div>
-                    {option.values.map((value) =>
-                      value.exists ? (
-                        <a
-                          key={value.name}
-                          href={value.href}
-                          aria-current={value.selected ? "true" : undefined}
-                          data-sold-out={!value.available || undefined}
-                        >
-                          {value.name}
-                          {!value.available ? " — Sold out" : ""}
-                        </a>
-                      ) : (
-                        <span key={value.name} aria-disabled="true">
-                          {value.name}
-                        </span>
-                      ),
-                    )}
-                  </div>
-                </details>
-              ))}
-
-              {selectedVariant && !selectedVariant.availableForSale ? (
-                <p mix={availabilityStyle}>This variant is sold out.</p>
-              ) : null}
-              {product.requiresSellingPlan ? (
-                <p mix={availabilityStyle}>
-                  This product requires a selling plan.
-                </p>
-              ) : null}
-
-              {product.customDescription ? (
-                <RichText value={product.customDescription.value} />
-              ) : product.description ? (
-                <p mix={descriptionStyle}>{product.description}</p>
-              ) : null}
-              {product.technicalDescription ? (
-                <section mix={technicalStyle}>
-                  <h2>Technical Description</h2>
-                  <RichText value={product.technicalDescription.value} />
-                </section>
-              ) : null}
-            </section>
-          </div>
+            {product.customDescription ? (
+              <RichText value={product.customDescription.value} />
+            ) : product.description ? (
+              <p mix={descriptionStyle}>{product.description}</p>
+            ) : null}
+            {product.technicalDescription ? (
+              <section mix={technicalStyle}>
+                <h2>Technical Description</h2>
+                <RichText value={product.technicalDescription.value} />
+              </section>
+            ) : null}
+          </section>
         </main>
       </Document>
     );
