@@ -2,20 +2,15 @@ import {
   configureCartEndpoint,
   createCartStore,
   type CartData,
-  type CartState,
   type CartStore,
   type CreateCartStoreOptions,
 } from "@shopify/hydrogen";
 
-import type { CartInitialData, SerializedCartData } from "../../data/cart.ts";
+import type { CartInitialData } from "../../data/cart.ts";
 import { CART_API_PATH } from "../../lib/public/cart-routes.ts";
 
 export type { CartInitialData } from "../../data/cart.ts";
 export { CART_API_PATH } from "../../lib/public/cart-routes.ts";
-
-// TODO(2.12): wire trackCartAnalytics + a confirmed-cart snapshot once the
-// Shopify analytics bus lands. The cart is fully functional without firing
-// Shopify events.
 
 let browserCartStore: CartStore | undefined;
 
@@ -45,31 +40,11 @@ export function getBrowserCartStore(
     initialData?.cart &&
     browserCartStore.getState().data.id === null
   ) {
-    // A server-rendered cart surface may hydrate after the global drawer.
+    // A server-rendered cart surface may hydrate after the global cart dialog.
     // Prefer that server snapshot while the browser store is still empty.
     browserCartStore.hydrate(initialData.cart as CartData);
   }
 
   browserCartStore.connect();
   return browserCartStore;
-}
-
-/**
- * Returns the latest confirmed (non-pending) cart, or null while mutations are
- * in-flight. Inert today; the analytics snapshot (2.12) will consume it.
- */
-export function getConfirmedCartSnapshot(
-  state: CartState,
-): SerializedCartData | null {
-  if (
-    state.loading ||
-    state.pending.lines.size > 0 ||
-    state.pending.discountCodes.size > 0 ||
-    state.pending.note
-  ) {
-    return null;
-  }
-  return state.data.id === null
-    ? null
-    : (state.data as unknown as SerializedCartData);
 }

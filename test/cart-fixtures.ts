@@ -18,7 +18,6 @@ export function createCart(quantity = 1): SerializedCartData {
     checkoutUrl: "https://checkout.example.test/cart",
     totalQuantity: quantity,
     note: null,
-    updatedAt: `2026-01-01T00:00:0${quantity}.000Z`,
     cost: {
       checkoutChargeAmount: money(amount),
       subtotalAmount: money(amount),

@@ -161,7 +161,7 @@ describe("cart interactions", () => {
     );
   });
 
-  it("uses server data without fetching and supports every drawer trigger", async (t) => {
+  it("uses server data without fetching and supports every dialog trigger", async (t) => {
     useDesktopCartViewport(t);
     let api = createCartApiMock(t);
     let initialData = createCartInitialData();
@@ -220,7 +220,7 @@ describe("cart interactions", () => {
     assert.equal(trigger.getAttribute("aria-expanded"), "false");
   });
 
-  it("closes after removing the final line without rendering an empty drawer", async (t) => {
+  it("closes after removing the final line without rendering an empty dialog", async (t) => {
     useDesktopCartViewport(t);
     let api = createCartApiMock(t);
     let initialData = createCartInitialData();
@@ -287,7 +287,7 @@ describe("cart interactions", () => {
     assert.match(container.textContent, /Taxes & shipping details at checkout/);
   });
 
-  it("updates the cart without opening the drawer after add-to-cart succeeds", async (t) => {
+  it("updates the cart without opening the dialog after add-to-cart succeeds", async (t) => {
     let api = createCartApiMock(t);
     let initialData = createCartInitialData(0);
     t.after(resetBrowserCartStore);
@@ -327,7 +327,7 @@ describe("cart interactions", () => {
     );
   });
 
-  it("keeps the drawer closed and reports rejected add-to-cart errors inline", async (t) => {
+  it("keeps the dialog closed and reports rejected add-to-cart errors inline", async (t) => {
     let api = createCartApiMock(t);
     let initialData = createCartInitialData(0);
     t.after(resetBrowserCartStore);

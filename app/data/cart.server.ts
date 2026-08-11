@@ -2,19 +2,16 @@ import {
   createCartServerHandlers,
   getCartId,
   gql,
-  type CartDataFromHandlers,
   type StorefrontClient,
 } from "@shopify/hydrogen";
 
 import type { CartInitialData } from "./cart.ts";
 
-// Extend the default Hydrogen cart fragment with `updatedAt` (for analytics
-// snapshot dedupe) and per-line `discountAllocations` (for the cart summary's
-// automatic/code discount labels). The Storefront API `gql check` validates
-// this document against the pinned schema.
+// Extend the default Hydrogen cart fragment with per-line discount allocations
+// for the cart summary's automatic/code discount labels. The Storefront API
+// `gql check` validates this document against the pinned schema.
 const CART_FRAGMENT = gql(`
   fragment CartFragment on Cart {
-    updatedAt
     lines(first: 250) {
       nodes {
         discountAllocations {
@@ -40,8 +37,6 @@ const CART_FRAGMENT = gql(`
 export const cartHandlers = createCartServerHandlers({
   fragment: CART_FRAGMENT,
 });
-
-export type CartData = CartDataFromHandlers<typeof cartHandlers>;
 
 /**
  * Loads the current cart for SSR. A missing or malformed cart cookie renders

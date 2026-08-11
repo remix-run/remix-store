@@ -71,7 +71,6 @@ export type SerializedCartData = SerializableObject & {
   };
   note: string | null;
   totalQuantity: number;
-  updatedAt: string;
 };
 
 export type CartInitialData = SerializableObject & {

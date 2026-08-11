@@ -297,22 +297,6 @@ const globalStyles = `
   @keyframes footer-runner-spin {
     to { transform: rotate(360deg); }
   }
-  @starting-style {
-    dialog#cart-drawer[open] {
-      opacity: 0;
-      transform: translateX(24px);
-    }
-    dialog#cart-drawer[open]::backdrop {
-      background: transparent;
-    }
-  }
-  @media (max-width: 809px) {
-    @starting-style {
-      dialog#cart-drawer[open] {
-        transform: translateX(100%);
-      }
-    }
-  }
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
       animation-duration: 0.01ms !important;

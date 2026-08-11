@@ -36,7 +36,7 @@ function productHref(handle: string): string {
   return `/products/${encodeURIComponent(handle)}`;
 }
 
-export function openCartDrawer() {
+function openCartDrawer() {
   if (typeof document === "undefined") return;
   if (window.matchMedia("(max-width: 809px)").matches) {
     window.location.assign("/cart");
@@ -51,7 +51,7 @@ export function openCartDrawer() {
   }
 }
 
-export function closeCartDrawer() {
+function closeCartDrawer() {
   if (typeof document === "undefined") return;
   let drawer = document.getElementById(CART_DRAWER_ID);
   if (drawer instanceof HTMLDialogElement) {
@@ -68,7 +68,7 @@ function setCartTriggerExpanded(expanded: boolean) {
 
 /**
  * Wires `window.Shopify.actions.openCart` (the ShopifyScripts Standard Action)
- * to the app’s cart drawer. The handler is page-lifetime configuration, so it
+ * to the app’s cart dialog. The handler is page-lifetime configuration, so it
  * delegates to the stable DOM helper instead of closing over component state.
  */
 export function configureOpenCartAction(): boolean {
@@ -385,17 +385,6 @@ function CartView(handle: Handle<CartViewProps>) {
 
     let cartPending = isCartPending(state);
     let discountAllocations = getCartDiscountAllocations(cart);
-    let activeDiscountCodes = new Set(
-      cart.discountCodes.map((discount) => discount.code.toLocaleLowerCase()),
-    );
-    let applyDiscountMessages = errors
-      ? Array.from(errors.discountCodes.entries())
-          .filter(
-            ([code]) => !activeDiscountCodes.has(code.toLocaleLowerCase()),
-          )
-          .flatMap(([, group]) => getErrorGroupMessages(group))
-      : [];
-    let discountErrorId = `${handle.id}-discount-errors`;
 
     return (
       <section
@@ -403,7 +392,7 @@ function CartView(handle: Handle<CartViewProps>) {
           drawer ? drawerContentStyle : pageCartContentStyle,
           on("submit", (event) => {
             event.preventDefault();
-            if (!store || !shouldSubmitCartForm(event, cart)) return;
+            if (!store) return;
 
             void store.handleFormSubmit(event).catch((error) => {
               if (!(error instanceof Error && error.name === "AbortError")) {
@@ -586,87 +575,6 @@ function CartView(handle: Handle<CartViewProps>) {
           })}
         </ul>
 
-        {!drawer ? (
-          <div mix={discountSectionStyle}>
-            <form action={CART_API_PATH} method="post" mix={discountFormStyle}>
-              <label>
-                Discount code
-                <input
-                  {...register("discountCode", { defaultValue: "" })}
-                  aria-invalid={
-                    applyDiscountMessages.length ? "true" : undefined
-                  }
-                  aria-describedby={
-                    applyDiscountMessages.length ? discountErrorId : undefined
-                  }
-                />
-              </label>
-              <button type="submit" {...register("discount-apply")}>
-                Apply
-              </button>
-              {applyDiscountMessages.length ? (
-                <ErrorMessages
-                  id={discountErrorId}
-                  messages={applyDiscountMessages}
-                />
-              ) : null}
-            </form>
-
-            {cart.discountCodes.length ? (
-              <ul mix={discountListStyle}>
-                {cart.discountCodes.map((discount, index) => {
-                  let discountPending =
-                    state?.pending.discountCodes.has(discount.code) ?? false;
-                  let discountMessages = errors
-                    ? getErrorGroupMessages(
-                        errors.discountCodes.get(discount.code),
-                      )
-                    : [];
-                  let errorId = `${handle.id}-discount-${index}-errors`;
-
-                  return (
-                    <li
-                      key={discount.code}
-                      aria-busy={discountPending ? "true" : undefined}
-                      mix={discountPending ? pendingStyle : undefined}
-                    >
-                      {discount.code}{" "}
-                      {discount.applicable ? "(applied)" : "(not applicable)"}
-                      <form
-                        action={CART_API_PATH}
-                        method="post"
-                        mix={inlineFormStyle}
-                      >
-                        <input
-                          type="hidden"
-                          {...register("discountCode", {
-                            value: discount.code,
-                          })}
-                        />
-                        <button
-                          type="submit"
-                          {...register("discount-remove")}
-                          aria-describedby={
-                            discountMessages.length ? errorId : undefined
-                          }
-                        >
-                          Remove
-                        </button>
-                      </form>
-                      {discountMessages.length ? (
-                        <ErrorMessages
-                          id={errorId}
-                          messages={discountMessages}
-                        />
-                      ) : null}
-                    </li>
-                  );
-                })}
-              </ul>
-            ) : null}
-          </div>
-        ) : null}
-
         <div mix={drawer ? drawerSummaryStyle : summaryStyle}>
           {drawer ? (
             <>
@@ -848,24 +756,6 @@ function ErrorMessages(handle: Handle<{ id: string; messages: string[] }>) {
   );
 }
 
-function shouldSubmitCartForm(event: SubmitEvent, cart: CartData): boolean {
-  if (!(event.target instanceof HTMLFormElement)) return false;
-  if (!(event.submitter instanceof HTMLElement)) return false;
-  if (event.submitter.getAttribute("value") !== "discount-apply") return true;
-
-  let input = event.target.elements.namedItem("discountCode");
-  if (!(input instanceof HTMLInputElement)) return false;
-
-  let code = input.value.trim();
-  input.value = code;
-  if (!code) return false;
-
-  return !cart.discountCodes.some(
-    (discount) =>
-      discount.code.toLocaleLowerCase() === code.toLocaleLowerCase(),
-  );
-}
-
 function isCartPending(state?: CartState): boolean {
   if (!state) return false;
   return (
@@ -891,10 +781,14 @@ function getBannerMessages(
   let messages = [
     ...errors.network.map((error) => error.message),
     ...getErrorGroupMessages(errors.cart),
+    ...getErrorGroupMessages(errors.note),
   ];
 
   for (let [lineId, group] of errors.lines) {
     if (!lineIds.has(lineId)) messages.push(...getErrorGroupMessages(group));
+  }
+  for (let group of errors.discountCodes.values()) {
+    messages.push(...getErrorGroupMessages(group));
   }
 
   return Array.from(new Set(messages));
@@ -989,15 +883,6 @@ const drawerStyle = css({
     flexDirection: "column",
   },
   "&::backdrop": { background: "transparent" },
-  "@media (max-width: 809px)": {
-    borderRadius: 0,
-    height: "100dvh",
-    inset: "0 0 0 auto",
-    maxHeight: "none",
-    maxWidth: "min(440px, 100vw)",
-    width: "100%",
-    "&[open]::backdrop": { background: "rgb(0 0 0 / .35)" },
-  },
 });
 const drawerHeaderStyle = css({
   alignItems: "center",
@@ -1343,65 +1228,8 @@ const drawerCheckoutStyle = css({
   width: "100%",
   "& svg": { height: "32px", width: "32px" },
 });
-const discountSectionStyle = css({ marginTop: "36px" });
-const discountFormStyle = css({
-  alignItems: "end",
-  display: "flex",
-  flexWrap: "wrap",
-  gap: "8px",
-  "& label": {
-    display: "flex",
-    flex: "1 1 220px",
-    flexDirection: "column",
-    fontSize: ".875rem",
-    gap: "6px",
-  },
-  "& input": {
-    background: "var(--color-black)",
-    border: "2px solid var(--color-white)",
-    borderRadius: "24px",
-    color: "var(--color-white)",
-    minHeight: "44px",
-    padding: "8px 14px",
-  },
-  "& > button": {
-    background: "var(--color-white)",
-    border: 0,
-    borderRadius: "24px",
-    color: "var(--color-black)",
-    fontWeight: 700,
-    minHeight: "44px",
-    padding: "8px 18px",
-  },
-});
-const discountListStyle = css({
-  display: "flex",
-  flexDirection: "column",
-  fontSize: ".875rem",
-  gap: "8px",
-  listStyle: "none",
-  margin: "16px 0 0",
-  padding: 0,
-  "& > li": {
-    alignItems: "center",
-    display: "flex",
-    flexWrap: "wrap",
-    gap: "8px",
-  },
-});
-const inlineFormStyle = css({
-  display: "inline",
-  "& button": {
-    background: "transparent",
-    border: 0,
-    color: "var(--color-blue-brand)",
-    padding: 0,
-  },
-});
-const pendingStyle = css({ opacity: 0.55, transition: "opacity 150ms ease" });
 const pendingValueStyle = css({
   opacity: 0.5,
-  transition: "opacity 150ms ease",
 });
 const errorStyle = css({
   color: "var(--color-red-brand)",
