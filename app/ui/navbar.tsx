@@ -29,8 +29,10 @@ export function Navbar(handle: Handle<NavbarProps>) {
         <MobileMenu menu={handle.props.menu} />
         <PillLink
           href="/collections/all"
-          icon="fast-forward"
-          iconPosition="right"
+          icon="cart"
+          iconAlwaysVisible
+          iconPosition="left"
+          expandedText="All"
         >
           Shop
         </PillLink>

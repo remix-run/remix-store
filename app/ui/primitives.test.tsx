@@ -8,7 +8,12 @@ import { PillLink } from "./pill-link.tsx";
 describe("shared storefront primitives", () => {
   it("renders an accessible pill link backed by the icon sprite", async () => {
     let html = await renderToString(
-      <PillLink href="/collections/all" icon="fast-forward" expandedText="All">
+      <PillLink
+        href="/collections/all"
+        icon="fast-forward"
+        iconAlwaysVisible
+        expandedText="All"
+      >
         Shop
       </PillLink>,
     );
@@ -18,6 +23,8 @@ describe("shared storefront primitives", () => {
     assert.match(html, /All/);
     assert.match(html, /aria-hidden="true"/);
     assert.match(html, /href="\/sprites.svg#fast-forward"/);
+    assert.match(html, /data-icon-always-visible/);
+    assert.match(html, /data-expanded-text="All"/);
   });
 
   it("renders a branded state with fallback art and one semantic heading", async () => {

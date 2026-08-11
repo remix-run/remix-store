@@ -460,6 +460,7 @@ const gradientLayerStyle = css({
     display: "block",
     flexShrink: 0,
     height: "100%",
+    marginRight: "-1px",
     minHeight: "260px",
     position: "relative",
     transform: "scaleY(1)",

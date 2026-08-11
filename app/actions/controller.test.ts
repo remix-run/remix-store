@@ -142,7 +142,7 @@ describe("platform skeleton", () => {
     assert.match(html, /cdn\.shopify\.com\/lookbook\.jpg/);
     assert.match(html, /Coming Soon/);
     assert.match(html, /object-position: 40% 60%/);
-    assert.match(html, /Built for the better web/);
+    assert.match(html, /Product catalog goes here/);
     assert.match(html, /--color-blue-brand: #20aaff/);
     assert.doesNotMatch(html, /--color-blue:/);
     assert.match(html, /inter-italic-latin-var\.woff2/);

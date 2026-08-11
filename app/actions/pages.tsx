@@ -9,7 +9,7 @@ import type {
 import { focalPointPosition } from "../lib/image-utils.ts";
 import { BrandedState } from "../ui/branded-state.tsx";
 import { Document } from "../ui/document.tsx";
-import { PillIcon, PillLink, pillLinkStyle } from "../ui/pill-link.tsx";
+import { PillIcon, pillLinkStyle } from "../ui/pill-link.tsx";
 import { ShopifyImage } from "../ui/shopify-image.tsx";
 
 export function HomePage(
@@ -123,16 +123,17 @@ function RunnerPanel() {
 
 function CatalogTransition() {
   return () => (
-    <section aria-labelledby="catalog-heading" mix={catalogTransitionStyle}>
-      <p>Remix Soft Wear</p>
-      <h2 id="catalog-heading">Built for the better web</h2>
-      <PillLink
-        href="/collections/all"
-        icon="fast-forward"
-        iconPosition="right"
-      >
-        Shop All Products
-      </PillLink>
+    <section
+      aria-labelledby="catalog-heading"
+      aria-label="Product catalog migration placeholder"
+      mix={catalogTransitionStyle}
+    >
+      <p>Migration placeholder</p>
+      <h2 id="catalog-heading">Product catalog goes here</h2>
+      <p mix={catalogPlaceholderCopyStyle}>
+        Product listings will be added here as the storefront migration
+        continues.
+      </p>
     </section>
   );
 }
@@ -282,6 +283,17 @@ const catalogTransitionStyle = css({
   minHeight: "560px",
   padding: "96px 20px",
   textAlign: "center",
+  "& > p:first-child": {
+    border: "2px dashed var(--color-blue-brand)",
+    borderRadius: "999px",
+    color: "var(--color-blue-brand)",
+    fontFamily: "var(--font-mono)",
+    fontSize: ".875rem",
+    letterSpacing: ".1em",
+    margin: 0,
+    padding: "10px 16px",
+    textTransform: "uppercase",
+  },
   "& p": {
     fontFamily: "var(--font-mono)",
     letterSpacing: ".1em",
@@ -296,4 +308,11 @@ const catalogTransitionStyle = css({
     maxWidth: "16ch",
     textTransform: "uppercase",
   },
+});
+
+const catalogPlaceholderCopyStyle = css({
+  color: "var(--color-gray-300)",
+  fontSize: ".875rem",
+  lineHeight: 1.5,
+  maxWidth: "42ch",
 });
