@@ -60,6 +60,61 @@ describe("platform skeleton", () => {
               name: "Test Remix Store",
               description: "A test storefront",
             },
+            hero: {
+              assetImages: {
+                references: {
+                  nodes: [
+                    {
+                      __typename: "MediaImage",
+                      id: "hero-media",
+                      image: {
+                        id: "hero-image",
+                        url: "https://cdn.shopify.com/hero.jpg",
+                        altText: "Racing collection",
+                        width: 1600,
+                        height: 900,
+                      },
+                    },
+                  ],
+                },
+              },
+              collection: {
+                reference: { __typename: "Collection", handle: "racing" },
+              },
+            },
+            lookbook: {
+              entries: {
+                references: {
+                  nodes: [
+                    {
+                      __typename: "Metaobject",
+                      id: "lookbook-entry",
+                      fields: [
+                        {
+                          key: "image",
+                          reference: {
+                            __typename: "MediaImage",
+                            id: "lookbook-media",
+                            presentation: {
+                              asJson: {
+                                focalPoint: { x: 0.4, y: 0.6 },
+                              },
+                            },
+                            image: {
+                              id: "lookbook-image",
+                              url: "https://cdn.shopify.com/lookbook.jpg",
+                              altText: "Lookbook",
+                              width: 1200,
+                              height: 1600,
+                            },
+                          },
+                        },
+                      ],
+                    },
+                  ],
+                },
+              },
+            },
           };
       return new Response(JSON.stringify({ data }), {
         headers: { "Content-Type": "application/json" },
@@ -80,12 +135,19 @@ describe("platform skeleton", () => {
     assert.match(html, /Store policies/);
     assert.match(html, /"exportName":"RemixLogo"/);
     assert.match(html, /"exportName":"Footer"/);
-    assert.match(html, /Hydration check: 0/);
+    assert.match(html, /Remix 3 Racing Team Collection/);
+    assert.match(html, /Shop New Items/);
+    assert.match(html, /\/collections\/racing/);
+    assert.match(html, /cdn\.shopify\.com\/hero\.jpg/);
+    assert.match(html, /cdn\.shopify\.com\/lookbook\.jpg/);
+    assert.match(html, /Coming Soon/);
+    assert.match(html, /object-position: 40% 60%/);
+    assert.match(html, /Built for the better web/);
     assert.match(html, /--color-blue-brand: #20aaff/);
     assert.doesNotMatch(html, /--color-blue:/);
     assert.match(html, /inter-italic-latin-var\.woff2/);
     assert.match(html, /lexend-zetta-black\.woff2/);
-    assert.match(html, /"exportName":"Counter"/);
+    assert.match(html, /"exportName":"HomeHero"/);
     assert.equal(response.headers.get("Cache-Control"), "private, no-store");
   });
 

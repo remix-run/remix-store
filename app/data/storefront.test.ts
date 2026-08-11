@@ -8,6 +8,7 @@ import { describe, it } from "remix/test";
 import {
   FALLBACK_FOOTER_MENU,
   FALLBACK_NAVIGATION_MENU,
+  queryHome,
   queryShellMenus,
   queryShop,
 } from "./storefront.ts";
@@ -40,6 +41,130 @@ describe("Storefront data", () => {
         "The Storefront API did not return shop data.",
       );
     }
+  });
+
+  it("maps valid home editorial data and skips malformed entries", async () => {
+    let client = createTestClient(async () =>
+      storefrontResponse({
+        shop: { name: "Remix Store", description: "Soft" },
+        hero: {
+          assetImages: {
+            references: {
+              nodes: [
+                {
+                  __typename: "MediaImage",
+                  id: "media",
+                  image: {
+                    id: "image",
+                    url: "https://cdn.shopify.com/frame.jpg?foo=bar",
+                    altText: "Frame",
+                    width: 2400,
+                    height: 1350,
+                  },
+                },
+                { __typename: "Product", id: "wrong" },
+              ],
+            },
+          },
+          collection: {
+            reference: { __typename: "Collection", handle: "racing" },
+          },
+        },
+        lookbook: {
+          entries: {
+            references: {
+              nodes: [
+                {
+                  __typename: "Metaobject",
+                  id: "entry",
+                  fields: [
+                    {
+                      key: "image",
+                      reference: {
+                        __typename: "MediaImage",
+                        id: "lookbook-media",
+                        presentation: {
+                          asJson: { focalPoint: { x: 0.25, y: 0.75 } },
+                        },
+                        image: {
+                          id: "lookbook-image",
+                          url: "https://cdn.shopify.com/lookbook.jpg",
+                          altText: "Lookbook",
+                          width: 1200,
+                          height: 1600,
+                        },
+                      },
+                    },
+                    {
+                      key: "product",
+                      reference: {
+                        __typename: "Product",
+                        id: "product",
+                        handle: "racing-shirt",
+                        title: "Racing Shirt",
+                        priceRange: {
+                          minVariantPrice: {
+                            amount: "42.00",
+                            currencyCode: "USD",
+                          },
+                        },
+                      },
+                    },
+                  ],
+                },
+                { __typename: "Metaobject", id: "invalid", fields: [] },
+              ],
+            },
+          },
+        },
+      }),
+    );
+
+    let result = await queryHome(client);
+
+    assert.equal(result.ok, true);
+    if (!result.ok) return;
+    assert.equal(result.data.hero?.collectionHandle, "racing");
+    assert.equal(result.data.hero?.assetImages.length, 1);
+    let heroUrl = new URL(result.data.hero!.assetImages[0]!.url);
+    assert.equal(heroUrl.searchParams.get("foo"), "bar");
+    assert.equal(heroUrl.searchParams.get("width"), "1600");
+    assert.equal(heroUrl.searchParams.get("height"), "900");
+    assert.equal(heroUrl.searchParams.get("crop"), "center");
+    assert.equal(result.data.lookbookEntries.length, 1);
+    assert.deepEqual(result.data.lookbookEntries[0]?.focalPoint, {
+      x: 0.25,
+      y: 0.75,
+    });
+    assert.equal(
+      result.data.lookbookEntries[0]?.product?.handle,
+      "racing-shirt",
+    );
+  });
+
+  it("returns safe empty editorial fallbacks when metaobjects are missing", async () => {
+    let client = createTestClient(async () =>
+      storefrontResponse({
+        shop: { name: "Remix Store", description: null },
+        hero: null,
+        lookbook: {
+          entries: {
+            references: {
+              nodes: [
+                { __typename: "Metaobject", id: "missing-image", fields: [] },
+              ],
+            },
+          },
+        },
+      }),
+    );
+
+    let result = await queryHome(client);
+
+    assert.equal(result.ok, true);
+    if (!result.ok) return;
+    assert.equal(result.data.hero, null);
+    assert.deepEqual(result.data.lookbookEntries, []);
   });
 
   it("normalizes internal menu links and policy routes", async () => {

@@ -1,34 +1,151 @@
 import { css, type Handle } from "remix/ui";
 
-import { Counter } from "../assets/counter.tsx";
+import { HomeHero } from "../assets/home-hero.tsx";
+import type {
+  HomeHeroData,
+  HomeLookbookEntryData,
+  ProductMoney,
+} from "../data/storefront.ts";
+import { focalPointPosition } from "../lib/image-utils.ts";
 import { BrandedState } from "../ui/branded-state.tsx";
 import { Document } from "../ui/document.tsx";
+import { PillIcon, PillLink, pillLinkStyle } from "../ui/pill-link.tsx";
+import { ShopifyImage } from "../ui/shopify-image.tsx";
 
 export function HomePage(
   handle: Handle<{
     canonicalUrl: string;
     description?: string | null;
+    hero: HomeHeroData | null;
+    lookbookEntries: HomeLookbookEntryData[];
     shopName: string;
   }>,
 ) {
+  return () => {
+    let { hero, lookbookEntries } = handle.props;
+    let [firstEntry, ...remainingEntries] = lookbookEntries;
+    let collectionHandle = hero?.collectionHandle ?? "all";
+
+    return (
+      <Document
+        canonicalUrl={handle.props.canonicalUrl}
+        title={handle.props.shopName}
+        description={handle.props.description ?? undefined}
+      >
+        <main>
+          <HomeHero
+            assetImages={hero?.assetImages ?? []}
+            collectionHref={`/collections/${encodeURIComponent(collectionHandle)}`}
+            heading="Remix 3 Racing Team Collection"
+            cta="Shop New Items"
+          />
+          <div mix={editorialStyle}>
+            {firstEntry ? <LookbookEntry entry={firstEntry} /> : null}
+            <RunnerPanel />
+            {remainingEntries.map((entry) => (
+              <LookbookEntry key={entry.id} entry={entry} />
+            ))}
+            <CatalogTransition />
+          </div>
+        </main>
+      </Document>
+    );
+  };
+}
+
+function LookbookEntry(handle: Handle<{ entry: HomeLookbookEntryData }>) {
+  return () => {
+    let { entry } = handle.props;
+    let { product } = entry;
+    let price = product ? lookbookPrice(product.price) : null;
+
+    return (
+      <section aria-label={product?.title ?? "Coming soon"} mix={lookbookStyle}>
+        <div aria-hidden="true" mix={lookbookImageStyle}>
+          <ShopifyImage
+            image={entry.image}
+            alt=""
+            sizes="100vw"
+            objectPosition={focalPointPosition(entry.focalPoint ?? undefined)}
+          />
+        </div>
+        {product && price ? (
+          <a
+            href={`/products/${encodeURIComponent(product.handle)}`}
+            aria-label={`${product.title}, ${price}`}
+            mix={[pillLinkStyle, lookbookLinkStyle]}
+          >
+            <span aria-hidden="true" data-lookbook-hit-area="true" />
+            <PillIcon name="fast-forward" />
+            <span>{product.title}</span>
+            <span aria-hidden="true" mix={middleDotStyle}>
+              ·
+            </span>
+            <span>{price}</span>
+          </a>
+        ) : (
+          <span
+            aria-label="Coming soon"
+            mix={[pillLinkStyle, lookbookLinkStyle]}
+          >
+            <PillIcon name="mail" />
+            <span>Coming Soon</span>
+          </span>
+        )}
+      </section>
+    );
+  };
+}
+
+function RunnerPanel() {
   return () => (
-    <Document
-      canonicalUrl={handle.props.canonicalUrl}
-      title={handle.props.shopName}
-      description={handle.props.description ?? undefined}
-    >
-      <main mix={mainStyle}>
-        <p mix={eyebrowStyle}>Remix 3 + Hydrogen</p>
-        <h1 mix={headingStyle}>{handle.props.shopName}</h1>
-        <p mix={copyStyle}>
-          This minimal storefront proves Oxygen SSR, browser hydration, and a
-          live Storefront API query. Shopper-facing features will arrive in
-          focused migration PRs.
-        </p>
-        <Counter initialCount={0} />
-      </main>
-    </Document>
+    <section aria-label="Remix runner" mix={runnerPanelStyle}>
+      <div mix={runnerImageContainerStyle}>
+        <img
+          src="/brand/remix-runner.svg"
+          width="326"
+          height="206"
+          alt="Silhouette of a runner made of white circles"
+          mix={runnerStaticStyle}
+        />
+        <img
+          src="/brand/remix-runner-animated.svg"
+          width="326"
+          height="206"
+          alt=""
+          aria-hidden="true"
+          mix={runnerAnimatedStyle}
+        />
+      </div>
+    </section>
   );
+}
+
+function CatalogTransition() {
+  return () => (
+    <section aria-labelledby="catalog-heading" mix={catalogTransitionStyle}>
+      <p>Remix Soft Wear</p>
+      <h2 id="catalog-heading">Built for the better web</h2>
+      <PillLink
+        href="/collections/all"
+        icon="fast-forward"
+        iconPosition="right"
+      >
+        Shop All Products
+      </PillLink>
+    </section>
+  );
+}
+
+function lookbookPrice(price: ProductMoney): string {
+  let amount = Number(price.amount);
+  if (!Number.isFinite(amount)) return "Price unavailable";
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: price.currencyCode,
+    minimumFractionDigits: Number.isInteger(amount) ? 0 : 2,
+    maximumFractionDigits: 2,
+  }).format(amount);
 }
 
 export function NotFoundPage() {
@@ -67,28 +184,116 @@ export function ErrorPage() {
   );
 }
 
-const mainStyle = css({
-  margin: "0 auto",
-  maxWidth: "70rem",
-  minHeight: "100vh",
-  padding: "calc(var(--header-height) + 4rem) 1.5rem 8rem",
+const editorialStyle = css({ position: "relative" });
+
+const lookbookStyle = css({
+  background: "var(--color-black)",
+  height: "640px",
+  position: "relative",
+  "@media (min-width: 810px)": { height: "800px" },
 });
 
-const eyebrowStyle = css({
-  color: "#20aaff",
-  fontFamily: "ui-monospace, monospace",
-  letterSpacing: "0.08em",
-  textTransform: "uppercase",
+const lookbookImageStyle = css({
+  inset: 0,
+  position: "absolute",
+  "& img": {
+    height: "100%",
+    objectFit: "cover",
+    width: "100%",
+  },
 });
 
-const headingStyle = css({
-  fontSize: "clamp(3rem, 10vw, 8rem)",
-  letterSpacing: "-0.06em",
-  lineHeight: 0.9,
-  margin: "1rem 0 2rem",
+const lookbookLinkStyle = css({
+  bottom: "20px",
+  left: "20px",
+  maxWidth: "calc(100vw - 40px)",
+  position: "absolute",
+  whiteSpace: "nowrap",
+  zIndex: 1,
+  '& [data-lookbook-hit-area="true"]': {
+    bottom: "-20px",
+    height: "640px",
+    left: "-20px",
+    position: "absolute",
+    width: "100vw",
+  },
+  "@media (min-width: 810px)": {
+    bottom: "36px",
+    left: "36px",
+    maxWidth: "calc(100vw - 72px)",
+    '& [data-lookbook-hit-area="true"]': {
+      bottom: "-36px",
+      height: "800px",
+      left: "-36px",
+    },
+  },
 });
 
-const copyStyle = css({
-  fontSize: "clamp(1rem, 2vw, 1.35rem)",
-  maxWidth: "42rem",
+const middleDotStyle = css({ fontSize: "1.75rem", lineHeight: 0 });
+
+const runnerPanelStyle = css({
+  alignItems: "center",
+  animation: "runner-brand-background 14s ease-in-out infinite",
+  background: "var(--color-blue-brand)",
+  display: "flex",
+  height: "390px",
+  justifyContent: "center",
+  "@media (min-width: 810px)": { height: "480px" },
+  "@media (min-width: 1400px)": { height: "800px" },
+  "@media (prefers-reduced-motion: reduce)": { animation: "none" },
+});
+
+const runnerImageContainerStyle = css({
+  height: "100%",
+  position: "relative",
+  width: "65%",
+  "@media (min-width: 1640px)": { width: "60%" },
+  "@media (min-width: 2000px)": { width: "55%" },
+  "@media (min-width: 2700px)": { width: "50%" },
+  "& img": {
+    height: "100%",
+    left: "50%",
+    maxWidth: "90%",
+    objectFit: "contain",
+    position: "absolute",
+    top: 0,
+    transform: "translateX(-50%)",
+    width: "100%",
+  },
+});
+
+const runnerStaticStyle = css({
+  display: "none",
+  "@media (prefers-reduced-motion: reduce)": { display: "block" },
+});
+
+const runnerAnimatedStyle = css({
+  display: "block",
+  "@media (prefers-reduced-motion: reduce)": { display: "none" },
+});
+
+const catalogTransitionStyle = css({
+  alignItems: "center",
+  background: "linear-gradient(180deg, #2d2d38 0%, var(--color-black) 75%)",
+  display: "flex",
+  flexDirection: "column",
+  gap: "24px",
+  justifyContent: "center",
+  minHeight: "560px",
+  padding: "96px 20px",
+  textAlign: "center",
+  "& p": {
+    fontFamily: "var(--font-mono)",
+    letterSpacing: ".1em",
+    margin: 0,
+    textTransform: "uppercase",
+  },
+  "& h2": {
+    fontFamily: "var(--font-title)",
+    fontSize: "clamp(2rem, 7vw, 5rem)",
+    lineHeight: 1,
+    margin: 0,
+    maxWidth: "16ch",
+    textTransform: "uppercase",
+  },
 });

@@ -1,20 +1,22 @@
 import { createController } from "remix/router";
 
-import { queryShop } from "../data/storefront.ts";
+import { queryHome } from "../data/storefront.ts";
 import { routes } from "../routes.ts";
 import { HomePage } from "./pages.tsx";
 
 export default createController(routes, {
   actions: {
     async home({ request, render, storefrontClient }) {
-      let shop = await queryShop(storefrontClient);
-      if (!shop.ok) throw new Error(shop.message, { cause: shop.errors });
+      let home = await queryHome(storefrontClient);
+      if (!home.ok) throw new Error(home.message, { cause: home.errors });
 
       return render(
         <HomePage
           canonicalUrl={new URL(request.url).origin + routes.home.href()}
-          shopName={shop.data.name}
-          description={shop.data.description}
+          shopName={home.data.shop.name}
+          description={home.data.shop.description}
+          hero={home.data.hero}
+          lookbookEntries={home.data.lookbookEntries}
         />,
       );
     },
