@@ -60,7 +60,7 @@ export const pillLinkStyle = css({
   gap: "8px",
   height: "48px",
   justifyContent: "center",
-  lineHeight: 1,
+  lineHeight: 1.4,
   padding: "8px 20px",
   position: "relative",
   textAlign: "center",

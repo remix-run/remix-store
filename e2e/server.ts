@@ -85,7 +85,7 @@ function storefrontData(operation: string | undefined): unknown {
           description: "The complete catalog",
           products: {
             nodes: [productCard()],
-            pageInfo: { hasNextPage: false, endCursor: null },
+            pageInfo: { hasNextPage: true, endCursor: "next-page" },
           },
         },
       };
@@ -124,7 +124,17 @@ function productCard() {
     id: "product",
     handle: "test-product",
     title: "Test product",
-    images: { nodes: [] },
+    images: {
+      nodes: [
+        {
+          id: "product-image",
+          url: "http://localhost:44110/social-main.jpg",
+          altText: "Test product",
+          width: 1200,
+          height: 630,
+        },
+      ],
+    },
     selectedOrFirstAvailableVariant: {
       price: { amount: "20.00", currencyCode: "USD" },
       compareAtPrice: null,

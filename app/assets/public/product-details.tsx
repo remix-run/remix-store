@@ -610,7 +610,7 @@ function ProductImageFrame(
         <ShopifyImage
           image={image}
           alt={image.altText ?? "Product image"}
-          sizes={mobile ? "100vw" : "(min-width: 1024px) 50vw, 60vw"}
+          sizes={mobile ? "100vw" : "(min-width: 1400px) 50vw, 60vw"}
           loading={index === 0 ? "eager" : "lazy"}
         />
       </div>
@@ -818,7 +818,7 @@ const productPageStyle = css({
     gridTemplateColumns: "minmax(0, 1fr) clamp(330px, 36vw, 480px)",
     padding: "0 16px 80px",
   },
-  "@media (min-width: 1024px)": {
+  "@media (min-width: 1400px)": {
     gridTemplateColumns: "152px minmax(0, 1fr) clamp(360px, 33.333vw, 576px)",
     paddingLeft: "36px",
     paddingRight: "36px",
@@ -846,7 +846,7 @@ const sidebarStyle = css({
     whiteSpace: "nowrap",
   },
   "& a:hover": { color: "var(--color-blue-brand)" },
-  "@media (min-width: 1024px)": { display: "block" },
+  "@media (min-width: 1400px)": { display: "block" },
 });
 
 const galleryColumnStyle = css({ minWidth: 0 });
@@ -947,7 +947,7 @@ const detailsStyle = css({
     position: "sticky",
     top: "var(--header-height)",
   },
-  "@media (min-width: 1024px)": { paddingTop: "128px" },
+  "@media (min-width: 1400px)": { paddingTop: "128px" },
 });
 const headingStyle = css({
   display: "flex",
@@ -955,7 +955,7 @@ const headingStyle = css({
   gap: "16px",
   "& [data-category]": { fontSize: ".75rem", lineHeight: 1.333, margin: 0 },
   "& h1": { fontSize: "1.5rem", lineHeight: 1.333, margin: 0 },
-  "@media (min-width: 1024px)": {
+  "@media (min-width: 1400px)": {
     "& [data-category]": { fontSize: "1rem", lineHeight: 1.4 },
     "& h1": { fontSize: "2.25rem", lineHeight: 1.111 },
   },
@@ -973,7 +973,7 @@ const priceStyle = css({
 const purchaseStyle = css({
   display: "grid",
   gap: "16px",
-  "@media (min-width: 1024px)": {
+  "@media (min-width: 1400px)": {
     gap: "12px",
     gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
   },
@@ -982,7 +982,7 @@ const optionsStyle = css({
   display: "flex",
   flexDirection: "column",
   gap: "12px",
-  "@media (min-width: 1024px)": { gridColumn: "span 2" },
+  "@media (min-width: 1400px)": { gridColumn: "span 2" },
 });
 const optionMenuStyle = css({
   position: "relative",
@@ -1050,10 +1050,10 @@ const buyActionsStyle = css({
   flexDirection: "column",
   gap: "10px",
   minWidth: 0,
-  "@media (min-width: 1024px)": { display: "contents" },
+  "@media (min-width: 1400px)": { display: "contents" },
 });
 const buyActionsOnlyStyle = css({
-  "@media (min-width: 1024px)": { "& form": { gridColumn: "1 / -1" } },
+  "@media (min-width: 1400px)": { "& form": { gridColumn: "1 / -1" } },
 });
 const addFormStyle = css({
   '& button[name="add-to-cart"]': {
@@ -1069,7 +1069,7 @@ const addFormStyle = css({
     whiteSpace: "nowrap",
     width: "100%",
   },
-  "@media (min-width: 1024px)": {
+  "@media (min-width: 1400px)": {
     '& button[name="add-to-cart"]': { height: "66px", minHeight: "66px" },
   },
   '& button[name="add-to-cart"]:disabled': {
@@ -1094,7 +1094,7 @@ const shopPayStyle = css({
     outline: "3px solid var(--color-yellow-brand)",
     outlineOffset: "4px",
   },
-  "@media (min-width: 1024px)": {
+  "@media (min-width: 1400px)": {
     gridColumn: "1 / -1",
     height: "66px",
     minHeight: "66px",
@@ -1112,14 +1112,14 @@ const descriptionStyle = css({
   margin: 0,
   maxWidth: "60ch",
   whiteSpace: "pre-wrap",
-  "@media (min-width: 1024px)": { fontSize: "1rem" },
+  "@media (min-width: 1400px)": { fontSize: "1rem" },
 });
 const technicalStyle = css({
   display: "flex",
   flexDirection: "column",
   gap: "24px",
   "& > h2": { fontSize: ".875rem", lineHeight: "20px", margin: 0 },
-  "@media (min-width: 1024px)": {
+  "@media (min-width: 1400px)": {
     gap: "36px",
     "& > h2": { fontSize: "1rem", lineHeight: 1.4 },
   },
