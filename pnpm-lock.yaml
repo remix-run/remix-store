@@ -18,7 +18,7 @@ importers:
         specifier: 0.0.0-preview-116d5d7-20260730141607
         version: 0.0.0-preview-116d5d7-20260730141607(graphql@16.14.0)(react@19.2.8)(typescript@6.0.3)
       remix:
-        specifier: github:remix-run/remix#preview/main&path:packages/remix
+        specifier: github:remix-run/remix#55865fa05018dfc85d58bd97cc15594b34a059aa&path:packages/remix
         version: https://codeload.github.com/remix-run/remix/tar.gz/55865fa05018dfc85d58bd97cc15594b34a059aa#path:packages/remix(@emnapi/core@2.0.0-alpha.3)(@emnapi/runtime@2.0.0-alpha.3)(playwright@1.62.1)
       sanitize-html:
         specifier: 2.17.6
@@ -2340,7 +2340,7 @@ packages:
     engines: {node: '>= 20.19.0'}
 
   remix@https://codeload.github.com/remix-run/remix/tar.gz/55865fa05018dfc85d58bd97cc15594b34a059aa#path:packages/remix:
-    resolution: {gitHosted: true, integrity: sha512-57820FoRxEsaJruIJxqPDfzJI6N8u3Iwo+iGfxX9N6ARteDg+SpwIeMDFm7ZxgTGnn/IXIXIMgoya/w8BgTF5A==, tarball: https://codeload.github.com/remix-run/remix/tar.gz/55865fa05018dfc85d58bd97cc15594b34a059aa}
+    resolution: {gitHosted: true, path: packages/remix, tarball: https://codeload.github.com/remix-run/remix/tar.gz/55865fa05018dfc85d58bd97cc15594b34a059aa}
     version: 3.0.0-beta.5
     engines: {node: '>=24.3.0'}
     hasBin: true
