@@ -266,7 +266,6 @@ describe("cart interactions", () => {
     cart.lines.nodes[0]!.discountAllocations = [
       {
         discountedAmount: { amount: "5", currencyCode: "USD" },
-        title: "Launch discount",
       },
     ];
     cart.cost.subtotalAmount.amount = "15";
@@ -282,7 +281,7 @@ describe("cart interactions", () => {
       container.querySelector("[data-line-price] s")?.textContent,
       "$15.00 each",
     );
-    assert.match(container.textContent, /Launch discount-\$5\.00/);
+    assert.match(container.textContent, /Automatic discount-\$5\.00/);
     assert.match(container.textContent, /Total\$10\.00/);
     assert.match(container.textContent, /Taxes & shipping details at checkout/);
   });

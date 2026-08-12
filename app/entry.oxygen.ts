@@ -1,5 +1,6 @@
 import { mergeAssets } from "@hiogawa/vite-plugin-fullstack/runtime";
 
+import { resolveOxygenBuyerIp } from "./buyer-ip.ts";
 import clientAssets from "./entry.browser.ts?assets=client";
 import serverAssets from "./entry.oxygen.ts?assets=ssr";
 import { render, type RenderOptions } from "./middleware/render.tsx";
@@ -36,6 +37,7 @@ export default {
       typeof caches === "undefined" ? undefined : await caches.open("hydrogen");
 
     return app.fetch(request, {
+      buyerIp: resolveOxygenBuyerIp(request),
       cache,
       env,
       waitUntil: context?.waitUntil.bind(context),

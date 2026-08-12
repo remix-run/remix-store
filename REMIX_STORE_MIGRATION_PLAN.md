@@ -8,10 +8,11 @@ Goal: replace the React Router 7 storefront on `main` with the Remix 3 + framewo
 
 - `main` remains the production RR7 storefront.
 - `v3` has the Remix 3 platform, native Node/Remix Assets runtime, Oxygen runtime, and continuous Fly/Oxygen deployment foundations.
-- Feature ports complete on `v3`: shared primitives and assets, Storefront data, shell, home, collections/load-more, product details/variants, cart, Shopify-backed policies/contact, and SEO resources/metadata.
+- Feature ports complete on `v3`: shared primitives and assets, Storefront data, shell, home, collections/load-more, product details/variants, cart, Shopify-backed policies/contact, SEO resources/metadata, and Shopify compatibility redirects/permalinks/discounts.
 - Browser-reachable modules use colocated `app/**/public/**` directories; shared application code remains runtime-neutral.
 - Node has a bounded in-memory Storefront cache. Fly has Docker, health checks, graceful shutdown, immutable asset IDs, and deployment smoke checks.
-- The remaining work starts with supporting routes and launch behavior; the platform and completed feature history do not need further migration planning.
+- Shopify requests use a server-only private Storefront token; target-specific adapters resolve trusted Oxygen/Fly buyer IPs. `PUBLIC_CHECKOUT_DOMAIN` is retired; checkout uses `cart.checkoutUrl`.
+- The remaining feature work starts with analytics and consent; the platform and completed feature history do not need further migration planning.
 
 ## Fixed decisions
 
@@ -31,7 +32,6 @@ Complete in dependency order unless surfaces are independent. Every feature PR c
 
 | # | Work | Completion criteria |
 | ---: | --- | --- |
-| 2.11 | Shopify compatibility routes | Verify `/cart/:lines`, checkout and `PUBLIC_CHECKOUT_DOMAIN`, AJAX cart, `/admin`, `/discount/:code`, `?discount=`, MyShopify rewrites, and Storefront redirect fallback. Add redirect/permalink acceptance cases and preserve same-origin safety. |
 | 2.12 | Analytics and consent | Finish consent-aware page/product/collection/cart events, including the pending `cart_viewed` event; verify live events in Shopify admin from preview deployments. |
 | 2.13 | Store-wide sale | Port the active-sale metaobject query and reduced-motion marquee; use the sale title for automatic-discount labels. |
 | 2.14 | Subscribe and back-in-stock | Build the Admin API boundary, newsletter route, and sold-out variant form with validation, rate limiting, consent handling, server-only credentials, and no PII logging. |

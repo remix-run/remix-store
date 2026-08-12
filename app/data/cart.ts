@@ -42,9 +42,7 @@ export type SerializedCartLine = SerializableObject & {
   };
   discountAllocations: Array<
     SerializableObject & {
-      code?: string;
       discountedAmount: SerializedMoney;
-      title?: string;
     }
   >;
   id: string;

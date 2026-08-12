@@ -13,6 +13,30 @@ test("renders the current storefront skeleton", async ({ page }) => {
   ).toBeVisible();
 });
 
+test("serves cart permalink, discount, and admin compatibility redirects", async ({
+  request,
+}) => {
+  let permalink = await request.get("/cart/111:1?discount=LAUNCH", {
+    maxRedirects: 0,
+  });
+  expect(permalink.status()).toBe(302);
+  let permalinkLocation = new URL(permalink.headers().location!);
+  expect(permalinkLocation.pathname).toBe("/cart/111:1");
+  expect(permalinkLocation.searchParams.get("discount")).toBe("LAUNCH");
+
+  let discount = await request.get(
+    "/discount/LAUNCH?redirect=%2Fcollections%2Fall&utm_source=test",
+    { maxRedirects: 0 },
+  );
+  expect(discount.status()).toBe(303);
+  expect(discount.headers().location).toBe("/collections/all?utm_source=test");
+  expect(discount.headers()["set-cookie"]).toContain("cart=");
+
+  let admin = await request.get("/admin", { maxRedirects: 0 });
+  expect(admin.status()).toBe(301);
+  expect(new URL(admin.headers().location!).pathname).toBe("/admin");
+});
+
 test("keeps product details when navigating from the home page", async ({
   page,
 }) => {
