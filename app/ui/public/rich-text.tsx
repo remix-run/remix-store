@@ -21,6 +21,7 @@ export function RichText(handle: Handle<RichTextProps>) {
   let root = parseRichText(handle.props.value);
   return () => (
     <div
+      data-rich-text="true"
       mix={[
         richTextStyle,
         handle.props.variant === "product-description"
@@ -113,6 +114,12 @@ const richTextStyle = css({
   fontSize: "1rem",
   lineHeight: 1.5,
   "& h2, & h3, & ol, & p, & ul": { margin: "0 0 12px" },
+  "& ul li": {
+    lineHeight: "1.6em",
+    paddingLeft: "1em",
+    position: "relative",
+  },
+  "& ul li::before": { content: '"•"', left: 0, position: "absolute" },
   "& a": { color: "var(--color-blue-brand)" },
 });
 

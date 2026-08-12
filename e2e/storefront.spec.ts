@@ -129,18 +129,29 @@ test("keeps the migrated medium layout through 1399px", async ({ page }) => {
     "height",
     "64px",
   );
+  let productDescription = page
+    .locator("[data-rich-text]")
+    .filter({ hasText: "This water bottle" });
+  await expect(productDescription).toHaveCSS("font-size", "12px");
+  await expect(productDescription).toHaveCSS("line-height", "16px");
   await expect(page.getByText("This water bottle", { exact: true })).toHaveCSS(
     "font-size",
     "12px",
   );
   await expect(page.getByText("This water bottle", { exact: true })).toHaveCSS(
     "line-height",
-    "16px",
+    "19.2px",
   );
   await expect(page.getByText("Nalgene 32 oz.", { exact: true })).toHaveCSS(
     "font-size",
     "12px",
   );
+  let descriptionList = page
+    .locator("[data-rich-text]")
+    .filter({ hasText: "This water bottle" })
+    .locator("ul");
+  await expect(descriptionList).toHaveCSS("padding-left", "0px");
+  await expect(descriptionList.locator("li")).toHaveCSS("padding-left", "12px");
 
   let footerBrand = page.locator('footer svg[aria-label="Remix Logo"]');
   await expect(footerBrand).toHaveCSS("width", "216px");
@@ -164,13 +175,14 @@ test("switches product and footer chrome at the 1400px breakpoint", async ({
     "height",
     "66px",
   );
-  await expect(page.getByText("This water bottle", { exact: true })).toHaveCSS(
-    "font-size",
-    "16px",
-  );
+  let productDescription = page
+    .locator("[data-rich-text]")
+    .filter({ hasText: "This water bottle" });
+  await expect(productDescription).toHaveCSS("font-size", "16px");
+  await expect(productDescription).toHaveCSS("line-height", "22.4px");
   await expect(page.getByText("This water bottle", { exact: true })).toHaveCSS(
     "line-height",
-    "22.4px",
+    "25.6px",
   );
 
   let footerBrand = page.locator('footer svg[aria-label="Remix Logo"]');

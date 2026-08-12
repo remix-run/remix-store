@@ -58,6 +58,7 @@ export function Document(handle: Handle<DocumentProps>) {
           />
           <meta name="theme-color" content="#000000" />
           <meta name="color-scheme" content="dark" />
+          <link rel="stylesheet" href="/preflight.css" />
           <meta property="og:type" content="website" />
           <meta property="og:title" content={title} />
           <meta property="og:description" content={description} />
@@ -192,19 +193,14 @@ const bodyStyle = css({
   background: "var(--color-black)",
   color: "var(--color-white)",
   colorScheme: "dark",
-  fontFamily: "var(--font-sans)",
-  lineHeight: 1.5,
-  margin: 0,
   overflowX: "hidden",
   "&:has(dialog#cart-drawer[open])": { overflow: "hidden" },
-  "& *": { boxSizing: "border-box" },
   "& a": { color: "inherit", transition: "color 180ms ease" },
   "& a:hover": { color: "var(--color-blue-brand)" },
   "& :focus-visible": {
     outline: "3px solid var(--color-yellow-brand)",
     outlineOffset: "4px",
   },
-  "& button, & input, & select, & textarea": { font: "inherit" },
   "& button": { cursor: "pointer" },
 });
 
