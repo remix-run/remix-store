@@ -40,7 +40,7 @@ const policyContentStyle = css({
   "& h4, & h5, & h6": { fontSize: "1rem" },
   "& p": {
     fontSize: "0.875rem",
-    lineHeight: 1.5,
+    lineHeight: "1.25rem",
     margin: "24px 0 0",
   },
   "& a": {
@@ -55,7 +55,7 @@ const policyContentStyle = css({
     padding: "24px",
   },
   "& blockquote p:first-child": { marginTop: 0 },
-  "& ol, & ul": { margin: "24px 0 0", paddingLeft: "24px" },
+  "& ol, & ul": { margin: 0, paddingLeft: "24px" },
   "& ol": { listStyle: "decimal" },
   "& ul": { listStyle: "disc" },
   "& li": { lineHeight: 1.5, marginTop: "16px" },
@@ -75,6 +75,6 @@ const policyContentStyle = css({
   "@media (min-width: 1400px)": {
     "& h2": { fontSize: "2.5rem" },
     "& h3": { fontSize: "2rem" },
-    "& p": { fontSize: "1rem" },
+    "& p": { fontSize: "1rem", lineHeight: "1.4rem" },
   },
 });
