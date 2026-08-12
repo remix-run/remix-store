@@ -8,6 +8,7 @@ import {
 
 import rootController from "./actions/controller.tsx";
 import collectionsController from "./actions/collections/controller.tsx";
+import policiesController from "./actions/policies/controller.tsx";
 import productsController from "./actions/products/controller.tsx";
 import { ErrorPage, NotFoundPage } from "./actions/pages.tsx";
 import { render } from "./middleware/render.tsx";
@@ -76,6 +77,7 @@ export function createApp(options: AppOptions) {
 
   router.map(routes, rootController);
   router.map(routes.collections, collectionsController);
+  router.map(routes.policies, policiesController);
   router.map(routes.products, productsController);
 
   return {
