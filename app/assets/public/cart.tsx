@@ -932,7 +932,7 @@ const pageCartContentStyle = css({
   flexDirection: "column",
   margin: "0 auto",
   maxWidth: "800px",
-  padding: "0 16px 120px",
+  padding: "0 16px",
   width: "100%",
   "@media (min-width: 810px)": { paddingLeft: "36px", paddingRight: "36px" },
 });
@@ -961,7 +961,7 @@ const cartCountStyle = css({
   fontSize: "1rem",
   fontWeight: 900,
   letterSpacing: "-.05em",
-  lineHeight: 1,
+  lineHeight: 1.4,
   margin: "0 0 48px",
   textTransform: "uppercase",
   "@media (min-width: 810px)": { fontSize: "1.25rem" },

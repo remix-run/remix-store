@@ -127,6 +127,7 @@ const loadMoreStyle = css({
   display: "block",
   fontSize: "1.25rem",
   fontWeight: 700,
+  lineHeight: 1.4,
   padding: "36px 20px",
   textAlign: "center",
   transition: "background 180ms ease, color 180ms ease",

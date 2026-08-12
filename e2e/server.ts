@@ -85,7 +85,7 @@ function storefrontData(operation: string | undefined): unknown {
           description: "The complete catalog",
           products: {
             nodes: [productCard()],
-            pageInfo: { hasNextPage: false, endCursor: null },
+            pageInfo: { hasNextPage: true, endCursor: "next-page" },
           },
         },
       };
@@ -124,7 +124,17 @@ function productCard() {
     id: "product",
     handle: "test-product",
     title: "Test product",
-    images: { nodes: [] },
+    images: {
+      nodes: [
+        {
+          id: "product-image",
+          url: "http://localhost:44110/social-main.jpg",
+          altText: "Test product",
+          width: 1200,
+          height: 630,
+        },
+      ],
+    },
     selectedOrFirstAvailableVariant: {
       price: { amount: "20.00", currencyCode: "USD" },
       compareAtPrice: null,
@@ -145,8 +155,8 @@ function product() {
     requiresSellingPlan: false,
     category: { name: "Test category" },
     seo: { title: "Test product", description: "A test product" },
-    customDescription: null,
-    technicalDescription: null,
+    customDescription: richTextList("This water bottle"),
+    technicalDescription: richTextList("Nalgene 32 oz."),
     priceRange: {
       minVariantPrice: { amount: "20.00", currencyCode: "USD" },
     },
@@ -176,6 +186,22 @@ function variant() {
     product: { handle: "test-product", title: "Test product" },
     selectedOptions: [{ name: "Title", value: "Default Title" }],
     title: "Default Title",
+  };
+}
+
+function richTextList(value: string) {
+  return {
+    value: JSON.stringify({
+      type: "root",
+      children: [
+        {
+          type: "unordered-list",
+          children: [
+            { type: "list-item", children: [{ type: "text", value }] },
+          ],
+        },
+      ],
+    }),
   };
 }
 
