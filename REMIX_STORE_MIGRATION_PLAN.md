@@ -22,6 +22,7 @@ Goal: replace the React Router 7 storefront on `main` with the Remix 3 + framewo
 | Branches | `v3` is long-lived. Oxygen and Fly deploy the same branch contents; no target-specific application branches. |
 | Cutover | Merge `v3` into `main`; rollback by reverting that merge commit. Do not rebase the long-lived branch before cutover. |
 | Dependencies | Remix 3 beta and Hydrogen preview are accepted risks. Keep exact versions and gate upgrades on the full suite. |
+| Locales/Markets | Preserve English US/Canada market context without promising translations: unprefixed URLs use EN-US; `/en-ca` uses English/Canada and `@inContext`; `/en-us` redirects to unprefixed; `/fr-ca` redirects to `/en-ca`; sitemap alternates include only `en-US` and `en-CA`. |
 | Oxygen adapter | Keep `vite/remix-oxygen.ts` vendored until an official adapter replaces it. |
 
 ## Remaining feature work
@@ -34,13 +35,9 @@ Complete in dependency order unless surfaces are independent. Every feature PR c
 | 2.12 | Analytics and consent | Finish consent-aware page/product/collection/cart events, including the pending `cart_viewed` event; verify live events in Shopify admin from preview deployments. |
 | 2.13 | Store-wide sale | Port the active-sale metaobject query and reduced-motion marquee; use the sale title for automatic-discount labels. |
 | 2.14 | Subscribe and back-in-stock | Build the Admin API boundary, newsletter route, and sold-out variant form with validation, rate limiting, consent handling, server-only credentials, and no PII logging. |
-| 2.15 | Locales/Markets | Get the Shopify business decision below, then either implement locale prefixes/`@inContext`/alternates or permanently redirect locale-prefixed URLs and emit a locale-free sitemap. |
+| 2.15 | Locales/Markets | Implement the fixed English US/Canada decision: preserve paths and query strings across redirects, carry market context through internal navigation, use `@inContext`, and emit only accurate `en-US`/`en-CA` sitemap alternates. Unsupported locale prefixes must not create duplicate or mislabeled localized pages. |
 | 2.16 | Seasonal snow | Port the December-only canvas effect with reduced-motion and static fallbacks. |
 | 2.17 | Sessions | Determine whether any remaining feature requires durable session state. Implement a signed `SESSION_SECRET` boundary or remove the unused variable and document its retirement. |
-
-## Open decision
-
-**Locale/Markets:** someone with Shopify admin access must confirm active Markets configuration and Canadian merchandising/order volume. If CA is active, keep locale prefixes and `@inContext`; otherwise use fixed EN-US, permanently redirect `/^[a-z]{2}-[a-z]{2}(\/|$)/` paths to unprefixed paths, and remove sitemap alternates.
 
 ## Remaining deployment work
 
@@ -67,7 +64,7 @@ For each remaining surface:
 
 Do not merge `v3` into `main` until:
 
-- every remaining feature row is complete and the locale/session decisions are resolved;
+- every remaining feature row is complete and the session decision is resolved;
 - the same commit passes CI and deployed acceptance tests on Oxygen and Fly;
 - SEO checks and live analytics verification pass;
 - a real purchase, cart permalink, and discount flow complete on staging/preview, with the purchase refunded;
