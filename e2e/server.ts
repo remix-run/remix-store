@@ -9,7 +9,7 @@ const appPort = 44_110;
 const storefrontPort = 44_111;
 const env = {
   PUBLIC_STORE_DOMAIN: `http://localhost:${storefrontPort}`,
-  PUBLIC_STOREFRONT_API_TOKEN: "e2e-token",
+  PRIVATE_STOREFRONT_API_TOKEN: "e2e-token",
 };
 
 const storefrontServer = http.createServer(async (request, response) => {
@@ -31,7 +31,9 @@ const storefrontServer = http.createServer(async (request, response) => {
 });
 
 const appServer = http.createServer(
-  createRequestListener((request) => app.fetch(request, { env })),
+  createRequestListener((request) =>
+    app.fetch(request, { buyerIp: "127.0.0.1", env }),
+  ),
 );
 
 await Promise.all([
@@ -97,6 +99,16 @@ function storefrontData(operation: string | undefined): unknown {
       return {
         shop: { id: "gid://shopify/Shop/test" },
         localization: { country: { currency: { isoCode: "USD" } } },
+      };
+    case "redirects":
+      return { urlRedirects: { edges: [] } };
+    case "RemixDiscountCartCreate":
+      return {
+        cartCreate: {
+          cart: { id: "gid://shopify/Cart/discount" },
+          userErrors: [],
+          warnings: [],
+        },
       };
     case "CartCreate":
       return {

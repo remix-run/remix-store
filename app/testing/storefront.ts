@@ -4,19 +4,29 @@ import { createApp } from "../router.ts";
 
 export const testEnv = {
   PUBLIC_STORE_DOMAIN: "example.myshopify.com",
-  ["PUBLIC_" + "STOREFRONT_API_TOKEN"]: "test-token",
+  ["PRIVATE_" + "STOREFRONT_API_TOKEN"]: "test-token",
 };
 
 export function createTestApp(fetch: typeof globalThis.fetch) {
-  return createApp({
+  let app = createApp({
     renderer: render({
       documentAssets: { css: [], entry: "/assets/entry.js", js: [] },
       resolveClientEntry(_entryId, component) {
         return { href: "/assets/component.js", exportName: component.name };
       },
     }),
-    storefront: { cache: new MemoryStorefrontCache(), env: testEnv, fetch },
+    storefront: {
+      cache: new MemoryStorefrontCache(),
+      env: testEnv,
+      fetch,
+    },
   });
+
+  return {
+    fetch(request: Request) {
+      return app.fetch(request, { buyerIp: "127.0.0.1" });
+    },
+  };
 }
 
 export function createStorefrontFetch(
@@ -29,6 +39,9 @@ export function createStorefrontFetch(
     let body = JSON.parse(String(init?.body)) as StorefrontRequestBody;
     let operationName = operationNameFrom(body.query);
     let handler = handlers[operationName];
+    if (!handler && operationName === "redirects") {
+      return graphqlResponse({ urlRedirects: { edges: [] } });
+    }
     if (!handler) {
       throw new Error(`Unexpected Storefront operation: ${operationName}`);
     }

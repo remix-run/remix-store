@@ -5,6 +5,7 @@ export interface ExecutionContext {
 }
 
 export interface Runtime {
+  buyerIp?: string;
   cache?: Cache;
   env?: Env;
   waitUntil?: (promise: Promise<unknown>) => void;

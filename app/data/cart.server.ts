@@ -7,9 +7,9 @@ import {
 
 import type { CartInitialData } from "./cart.ts";
 
-// Extend the default Hydrogen cart fragment with per-line discount allocations
-// for the cart summary's automatic/code discount labels. The Storefront API
-// `gql check` validates this document against the pinned schema.
+// Extend the default Hydrogen cart fragment with per-line discount amounts.
+// Labels remain app-owned so merchant discount codes are not exposed in cart UI.
+// The Storefront API `gql check` validates this against the pinned schema.
 const CART_FRAGMENT = gql(`
   fragment CartFragment on Cart {
     lines(first: 250) {
@@ -18,15 +18,6 @@ const CART_FRAGMENT = gql(`
           discountedAmount {
             amount
             currencyCode
-          }
-          ... on CartAutomaticDiscountAllocation {
-            title
-          }
-          ... on CartCodeDiscountAllocation {
-            code
-          }
-          ... on CartCustomDiscountAllocation {
-            title
           }
         }
       }

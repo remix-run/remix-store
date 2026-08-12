@@ -21,7 +21,6 @@ ARG ASSET_BUILD_ID
 ENV ASSET_BUILD_ID="${ASSET_BUILD_ID}"
 ENV NODE_ENV="production"
 ENV PORT="44100"
-ENV TRUST_PROXY="true"
 
 COPY --from=dependencies --chown=node:node /app/node_modules ./node_modules
 COPY --chown=node:node package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc tsconfig.json ./
