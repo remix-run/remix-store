@@ -4,7 +4,7 @@ Goal: make [`~/code/remix-store`](../remix-store) (github.com/remix-run/remix-st
 
 Companion document: [`REMIX_STORE_PARITY_PLAN.md`](./REMIX_STORE_PARITY_PLAN.md) — the design/feature parity spec. That document defines *what the storefront looks like and does*; this document defines *how the platform swap lands in the official repo and ships*.
 
-**Progress:** Phase 0 was intentionally narrowed and completed on `main` in #247. The Remix 3 skeleton and native Node/Remix Assets runtime landed on `v3` in #246 and #248. Phase 2.1–2.6 are now complete on `v3`: shared primitives, Storefront data, shell, home, collections/catalog with load more, and the product page with URL-backed variants, gallery, and safe rich text. Browser-reachable source now follows the colocated `app/**/public/**` convention, which keeps the Node asset boundary narrow while the platform work continues toward continuous Fly deployment alongside Oxygen previews.
+**Progress:** Phase 0 was intentionally narrowed and completed on `main` in #247. The Remix 3 skeleton and native Node/Remix Assets runtime landed on `v3` in #246 and #248. Phase 2.1–2.6 are now complete on `v3`: shared primitives, Storefront data, shell, home, collections/catalog with load more, and the product page with immediate URL-backed variants, responsive galleries, collection navigation, Shop Pay, and safe rich text. Browser-reachable source now follows the colocated `app/**/public/**` convention, which keeps the Node asset boundary narrow while the platform work continues toward continuous Fly deployment alongside Oxygen previews.
 
 ## Current state
 

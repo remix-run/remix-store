@@ -89,6 +89,8 @@ function storefrontData(operation: string | undefined): unknown {
           },
         },
       };
+    case "RemixProductNavigation":
+      return { menu: null, shop: null };
     case "RemixProduct":
       return { product: product() };
     case "RemixAnalyticsShop":
@@ -111,7 +113,7 @@ function cart() {
   let value = createCart();
   let line = value.lines.nodes[0];
   if (line?.merchandise) {
-    line.merchandise.id = "variant";
+    line.merchandise.id = "gid://shopify/ProductVariant/111";
     line.merchandise.product.title = "Test product";
   }
   return value;
@@ -168,7 +170,7 @@ function variant() {
   return {
     availableForSale: true,
     compareAtPrice: null,
-    id: "variant",
+    id: "gid://shopify/ProductVariant/111",
     image: null,
     price: { amount: "20.00", currencyCode: "USD" },
     product: { handle: "test-product", title: "Test product" },
