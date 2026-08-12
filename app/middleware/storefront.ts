@@ -4,6 +4,7 @@ import {
   handleShopifyRoutes,
   type CacheInstance,
 } from "@shopify/hydrogen";
+import { createMultiMatcher } from "remix/route-pattern/match";
 import { createContextKey, type Middleware } from "remix/router";
 
 import { cartHandlers, getCartData } from "../data/cart.server.ts";
@@ -11,6 +12,8 @@ import type { CartInitialData } from "../data/cart.ts";
 import { getStorefrontCache } from "../data/storefront-cache.ts";
 import { createRetryingStorefrontFetch } from "../data/storefront-fetch.ts";
 import {
+  FALLBACK_FOOTER_MENU,
+  FALLBACK_NAVIGATION_MENU,
   normalizeStoreDomain,
   queryAnalyticsShop,
   queryShellMenus,
@@ -18,6 +21,7 @@ import {
   type AppStorefrontClient,
   type NavigationMenuData,
 } from "../data/storefront.ts";
+import { routes } from "../routes.ts";
 import { getRuntime, type Env } from "../runtime.ts";
 
 export interface StorefrontOptions {
@@ -104,6 +108,32 @@ export function storefront(options: StorefrontOptions = {}): Middleware<
 
     context.set(StorefrontClient, storefrontClient, storefrontProperty);
 
+    let seoRoute = matchSeoRoute(context.url);
+    if (seoRoute) {
+      let analyticsShop =
+        seoRoute === routes.seo.robots
+          ? await queryAnalyticsShop(
+              storefrontClient,
+              env["PUBLIC" + "_STOREFRONT_" + "ID"] ?? "0",
+              normalizeStoreDomain(storeDomain),
+            )
+          : null;
+      context.set(
+        NavigationMenuConfig,
+        FALLBACK_NAVIGATION_MENU,
+        navigationMenuProperty,
+      );
+      context.set(FooterMenuConfig, FALLBACK_FOOTER_MENU, footerMenuProperty);
+      context.set(
+        CartInitialDataConfig,
+        { cart: null },
+        cartInitialDataProperty,
+      );
+      context.set(AnalyticsShopConfig, analyticsShop, analyticsShopProperty);
+
+      return applyResponseHeaders(requestContext, await next());
+    }
+
     // Shopify-owned routes, including /api/cart, must run before the app
     // router. handleShopifyRoutes applies request-context headers itself.
     // Redirect fallbacks remain scoped to the later 2.11 routing feature.
@@ -142,6 +172,17 @@ export function storefront(options: StorefrontOptions = {}): Middleware<
     let response = await next();
     return applyResponseHeaders(requestContext, response);
   };
+}
+
+type SeoRoute = (typeof routes.seo)[keyof typeof routes.seo];
+
+const seoRouteMatcher = createMultiMatcher<SeoRoute>();
+for (let route of Object.values(routes.seo)) {
+  seoRouteMatcher.add(route.pattern, route);
+}
+
+function matchSeoRoute(url: URL): SeoRoute | null {
+  return seoRouteMatcher.match(url)?.data ?? null;
 }
 
 type RouteSessionManager = Parameters<

@@ -45,6 +45,7 @@ describe("product routes", () => {
       { name: "ref", value: "campaign" },
     ]);
     assert.match(html, /<title>Test Product<\/title>/);
+    assert.match(html, /<meta property="og:type" content="product"/);
     assert.match(
       html,
       /rel="canonical" href="https:\/\/example\.com\/products\/test-product"/,

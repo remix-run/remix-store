@@ -24,6 +24,7 @@ export function ProductPage(
         title={product.seo.title ?? product.title}
         description={product.seo.description ?? product.description}
         socialImage={socialImage}
+        socialType="product"
       >
         <main>
           <ProductDetails
