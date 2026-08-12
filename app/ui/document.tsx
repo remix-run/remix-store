@@ -21,6 +21,7 @@ export interface DocumentProps {
   description?: string;
   noIndex?: boolean;
   socialImage?: string;
+  socialType?: "product" | "website";
   title: string;
 }
 
@@ -29,11 +30,14 @@ export function Document(handle: Handle<DocumentProps>) {
     let {
       canonicalUrl,
       children,
-      description = "Soft wear for engineers of all kinds",
+      description: requestedDescription,
       noIndex = false,
       socialImage = "/social-main.jpg",
+      socialType = "website",
       title,
     } = handle.props;
+    let description =
+      requestedDescription?.trim() || "Soft wear for engineers of all kinds";
     let assets = handle.context.get(DocumentAssetsProvider);
     let shellData = handle.context.get(ShellDataProvider) ?? {
       analyticsShop: null,
@@ -59,8 +63,9 @@ export function Document(handle: Handle<DocumentProps>) {
           <meta name="theme-color" content="#000000" />
           <meta name="color-scheme" content="dark" />
           <link rel="stylesheet" href="/preflight.css" />
-          <meta property="og:type" content="website" />
+          <meta property="og:type" content={socialType} />
           <meta property="og:title" content={title} />
+          <meta property="og:site_name" content="The Remix Store" />
           <meta property="og:description" content={description} />
           <meta property="og:image" content={socialImageUrl} />
           {canonicalUrl ? (
@@ -71,8 +76,13 @@ export function Document(handle: Handle<DocumentProps>) {
           <meta name="twitter:description" content={description} />
           <meta name="twitter:image" content={socialImageUrl} />
           {canonicalUrl ? <link rel="canonical" href={canonicalUrl} /> : null}
-          <link rel="preconnect" href="https://cdn.shopify.com" />
+          <link
+            rel="preconnect"
+            href="https://cdn.shopify.com"
+            crossOrigin="anonymous"
+          />
           <link rel="dns-prefetch" href="https://cdn.shopify.com" />
+          <link rel="preconnect" href="https://shop.app" />
           <link
             rel="icon"
             type="image/png"

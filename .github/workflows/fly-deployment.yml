@@ -4,9 +4,11 @@ on: push
 permissions:
   contents: read
 
+# Blue-green deployments must finish their cutover. Canceling midway leaves
+# machines on different images and blocks every subsequent deployment.
 concurrency:
   group: fly-deployment
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   deploy:

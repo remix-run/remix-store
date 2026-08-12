@@ -15,4 +15,10 @@ export const routes = route({
   policies: {
     show: get("/policies/:handle"),
   },
+  seo: {
+    robots: get("/robots.txt"),
+    sitemapIndex: get("/sitemap.xml"),
+    sitemapStatic: get("/sitemap/static.xml"),
+    sitemapResource: get("/sitemap/:type/:page.xml"),
+  },
 });

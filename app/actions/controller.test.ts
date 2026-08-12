@@ -24,6 +24,19 @@ describe("platform skeleton", () => {
       /<script src="\/assets\/entry\.js" type="module"><\/script>/,
     );
     assert.match(html, /Test Remix Store/);
+    assert.match(html, /<link rel="canonical" href="https:\/\/example\.com\/"/);
+    assert.match(
+      html,
+      /<meta property="og:site_name" content="The Remix Store"/,
+    );
+    assert.match(
+      html,
+      /<meta property="og:url" content="https:\/\/example\.com\/"/,
+    );
+    assert.match(
+      html,
+      /<meta name="twitter:card" content="summary_large_image"/,
+    );
     assert.match(html, /Main navigation/);
     assert.match(html, /All Products/);
     assert.match(html, /Store policies/);
