@@ -29,6 +29,7 @@ const policyContentStyle = css({
   maxWidth: "700px",
   overflowWrap: "anywhere",
   padding: "0 36px 144px",
+  position: "relative",
   "& h2, & h3, & h4, & h5, & h6": {
     fontFamily: "var(--font-sans)",
     fontWeight: 700,
