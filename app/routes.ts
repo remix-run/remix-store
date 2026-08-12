@@ -12,4 +12,7 @@ export const routes = route({
   products: {
     show: get("/products/:handle"),
   },
+  policies: {
+    show: get("/policies/:handle"),
+  },
 });

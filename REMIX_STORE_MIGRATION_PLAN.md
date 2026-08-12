@@ -8,7 +8,7 @@ Goal: replace the React Router 7 storefront on `main` with the Remix 3 + framewo
 
 - `main` remains the production RR7 storefront.
 - `v3` has the Remix 3 platform, native Node/Remix Assets runtime, Oxygen runtime, and continuous Fly/Oxygen deployment foundations.
-- Feature ports complete on `v3`: shared primitives and assets, Storefront data, shell, home, collections/load-more, product details/variants, and cart.
+- Feature ports complete on `v3`: shared primitives and assets, Storefront data, shell, home, collections/load-more, product details/variants, cart, and Shopify-backed policies/contact.
 - Browser-reachable modules use colocated `app/**/public/**` directories; shared application code remains runtime-neutral.
 - Node has a bounded in-memory Storefront cache. Fly has Docker, health checks, graceful shutdown, immutable asset IDs, and deployment smoke checks.
 - The remaining work starts with supporting routes and launch behavior; the platform and completed feature history do not need further migration planning.
@@ -30,7 +30,6 @@ Complete in dependency order unless surfaces are independent. Every feature PR c
 
 | # | Work | Completion criteria |
 | ---: | --- | --- |
-| 2.8 | Policies and contact | Shopify-backed refund, privacy, shipping, terms, and contact routes; branded layout; explicit merchant-HTML trust/sanitization policy. |
 | 2.10 | SEO resources | Add `robots.txt` and sitemap resources; finish route metadata coverage; test canonical, indexing, and social metadata against a deployed origin. Branded 404/500 work is already complete. |
 | 2.11 | Shopify compatibility routes | Verify `/cart/:lines`, checkout and `PUBLIC_CHECKOUT_DOMAIN`, AJAX cart, `/admin`, `/discount/:code`, `?discount=`, MyShopify rewrites, and Storefront redirect fallback. Add redirect/permalink acceptance cases and preserve same-origin safety. |
 | 2.12 | Analytics and consent | Finish consent-aware page/product/collection/cart events, including the pending `cart_viewed` event; verify live events in Shopify admin from preview deployments. |
