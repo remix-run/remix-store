@@ -25,32 +25,41 @@ export function PolicyPage(
 }
 
 const policyContentStyle = css({
-  margin: "0 auto",
+  margin: "-48px auto 0",
   maxWidth: "700px",
-  padding: "40px 20px 144px",
   overflowWrap: "anywhere",
+  padding: "0 36px 144px",
   "& h2, & h3, & h4, & h5, & h6": {
     fontFamily: "var(--font-sans)",
-    lineHeight: 1.2,
-    margin: "2em 0 0.75em",
+    fontWeight: 700,
+    lineHeight: 1.25,
+    margin: "48px 0 0",
   },
-  "& h2": { fontSize: "1.75rem" },
-  "& h3": { fontSize: "1.375rem" },
-  "& p, & li, & blockquote": { lineHeight: 1.65 },
-  "& p, & blockquote, & ol, & ul, & pre, & table": {
-    margin: "0 0 1.25em",
+  "& h2": { fontSize: "1.5rem" },
+  "& h3": { fontSize: "1.25rem" },
+  "& h4, & h5, & h6": { fontSize: "1rem" },
+  "& p": {
+    fontSize: "0.875rem",
+    lineHeight: 1.5,
+    margin: "24px 0 0",
   },
-  "& ol, & ul": { paddingLeft: "1.5em" },
   "& a": {
     color: "var(--color-blue-brand)",
-    textDecoration: "underline",
-    textUnderlineOffset: "0.2em",
+    textDecoration: "none",
+    transition: "none",
   },
+  "& a:hover": { textDecoration: "underline" },
   "& blockquote": {
-    borderLeft: "3px solid var(--color-gray-600)",
-    marginLeft: 0,
-    paddingLeft: "1.25em",
+    background: "var(--color-gray-800)",
+    margin: "24px 0 0",
+    padding: "24px",
   },
+  "& blockquote p:first-child": { marginTop: 0 },
+  "& ol, & ul": { margin: "24px 0 0", paddingLeft: "24px" },
+  "& ol": { listStyle: "decimal" },
+  "& ul": { listStyle: "disc" },
+  "& li": { lineHeight: 1.5, marginTop: "16px" },
+  "& pre, & table": { margin: "24px 0 0" },
   "& table": { borderCollapse: "collapse", width: "100%" },
   "& th, & td": {
     border: "1px solid var(--color-gray-600)",
@@ -59,5 +68,13 @@ const policyContentStyle = css({
     verticalAlign: "top",
   },
   "& pre": { overflowX: "auto", whiteSpace: "pre-wrap" },
-  "@media (min-width: 810px)": { paddingTop: "64px" },
+  "@media (min-width: 810px)": {
+    "& h2": { fontSize: "2.25rem" },
+    "& h3": { fontSize: "1.75rem" },
+  },
+  "@media (min-width: 1400px)": {
+    "& h2": { fontSize: "2.5rem" },
+    "& h3": { fontSize: "2rem" },
+    "& p": { fontSize: "1rem" },
+  },
 });
