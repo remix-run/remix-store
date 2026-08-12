@@ -8,7 +8,7 @@ Goal: replace the React Router 7 storefront on `main` with the Remix 3 + framewo
 
 - `main` remains the production RR7 storefront.
 - `v3` has the Remix 3 platform, native Node/Remix Assets runtime, Oxygen runtime, and continuous Fly/Oxygen deployment foundations.
-- Feature ports complete on `v3`: shared primitives and assets, Storefront data, shell, home, collections/load-more, product details/variants, cart, and Shopify-backed policies/contact.
+- Feature ports complete on `v3`: shared primitives and assets, Storefront data, shell, home, collections/load-more, product details/variants, cart, Shopify-backed policies/contact, and SEO resources/metadata.
 - Browser-reachable modules use colocated `app/**/public/**` directories; shared application code remains runtime-neutral.
 - Node has a bounded in-memory Storefront cache. Fly has Docker, health checks, graceful shutdown, immutable asset IDs, and deployment smoke checks.
 - The remaining work starts with supporting routes and launch behavior; the platform and completed feature history do not need further migration planning.
@@ -30,7 +30,6 @@ Complete in dependency order unless surfaces are independent. Every feature PR c
 
 | # | Work | Completion criteria |
 | ---: | --- | --- |
-| 2.10 | SEO resources | Add `robots.txt` and sitemap resources; finish route metadata coverage; test canonical, indexing, and social metadata against a deployed origin. Branded 404/500 work is already complete. |
 | 2.11 | Shopify compatibility routes | Verify `/cart/:lines`, checkout and `PUBLIC_CHECKOUT_DOMAIN`, AJAX cart, `/admin`, `/discount/:code`, `?discount=`, MyShopify rewrites, and Storefront redirect fallback. Add redirect/permalink acceptance cases and preserve same-origin safety. |
 | 2.12 | Analytics and consent | Finish consent-aware page/product/collection/cart events, including the pending `cart_viewed` event; verify live events in Shopify admin from preview deployments. |
 | 2.13 | Store-wide sale | Port the active-sale metaobject query and reduced-motion marquee; use the sale title for automatic-discount labels. |
@@ -48,6 +47,7 @@ Complete in dependency order unless surfaces are independent. Every feature PR c
 - Document `vite/remix-oxygen.ts` in `vite/README.md`: build order, `clientEntry()` transform, manifest inlining, hydration-export validation, and replacement intent.
 - Define Node `waitUntil` behavior before analytics or another feature relies on background work; rejected tasks must be observed.
 - Run the portable acceptance suite against both deployed targets, not only local fixtures or Fly smoke checks.
+- Verify canonical, indexing, social metadata, `robots.txt`, and sitemap resources against each deployed origin; deterministic request-origin coverage is complete, but live SEO verification remains a cutover gate.
 - Prove an Oxygen production-environment deployment from a test branch before cutover.
 - Verify all consuming environment values on both targets as features land. Keep Admin and session credentials server-only.
 - After cutover, restrict both deployment workflows to `main` and protect production credentials/approvals with GitHub environments.

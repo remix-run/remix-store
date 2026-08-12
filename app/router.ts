@@ -10,6 +10,7 @@ import rootController from "./actions/controller.tsx";
 import collectionsController from "./actions/collections/controller.tsx";
 import policiesController from "./actions/policies/controller.tsx";
 import productsController from "./actions/products/controller.tsx";
+import seoController from "./actions/seo/controller.ts";
 import { ErrorPage, NotFoundPage } from "./actions/pages.tsx";
 import { render } from "./middleware/render.tsx";
 import { storefront, type StorefrontOptions } from "./middleware/storefront.ts";
@@ -79,6 +80,7 @@ export function createApp(options: AppOptions) {
   router.map(routes.collections, collectionsController);
   router.map(routes.policies, policiesController);
   router.map(routes.products, productsController);
+  router.map(routes.seo, seoController);
 
   return {
     fetch(request: Request, runtime: Runtime = {}) {
