@@ -31,8 +31,6 @@ export type NavigationMenuData = SerializableObject & {
   items: NavigationMenuItemData[];
 };
 
-export type ProductNavigationMenuData = NavigationMenuData;
-
 export type ShellMenusData = SerializableObject & {
   footerMenu: NavigationMenuData;
   navigationMenu: NavigationMenuData;
@@ -45,8 +43,6 @@ export type ImageData = SerializableObject & {
   url: string;
   width?: number | null;
 };
-
-export type ProductImage = ImageData;
 
 export type ProductMoney = SerializableObject & {
   amount: string;
@@ -647,7 +643,7 @@ export async function queryCollection(
 export async function queryProductNavigation(
   storefront: AppStorefrontClient,
   storeDomain: string,
-): Promise<ProductNavigationMenuData> {
+): Promise<NavigationMenuData> {
   try {
     let result = await storefront.graphql(PRODUCT_NAVIGATION_QUERY, {
       cache: STABLE_CACHE,

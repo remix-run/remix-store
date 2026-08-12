@@ -22,9 +22,9 @@ import {
 } from "remix/ui";
 
 import type {
+  ImageData,
   NavigationMenuData,
   ProductData,
-  ProductImage,
 } from "../../data/storefront.ts";
 import { CART_API_PATH } from "../../lib/public/cart-routes.ts";
 import { RichText } from "../../ui/public/rich-text.tsx";
@@ -574,7 +574,7 @@ function ProductImageFallback() {
 }
 
 function ProductImageFrame(
-  handle: Handle<{ image: ProductImage; index: number; mobile?: boolean }>,
+  handle: Handle<{ image: ImageData; index: number; mobile?: boolean }>,
 ) {
   return () => {
     let { image, index, mobile } = handle.props;
@@ -627,9 +627,9 @@ function Icon(handle: Handle<{ name: string }>) {
 }
 
 function orderedProductImages(
-  images: ProductImage[],
-  selectedImage: ProductImage | null | undefined,
-): ProductImage[] {
+  images: ImageData[],
+  selectedImage: ImageData | null | undefined,
+): ImageData[] {
   if (!selectedImage) return images;
   return [
     selectedImage,
