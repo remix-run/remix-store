@@ -86,7 +86,7 @@ test("renders the storefront shell and catalog entry point", async ({
   );
 });
 
-test("keeps the collection visible until a cold product module is ready", async ({
+test("shows destination SSR while a cold product module loads", async ({
   page,
 }) => {
   await page.goto("/collections/all");
@@ -114,11 +114,11 @@ test("keeps the collection visible until a cold product module is ready", async 
   try {
     await moduleRequest;
 
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+      productName,
+    );
     await expect(
-      page.getByRole("heading", { name: "All products" }),
-    ).toBeVisible();
-    await expect(
-      page.locator('main a[href*="/products/"]').first(),
+      page.getByRole("button", { name: /add to cart|sold out/i }),
     ).toBeVisible();
     await expect(page.locator("footer")).not.toBeInViewport();
   } finally {
