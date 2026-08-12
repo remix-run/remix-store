@@ -384,7 +384,7 @@ function CartView(handle: Handle<CartViewProps>) {
     }
 
     let cartPending = isCartPending(state);
-    let discountAllocations = getCartDiscountAllocations(cart);
+    let discountAllocation = getCartDiscountAllocation(cart);
 
     return (
       <section
@@ -585,6 +585,12 @@ function CartView(handle: Handle<CartViewProps>) {
                     {money(cart.cost.subtotalAmount)}
                   </span>
                 </div>
+                {discountAllocation ? (
+                  <div mix={allocationStyle}>
+                    <span>Automatic discount</span>
+                    <span>-{money(discountAllocation)}</span>
+                  </div>
+                ) : null}
                 <FreeShippingProgress subtotal={cart.cost.subtotalAmount} />
               </div>
               {cart.checkoutUrl ? (
@@ -603,16 +609,13 @@ function CartView(handle: Handle<CartViewProps>) {
                     {money(cart.cost.subtotalAmount)}
                   </span>
                 </div>
-                {discountAllocations.map((allocation, index) => (
-                  <div
-                    key={`${allocation.label}-${index}`}
-                    mix={allocationStyle}
-                  >
-                    <span>{allocation.label}</span>
-                    <span>-{money(allocation.discountedAmount)}</span>
+                {discountAllocation ? (
+                  <div mix={allocationStyle}>
+                    <span>Automatic discount</span>
+                    <span>-{money(discountAllocation)}</span>
                   </div>
-                ))}
-                {discountAllocations.length ? (
+                ) : null}
+                {discountAllocation ? (
                   <div mix={pageTotalStyle}>
                     <strong>Total</strong>
                     <span mix={cartPending ? pendingValueStyle : undefined}>
@@ -640,14 +643,10 @@ function CartView(handle: Handle<CartViewProps>) {
 }
 
 type CartDiscountAllocationData = {
-  code?: string;
   discountedAmount: MoneyV2;
-  title?: string;
 };
 
-function getCartDiscountAllocations(
-  cart: CartData,
-): Array<{ discountedAmount: MoneyV2; label: string }> {
+function getCartDiscountAllocation(cart: CartData): MoneyV2 | null {
   let allocations = cart.lines.nodes.flatMap(
     (line) =>
       (
@@ -656,11 +655,16 @@ function getCartDiscountAllocations(
         }
       ).discountAllocations ?? [],
   );
+  let first = allocations[0]?.discountedAmount;
+  if (!first) return null;
 
-  return allocations.map((allocation) => ({
-    discountedAmount: allocation.discountedAmount,
-    label: allocation.title ?? allocation.code ?? "Automatic discount",
-  }));
+  let amount = allocations.reduce(
+    (total, allocation) => total + Number(allocation.discountedAmount.amount),
+    0,
+  );
+  return amount > 0
+    ? { amount: String(amount), currencyCode: first.currencyCode }
+    : null;
 }
 
 function getLineCompareAtPrice(

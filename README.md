@@ -14,8 +14,15 @@ The `v3` branch is migrating the production store to Remix 3 and framework-neutr
 ```sh
 pnpm install
 cp .env.example .env
+# Populate PRIVATE_STOREFRONT_API_TOKEN from the configured Hydrogen environment.
 pnpm dev
 ```
+
+The private Storefront token remains server-only and enables request-aware cart,
+checkout, and Shopify redirect handling. Oxygen supplies `oxygen-buyer-ip`; Fly
+supplies `fly-client-ip`. Other runtimes must set `Runtime.buyerIp` from a
+verified adapter—never forward either public request header. `PUBLIC_CHECKOUT_DOMAIN`
+is not a runtime input; checkout uses Shopify's authoritative `cart.checkoutUrl`.
 
 `pnpm dev` runs the framework-native Node server with `remix/assets`. For UI-heavy work, use `pnpm hmr` to preserve browser state while hot-updating client and server modules. Use `pnpm dev:oxygen` when testing the same application under MiniOxygen's Worker runtime.
 

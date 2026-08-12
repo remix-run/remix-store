@@ -2,6 +2,7 @@ import * as http from "node:http";
 
 import { createRequestListener } from "remix/node-fetch-server";
 
+import { resolveNodeBuyerIp } from "./app/buyer-ip.ts";
 import { app, closeNodeApp } from "./app/node.ts";
 
 const isHmr = Boolean(
@@ -13,9 +14,16 @@ const hmrProxyPort = process.env.HMR_PROXY_PORT
 const port = parsePort("PORT", process.env.PORT ?? "44100");
 
 const server = http.createServer(
-  createRequestListener((request) => app.fetch(request, { env: process.env }), {
-    trustProxy: isHmr || process.env.TRUST_PROXY === "true",
-  }),
+  createRequestListener(
+    (request) =>
+      app.fetch(request, {
+        buyerIp: resolveNodeBuyerIp(request, process.env),
+        env: process.env,
+      }),
+    {
+      trustProxy: isHmr || process.env.TRUST_PROXY === "true",
+    },
+  ),
 );
 
 server.listen(port, () => {
