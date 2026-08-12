@@ -86,14 +86,46 @@ test("renders the storefront shell and catalog entry point", async ({
   );
 });
 
-test("navigates from the catalog to a product", async ({ page }) => {
+test("keeps the collection visible until a cold product module is ready", async ({
+  page,
+}) => {
   await page.goto("/collections/all");
 
   let productLink = page.locator('main a[href*="/products/"]').first();
   await expect(productLink).toBeVisible();
   let productName = (await productLink.locator("h3").innerText()).trim();
+  let releaseModule!: () => void;
+  let moduleRequested!: () => void;
+  let moduleRequest = new Promise<void>(
+    (resolve) => (moduleRequested = resolve),
+  );
+  let moduleGate = new Promise<void>((resolve) => (releaseModule = resolve));
 
-  await productLink.click();
+  await page.route(
+    /\/product-details(?:-[^/]+)?\.(?:tsx|js)$/,
+    async (route) => {
+      moduleRequested();
+      await moduleGate;
+      await route.continue();
+    },
+  );
+
+  let navigation = productLink.click();
+  try {
+    await moduleRequest;
+
+    await expect(
+      page.getByRole("heading", { name: "All products" }),
+    ).toBeVisible();
+    await expect(
+      page.locator('main a[href*="/products/"]').first(),
+    ).toBeVisible();
+    await expect(page.locator("footer")).not.toBeInViewport();
+  } finally {
+    releaseModule();
+  }
+  await navigation;
+  await page.unroute(/\/product-details(?:-[^/]+)?\.(?:tsx|js)$/);
 
   await expect(page).toHaveURL(/\/products\//);
   await expect(page.getByRole("heading", { level: 1 })).toHaveText(productName);
