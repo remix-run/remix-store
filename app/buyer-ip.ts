@@ -6,18 +6,16 @@ export function resolveOxygenBuyerIp(request: Request): string | undefined {
 }
 
 /**
- * Reads Fly's edge-controlled header only inside Fly. Local development uses a
- * fixed loopback identity instead of trusting request headers.
+ * Reads Fly's edge-controlled header on Fly. Other Node runtimes use the client
+ * address resolved by the HTTP adapter from the socket or a trusted proxy.
  */
 export function resolveNodeBuyerIp(
   request: Request,
   env: Env,
+  clientAddress?: string,
 ): string | undefined {
   if (env.FLY_APP_NAME) return nonEmptyHeader(request.headers, "fly-client-ip");
-  if (env.NODE_ENV === "development" || env.NODE_ENV === "test") {
-    return "127.0.0.1";
-  }
-  return undefined;
+  return clientAddress?.trim() || undefined;
 }
 
 function nonEmptyHeader(headers: Headers, name: string): string | undefined {

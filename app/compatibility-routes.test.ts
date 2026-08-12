@@ -209,10 +209,13 @@ describe("discount compatibility links", () => {
     assert.equal(returned.headers.get("Location"), "/collections/all");
   });
 
-  it("updates an existing cart and prevents external discount redirects", async () => {
+  it("appends to an existing cart's discounts and prevents external redirects", async () => {
     let requestBody: StorefrontRequestBody | undefined;
     let app = createTestApp(
       createStorefrontFetch({
+        RemixDiscountCart: () => ({
+          cart: { discountCodes: [{ code: "WELCOME" }] },
+        }),
         RemixCartDiscountCodesUpdate(body) {
           requestBody = body;
           return {
@@ -238,7 +241,7 @@ describe("discount compatibility links", () => {
     assert.equal(response.headers.get("Location"), "/?utm_source=shopify");
     assert.deepEqual(requestBody?.variables, {
       cartId: CART_ID,
-      discountCodes: ["LAUNCH"],
+      discountCodes: ["WELCOME", "LAUNCH"],
     });
     assert.equal(response.headers.get("Set-Cookie"), null);
   });

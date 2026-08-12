@@ -15,9 +15,9 @@ const port = parsePort("PORT", process.env.PORT ?? "44100");
 
 const server = http.createServer(
   createRequestListener(
-    (request) =>
+    (request, client) =>
       app.fetch(request, {
-        buyerIp: resolveNodeBuyerIp(request, process.env),
+        buyerIp: resolveNodeBuyerIp(request, process.env, client.address),
         env: process.env,
       }),
     {

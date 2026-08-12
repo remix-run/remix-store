@@ -22,8 +22,11 @@ fly tokens create deploy --app remix-store --expiry 8760h \
 
 The domain, storefront ID, and private Storefront token are current inputs. The
 private token must remain server-only. On Fly, the Node adapter accepts
-`fly-client-ip` only when `FLY_APP_NAME` confirms the runtime; never proxy a
-client-supplied buyer-IP header. `PUBLIC_CHECKOUT_DOMAIN` was retired: checkout
+`fly-client-ip` only when `FLY_APP_NAME` confirms the runtime. Outside Fly it
+uses Remix's HTTP adapter client address, which comes from the socket unless an
+operator explicitly enables `TRUST_PROXY=true` behind a trusted proxy that
+overwrites forwarding headers. Never proxy a client-supplied buyer-IP header.
+`PUBLIC_CHECKOUT_DOMAIN` was retired: checkout
 buttons and `/checkout` resolve Shopify's authoritative `cart.checkoutUrl`. Add
 sessions and Admin API credentials when their consuming features land.
 

@@ -21,6 +21,16 @@ const DISCOUNT_CART_CREATE_MUTATION = gql(`
   }
 `);
 
+const DISCOUNT_CART_QUERY = gql(`
+  query RemixDiscountCart($cartId: ID!) {
+    cart(id: $cartId) {
+      discountCodes {
+        code
+      }
+    }
+  }
+`);
+
 const CART_DISCOUNT_CODES_UPDATE_MUTATION = gql(`
   mutation RemixCartDiscountCodesUpdate(
     $cartId: ID!
@@ -53,9 +63,21 @@ export async function applyDiscountCode(
   let payload;
 
   if (cartId) {
+    let cartResult = await storefrontClient.graphql(DISCOUNT_CART_QUERY, {
+      variables: { cartId },
+    });
+    if (cartResult.errors || !cartResult.data) {
+      throw new Error(
+        cartResult.errors?.[0]?.message ?? "Discount cart request failed",
+      );
+    }
+    let discountCodes = [
+      ...(cartResult.data.cart?.discountCodes.map(({ code }) => code) ?? []),
+      code,
+    ];
     let result = await storefrontClient.graphql(
       CART_DISCOUNT_CODES_UPDATE_MUTATION,
-      { variables: { cartId, discountCodes: [code] } },
+      { variables: { cartId, discountCodes } },
     );
     if (result.errors || !result.data) {
       throw new Error(result.errors?.[0]?.message ?? "Discount request failed");

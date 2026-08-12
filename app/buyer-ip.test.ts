@@ -39,7 +39,7 @@ describe("trusted buyer IP adapters", () => {
     );
   });
 
-  it("does not trust public buyer-IP headers outside their runtime", () => {
+  it("uses the Node HTTP adapter's client address outside Fly", () => {
     let request = new Request("https://storefront.example", {
       headers: {
         "fly-client-ip": "198.51.100.1",
@@ -48,23 +48,16 @@ describe("trusted buyer IP adapters", () => {
     });
 
     assert.equal(
+      resolveNodeBuyerIp(request, { NODE_ENV: "production" }, "192.0.2.1"),
+      "192.0.2.1",
+    );
+    assert.equal(
+      resolveNodeBuyerIp(request, { NODE_ENV: "development" }, "127.0.0.1"),
+      "127.0.0.1",
+    );
+    assert.equal(
       resolveNodeBuyerIp(request, { NODE_ENV: "production" }),
       undefined,
-    );
-  });
-
-  it("uses a fixed buyer identity only in local development and tests", () => {
-    let request = new Request("http://localhost", {
-      headers: { "fly-client-ip": "198.51.100.1" },
-    });
-
-    assert.equal(
-      resolveNodeBuyerIp(request, { NODE_ENV: "development" }),
-      "127.0.0.1",
-    );
-    assert.equal(
-      resolveNodeBuyerIp(request, { NODE_ENV: "test" }),
-      "127.0.0.1",
     );
   });
 });
