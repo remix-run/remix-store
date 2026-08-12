@@ -23,7 +23,7 @@ describe("policy routes", () => {
               privacyPolicy: {
                 body: `
                   <h2>Information we collect</h2>
-                  <p>Policy copy</p>
+                  <div style="position: fixed"><span>Policy copy</span></div>
                   <a href="https://example.org" target="_blank">Learn more</a>
                   <a href="javascript:alert('nope')">Unsafe</a>
                   <img src=x onerror="alert('nope')">
@@ -52,7 +52,7 @@ describe("policy routes", () => {
     assert.match(html, /<title>Privacy policy<\/title>/);
     assert.match(html, /<h1[^>]*>Privacy policy<\/h1>/);
     assert.match(html, /<h2>Information we collect<\/h2>/);
-    assert.match(html, /Policy copy/);
+    assert.match(html, /<div><span>Policy copy<\/span><\/div>/);
     assert.match(html, /rel="noopener noreferrer"/);
     assert.match(
       html,
