@@ -116,16 +116,15 @@ const imageRegionStyle = css({
   "& img": {
     height: "auto",
     maxHeight: "90%",
-    maxWidth: "90%",
-    objectFit: "contain",
+    objectFit: "cover",
     position: "relative",
     width: "100%",
   },
   "& img + img": {
-    inset: "5%",
+    inset: "5% 0",
     height: "90%",
     position: "absolute",
-    width: "90%",
+    width: "100%",
   },
 });
 const placeholderStyle = css({

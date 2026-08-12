@@ -215,7 +215,7 @@ const heroContentStyle = css({
     bottom: "48px",
     gap: "28px",
     left: "36px",
-    "& h1": { fontSize: "3.75rem" },
+    "& h1": { fontSize: "4rem" },
   },
   "@media (min-width: 1400px)": {
     bottom: "64px",

@@ -83,7 +83,7 @@ export const Footer = clientEntry(
               <p>Designed in USA</p>
             </div>
 
-            <div mix={brandStyle}>
+            <div data-footer-brand="true" mix={brandStyle}>
               <svg
                 aria-label="Remix Logo"
                 role="img"
@@ -276,9 +276,8 @@ const footerInnerStyle = css({
   flexDirection: "column",
   gap: "36px",
   margin: "0 auto",
-  maxWidth: "calc(100vw - 16px)",
-  width: "max-content",
-  "@media (min-width: 1024px)": { gap: "48px" },
+  maxWidth: "fit-content",
+  "@media (min-width: 1400px)": { gap: "48px" },
 });
 
 const catalogStyle = css({
@@ -294,7 +293,7 @@ const brandStyle = css({
   flexDirection: "column",
   gap: "20px",
   "@media (min-width: 810px)": { gap: "24px" },
-  "@media (min-width: 1024px)": { flexDirection: "row" },
+  "@media (min-width: 1400px)": { flexDirection: "row" },
 });
 
 const brandLogoStyle = css({
@@ -303,7 +302,7 @@ const brandLogoStyle = css({
   height: "150px",
   width: "168px",
   "@media (min-width: 810px)": { width: "216px" },
-  "@media (min-width: 1024px)": { width: "260px" },
+  "@media (min-width: 1400px)": { width: "260px" },
 });
 
 const brandGlyphGroupStyle = css({

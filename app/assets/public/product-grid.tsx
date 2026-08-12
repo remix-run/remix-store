@@ -35,11 +35,10 @@ const productGridStyle = css({
   gridTemplateColumns: "minmax(0, 1fr)",
   listStyle: "none",
   margin: 0,
-  padding: "36px 0 48px",
+  padding: 0,
   "& > li": { minWidth: 0 },
   "@media (min-width: 810px)": {
     gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-    paddingTop: "48px",
   },
   "@media (min-width: 1400px)": {
     gridTemplateColumns: "repeat(3, minmax(0, 1fr))",

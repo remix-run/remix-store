@@ -56,11 +56,13 @@ export function HomePage(
               <LookbookEntry key={entry.id} entry={entry} />
             ))}
             {handle.props.products.length ? (
-              <CollectionProductGrid
-                action={routes.collections.show.href({ handle: "all" })}
-                products={handle.props.products}
-                pageInfo={handle.props.pageInfo}
-              />
+              <div data-home-catalog="true" mix={homeCatalogStyle}>
+                <CollectionProductGrid
+                  action={routes.collections.show.href({ handle: "all" })}
+                  products={handle.props.products}
+                  pageInfo={handle.props.pageInfo}
+                />
+              </div>
             ) : null}
           </div>
         </main>
@@ -199,6 +201,13 @@ export function ErrorPage() {
 const cartMainStyle = css({ minHeight: "70vh" });
 
 const editorialStyle = css({ position: "relative" });
+
+const homeCatalogStyle = css({
+  background: "linear-gradient(180deg, #2d2d38, var(--color-black))",
+  padding: "36px 0",
+  "@media (min-width: 810px)": { padding: "48px 0" },
+  "@media (min-width: 1400px)": { padding: "64px 0" },
+});
 
 const lookbookStyle = css({
   background: "var(--color-black)",
