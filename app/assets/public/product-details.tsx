@@ -521,7 +521,10 @@ export const ProductDetails = clientEntry(
             </div>
 
             {product.customDescription ? (
-              <RichText value={product.customDescription.value} />
+              <RichText
+                value={product.customDescription.value}
+                variant="product-description"
+              />
             ) : product.description ? (
               <p mix={descriptionStyle}>{product.description}</p>
             ) : null}
@@ -529,7 +532,10 @@ export const ProductDetails = clientEntry(
             {product.technicalDescription ? (
               <div mix={technicalStyle}>
                 <h2>Technical Description</h2>
-                <RichText value={product.technicalDescription.value} />
+                <RichText
+                  value={product.technicalDescription.value}
+                  variant="product-description"
+                />
               </div>
             ) : null}
           </section>
@@ -1107,12 +1113,12 @@ const errorStyle = css({
   "& p": { margin: "8px 0 0" },
 });
 const descriptionStyle = css({
-  fontSize: ".875rem",
-  lineHeight: 1.6,
+  fontSize: ".75rem",
+  lineHeight: "16px",
   margin: 0,
   maxWidth: "60ch",
   whiteSpace: "pre-wrap",
-  "@media (min-width: 1400px)": { fontSize: "1rem" },
+  "@media (min-width: 1400px)": { fontSize: "1rem", lineHeight: 1.4 },
 });
 const technicalStyle = css({
   display: "flex",

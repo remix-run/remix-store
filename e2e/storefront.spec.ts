@@ -129,6 +129,18 @@ test("keeps the migrated medium layout through 1399px", async ({ page }) => {
     "height",
     "64px",
   );
+  await expect(page.getByText("This water bottle", { exact: true })).toHaveCSS(
+    "font-size",
+    "12px",
+  );
+  await expect(page.getByText("This water bottle", { exact: true })).toHaveCSS(
+    "line-height",
+    "16px",
+  );
+  await expect(page.getByText("Nalgene 32 oz.", { exact: true })).toHaveCSS(
+    "font-size",
+    "12px",
+  );
 
   let footerBrand = page.locator('footer svg[aria-label="Remix Logo"]');
   await expect(footerBrand).toHaveCSS("width", "216px");
@@ -151,6 +163,14 @@ test("switches product and footer chrome at the 1400px breakpoint", async ({
   await expect(page.locator('button[name="add-to-cart"]')).toHaveCSS(
     "height",
     "66px",
+  );
+  await expect(page.getByText("This water bottle", { exact: true })).toHaveCSS(
+    "font-size",
+    "16px",
+  );
+  await expect(page.getByText("This water bottle", { exact: true })).toHaveCSS(
+    "line-height",
+    "22.4px",
   );
 
   let footerBrand = page.locator('footer svg[aria-label="Remix Logo"]');

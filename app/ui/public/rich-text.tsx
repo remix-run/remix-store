@@ -1,6 +1,7 @@
 import { css, type Handle, type RemixNode } from "remix/ui";
 
 interface RichTextProps {
+  variant?: "product-description";
   value: string;
 }
 
@@ -19,7 +20,16 @@ type RichTextNode = {
 export function RichText(handle: Handle<RichTextProps>) {
   let root = parseRichText(handle.props.value);
   return () => (
-    <div mix={richTextStyle}>{renderNodes(root.children ?? [])}</div>
+    <div
+      mix={[
+        richTextStyle,
+        handle.props.variant === "product-description"
+          ? productDescriptionStyle
+          : undefined,
+      ]}
+    >
+      {renderNodes(root.children ?? [])}
+    </div>
   );
 }
 
@@ -104,4 +114,10 @@ const richTextStyle = css({
   lineHeight: 1.5,
   "& h2, & h3, & ol, & p, & ul": { margin: "0 0 12px" },
   "& a": { color: "var(--color-blue-brand)" },
+});
+
+const productDescriptionStyle = css({
+  fontSize: ".75rem",
+  lineHeight: "16px",
+  "@media (min-width: 1400px)": { fontSize: "1rem", lineHeight: 1.4 },
 });

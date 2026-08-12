@@ -155,8 +155,8 @@ function product() {
     requiresSellingPlan: false,
     category: { name: "Test category" },
     seo: { title: "Test product", description: "A test product" },
-    customDescription: null,
-    technicalDescription: null,
+    customDescription: richTextList("This water bottle"),
+    technicalDescription: richTextList("Nalgene 32 oz."),
     priceRange: {
       minVariantPrice: { amount: "20.00", currencyCode: "USD" },
     },
@@ -186,6 +186,22 @@ function variant() {
     product: { handle: "test-product", title: "Test product" },
     selectedOptions: [{ name: "Title", value: "Default Title" }],
     title: "Default Title",
+  };
+}
+
+function richTextList(value: string) {
+  return {
+    value: JSON.stringify({
+      type: "root",
+      children: [
+        {
+          type: "unordered-list",
+          children: [
+            { type: "list-item", children: [{ type: "text", value }] },
+          ],
+        },
+      ],
+    }),
   };
 }
 
