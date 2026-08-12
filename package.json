@@ -23,7 +23,7 @@
   },
   "dependencies": {
     "@shopify/hydrogen": "0.0.0-preview-116d5d7-20260730141607",
-    "remix": "github:remix-run/remix#preview/pr-11683&path:packages/remix"
+    "remix": "github:remix-run/remix#preview/main&path:packages/remix"
   },
   "devDependencies": {
     "@hiogawa/vite-plugin-fullstack": "0.0.11",

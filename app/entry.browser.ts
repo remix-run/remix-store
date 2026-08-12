@@ -9,11 +9,11 @@ let app = run({
     let module = await import(/* @vite-ignore */ moduleUrl);
     return module[exportName];
   },
-  async resolveFrame(src, options) {
+  async resolveFrame(src, signal, target) {
     return resolveFrameResponse(
       new URL(src, window.location.href),
-      options?.signal,
-      options?.target,
+      signal,
+      target,
     );
   },
 });
