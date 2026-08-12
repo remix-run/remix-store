@@ -60,6 +60,10 @@ describe("product routes", () => {
     assert.match(html, /Blue — Sold out/);
     assert.match(html, /Technical Description/);
     assert.match(html, /Technical detail/);
+    assert.match(
+      html,
+      /\[data-product-image\] \+ \[data-product-image\] \{\s*opacity: 0\.2;/,
+    );
     assert.match(html, /action="\/api\/cart" method="post"/);
     assert.match(html, /name="merchandiseId"/);
     assert.match(html, /name="quantity" value="1"/);

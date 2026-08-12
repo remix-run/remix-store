@@ -857,7 +857,11 @@ const desktopGalleryStyle = css({
   marginInline: "auto",
   maxWidth: "1200px",
   width: "100%",
+  "& > [data-product-image] + [data-product-image]": { opacity: 0.2 },
   "@media (min-width: 810px)": { display: "flex" },
+  "@media (prefers-reduced-motion: reduce)": {
+    "& > [data-product-image]": { opacity: 1 },
+  },
 });
 const imageFallbackStyle = css({
   aspectRatio: "1",
