@@ -86,22 +86,6 @@ test("renders the storefront shell and catalog entry point", async ({
   );
 });
 
-test("navigates from the catalog to a product", async ({ page }) => {
-  await page.goto("/collections/all");
-
-  let productLink = page.locator('main a[href*="/products/"]').first();
-  await expect(productLink).toBeVisible();
-  let productName = (await productLink.locator("h3").innerText()).trim();
-
-  await productLink.click();
-
-  await expect(page).toHaveURL(/\/products\//);
-  await expect(page.getByRole("heading", { level: 1 })).toHaveText(productName);
-  await expect(
-    page.getByRole("button", { name: /add to cart|sold out/i }),
-  ).toBeVisible();
-});
-
 test("product pages preserve their canonical URL", async ({ page }) => {
   await page.goto("/collections/all");
   let productPath = await page

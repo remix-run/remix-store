@@ -11,6 +11,7 @@ import {
   queryCollection,
   queryHome,
   queryProduct,
+  queryProductNavigation,
   queryShellMenus,
   queryShop,
 } from "./storefront.ts";
@@ -336,6 +337,29 @@ describe("Storefront data", () => {
         title: "Privacy Policy",
         url: "https://remix.run/privacy",
       },
+    ]);
+  });
+
+  it("normalizes the dedicated product sidebar menu", async () => {
+    let client = createTestClient(async () =>
+      storefrontResponse({
+        menu: {
+          items: [
+            {
+              id: "all",
+              title: "All products",
+              url: "https://shop.example.com/collections/all",
+            },
+          ],
+        },
+        shop: { primaryDomain: { url: "https://shop.example.com" } },
+      }),
+    );
+
+    let result = await queryProductNavigation(client, "example.myshopify.com");
+
+    assert.deepEqual(result.items, [
+      { id: "all", title: "All products", url: "/collections/all" },
     ]);
   });
 

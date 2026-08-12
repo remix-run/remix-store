@@ -261,6 +261,23 @@ const NAVIGATION_QUERY = gql(`
   }
 `);
 
+const PRODUCT_NAVIGATION_QUERY = gql(`
+  query RemixProductNavigation {
+    menu(handle: "product-sidebar-menu") {
+      items {
+        id
+        title
+        url
+      }
+    }
+    shop {
+      primaryDomain {
+        url
+      }
+    }
+  }
+`);
+
 const PRODUCT_CARD_FRAGMENT = gql(`
   fragment RemixProductCard on Product {
     id
@@ -620,6 +637,34 @@ export async function queryCollection(
       message: "The Storefront API collection request failed.",
       errors: error,
     };
+  }
+}
+
+export async function queryProductNavigation(
+  storefront: AppStorefrontClient,
+  storeDomain: string,
+): Promise<NavigationMenuData> {
+  try {
+    let result = await storefront.graphql(PRODUCT_NAVIGATION_QUERY, {
+      cache: STABLE_CACHE,
+    });
+    if (result.errors) {
+      console.error(
+        "[hydrogen] Product navigation query returned partial data",
+        result.errors,
+      );
+    }
+
+    let internalHosts = new Set([normalizeStoreDomain(storeDomain)]);
+    let primaryDomain = result.data?.shop?.primaryDomain?.url;
+    if (primaryDomain) internalHosts.add(new URL(primaryDomain).host);
+
+    return mapNavigationMenu(result.data?.menu, internalHosts, {
+      items: [],
+    });
+  } catch (error) {
+    console.error("[hydrogen] Product navigation query failed", error);
+    return { items: [] };
   }
 }
 
