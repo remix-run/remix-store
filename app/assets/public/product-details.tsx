@@ -27,12 +27,14 @@ import type {
   ProductData,
 } from "../../data/storefront.ts";
 import { CART_API_PATH } from "../../lib/public/cart-routes.ts";
+import { productSubscriptionsEnabled } from "../../lib/public/subscription.ts";
 import { RichText } from "../../ui/public/rich-text.tsx";
 import {
   ShopifyImage,
   shopifyImageUrl,
 } from "../../ui/public/shopify-image.tsx";
 import { getBrowserCartStore } from "./cart-store.ts";
+import { SubscribeForm } from "./subscribe-form.tsx";
 
 type ProductDetailsProps = {
   menu?: NavigationMenuData;
@@ -526,6 +528,16 @@ export const ProductDetails = clientEntry(
                   />
                 ) : null}
               </div>
+              {selectedVariant &&
+              !selectedVariant.availableForSale &&
+              productSubscriptionsEnabled(product) ? (
+                <SubscribeForm
+                  action="/subscribe"
+                  mode="back-in-stock"
+                  productHandle={product.handle}
+                  variantId={selectedVariant.id}
+                />
+              ) : null}
             </div>
 
             {product.customDescription ? (

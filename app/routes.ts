@@ -1,4 +1,4 @@
-import { get, route } from "remix/routes";
+import { form, get, route } from "remix/routes";
 
 export { CART_API_PATH } from "./lib/public/cart-routes.ts";
 
@@ -12,6 +12,7 @@ export const routes = route({
   products: {
     show: get("/products/:handle"),
   },
+  subscribe: form("/subscribe"),
   policies: {
     show: get("/policies/:handle"),
   },

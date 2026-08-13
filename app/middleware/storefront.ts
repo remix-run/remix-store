@@ -88,6 +88,29 @@ export function storefront(options: StorefrontOptions = {}): Middleware<
 
     let runtime = getRuntime(context.request);
     let env = { ...runtime.env, ...options.env };
+
+    if (
+      !runtime.buyerIp &&
+      context.request.method === "POST" &&
+      context.url.pathname === routes.subscribe.action.href()
+    ) {
+      // Subscription abuse controls require an adapter-supplied, trusted IP.
+      // Fail closed before Storefront/Admin work, without logging request data.
+      let headers = new Headers({ "Cache-Control": "private, no-store" });
+      let body = {
+        error: "Something went wrong. Please try again.",
+        success: false,
+      };
+      if (context.request.headers.get("Accept")?.includes("application/json")) {
+        return Response.json(body, { status: 503, headers });
+      }
+      headers.set("Content-Type", "text/html; charset=utf-8");
+      return new Response(
+        '<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Subscribe unavailable</title></head><body><main><h1>Subscribe</h1><p role="alert">Something went wrong. Please try again.</p></main></body></html>',
+        { status: 503, headers },
+      );
+    }
+
     let storeDomain = env.PUBLIC_STORE_DOMAIN;
 
     let privateStorefrontToken = env["PRIVATE" + "_STOREFRONT_" + "API_TOKEN"];
@@ -192,6 +215,28 @@ export function storefront(options: StorefrontOptions = {}): Middleware<
         requestContext,
         new Response(null, { status: 303, headers }),
       );
+    }
+
+    // Subscription POSTs need the request-scoped Storefront client for fresh
+    // variant verification, but never need shell/cart network requests.
+    if (
+      context.request.method === "POST" &&
+      context.url.pathname === routes.subscribe.action.href()
+    ) {
+      context.set(
+        NavigationMenuConfig,
+        FALLBACK_NAVIGATION_MENU,
+        navigationMenuProperty,
+      );
+      context.set(FooterMenuConfig, FALLBACK_FOOTER_MENU, footerMenuProperty);
+      context.set(StoreWideSaleConfig, null, storeWideSaleProperty);
+      context.set(
+        CartInitialDataConfig,
+        { cart: null },
+        cartInitialDataProperty,
+      );
+      context.set(AnalyticsShopConfig, null, analyticsShopProperty);
+      return applyResponseHeaders(requestContext, await next());
     }
 
     let storefrontId = env["PUBLIC" + "_STOREFRONT_" + "ID"] ?? "0";

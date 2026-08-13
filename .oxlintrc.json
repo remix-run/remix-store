@@ -14,6 +14,8 @@
     "build",
     "dist",
     "node_modules",
+    "admin-*.schema.json",
+    "storefront-*.schema.json",
     "*.generated.*"
   ]
 }

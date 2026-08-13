@@ -207,14 +207,14 @@ Source: `($locale).products.$handle.tsx`, `product.server.ts`, and `product-imag
 - Selling-plan-required, unresolved, sold-out, pending, warning, and failure states need parity-quality layouts.
 - Render Shopify rich-text metafields with a controlled renderer. Merchant HTML/JSON must not be passed blindly to `innerHTML`.
 
-### Back-in-stock form (deferred)
+### Back-in-stock form
 
-This feature is outside the current scope. If it returns, when the selected variant is sold out and `subscribe_if_back_in_stock` is true:
+Implemented for issue 2.14. When the selected variant is sold out and `subscribe_if_back_in_stock` is true:
 
-- Show email, product handle, and variant title fields.
+- Show email plus server-verifiable product handle and variant ID fields. The server re-queries the variant/product/metafield and derives the variant-title tag; browser-provided titles or tags are never trusted.
 - Hydrated submission stays in place and returns success/error copy; no-JavaScript submission redirects to `/collections/all` after success.
 - Success treatment uses the green check state.
-- Implement only after the Admin API boundary includes validation, abuse protection/rate limiting, safe error logging, and explicit email-marketing consent behavior.
+- The Admin API boundary includes strict validation, atomic per-IP plus per-email-digest admission, an injectable async shared-limiter contract (with an honestly process/isolate-local default), safe error logging, and explicit-checkbox email-marketing consent.
 
 ## Cart surfaces
 
@@ -263,12 +263,12 @@ Implemented from the reference `header.server.ts` and `store-wide-sale.tsx` beha
 - Stop marquee motion for reduced-motion users.
 - Use the sale title as the automatic-discount label in cart summaries.
 
-### Subscribe route (deferred)
+### Subscribe route
 
-This route is intentionally excluded from the current scope. Source for any future implementation: `($locale).subscribe.tsx` and `subscribe.server.ts`.
+Implemented for issue 2.14 from the reference `($locale).subscribe.tsx` and `subscribe.server.ts` behavior.
 
 - Branded layered “Subscribe” title, explanatory copy, email input, pill submit button, pending state, green success state, and inline error.
-- Validate email and optional tag inputs server-side.
+- Validate email, explicit consent, body size/content type, origin, and optional product identifiers server-side; derive tags only from verified Shopify data.
 - Reference behavior creates/updates Shopify customers, merges tags, and sets single-opt-in email marketing consent through the Admin API.
 - Back-in-stock tags follow:
   - `back-in-stock-subscriber`
@@ -409,7 +409,7 @@ Source: `meta.ts`, robots/sitemap routes, discount route, and cart-permalink rou
 | Collection | Initial, empty, pending, appended, API failure, back/forward |
 | Product | Mobile/desktop; multi-image; available/sold-out/impossible; combined listing; pending/success/error; rich text |
 | Cart drawer/page | Empty/non-empty; automatic discount; threshold below/above; optimistic; rollback; scoped error; keyboard dismiss |
-| Subscribe | Deferred; add this matrix only if subscription work returns to scope |
+| Subscribe | Newsletter/back-in-stock; pending/success/error; duplicate-submit guard; JavaScript/no-JavaScript |
 | Policies/errors | Long policy content; 404/500; reduced motion |
 
 For each Tier 1 page, capture screenshots at 390×844, 820×1180, and 1440×1000 and compare composition, spacing, type scale, colors, imagery, and interaction states against the local reference. Behavioral tests continue to assert server rendering and progressive enhancement; screenshots protect parity, not implementation details.

@@ -74,6 +74,33 @@ describe("product routes", () => {
     assert.doesNotMatch(html, /href="javascript:/);
   });
 
+  it("server-renders a verified-input back-in-stock form for an enabled sold-out variant", async () => {
+    let data = productData();
+    data.selectedOrFirstAvailableVariant = data.adjacentVariants[0]!;
+    let app = createTestApp(
+      createStorefrontFetch({
+        RemixAnalyticsShop: analyticsShopData,
+        RemixNavigation: navigationData,
+        RemixProductNavigation: () => ({ menu: null, shop: null }),
+        RemixProduct: () => ({ product: data }),
+      }),
+    );
+
+    let response = await app.fetch(
+      new Request("https://example.com/products/test-product?Color=Blue"),
+    );
+    let html = await response.text();
+    assert.equal(response.status, 200);
+    assert.match(html, /Notify me when it’s back/);
+    assert.match(html, /action="\/subscribe" method="post"/);
+    assert.match(html, /name="product-handle" value="test-product"/);
+    assert.match(
+      html,
+      /name="variant-id" value="gid:\/\/shopify\/ProductVariant\/222"/,
+    );
+    assert.doesNotMatch(html, /name="variant-title"|name="tags"/);
+  });
+
   it("renders the branded 404 when a product is missing", async () => {
     let app = createTestApp(
       createStorefrontFetch({
@@ -145,6 +172,7 @@ function productData() {
     selectedOrFirstAvailableVariant: red,
     seo: { description: "A test product", title: "Test Product" },
     vendor: "Test Vendor",
+    subscribeIfBackInStock: { value: "true" },
     technicalDescription: {
       value: JSON.stringify({
         children: [

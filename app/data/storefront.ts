@@ -424,6 +424,12 @@ const PRODUCT_QUERY = gql(
         ) {
           value
         }
+        subscribeIfBackInStock: metafield(
+          namespace: "custom"
+          key: "subscribe_if_back_in_stock"
+        ) {
+          value
+        }
         priceRange {
           minVariantPrice {
             amount
@@ -469,6 +475,27 @@ const PRODUCT_QUERY = gql(
   `,
   [PRODUCT_VARIANT_FRAGMENT],
 );
+
+const PRODUCT_SUBSCRIPTION_QUERY = gql(`
+  query RemixBackInStockSubscription($variantId: ID!) {
+    node(id: $variantId) {
+      ... on ProductVariant {
+        id
+        title
+        availableForSale
+        product {
+          handle
+          subscribeIfBackInStock: metafield(
+            namespace: "custom"
+            key: "subscribe_if_back_in_stock"
+          ) {
+            value
+          }
+        }
+      }
+    }
+  }
+`);
 
 const STABLE_CACHE = Cache.long({ staleIfError: { days: 7 } });
 const CATALOG_CACHE = Cache.short({ staleIfError: { minutes: 5 } });
@@ -727,6 +754,44 @@ export async function queryProduct(
       message: "The Storefront API product request failed.",
       errors: error,
     };
+  }
+}
+
+export async function verifyBackInStockSubscription(
+  storefront: AppStorefrontClient,
+  productHandle: string,
+  variantId: string,
+): Promise<{ productHandle: string; variantTitle: string } | null> {
+  try {
+    let result = await storefront.graphql(PRODUCT_SUBSCRIPTION_QUERY, {
+      variables: { variantId },
+      cache: Cache.none(),
+    });
+    let variant = result.data?.node;
+    if (
+      result.errors ||
+      !variant ||
+      !("availableForSale" in variant) ||
+      variant.id !== variantId ||
+      variant.availableForSale ||
+      variant.product.handle !== productHandle ||
+      variant.product.subscribeIfBackInStock?.value.trim().toLowerCase() !==
+        "true"
+    ) {
+      return null;
+    }
+    return {
+      productHandle: variant.product.handle,
+      variantTitle: variant.title,
+    };
+  } catch (error) {
+    if (
+      !(error instanceof StorefrontApiError) &&
+      !(error instanceof StorefrontTimeoutError)
+    ) {
+      throw error;
+    }
+    return null;
   }
 }
 
