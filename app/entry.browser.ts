@@ -1,6 +1,11 @@
 import { initializeShopifyScripts } from "@shopify/hydrogen";
 import { navigate as remixNavigate, run, type FrameContent } from "remix/ui";
 
+import {
+  createPageViewPublisher,
+  trackConfirmedCartChanges,
+} from "./assets/public/analytics.tsx";
+import { getBrowserCartStore } from "./assets/public/cart-store.ts";
 import { configureOpenCartAction } from "./assets/public/cart.tsx";
 import { routeTemplates } from "./lib/public/route-templates.ts";
 
@@ -61,6 +66,9 @@ app.addEventListener("error", (event) => {
   console.error("Hydration error:", event.error);
 });
 
+let publishPageViewed = createPageViewPublisher();
+app.frames.top.addEventListener("reloadComplete", publishPageViewed);
+
 await Promise.all([
   app.ready(),
   initializeShopifyScripts({
@@ -71,4 +79,6 @@ await Promise.all([
   }),
 ]);
 
+publishPageViewed();
+trackConfirmedCartChanges(getBrowserCartStore());
 configureOpenCartAction();

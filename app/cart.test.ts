@@ -34,8 +34,12 @@ describe("cart routes", () => {
 
   it("server-renders an existing cart with progressive line forms", async (t) => {
     let cart = createCart();
+    let cartRequest: StorefrontRequestBody | undefined;
     let mockFetch = createStorefrontFetch({
-      Cart: () => ({ cart }),
+      Cart(body) {
+        cartRequest = body;
+        return { cart };
+      },
       RemixAnalyticsShop: analyticsShopData,
       RemixNavigation: navigationData,
     });
@@ -57,6 +61,10 @@ describe("cart routes", () => {
     assert.match(html, /name="quantity"/);
     assert.match(html, /name="intent" value="set"/);
     assert.match(html, /href="https:\/\/checkout\.example\.test\/cart"/);
+    assert.match(
+      cartRequest?.query ?? "",
+      /fragment CartFragment on Cart\s*\{\s*updatedAt/,
+    );
   });
 
   it("renders /cart with an empty branded state and a private cache policy", async (t) => {
@@ -118,6 +126,10 @@ describe("cart routes", () => {
     assert.equal(response.status, 303);
     assert.equal(response.headers.get("Location"), referer.href);
     assert.match(response.headers.get("Set-Cookie") ?? "", /cart=/);
+    assert.match(
+      storefrontBody?.query ?? "",
+      /fragment CartFragment on Cart\s*\{\s*updatedAt/,
+    );
     assert.deepEqual(storefrontBody?.variables.input, {
       lines: [
         {

@@ -166,6 +166,7 @@ function getShopifyScripts(
   }
   return getShopifyScriptTags({
     analytics: { channel: analyticsShop.channel },
+    consent: { mode: "default-banner" },
     i18n: {
       country: "US",
       language: "EN",

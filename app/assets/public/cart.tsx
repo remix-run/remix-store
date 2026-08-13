@@ -12,6 +12,7 @@ import { clientEntry, css, on, type Handle } from "remix/ui";
 
 import { BrandedState } from "../../ui/public/branded-state.tsx";
 import { shopifyImageUrl } from "../../ui/public/shopify-image.tsx";
+import { publishCartViewed } from "./analytics.tsx";
 import { PageTitle } from "./page-title.tsx";
 import {
   CART_API_PATH,
@@ -47,7 +48,7 @@ function openCartDrawer() {
     if (drawer.dataset.cartEmpty === "true") return;
     drawer.showModal();
     setCartTriggerExpanded(true);
-    // TODO(2.12): publish cart_viewed analytics event.
+    publishCartViewed(getBrowserCartStore());
   }
 }
 
@@ -104,6 +105,10 @@ export const CartShell = clientEntry(
   import.meta.url,
   function CartShell(handle: Handle<{ initialData?: CartInitialData }>) {
     let store = getBrowserCartStore(handle.props.initialData);
+    let appliedSnapshotIdentity = cartInitialDataIdentity(
+      handle.props.initialData,
+    );
+    let queuedSnapshotIdentity: string | undefined;
     let state = store?.getState();
     let drawerState = state;
     let cartHadItems = Boolean(state?.data.lines.nodes.length);
@@ -132,6 +137,32 @@ export const CartShell = clientEntry(
     }
 
     return () => {
+      let nextInitialData = handle.props.initialData;
+      let nextSnapshotIdentity = cartInitialDataIdentity(nextInitialData);
+      if (
+        nextSnapshotIdentity !== appliedSnapshotIdentity &&
+        nextSnapshotIdentity !== queuedSnapshotIdentity
+      ) {
+        queuedSnapshotIdentity = nextSnapshotIdentity;
+        handle.queueTask((signal) => {
+          if (queuedSnapshotIdentity === nextSnapshotIdentity) {
+            queuedSnapshotIdentity = undefined;
+          }
+          if (
+            signal.aborted ||
+            cartInitialDataIdentity(handle.props.initialData) !==
+              nextSnapshotIdentity ||
+            hasPendingCartWork(store)
+          ) {
+            return;
+          }
+          getBrowserCartStore(handle.props.initialData);
+          appliedSnapshotIdentity = nextSnapshotIdentity;
+          state = store?.getState();
+          drawerState = state;
+        });
+      }
+
       let snapshot = getCartSnapshot(
         hydrated ? state : undefined,
         handle.props.initialData,
@@ -183,8 +214,29 @@ export const CartPageContent = clientEntry(
   import.meta.url,
   function CartPageContent(handle: Handle<{ initialData: CartInitialData }>) {
     let store = getBrowserCartStore(handle.props.initialData);
+    let appliedSnapshotIdentity = cartInitialDataIdentity(
+      handle.props.initialData,
+    );
+    let queuedSnapshotIdentity: string | undefined;
     let state = store?.getState();
     let hydrated = false;
+    let lastPublishedIdentity: string | undefined;
+
+    function publishCurrentCartView() {
+      if (!store) return;
+      let nextState = store.getState();
+      if (
+        nextState.pending.lines.size > 0 ||
+        nextState.pending.note ||
+        nextState.pending.discountCodes.size > 0
+      ) {
+        return;
+      }
+
+      let identity = cartSnapshotIdentity(nextState);
+      if (identity === lastPublishedIdentity) return;
+      if (publishCartViewed(store)) lastPublishedIdentity = identity;
+    }
 
     if (store) {
       let unsubscribe = store.subscribe((nextState) => {
@@ -196,21 +248,71 @@ export const CartPageContent = clientEntry(
         if (signal.aborted) return;
         hydrated = true;
         state = store.getState();
+        publishCurrentCartView();
         handle.update();
       });
     }
 
-    return () => (
-      <CartView
-        {...getCartSnapshot(
-          hydrated ? state : undefined,
-          handle.props.initialData,
-        )}
-        store={store}
-      />
-    );
+    return () => {
+      let nextInitialData = handle.props.initialData;
+      let nextSnapshotIdentity = cartInitialDataIdentity(nextInitialData);
+      if (
+        nextSnapshotIdentity !== appliedSnapshotIdentity &&
+        nextSnapshotIdentity !== queuedSnapshotIdentity
+      ) {
+        queuedSnapshotIdentity = nextSnapshotIdentity;
+        handle.queueTask((signal) => {
+          if (queuedSnapshotIdentity === nextSnapshotIdentity) {
+            queuedSnapshotIdentity = undefined;
+          }
+          if (
+            signal.aborted ||
+            cartInitialDataIdentity(handle.props.initialData) !==
+              nextSnapshotIdentity ||
+            hasPendingCartWork(store)
+          ) {
+            return;
+          }
+          getBrowserCartStore(handle.props.initialData);
+          appliedSnapshotIdentity = nextSnapshotIdentity;
+          state = store?.getState();
+        });
+      }
+      if (hydrated) handle.queueTask(publishCurrentCartView);
+
+      return (
+        <CartView
+          {...getCartSnapshot(
+            hydrated ? state : undefined,
+            handle.props.initialData,
+          )}
+          store={store}
+        />
+      );
+    };
   },
 );
+
+function hasPendingCartWork(store?: CartStore): boolean {
+  let pending = store?.getState().pending;
+  return Boolean(
+    pending &&
+    (pending.lines.size > 0 || pending.note || pending.discountCodes.size > 0),
+  );
+}
+
+function cartInitialDataIdentity(initialData?: CartInitialData): string {
+  if (initialData === undefined) return "omitted";
+  return initialData.cart === null
+    ? "null"
+    : `${initialData.cart.id}\u0000${initialData.cart.updatedAt}`;
+}
+
+function cartSnapshotIdentity(state: CartState): string {
+  return state.data.id === null
+    ? "null"
+    : `${state.data.id}\u0000${String(state.data.updatedAt ?? "")}`;
+}
 
 function CartTrigger(handle: Handle<{ snapshot: CartSnapshot }>) {
   return () => {

@@ -3,6 +3,7 @@ import type { CartInitialData, SerializedCartData } from "../app/data/cart.ts";
 export const CART_ID = "gid://shopify/Cart/test-cart";
 export const CART_LINE_ID = "gid://shopify/CartLine/test-line";
 export const VARIANT_ID = "gid://shopify/ProductVariant/444";
+export const CART_UPDATED_AT = "2026-01-01T00:00:00.000Z";
 
 const USD = "USD";
 
@@ -17,6 +18,7 @@ export function createCart(quantity = 1): SerializedCartData {
     id: CART_ID,
     checkoutUrl: "https://checkout.example.test/cart",
     totalQuantity: quantity,
+    updatedAt: CART_UPDATED_AT,
     note: null,
     cost: {
       checkoutChargeAmount: money(amount),
