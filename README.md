@@ -2,7 +2,7 @@
 
 The storefront behind [shop.remix.run](https://shop.remix.run).
 
-The `v3` branch is migrating the production store to Remix 3 and framework-neutral Hydrogen. The current branch intentionally contains a minimal platform skeleton; shopper-facing features are being ported in focused pull requests. See [`REMIX_STORE_MIGRATION_PLAN.md`](./REMIX_STORE_MIGRATION_PLAN.md) and [`REMIX_STORE_PARITY_PLAN.md`](./REMIX_STORE_PARITY_PLAN.md).
+The storefront runs on Remix 3 and framework-neutral Hydrogen across native Node/Fly and Oxygen runtimes.
 
 ## Requirements
 
@@ -51,7 +51,7 @@ The Oxygen build produces a self-contained Worker at `dist/ssr/index.js` and bro
 
 Oxygen preview deployments use `.github/workflows/oxygen-deployment.yml`. Fly setup, secrets, local image verification, and continuous deployment are documented in [`FLY_DEPLOYMENT.md`](./FLY_DEPLOYMENT.md).
 
-## Skeleton architecture
+## Architecture
 
 - `app/routes.ts` defines the typed route contract.
 - `app/router.ts` owns the shared Fetch app, routes, middleware, and runtime boundary.
