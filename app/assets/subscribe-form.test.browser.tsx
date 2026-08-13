@@ -53,16 +53,13 @@ describe("subscribe form", () => {
 
     await view.act(() => submit(view.$));
     let button = view.$("button");
-    let consent = view.$('input[name="consent"]');
     assert.ok(button instanceof HTMLButtonElement);
-    assert.ok(consent instanceof HTMLInputElement);
     assert.equal(requests.length, 1);
     assert.equal(new URL(requests[0]!.input).pathname, "/subscribe");
     assert.equal(requests[0]?.body.get("email"), "member@example.com");
     assert.equal(requests[0]?.body.get("consent"), "yes");
     assert.equal(button.textContent, "Subscribing…");
     assert.equal(button.disabled, true);
-    assert.equal(consent.disabled, true);
     assert.equal(view.$("form")?.getAttribute("aria-busy"), "true");
 
     deferred.resolve(
@@ -71,16 +68,13 @@ describe("subscribe form", () => {
     await waitFor(() => view.$('[role="status"]') !== null, view.act);
 
     button = view.$("button");
-    consent = view.$('input[name="consent"]');
     assert.ok(button instanceof HTMLButtonElement);
-    assert.ok(consent instanceof HTMLInputElement);
     assert.equal(
       view.$('[role="status"]')?.textContent,
       "Thanks for subscribing!",
     );
-    assert.equal(button.textContent, "Subscribed ✓");
+    assert.equal(button.querySelector("svg") instanceof SVGElement, true);
     assert.equal(button.disabled, true);
-    assert.equal(consent.disabled, true);
   });
 
   it("hydrates a server-rendered success as completed and disabled", async (t) => {
@@ -101,10 +95,6 @@ describe("subscribe form", () => {
 
     assert.equal(view.$('[role="status"]')?.textContent, "Already subscribed");
     assert.equal((view.$("button") as HTMLButtonElement).disabled, true);
-    assert.equal(
-      (view.$('input[name="consent"]') as HTMLInputElement).disabled,
-      true,
-    );
     await view.act(() => submit(view.$));
     assert.equal(calls, 0);
   });
@@ -139,10 +129,6 @@ describe("subscribe form", () => {
       email.dispatchEvent(new Event("input", { bubbles: true }));
     });
     assert.equal((view.$("button") as HTMLButtonElement).disabled, false);
-    assert.equal(
-      (view.$('input[name="consent"]') as HTMLInputElement).disabled,
-      false,
-    );
   });
 
   it("renders server and network failures and restores controls", async (t) => {
@@ -170,10 +156,6 @@ describe("subscribe form", () => {
       view.act,
     );
     assert.equal((view.$("button") as HTMLButtonElement).disabled, false);
-    assert.equal(
-      (view.$('input[name="consent"]') as HTMLInputElement).disabled,
-      false,
-    );
 
     await view.act(() => submit(view.$));
     await waitFor(
@@ -196,11 +178,8 @@ type Act = ReturnType<typeof render>["act"];
 
 function fillForm($: Query) {
   let email = $('input[name="email"]');
-  let consent = $('input[name="consent"]');
   assert.ok(email instanceof HTMLInputElement);
-  assert.ok(consent instanceof HTMLInputElement);
   email.value = "member@example.com";
-  consent.checked = true;
 }
 
 function submit($: Query) {

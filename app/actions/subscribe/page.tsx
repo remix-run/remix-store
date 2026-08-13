@@ -25,6 +25,7 @@ export function SubscribePage(
         <div mix={contentStyle}>
           <p>
             Stay up to date with our latest products, special offers, and news.
+            Enter your email below to subscribe.
           </p>
           <SubscribeForm
             action={handle.props.action}
@@ -42,8 +43,15 @@ const contentStyle = css({
   flexDirection: "column",
   gap: "24px",
   margin: "0 auto",
-  maxWidth: "760px",
-  minHeight: "45vh",
-  padding: "0 20px 112px",
-  "& > p": { margin: 0 },
+  maxWidth: "700px",
+  padding: "0 16px 144px",
+  "& > p": {
+    color: "rgba(255,255,255,.9)",
+    fontSize: "1rem",
+    lineHeight: 1.4,
+    margin: 0,
+  },
+  "@media (min-width: 1400px)": {
+    "& > p": { fontSize: "1.125rem", lineHeight: "1.75rem" },
+  },
 });

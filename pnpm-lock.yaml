@@ -1554,10 +1554,6 @@ packages:
     resolution: {path: packages/method-override-middleware, tarball: https://codeload.github.com/remix-run/remix/tar.gz/a928b123b5277da3b87434d8ffb5b072853f1cb1}
     version: 0.1.12
 
-  '@remix-run/mime@git+https://git@github.com:remix-run/remix.git#a928b123b5277da3b87434d8ffb5b072853f1cb1&path:packages/mime':
-    resolution: {commit: a928b123b5277da3b87434d8ffb5b072853f1cb1, path: packages/mime, repo: git@github.com:remix-run/remix.git, type: git}
-    version: 0.4.2
-
   '@remix-run/mime@https://codeload.github.com/remix-run/remix/tar.gz/a928b123b5277da3b87434d8ffb5b072853f1cb1#path:packages/mime':
     resolution: {path: packages/mime, tarball: https://codeload.github.com/remix-run/remix/tar.gz/a928b123b5277da3b87434d8ffb5b072853f1cb1}
     version: 0.4.2
@@ -3468,7 +3464,7 @@ snapshots:
   '@remix-run/fs@https://codeload.github.com/remix-run/remix/tar.gz/a928b123b5277da3b87434d8ffb5b072853f1cb1#path:packages/fs':
     dependencies:
       '@remix-run/lazy-file': https://codeload.github.com/remix-run/remix/tar.gz/a928b123b5277da3b87434d8ffb5b072853f1cb1#path:packages/lazy-file
-      '@remix-run/mime': git+https://git@github.com:remix-run/remix.git#a928b123b5277da3b87434d8ffb5b072853f1cb1&path:packages/mime
+      '@remix-run/mime': https://codeload.github.com/remix-run/remix/tar.gz/a928b123b5277da3b87434d8ffb5b072853f1cb1#path:packages/mime
 
   '@remix-run/headers@https://codeload.github.com/remix-run/remix/tar.gz/a928b123b5277da3b87434d8ffb5b072853f1cb1#path:packages/headers': {}
 
@@ -3486,8 +3482,6 @@ snapshots:
   '@remix-run/method-override-middleware@https://codeload.github.com/remix-run/remix/tar.gz/a928b123b5277da3b87434d8ffb5b072853f1cb1#path:packages/method-override-middleware':
     dependencies:
       '@remix-run/fetch-router': https://codeload.github.com/remix-run/remix/tar.gz/a928b123b5277da3b87434d8ffb5b072853f1cb1#path:packages/fetch-router
-
-  '@remix-run/mime@git+https://git@github.com:remix-run/remix.git#a928b123b5277da3b87434d8ffb5b072853f1cb1&path:packages/mime': {}
 
   '@remix-run/mime@https://codeload.github.com/remix-run/remix/tar.gz/a928b123b5277da3b87434d8ffb5b072853f1cb1#path:packages/mime': {}
 

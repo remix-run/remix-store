@@ -27,7 +27,9 @@ describe("subscribe routes", () => {
     assert.match(html, /<title>Subscribe<\/title>/);
     assert.match(html, /action="\/subscribe" method="post"/);
     assert.match(html, /type="email" name="email"/);
-    assert.match(html, /type="checkbox" name="consent" value="yes" required/);
+    assert.match(html, /Enter your email below to subscribe\./);
+    assert.match(html, /type="hidden" name="consent" value="yes"/);
+    assert.doesNotMatch(html, /type="checkbox" name="consent"/);
   });
 
   it("rejects invalid email, consent, origin, and rate limits before Admin", async () => {

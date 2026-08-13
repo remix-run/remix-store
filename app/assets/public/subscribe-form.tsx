@@ -115,24 +115,29 @@ export function SubscribeFormComponent(handle: Handle<SubscribeFormProps>) {
             <button
               type="submit"
               disabled={pending || complete}
-              mix={backInStock ? notifyButtonStyle : subscribeButtonStyle}
+              mix={[
+                backInStock ? notifyButtonStyle : subscribeButtonStyle,
+                complete ? successButtonStyle : undefined,
+              ]}
             >
-              {pending
-                ? backInStock
-                  ? "Signing up…"
-                  : "Subscribing…"
-                : result?.success
-                  ? backInStock
-                    ? "Notify me"
-                    : "Subscribed ✓"
-                  : backInStock
-                    ? "Notify me"
-                    : "Subscribe"}
+              {pending ? (
+                backInStock ? (
+                  "Signing up…"
+                ) : (
+                  "Subscribing…"
+                )
+              ) : result?.success ? (
+                <Icon name="check" />
+              ) : backInStock ? (
+                "Notify me"
+              ) : (
+                "Subscribe"
+              )}
             </button>
           </div>
+          <input type="hidden" name="consent" value="yes" />
           {backInStock ? (
             <>
-              <input type="hidden" name="consent" value="yes" />
               <input
                 type="hidden"
                 name="product-handle"
@@ -144,20 +149,7 @@ export function SubscribeFormComponent(handle: Handle<SubscribeFormProps>) {
                 value={handle.props.variantId}
               />
             </>
-          ) : (
-            <label mix={consentStyle}>
-              <input
-                type="checkbox"
-                name="consent"
-                value="yes"
-                required
-                disabled={pending || complete}
-              />
-              <span>
-                I agree to receive email updates and marketing from Remix.
-              </span>
-            </label>
-          )}
+          ) : null}
           {result?.success ? (
             <p role="status" mix={successStyle}>
               {result.message}
@@ -195,6 +187,14 @@ function isSubscribeResponse(value: unknown): value is SubscribeResponse {
   );
 }
 
+function Icon(handle: Handle<{ name: string }>) {
+  return () => (
+    <svg aria-hidden="true" viewBox="0 0 24 24">
+      <use href={`/sprites.svg#${handle.props.name}`} />
+    </svg>
+  );
+}
+
 const formSectionStyle = css({
   display: "flex",
   flexDirection: "column",
@@ -213,8 +213,11 @@ const formStyle = css({
 });
 const newsletterRowStyle = css({
   display: "grid",
-  gap: "8px",
-  "@media (min-width: 540px)": { gridTemplateColumns: "minmax(0, 1fr) auto" },
+  gap: "16px",
+  "@media (min-width: 1400px)": {
+    gap: "12px",
+    gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+  },
 });
 const backInStockFormStyle = css({
   display: "flex",
@@ -245,10 +248,20 @@ const emailInputStyle = css({
   border: "3px solid var(--color-white)",
   borderRadius: "54px",
   color: "var(--color-white)",
-  fontSize: "1rem",
-  minHeight: "56px",
-  padding: "12px 20px",
+  fontSize: "1.125rem",
+  fontWeight: 600,
+  minHeight: "64px",
+  outline: "none",
+  padding: "16px 24px",
   width: "100%",
+  "&::placeholder": {
+    color: "rgba(255,255,255,.6)",
+    fontSize: "1.25rem",
+  },
+  "@media (min-width: 1400px)": {
+    gridColumn: "span 2",
+    minHeight: "66px",
+  },
 });
 const backInStockInputStyle = css({
   background: "transparent",
@@ -261,7 +274,10 @@ const backInStockInputStyle = css({
   outline: "none",
   padding: "16px 24px",
   width: "100%",
-  "&::placeholder": { color: "rgba(255,255,255,.6)", fontSize: "1.25rem" },
+  "&::placeholder": {
+    color: "rgba(255,255,255,.6)",
+    fontSize: "1.25rem",
+  },
   "@media (min-width: 1400px)": {
     gridColumn: "span 2",
     minHeight: "66px",
@@ -272,26 +288,48 @@ const successInputStyle = css({
   color: "var(--color-green-brand)",
 });
 const subscribeButtonStyle = css({
+  alignItems: "center",
   background: "var(--color-white)",
   border: 0,
   borderRadius: "54px",
   color: "var(--color-black)",
-  fontSize: "1rem",
-  fontWeight: 700,
-  minHeight: "56px",
-  padding: "12px 24px",
-  "&:disabled": { opacity: 0.6 },
-});
-const notifyButtonStyle = css({
-  background: "var(--color-white)",
-  border: 0,
-  borderRadius: "54px",
-  color: "var(--color-black)",
+  display: "flex",
   fontSize: "1.25rem",
   fontWeight: 600,
   height: "64px",
+  justifyContent: "center",
   minHeight: "64px",
-  padding: "16px 12px",
+  overflow: "hidden",
+  padding: 0,
+  whiteSpace: "nowrap",
+  width: "100%",
+  "&:disabled": {
+    background: "rgba(255,255,255,.2)",
+    color: "rgba(255,255,255,.8)",
+    cursor: "not-allowed",
+  },
+  "& svg": {
+    animation: "add-to-cart-check 400ms var(--ease-snap) 200ms both",
+    display: "block",
+    height: "32px",
+    width: "32px",
+  },
+  "@media (min-width: 1400px)": { height: "66px", minHeight: "66px" },
+});
+const notifyButtonStyle = css({
+  alignItems: "center",
+  background: "var(--color-white)",
+  border: 0,
+  borderRadius: "54px",
+  color: "var(--color-black)",
+  display: "flex",
+  fontSize: "1.25rem",
+  fontWeight: 600,
+  height: "64px",
+  justifyContent: "center",
+  minHeight: "64px",
+  overflow: "hidden",
+  padding: 0,
   whiteSpace: "nowrap",
   width: "100%",
   "&:disabled": {
@@ -301,13 +339,14 @@ const notifyButtonStyle = css({
   },
   "@media (min-width: 1400px)": { height: "66px", minHeight: "66px" },
 });
-const consentStyle = css({
-  alignItems: "start",
-  display: "flex",
-  fontSize: "0.875rem",
-  gap: "8px",
-  lineHeight: 1.4,
-  "& input": { marginTop: "3px" },
+const successButtonStyle = css({
+  background: "var(--color-green-brand)",
+  color: "var(--color-white)",
+  "&:disabled": {
+    background: "var(--color-green-brand)",
+    color: "var(--color-white)",
+    cursor: "default",
+  },
 });
 const helperStyle = css({
   color: "rgba(255,255,255,.6)",
