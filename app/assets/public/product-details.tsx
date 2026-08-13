@@ -167,7 +167,9 @@ export const ProductDetails = clientEntry(
         ...new Set(
           [
             submissionError,
-            ...(activeState ? productErrorMessages(activeState) : []),
+            ...(activeState && submission > 0
+              ? productErrorMessages(activeState)
+              : []),
           ].filter(Boolean),
         ),
       ];
@@ -477,7 +479,7 @@ export const ProductDetails = clientEntry(
                     aria-busy={pending ? "true" : undefined}
                     mix={[
                       addFormStyle,
-                      pending ? pendingStyle : undefined,
+                      pending ? addPendingStyle : undefined,
                       on("submit", async (event) => {
                         event.preventDefault();
                         if (!store || !cartStore || !addEnabled) return;
@@ -486,6 +488,7 @@ export const ProductDetails = clientEntry(
                         submissionError = "";
                         pending = true;
                         handle.update();
+                        let startedAt = Date.now();
 
                         try {
                           await store.handleFormSubmit(event);
@@ -498,6 +501,7 @@ export const ProductDetails = clientEntry(
                           }
                         } finally {
                           if (currentSubmission === submission) {
+                            await waitForAddToCartCheck(startedAt);
                             pending = false;
                             handle.update();
                           }
@@ -513,10 +517,13 @@ export const ProductDetails = clientEntry(
                     <button
                       {...register("addToCart", {})}
                       disabled={!addEnabled || pending}
+                      aria-label={pending ? "Adding to cart" : undefined}
                     >
-                      {pending
-                        ? "Adding…"
-                        : addToCartLabel(product, selectedVariant)}
+                      {pending ? (
+                        <Icon name="check" />
+                      ) : (
+                        addToCartLabel(product, selectedVariant)
+                      )}
                     </button>
                     {errors.length ? (
                       <div role="alert" mix={errorStyle}>
@@ -817,6 +824,22 @@ function canAddServerVariant(product: ProductData): boolean {
   );
 }
 
+const ADD_TO_CART_CHECK_MS = 600;
+
+function waitForAddToCartCheck(startedAt: number) {
+  if (
+    typeof matchMedia === "function" &&
+    matchMedia("(prefers-reduced-motion: reduce)").matches
+  ) {
+    return;
+  }
+  let remaining = ADD_TO_CART_CHECK_MS - (Date.now() - startedAt);
+  if (remaining <= 0) return;
+  return new Promise<void>((resolve) => {
+    setTimeout(resolve, remaining);
+  });
+}
+
 function addToCartLabel(
   product: ProductData,
   variant: ProductData["selectedOrFirstAvailableVariant"],
@@ -827,12 +850,16 @@ function addToCartLabel(
 }
 
 function productErrorMessages(state: ProductState): string[] {
-  let messages = [
-    ...state.errors.userErrors.map((error) => error.message),
-    ...state.errors.warnings.map((warning) => warning.message),
-    ...state.errors.networkErrors.map((entry) => entry.message),
+  // Cart-level discount/shipping warnings ride along on the shared cart
+  // store. The product form only surfaces add-to-cart failures.
+  return [
+    ...new Set(
+      [
+        ...state.errors.userErrors.map((error) => error.message),
+        ...state.errors.networkErrors.map((entry) => entry.message),
+      ].filter((message) => !/discount code/i.test(message)),
+    ),
   ];
-  return [...new Set(messages)];
 }
 
 const visuallyHiddenStyle = css({
@@ -1006,10 +1033,15 @@ const headingStyle = css({
   flexDirection: "column",
   gap: "16px",
   "& [data-category]": { fontSize: ".75rem", lineHeight: 1.333, margin: 0 },
-  "& h1": { fontSize: "1.5rem", lineHeight: 1.333, margin: 0 },
+  "& h1": {
+    fontSize: "1.5rem",
+    fontWeight: 700,
+    lineHeight: "2rem",
+    margin: 0,
+  },
   "@media (min-width: 1400px)": {
     "& [data-category]": { fontSize: "1rem", lineHeight: 1.4 },
-    "& h1": { fontSize: "2.25rem", lineHeight: 1.111 },
+    "& h1": { fontSize: "2.25rem", lineHeight: "2.5rem" },
   },
 });
 const priceStyle = css({
@@ -1053,7 +1085,7 @@ const optionMenuStyle = css({
     fontSize: "1.25rem",
     fontWeight: 600,
     justifyContent: "space-between",
-    lineHeight: 1.4,
+    lineHeight: "1.75rem",
     listStyle: "none",
     minHeight: "66px",
     padding: "16px 24px",
@@ -1085,10 +1117,12 @@ const optionMenuStyle = css({
     border: 0,
     color: "white",
     display: "flex",
-    fontSize: "1rem",
+    fontSize: "1.25rem",
+    fontWeight: 400,
     justifyContent: "space-between",
+    lineHeight: "1.75rem",
     minHeight: "52px",
-    padding: "12px 20px",
+    padding: "20px",
     textAlign: "left",
     textDecoration: "none",
     width: "100%",
@@ -1115,15 +1149,20 @@ const buyActionsOnlyStyle = css({
 });
 const addFormStyle = css({
   '& button[name="add-to-cart"]': {
+    alignItems: "center",
     background: "white",
     border: 0,
     borderRadius: "54px",
     color: "black",
+    display: "flex",
     fontSize: "1.25rem",
     fontWeight: 600,
     height: "64px",
+    justifyContent: "center",
     minHeight: "64px",
-    padding: "16px 12px",
+    overflow: "hidden",
+    padding: 0,
+    position: "relative",
     whiteSpace: "nowrap",
     width: "100%",
   },
@@ -1134,6 +1173,27 @@ const addFormStyle = css({
     background: "rgba(255,255,255,.2)",
     color: "rgba(255,255,255,.8)",
     cursor: "not-allowed",
+  },
+});
+const addPendingStyle = css({
+  '& button[name="add-to-cart"], & button[name="add-to-cart"]:disabled': {
+    background: "var(--color-green-brand)",
+    color: "var(--color-white)",
+    cursor: "default",
+    transition: "background-color 300ms ease, color 300ms ease",
+  },
+  '& button[name="add-to-cart"] svg': {
+    animation: "add-to-cart-check 400ms var(--ease-snap) 200ms both",
+    display: "block",
+    flex: "none",
+    height: "32px",
+    width: "32px",
+  },
+  "@media (prefers-reduced-motion: reduce)": {
+    '& button[name="add-to-cart"] svg': {
+      animation: "none",
+      transform: "none",
+    },
   },
 });
 const shopPayStyle = css({

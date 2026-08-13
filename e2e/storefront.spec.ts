@@ -184,6 +184,8 @@ test("keeps the migrated medium layout through 1399px", async ({ page }) => {
     page.getByRole("navigation", { name: "Product collections" }),
   ).toBeHidden();
   await expect(page.locator("main h1")).toHaveCSS("font-size", "24px");
+  await expect(page.locator("main h1")).toHaveCSS("font-weight", "700");
+  await expect(page.locator("details summary")).toHaveCSS("font-size", "20px");
   await expect(page.locator('button[name="add-to-cart"]')).toHaveCSS(
     "height",
     "64px",
@@ -230,6 +232,7 @@ test("switches product and footer chrome at the 1400px breakpoint", async ({
     page.getByRole("navigation", { name: "Product collections" }),
   ).toBeVisible();
   await expect(page.locator("main h1")).toHaveCSS("font-size", "36px");
+  await expect(page.locator("main h1")).toHaveCSS("font-weight", "700");
   await expect(page.locator('button[name="add-to-cart"]')).toHaveCSS(
     "height",
     "66px",

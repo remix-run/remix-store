@@ -290,6 +290,11 @@ const globalStyles = `
   @keyframes store-wide-sale-marquee {
     to { transform: translateX(-50%); }
   }
+  @keyframes add-to-cart-check {
+    0% { transform: scale(.75) rotate(-12deg); }
+    30% { transform: rotate(10deg); }
+    100% { transform: scale(1) rotate(0); }
+  }
   @keyframes product-image-bounce {
     0%, 100% { transform: translateY(0) scale(1); }
     45% { transform: translateY(-8px) scale(1.018); }
