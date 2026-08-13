@@ -16,7 +16,10 @@ import { DocumentAssetsProvider } from "./document-assets.tsx";
 import { Navbar } from "./navbar.tsx";
 import { ShellDataProvider } from "./shell-data.tsx";
 
+const SITE_NAME = "The Remix Store";
+
 export interface DocumentProps {
+  appendSiteName?: boolean;
   canonicalUrl?: string;
   children?: RemixNode;
   description?: string;
@@ -29,6 +32,7 @@ export interface DocumentProps {
 export function Document(handle: Handle<DocumentProps>) {
   return () => {
     let {
+      appendSiteName = true,
       canonicalUrl,
       children,
       description: requestedDescription,
@@ -37,6 +41,7 @@ export function Document(handle: Handle<DocumentProps>) {
       socialType = "website",
       title,
     } = handle.props;
+    let documentTitle = appendSiteName ? `${title} | ${SITE_NAME}` : title;
     let description =
       requestedDescription?.trim() || "Soft wear for engineers of all kinds";
     let assets = handle.context.get(DocumentAssetsProvider);
@@ -74,7 +79,7 @@ export function Document(handle: Handle<DocumentProps>) {
           <link rel="stylesheet" href="/preflight.css" />
           <meta property="og:type" content={socialType} />
           <meta property="og:title" content={title} />
-          <meta property="og:site_name" content="The Remix Store" />
+          <meta property="og:site_name" content={SITE_NAME} />
           <meta property="og:description" content={description} />
           <meta property="og:image" content={socialImageUrl} />
           {canonicalUrl ? (
@@ -143,7 +148,7 @@ export function Document(handle: Handle<DocumentProps>) {
           {shopifyScripts.links.map((descriptor) => (
             <ShopifyTag descriptor={descriptor} />
           ))}
-          <title>{title}</title>
+          <title>{documentTitle}</title>
         </head>
         <body mix={bodyStyle}>
           <Navbar

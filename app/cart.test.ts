@@ -56,6 +56,7 @@ describe("cart routes", () => {
 
     assert.equal(response.status, 200);
     assert.equal(response.headers.get("Cache-Control"), "private, no-store");
+    assert.match(html, /<title>Cart \(1\) \| The Remix Store<\/title>/);
     assert.match(html, /Test Product/);
     assert.match(html, /name="lineId"/);
     assert.match(html, /name="quantity"/);
@@ -149,6 +150,7 @@ describe("cart routes", () => {
 
     assert.equal(response.status, 200);
     assert.equal(response.headers.get("Cache-Control"), "private, no-store");
+    assert.match(html, /<title>Cart \| The Remix Store<\/title>/);
     assert.match(html, /No items in cart/);
     assert.match(
       html,

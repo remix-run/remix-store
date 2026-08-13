@@ -30,7 +30,6 @@ export function HomePage(
     market: ActiveMarket;
     pageInfo: ProductPageInfoData;
     products: ProductCardData[];
-    shopName: string;
     showSeasonalSnow: boolean;
   }>,
 ) {
@@ -42,7 +41,7 @@ export function HomePage(
     return (
       <Document
         canonicalUrl={handle.props.canonicalUrl}
-        title={handle.props.shopName}
+        title="Home"
         description={handle.props.description ?? undefined}
       >
         {handle.props.showSeasonalSnow ? <SnowField /> : null}
@@ -188,7 +187,15 @@ export function CartPage(
     let storeWideSale = handle.context.get(ShellDataProvider)?.storeWideSale;
 
     return (
-      <Document canonicalUrl={handle.props.canonicalUrl} title="Cart" noIndex>
+      <Document
+        canonicalUrl={handle.props.canonicalUrl}
+        title={
+          handle.props.initialData.cart?.totalQuantity
+            ? `Cart (${handle.props.initialData.cart.totalQuantity})`
+            : "Cart"
+        }
+        noIndex
+      >
         <main mix={cartMainStyle}>
           <CartPageContent
             initialData={handle.props.initialData}
@@ -205,7 +212,7 @@ export function NotFoundPage(handle: Handle) {
   return () => {
     let market = handle.context.get(ShellDataProvider)?.market;
     return (
-      <Document title="Not found" noIndex>
+      <Document title="Not Found" appendSiteName={false} noIndex>
         <main>
           <BrandedState
             kind="404"
@@ -226,7 +233,7 @@ export function ErrorPage(handle: Handle) {
   return () => {
     let market = handle.context.get(ShellDataProvider)?.market;
     return (
-      <Document title="Storefront unavailable" noIndex>
+      <Document title="Something went wrong" appendSiteName={false} noIndex>
         <main>
           <BrandedState
             kind="500"

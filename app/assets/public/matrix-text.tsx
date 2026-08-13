@@ -92,9 +92,9 @@ export const MatrixText = clientEntry(
                     16,
                   );
                   if (Number.isFinite(value))
-                    characters[characterIndex] = ((value + 1) % 16).toString(
-                      16,
-                    );
+                    characters[characterIndex] = ((value + 1) % 16)
+                      .toString(16)
+                      .toUpperCase();
                 }
                 displayText = characters.join("");
                 handle.update();
@@ -178,7 +178,7 @@ export const MatrixText = clientEntry(
                 transform: `translate(-50%, -50%) scale(${scale})`,
               }}
             >
-              {displayText}
+              {originalText}
             </div>
             <div
               data-matrix-layer="text"
@@ -217,7 +217,6 @@ const matrixStyle = css({
   width: "100%",
   "& [data-matrix-layer]": {
     backgroundClip: "text",
-    backgroundPosition: "center",
     backgroundRepeat: "no-repeat",
     backgroundSize: "100% 100%",
     color: "transparent",
@@ -227,5 +226,5 @@ const matrixStyle = css({
     top: "50%",
     whiteSpace: "pre",
   },
-  '& [data-matrix-layer="blur"]': { filter: "blur(20px)" },
+  '& [data-matrix-layer="blur"]': { filter: "blur(24px)" },
 });

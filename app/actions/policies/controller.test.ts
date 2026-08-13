@@ -50,7 +50,7 @@ describe("policy routes", () => {
     assert.equal(response.status, 200);
     assert.equal(variables?.privacyPolicy, true);
     assert.equal(variables?.refundPolicy, false);
-    assert.match(html, /<title>Privacy policy<\/title>/);
+    assert.match(html, /<title>Privacy policy \| The Remix Store<\/title>/);
     assert.match(html, /<h1[^>]*>Privacy policy<\/h1>/);
     assert.match(html, /<h2>Information we collect<\/h2>/);
     assert.match(html, /<div><span>Policy copy<\/span><\/div>/);
