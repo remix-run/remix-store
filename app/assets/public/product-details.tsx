@@ -1218,7 +1218,6 @@ const shopPayStyle = css({
     minHeight: "66px",
   },
 });
-const pendingStyle = css({ opacity: 0.65, transition: "opacity 150ms ease" });
 const errorStyle = css({
   color: "var(--color-red-brand)",
   gridColumn: "1 / -1",
