@@ -12,12 +12,7 @@ WORKDIR /app
 FROM base AS dependencies
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
-# Bump the cache id to discard a poisoned store. Builds made while the Remix
-# git dependency resolved without `path:` cached the whole monorepo tarball
-# under this key, so pnpm now reads `remix-the-web@undefined` where it expects
-# `remix@3.0.0-beta.5` and fails with ERR_PNPM_UNEXPECTED_PKG_CONTENT_IN_STORE.
-# BuildKit cache mounts survive `--no-cache`, so the id must change.
-RUN --mount=type=cache,id=pnpm-v2,target=/pnpm/store \
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
   pnpm install --prod --frozen-lockfile
 
 FROM base AS runtime
