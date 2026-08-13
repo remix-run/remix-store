@@ -24,7 +24,7 @@ describe("subscribe routes", () => {
 
     assert.equal(response.status, 200);
     assert.equal(response.headers.get("Cache-Control"), "private, no-store");
-    assert.match(html, /<title>Subscribe<\/title>/);
+    assert.match(html, /<title>Subscribe \| The Remix Store<\/title>/);
     assert.match(html, /action="\/subscribe" method="post"/);
     assert.match(html, /type="email" name="email"/);
     assert.match(html, /Enter your email below to subscribe\./);

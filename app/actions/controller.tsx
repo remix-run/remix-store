@@ -31,7 +31,6 @@ export function createRootController(options: RootControllerOptions = {}) {
               marketPath(routes.home.href(), market.pathPrefix)
             }
             market={market}
-            shopName={home.data.shop.name}
             description={home.data.shop.description}
             hero={home.data.hero}
             lookbookEntries={home.data.lookbookEntries}

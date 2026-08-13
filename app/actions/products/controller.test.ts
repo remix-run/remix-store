@@ -44,7 +44,7 @@ describe("product routes", () => {
       { name: "Color", value: "Red" },
       { name: "ref", value: "campaign" },
     ]);
-    assert.match(html, /<title>Test Product<\/title>/);
+    assert.match(html, /<title>Test Product \| The Remix Store<\/title>/);
     assert.match(html, /<meta property="og:type" content="product"/);
     assert.match(
       html,

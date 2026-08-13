@@ -23,7 +23,7 @@ describe("platform skeleton", () => {
       html,
       /<script src="\/assets\/entry\.js" type="module"><\/script>/,
     );
-    assert.match(html, /Test Remix Store/);
+    assert.match(html, /<title>Home \| The Remix Store<\/title>/);
     assert.match(html, /<link rel="canonical" href="https:\/\/example\.com\/"/);
     assert.match(
       html,
@@ -144,6 +144,7 @@ describe("platform skeleton", () => {
     let html = await response.text();
 
     assert.equal(response.status, 500);
+    assert.match(html, /<title>Something went wrong<\/title>/);
     assert.match(html, /Storefront unavailable/);
     assert.doesNotMatch(html, /Upstream failure/);
   });
@@ -155,6 +156,7 @@ describe("platform skeleton", () => {
 
     assert.equal(response.status, 404);
     let html = await response.text();
+    assert.match(html, /<title>Not Found<\/title>/);
     assert.match(html, /Page not found/);
     assert.doesNotMatch(html, /\/brand\/matrix\/error-404\.png/);
     assert.match(html, /Return home/);
