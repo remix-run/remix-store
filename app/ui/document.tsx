@@ -44,6 +44,7 @@ export function Document(handle: Handle<DocumentProps>) {
       cartInitialData: undefined,
       footerMenu: FALLBACK_FOOTER_MENU,
       navigationMenu: FALLBACK_NAVIGATION_MENU,
+      storeWideSale: null,
     };
     let socialImageUrl = canonicalUrl
       ? new URL(socialImage, canonicalUrl).href
@@ -140,6 +141,7 @@ export function Document(handle: Handle<DocumentProps>) {
           <Navbar
             cartInitialData={shellData.cartInitialData}
             menu={shellData.navigationMenu}
+            storeWideSale={shellData.storeWideSale}
           />
           {children}
           <Footer menu={shellData.footerMenu} />
@@ -273,6 +275,10 @@ const globalStyles = `
     --color-gray-900: #111111;
     --ease-snap: cubic-bezier(0.13, 0.74, 0.41, 0.92);
     --header-height: 80px;
+    --store-wide-sale-height: 0px;
+  }
+  body:has([data-store-wide-sale="true"]) {
+    --store-wide-sale-height: 48px;
   }
   html {
     background: var(--color-black);
@@ -280,6 +286,9 @@ const globalStyles = `
   }
   @media (min-width: 810px) {
     :root { --header-height: 136px; }
+  }
+  @keyframes store-wide-sale-marquee {
+    to { transform: translateX(-50%); }
   }
   @keyframes product-image-bounce {
     0%, 100% { transform: translateY(0) scale(1); }

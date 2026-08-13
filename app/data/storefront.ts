@@ -31,9 +31,16 @@ export type NavigationMenuData = SerializableObject & {
   items: NavigationMenuItemData[];
 };
 
+export type StoreWideSaleData = SerializableObject & {
+  description: string;
+  endDateTime?: string;
+  title: string;
+};
+
 export type ShellMenusData = SerializableObject & {
   footerMenu: NavigationMenuData;
   navigationMenu: NavigationMenuData;
+  storeWideSale: StoreWideSaleData | null;
 };
 
 export type ImageData = SerializableObject & {
@@ -256,6 +263,22 @@ const NAVIGATION_QUERY = gql(`
     shop {
       primaryDomain {
         url
+      }
+      storeWideSale: metafield(namespace: "custom", key: "storewide_sale") {
+        reference {
+          __typename
+          ... on Metaobject {
+            title: field(key: "title") {
+              value
+            }
+            description: field(key: "description") {
+              value
+            }
+            endDateTime: field(key: "end_date_and_time") {
+              value
+            }
+          }
+        }
       }
     }
   }
@@ -737,14 +760,53 @@ export async function queryShellMenus(
         internalHosts,
         FALLBACK_FOOTER_MENU,
       ),
+      // Recheck expiration after the cache lookup so a stale cached sale
+      // disappears as soon as its merchant-configured end time passes.
+      storeWideSale: toActiveStoreWideSale(
+        result.data?.shop?.storeWideSale?.reference,
+      ),
     };
   } catch (error) {
     console.error("[hydrogen] Navigation query failed", error);
     return {
       navigationMenu: FALLBACK_NAVIGATION_MENU,
       footerMenu: FALLBACK_FOOTER_MENU,
+      storeWideSale: null,
     };
   }
+}
+
+/**
+ * Accepts only complete merchant copy and a valid, future expiration. An
+ * omitted expiration is an open-ended sale; a present but unparsable value
+ * hides the promotion rather than publishing stale copy.
+ */
+export function toActiveStoreWideSale(
+  reference:
+    | {
+        __typename?: string;
+        description?: { value?: string | null } | null;
+        endDateTime?: { value?: string | null } | null;
+        title?: { value?: string | null } | null;
+      }
+    | null
+    | undefined,
+  now = Date.now(),
+): StoreWideSaleData | null {
+  if (!reference || reference.__typename !== "Metaobject") return null;
+
+  let title = reference.title?.value?.trim();
+  let description = reference.description?.value?.trim();
+  if (!title || !description) return null;
+
+  let endDateTime = reference.endDateTime?.value?.trim();
+  if (endDateTime) {
+    let expiresAt = Date.parse(endDateTime);
+    if (!Number.isFinite(expiresAt) || expiresAt <= now) return null;
+    return { title, description, endDateTime };
+  }
+
+  return { title, description };
 }
 
 function mapNavigationMenu(

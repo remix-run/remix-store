@@ -32,7 +32,7 @@ Do not add Tailwind, React Router UI hooks, React Hydrogen components, Radix, or
 | Cart | Quantity-aware header CTA, blue mini-cart, free-shipping meter, sale pricing, designed empty state | Shared optimistic cart with parity drawer, full page, summary, and empty state | Preserve existing shared cart UI and native dialog | 1 |
 | Footer | Animated spectrum strips, Remix marks, social links, merchant policy menu | One-line footer | Recreate full footer and motion fallback | 1 |
 | Errors | Animated hexadecimal 404/500 artwork and branded return CTA | Shared branded 404/500/empty-state system complete | Preserve static SSR and reduced-motion fallbacks | 2 |
-| Store-wide sale | Timed Shopify metaobject drives marquee and discount labels | Intentionally excluded from current scope | Revisit only when merchandising requests it | 2 |
+| Store-wide sale | Timed Shopify metaobject drives marquee and discount labels | Complete: strict active-sale validation, SSR marquee, and allocated cart labels | Keep Shopify metadata valid and current | 2 |
 | Subscribe | General newsletter and product back-in-stock forms | Intentionally excluded from current scope | Revisit only with Admin API security and consent safeguards | 2 |
 | Policies/contact | Shopify policy/page HTML in branded layout | Local Shopify-backed routes with controlled HTML rendering | Maintain routes used by the footer menu | 2 |
 | SEO/public files | Social cards, favicons, robots, sitemap, preconnects, font preloads | Metadata, assets, robots, and sitemap resources complete | Validate against the production origin at cutover | 2 |
@@ -253,9 +253,9 @@ Restyle the existing shared cart store rather than porting `CartForm`, `useOptim
 
 ## Sale, subscription, policies, and errors
 
-### Store-wide sale (deferred)
+### Store-wide sale
 
-This feature is intentionally excluded from the current scope. Source for any future implementation: `header.server.ts` and `store-wide-sale.tsx`.
+Implemented from the reference `header.server.ts` and `store-wide-sale.tsx` behavior.
 
 - Query shop metafield `custom.storewide_sale`, whose metaobject fields are `title`, `description`, and `end_date_and_time`.
 - Hide expired sales server-side.
@@ -393,7 +393,7 @@ Source: `meta.ts`, robots/sitemap routes, discount route, and cart-permalink rou
 
 ### Phase 6 — supporting parity
 
-- [ ] Active-sale query and marquee intentionally skipped for the current scope.
+- [x] Add the active-sale query, SSR reduced-motion marquee, header offset, and allocated cart discount labels.
 - [x] Add Shopify-backed policy/contact routes; subscribe intentionally skipped.
 - [x] Add branded 404/500 matrix enhancement.
 - [x] Add route metadata, robots, and sitemap behavior.

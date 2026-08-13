@@ -210,10 +210,18 @@ export const ProductDetails = clientEntry(
                           document.documentElement,
                         ).getPropertyValue("--header-height"),
                       ) || 136;
+                    let saleHeight =
+                      Number.parseInt(
+                        getComputedStyle(document.body).getPropertyValue(
+                          "--store-wide-sale-height",
+                        ),
+                      ) || 0;
                     let fadeRange = window.innerHeight * 0.4;
                     imageFrames.forEach((frame) => {
                       let distance = Math.abs(
-                        frame.getBoundingClientRect().top - headerHeight,
+                        frame.getBoundingClientRect().top -
+                          headerHeight -
+                          saleHeight,
                       );
                       let normalized = Math.min(1, distance / fadeRange);
                       frame.style.opacity = String(
@@ -819,7 +827,7 @@ const visuallyHiddenStyle = css({
 const productPageStyle = css({
   display: "grid",
   gap: "16px",
-  marginTop: "var(--header-height)",
+  marginTop: "calc(var(--header-height) + var(--store-wide-sale-height))",
   minHeight: "90vh",
   overflowX: "clip",
   paddingBottom: "64px",
@@ -840,7 +848,7 @@ const sidebarStyle = css({
   display: "none",
   paddingTop: "128px",
   position: "sticky",
-  top: "var(--header-height)",
+  top: "calc(var(--header-height) + var(--store-wide-sale-height))",
   "& ul": {
     display: "flex",
     flexDirection: "column",
@@ -969,7 +977,7 @@ const detailsStyle = css({
     gap: "36px",
     margin: 0,
     position: "sticky",
-    top: "var(--header-height)",
+    top: "calc(var(--header-height) + var(--store-wide-sale-height))",
   },
   "@media (min-width: 1400px)": { paddingTop: "128px" },
 });

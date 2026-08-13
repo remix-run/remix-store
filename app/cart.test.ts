@@ -67,6 +67,36 @@ describe("cart routes", () => {
     );
   });
 
+  it("labels automatic line allocations with the active sale title", async (t) => {
+    let cart = createCart();
+    cart.cost.totalAmount.amount = "8";
+    cart.lines.nodes[0]!.discountAllocations = [
+      {
+        __typename: "CartAutomaticDiscountAllocation",
+        discountedAmount: { amount: "2", currencyCode: "USD" },
+      },
+    ];
+    let mockFetch = createStorefrontFetch({
+      Cart: () => ({ cart }),
+      RemixAnalyticsShop: analyticsShopData,
+      RemixNavigation: saleNavigationData,
+    });
+    t.mock.method(globalThis, "fetch", mockFetch);
+    let app = createTestApp(mockFetch);
+    let cookie = createCartCookie(CART_ID).split(";", 1)[0];
+
+    let response = await app.fetch(
+      new Request(new URL(routes.cart.href(), origin), {
+        headers: { Cookie: cookie ?? "" },
+      }),
+    );
+    let html = await response.text();
+
+    assert.match(html, /Summer Sale/);
+    assert.match(html, /-\$2\.00/);
+    assert.doesNotMatch(html, /Automatic discount/);
+  });
+
   it("renders /cart with an empty branded state and a private cache policy", async (t) => {
     let mockFetch = createStorefrontFetch({
       RemixAnalyticsShop: analyticsShopData,
@@ -140,3 +170,21 @@ describe("cart routes", () => {
     });
   });
 });
+
+function saleNavigationData() {
+  let data = navigationData();
+  return {
+    ...data,
+    shop: {
+      ...data.shop,
+      storeWideSale: {
+        reference: {
+          __typename: "Metaobject",
+          title: { value: "Summer Sale" },
+          description: { value: "20% off everything" },
+          endDateTime: { value: "2099-06-02T12:00:00Z" },
+        },
+      },
+    },
+  };
+}
