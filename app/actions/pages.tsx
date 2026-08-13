@@ -3,6 +3,7 @@ import { css, type Handle } from "remix/ui";
 import { CartPageContent } from "../assets/public/cart.tsx";
 import { CollectionProductGrid } from "../assets/public/collection-grid.tsx";
 import { HomeHero } from "../assets/public/home-hero.tsx";
+import { SnowField } from "../assets/public/snow-field.tsx";
 import type { CartInitialData } from "../data/cart.ts";
 import type {
   HomeHeroData,
@@ -30,6 +31,7 @@ export function HomePage(
     pageInfo: ProductPageInfoData;
     products: ProductCardData[];
     shopName: string;
+    showSeasonalSnow: boolean;
   }>,
 ) {
   return () => {
@@ -43,6 +45,7 @@ export function HomePage(
         title={handle.props.shopName}
         description={handle.props.description ?? undefined}
       >
+        {handle.props.showSeasonalSnow ? <SnowField /> : null}
         <main>
           <HomeHero
             assetImages={hero?.assetImages ?? []}

@@ -8,12 +8,12 @@ Goal: replace the React Router 7 storefront on `main` with the Remix 3 + framewo
 
 - `main` remains the production RR7 storefront.
 - `v3` has the Remix 3 platform, native Node/Remix Assets runtime, Oxygen runtime, and continuous Fly/Oxygen deployment foundations.
-- Feature ports complete on `v3`: shared primitives and assets, Storefront data, shell, home, collections/load-more, product details/variants, cart, consent-aware analytics, Shopify-backed policies/contact, SEO resources/metadata, Shopify compatibility redirects/permalinks/discounts, and the timed store-wide sale marquee with cart discount labels.
+- Feature ports complete on `v3`: shared primitives and assets, Storefront data, shell, home, collections/load-more, product details/variants, cart, consent-aware analytics, Shopify-backed policies/contact, SEO resources/metadata, Shopify compatibility redirects/permalinks/discounts, the timed store-wide sale marquee with cart discount labels, and December-only seasonal snow with static fallbacks.
 - Browser-reachable modules use colocated `app/**/public/**` directories; shared application code remains runtime-neutral.
 - Node has a bounded in-memory Storefront cache. Fly has Docker, health checks, graceful shutdown, immutable asset IDs, and deployment smoke checks.
 - Shopify requests use a server-only private Storefront token; target-specific adapters resolve trusted Oxygen/Fly buyer IPs. `PUBLIC_CHECKOUT_DOMAIN` is retired; checkout uses `cart.checkoutUrl`.
 - Locales/Markets is complete: unprefixed EN-US plus canonical `/en-ca` EN-CA routing share one controller graph; aliases normalize permanently, unsupported locale-like prefixes 404, navigation/cart/compatibility/Shopify context stay market-aware, and sitemaps publish only accurate EN-US/EN-CA alternates.
-- The remaining feature work starts with Seasonal snow; the platform and completed feature history do not need further migration planning.
+- The remaining feature work starts with the session audit; the platform and completed feature history do not need further migration planning.
 
 ## Fixed decisions
 
@@ -36,7 +36,7 @@ Complete in dependency order unless surfaces are independent. Every feature PR c
 | 2.13 | Store-wide sale | **Complete:** strict `custom.storewide_sale` validation, SSR reduced-motion marquee/header offset, and sale-title labels for allocated automatic discounts on drawer/page cart summaries. |
 | 2.14 | Subscribe and back-in-stock | **Complete:** server-only Admin API boundary, generic progressive newsletter route, server-verified sold-out variant subscriptions, explicit-checkbox `SINGLE_OPT_IN` consent, bounded abuse protection, safe errors, and no PII logging. |
 | 2.15 | Locales/Markets | **Complete:** one validated prefix-normalization middleware keeps controllers prefix-free; unprefixed EN-US and `/en-ca` EN-CA drive links, Storefront/ShopifyScripts context, money, cart/compatibility routes, canonicals, and reciprocal sitemap alternates; `/en-us` and `/fr-ca` normalize permanently and unsupported locale-like prefixes 404. |
-| 2.16 | Seasonal snow | Port the December-only canvas effect with reduced-motion and static fallbacks. |
+| 2.16 | Seasonal snow | **Complete:** a deterministic UTC December server gate renders a home-only public canvas client entry; SSR, no-JavaScript, reduced-motion, and canvas-failure paths retain a static decorative fallback, while normal motion has DPR-aware particles, resize handling, and abort-safe RAF cleanup. |
 | 2.17 | Sessions | Determine whether any remaining feature requires durable session state. Implement a signed `SESSION_SECRET` boundary or remove the unused variable and document its retirement. |
 
 ## Remaining deployment work

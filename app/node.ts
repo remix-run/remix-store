@@ -50,6 +50,9 @@ export const browserEntryHref = await assetServer.getHref(
 export const productDetailsEntryHref = await assetServer.getHref(
   "app/assets/public/product-details.tsx",
 );
+export const snowFieldEntryHref = await assetServer.getHref(
+  "app/assets/public/snow-field.tsx",
+);
 
 export const app = createApp({
   platform: nodePlatform(),
