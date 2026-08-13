@@ -185,7 +185,10 @@ test("keeps the migrated medium layout through 1399px", async ({ page }) => {
   ).toBeHidden();
   await expect(page.locator("main h1")).toHaveCSS("font-size", "24px");
   await expect(page.locator("main h1")).toHaveCSS("font-weight", "700");
-  await expect(page.locator("details summary")).toHaveCSS("font-size", "20px");
+  await expect(page.locator("main details summary")).toHaveCSS(
+    "font-size",
+    "20px",
+  );
   await expect(page.locator('button[name="add-to-cart"]')).toHaveCSS(
     "height",
     "64px",
