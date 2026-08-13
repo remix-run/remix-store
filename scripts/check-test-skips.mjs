@@ -1,8 +1,6 @@
 import { readFile } from "node:fs/promises";
 import { glob } from "node:fs/promises";
 
-console.log("just testing");
-
 let skipped = [];
 for await (let file of glob(["app/**/*.{ts,tsx}", "e2e/**/*.ts"])) {
   let source = await readFile(file, "utf8");
