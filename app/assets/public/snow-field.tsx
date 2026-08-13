@@ -39,6 +39,13 @@ export const SnowField = clientEntry(import.meta.url, function SnowField() {
           let width = 0;
           let height = 0;
 
+          function syncMotionPreference() {
+            element.toggleAttribute(
+              "data-snow-reduced-motion",
+              motionPreference.matches,
+            );
+          }
+
           function stopCanvas() {
             active = false;
             element.removeAttribute("data-snow-canvas-ready");
@@ -56,8 +63,10 @@ export const SnowField = clientEntry(import.meta.url, function SnowField() {
           function resize() {
             if (!active || !context) return;
             try {
-              width = canvas.clientWidth;
-              height = canvas.clientHeight;
+              // The canvas stays `display: none` until it is ready, so it has
+              // no box. Size from the visible overlay instead.
+              width = element.clientWidth;
+              height = element.clientHeight;
               if (!width || !height) return;
 
               let dpr = Math.min(2, Math.max(1, window.devicePixelRatio || 1));
@@ -132,7 +141,7 @@ export const SnowField = clientEntry(import.meta.url, function SnowField() {
               window.addEventListener("resize", resize, { passive: true });
               if (typeof ResizeObserver !== "undefined") {
                 resizeObserver = new ResizeObserver(resize);
-                resizeObserver.observe(canvas);
+                resizeObserver.observe(element);
               }
               resize();
               if (!active) return;
@@ -143,6 +152,7 @@ export const SnowField = clientEntry(import.meta.url, function SnowField() {
           }
 
           function onMotionChange() {
+            syncMotionPreference();
             if (motionPreference.matches) stopCanvas();
             else startCanvas();
           }
@@ -152,6 +162,7 @@ export const SnowField = clientEntry(import.meta.url, function SnowField() {
             stopCanvas();
             motionPreference.removeEventListener("change", onMotionChange);
           });
+          syncMotionPreference();
           startCanvas();
         }),
       ]}
@@ -191,22 +202,22 @@ const snowFieldStyle = css({
   position: "fixed",
   zIndex: 20,
   "& canvas, & [data-snow-static]": {
+    display: "none",
     height: "100%",
     inset: 0,
     position: "absolute",
     width: "100%",
   },
-  "& canvas": { display: "none" },
   "&[data-snow-canvas-ready] canvas": { display: "block" },
-  "&[data-snow-canvas-ready] [data-snow-static]": { display: "none" },
   "& [data-snow-static]": {
     backgroundImage:
-      "radial-gradient(circle, rgba(255,255,255,.8) 0 1px, transparent 1.5px), radial-gradient(circle, rgba(255,255,255,.5) 0 1.5px, transparent 2px), radial-gradient(circle, rgba(255,255,255,.35) 0 .8px, transparent 1.3px)",
-    backgroundPosition: "12px 18px, 74px 52px, 38px 96px",
-    backgroundSize: "108px 124px, 156px 178px, 84px 142px",
+      "radial-gradient(circle, rgba(255,255,255,.55) 0 1px, transparent 1.4px), radial-gradient(circle, rgba(255,255,255,.3) 0 1.2px, transparent 1.8px)",
+    backgroundPosition: "18px 28px, 96px 84px",
+    backgroundSize: "220px 260px, 310px 340px",
   },
+  "&[data-snow-reduced-motion] [data-snow-static]": { display: "block" },
   "@media (prefers-reduced-motion: reduce)": {
-    "&[data-snow-canvas-ready] canvas": { display: "none" },
-    "&[data-snow-canvas-ready] [data-snow-static]": { display: "block" },
+    "& canvas": { display: "none" },
+    "& [data-snow-static]": { display: "block" },
   },
 });

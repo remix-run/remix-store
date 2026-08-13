@@ -20,6 +20,8 @@ describe("seasonal snow browser lifecycle", () => {
     assert.ok(fallback instanceof HTMLDivElement);
     assert.equal(overlay.getAttribute("aria-hidden"), "true");
     assert.equal(overlay.hasAttribute("data-snow-canvas-ready"), false);
+    assert.equal(overlay.hasAttribute("data-snow-reduced-motion"), true);
+    assert.equal(getComputedStyle(fallback).display, "block");
     assert.equal(harness.contextRequests, 0);
     assert.equal(harness.frames.size, 0);
   });
@@ -71,11 +73,13 @@ describe("seasonal snow browser lifecycle", () => {
     assert.ok(fallback instanceof HTMLDivElement);
     assert.equal(overlay.getAttribute("data-snow-canvas-ready"), "true");
     assert.equal(getComputedStyle(fallback).display, "none");
+    assert.equal(getComputedStyle(view.$("canvas")!).display, "block");
     assert.equal(harness.frames.size, 1);
 
     harness.setReducedMotion(true);
 
     assert.equal(overlay.hasAttribute("data-snow-canvas-ready"), false);
+    assert.equal(overlay.hasAttribute("data-snow-reduced-motion"), true);
     assert.equal(getComputedStyle(fallback).display, "block");
     assert.equal(harness.frames.size, 0);
     assert.equal(harness.cancelledFrames.length, 1);
@@ -163,8 +167,8 @@ function installCanvasHarness(
     contextRequests++;
     return options.missingContext ? null : context;
   });
-  mockGetter(t, HTMLCanvasElement.prototype, "clientWidth", () => width);
-  mockGetter(t, HTMLCanvasElement.prototype, "clientHeight", () => height);
+  mockGetter(t, HTMLElement.prototype, "clientWidth", () => width);
+  mockGetter(t, HTMLElement.prototype, "clientHeight", () => height);
   mockGetter(t, window, "devicePixelRatio", () => dpr);
   replaceProperty(
     t,
