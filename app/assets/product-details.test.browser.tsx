@@ -120,10 +120,7 @@ describe("product form", () => {
     );
     assert.match($("h1")?.closest("section")?.textContent ?? "", /\$15\.00/);
     assert.equal($('button[name="add-to-cart"]')?.textContent, "Sold out");
-    shopPay = $("shop-pay-button");
-    assert.ok(shopPay instanceof HTMLElement);
-    assert.equal(shopPay.getAttribute("variants"), "222:1");
-    assert.equal(shopPay.hasAttribute("disabled"), true);
+    assert.equal($("shop-pay-button"), null);
     assert.equal(navigatedTo, "/products/test-product?ref=campaign&Color=Blue");
 
     let combinedListing = $('a[href*="related-product"]');
@@ -139,6 +136,73 @@ describe("product form", () => {
       RED_VARIANT_ID,
     );
     assert.equal($("shop-pay-button")?.hasAttribute("disabled"), false);
+  });
+
+  it("hydrates and submits only verified identifiers for the selected sold-out variant", async (t) => {
+    let product = createProduct();
+    let requestBody: URLSearchParams | undefined;
+    t.after(resetBrowserCartStore);
+    t.mock.method(window.navigation, "navigate", () => ({
+      committed: Promise.resolve(),
+      finished: Promise.resolve(),
+    }));
+    t.mock.method(
+      globalThis,
+      "fetch",
+      async (_input: RequestInfo | URL, init?: RequestInit) => {
+        requestBody = init?.body as URLSearchParams;
+        return Response.json({ message: "Notification saved", success: true });
+      },
+    );
+
+    let { $, act, cleanup } = render(
+      <ProductDetails
+        product={product}
+        search="?Color=Red"
+        shopPayStoreUrl={shopPayStoreUrl}
+      />,
+    );
+    t.after(cleanup);
+    await flushAsync(act);
+    assert.equal($("#back-in-stock-email"), null);
+
+    let blue = $('a[href*="Color=Blue"]');
+    assert.ok(blue instanceof HTMLAnchorElement);
+    await act(() => blue.click());
+    assert.equal(
+      $('input[name="product-handle"]')?.getAttribute("value"),
+      "test-product",
+    );
+    assert.equal(
+      $('input[name="variant-id"]')?.getAttribute("value"),
+      "gid://shopify/ProductVariant/222",
+    );
+    assert.equal($('input[name="variant-title"]'), null);
+
+    let email = $("#back-in-stock-email");
+    let form = email?.closest("form");
+    assert.ok(email instanceof HTMLInputElement);
+    assert.ok(form instanceof HTMLFormElement);
+    email.value = "member@example.com";
+    await act(() =>
+      form.dispatchEvent(
+        new SubmitEvent("submit", { bubbles: true, cancelable: true }),
+      ),
+    );
+    await waitFor(() => $('[role="status"]') !== null, act);
+
+    assert.deepEqual([...requestBody!.keys()].sort(), [
+      "consent",
+      "email",
+      "product-handle",
+      "variant-id",
+    ]);
+    assert.equal(requestBody?.get("product-handle"), "test-product");
+    assert.equal(
+      requestBody?.get("variant-id"),
+      "gid://shopify/ProductVariant/222",
+    );
+    assert.equal($('[role="status"]')?.textContent, "Notification saved");
   });
 
   it("hides Shopify’s default-only variant selector", async (t) => {
@@ -227,11 +291,21 @@ function createDefaultVariantProduct() {
   return product;
 }
 
-async function flushAsync(
-  act: (callback: () => void | Promise<void>) => Promise<void>,
-) {
+type Act = ReturnType<typeof render>["act"];
+
+async function flushAsync(act: Act) {
   await act(async () => {
     await Promise.resolve();
     await Promise.resolve();
   });
+}
+
+async function waitFor(predicate: () => boolean, act: Act) {
+  let deadline = Date.now() + 2_000;
+  while (!predicate()) {
+    if (Date.now() > deadline)
+      throw new Error("Timed out waiting for product form");
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    await act(() => {});
+  }
 }

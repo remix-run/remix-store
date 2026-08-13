@@ -1,13 +1,16 @@
 import { MemoryStorefrontCache } from "../data/storefront-cache.ts";
 import { render } from "../middleware/render.tsx";
-import { createApp } from "../router.ts";
+import { createApp, type AppOptions } from "../router.ts";
 
 export const testEnv = {
   PUBLIC_STORE_DOMAIN: "example.myshopify.com",
   ["PRIVATE_" + "STOREFRONT_API_TOKEN"]: "test-token",
 };
 
-export function createTestApp(fetch: typeof globalThis.fetch) {
+export function createTestApp(
+  fetch: typeof globalThis.fetch,
+  options: Pick<AppOptions, "subscribe"> & { buyerIp?: string } = {},
+) {
   let app = createApp({
     renderer: render({
       documentAssets: { css: [], entry: "/assets/entry.js", js: [] },
@@ -15,6 +18,7 @@ export function createTestApp(fetch: typeof globalThis.fetch) {
         return { href: "/assets/component.js", exportName: component.name };
       },
     }),
+    subscribe: options.subscribe,
     storefront: {
       cache: new MemoryStorefrontCache(),
       env: testEnv,
@@ -24,7 +28,10 @@ export function createTestApp(fetch: typeof globalThis.fetch) {
 
   return {
     fetch(request: Request) {
-      return app.fetch(request, { buyerIp: "127.0.0.1" });
+      return app.fetch(request, {
+        buyerIp: "buyerIp" in options ? options.buyerIp : "127.0.0.1",
+        env: { ...testEnv, ["ADMIN" + "_ACCESS_TOKEN"]: "test-admin-token" },
+      });
     },
   };
 }

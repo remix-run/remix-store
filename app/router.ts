@@ -11,6 +11,10 @@ import collectionsController from "./actions/collections/controller.tsx";
 import policiesController from "./actions/policies/controller.tsx";
 import productsController from "./actions/products/controller.tsx";
 import seoController from "./actions/seo/controller.ts";
+import {
+  createSubscribeController,
+  type SubscribeControllerOptions,
+} from "./actions/subscribe/controller.tsx";
 import { ErrorPage, NotFoundPage } from "./actions/pages.tsx";
 import { render } from "./middleware/render.tsx";
 import { storefront, type StorefrontOptions } from "./middleware/storefront.ts";
@@ -21,6 +25,7 @@ export interface AppOptions {
   platform?: Middleware;
   renderer: ReturnType<typeof render>;
   storefront?: StorefrontOptions;
+  subscribe?: SubscribeControllerOptions;
 }
 
 const passThrough: Middleware = (_context, next) => next();
@@ -81,6 +86,7 @@ export function createApp(options: AppOptions) {
   router.map(routes.policies, policiesController);
   router.map(routes.products, productsController);
   router.map(routes.seo, seoController);
+  router.map(routes.subscribe, createSubscribeController(options.subscribe));
 
   return {
     fetch(request: Request, runtime: Runtime = {}) {

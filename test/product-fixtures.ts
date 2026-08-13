@@ -49,6 +49,7 @@ export function createProduct(redVariantId = RED_VARIANT_ID): ProductData {
     requiresSellingPlan: false,
     seo: { title: "Test Product", description: "A test product." },
     technicalDescription: null,
+    subscribeIfBackInStock: { value: "true" },
     priceRange: {
       minVariantPrice: { amount: "10.00", currencyCode: "USD" },
     },

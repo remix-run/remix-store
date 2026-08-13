@@ -47,6 +47,9 @@ const assetServer = createAssetServer({
 export const browserEntryHref = await assetServer.getHref(
   "app/entry.browser.ts",
 );
+export const productDetailsEntryHref = await assetServer.getHref(
+  "app/assets/public/product-details.tsx",
+);
 
 export const app = createApp({
   platform: nodePlatform(),

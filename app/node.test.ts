@@ -1,7 +1,12 @@
 import * as assert from "remix/assert";
 import { after, describe, it } from "remix/test";
 
-import { app, browserEntryHref, closeNodeApp } from "./node.ts";
+import {
+  app,
+  browserEntryHref,
+  closeNodeApp,
+  productDetailsEntryHref,
+} from "./node.ts";
 
 after(closeNodeApp);
 
@@ -28,6 +33,18 @@ describe("node platform", () => {
     assert.equal(response.status, 200);
     assert.match(response.headers.get("Content-Type") ?? "", /javascript/);
     assert.match(source, /remix\/dist\/ui\.js/);
+  });
+
+  it("compiles the product hydration graph from allowed public modules", async () => {
+    let response = await app.fetch(
+      new Request(`http://localhost${productDetailsEntryHref}`),
+    );
+    let source = await response.text();
+
+    assert.equal(response.status, 200);
+    assert.match(response.headers.get("Content-Type") ?? "", /javascript/);
+    assert.match(source, /productSubscriptionsEnabled/);
+    assert.doesNotMatch(source, /data\/subscription/);
   });
 
   it("does not expose non-browser files through the asset mount", async () => {
