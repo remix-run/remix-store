@@ -86,8 +86,9 @@ configureOpenCartAction();
 
 // Log every published analytics event to the console in development. Raw
 // subscribers see events before consent gating, so this works even before the
-// visitor accepts the consent banner.
-if (import.meta.env.DEV) {
+// visitor accepts the consent banner. `import.meta.hot` is only present during
+// Vite dev, never in a production build, so this block is stripped from Oxygen.
+if (import.meta.hot) {
   let bus = getAnalytics();
   if (bus) {
     for (let event of Object.values(AnalyticsEvent)) {
