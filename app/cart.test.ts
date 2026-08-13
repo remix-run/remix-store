@@ -67,6 +67,43 @@ describe("cart routes", () => {
     );
   });
 
+  it("server-renders a localized Canadian cart with contextual queries", async (t) => {
+    let cart = createCart();
+    let cartRequest: StorefrontRequestBody | undefined;
+    cart.cost.subtotalAmount.currencyCode = "CAD";
+    cart.cost.totalAmount.currencyCode = "CAD";
+    cart.lines.nodes[0]!.cost.amountPerQuantity.currencyCode = "CAD";
+    cart.lines.nodes[0]!.cost.totalAmount.currencyCode = "CAD";
+    let mockFetch = createStorefrontFetch({
+      Cart(body) {
+        cartRequest = body;
+        return { cart };
+      },
+      RemixAnalyticsShop: () => ({
+        shop: { id: "gid://shopify/Shop/test" },
+        localization: { country: { currency: { isoCode: "CAD" } } },
+      }),
+      RemixNavigation: navigationData,
+    });
+    t.mock.method(globalThis, "fetch", mockFetch);
+    let app = createTestApp(mockFetch);
+    let cookie = createCartCookie(CART_ID).split(";", 1)[0];
+
+    let response = await app.fetch(
+      new Request(`${origin}/en-ca/cart`, {
+        headers: { Cookie: cookie ?? "" },
+      }),
+    );
+    let html = await response.text();
+
+    assert.equal(response.status, 200);
+    assert.equal(cartRequest?.variables.country, "CA");
+    assert.equal(cartRequest?.variables.language, "EN");
+    assert.match(html, /action="\/en-ca\/api\/cart"/);
+    assert.match(html, /href="\/en-ca\/products\/test-product"/);
+    assert.match(html, /currencyCode.{0,20}CAD/);
+  });
+
   it("labels automatic line allocations with the active sale title", async (t) => {
     let cart = createCart();
     cart.cost.totalAmount.amount = "8";
@@ -168,6 +205,39 @@ describe("cart routes", () => {
         },
       ],
     });
+  });
+
+  it("accepts a localized no-JavaScript cart POST and keeps its Canadian referer", async (t) => {
+    let cart = createCart();
+    let storefrontBody: StorefrontRequestBody | undefined;
+    let mockFetch = createStorefrontFetch({
+      CartCreate(body) {
+        storefrontBody = body;
+        return { cartCreate: { cart, userErrors: [], warnings: [] } };
+      },
+    });
+    t.mock.method(globalThis, "fetch", mockFetch);
+    let app = createTestApp(mockFetch);
+    let formData = new FormData();
+    formData.set("merchandiseId", "gid://shopify/ProductVariant/test-variant");
+    formData.set("quantity", "1");
+    let referer = `${origin}/en-ca/products/test-product`;
+
+    let response = await app.fetch(
+      new Request(`${origin}/en-ca/api/cart`, {
+        method: "POST",
+        headers: { Referer: referer },
+        body: formData,
+      }),
+    );
+
+    assert.equal(response.status, 303);
+    assert.equal(
+      response.headers.get("Location"),
+      "/en-ca/products/test-product",
+    );
+    assert.equal(storefrontBody?.variables.country, "CA");
+    assert.equal(storefrontBody?.variables.language, "EN");
   });
 });
 

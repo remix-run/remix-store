@@ -12,6 +12,11 @@ import {
 import type { SerializableObject } from "remix/ui";
 
 import { getFocalPoint, type FocalPoint } from "../lib/image-utils.ts";
+import {
+  localizeInternalUrl,
+  type MarketLocale,
+  type MarketPathPrefix,
+} from "../lib/public/market.ts";
 
 export type AppStorefrontClient = StorefrontClient<{
   cache?: CachingStrategy;
@@ -154,7 +159,8 @@ export const FALLBACK_FOOTER_MENU: NavigationMenuData = {
 };
 
 export const SHOP_QUERY = gql(`
-  query PlatformSkeletonShop {
+  query PlatformSkeletonShop($country: CountryCode, $language: LanguageCode)
+  @inContext(country: $country, language: $language) {
     shop {
       name
       description
@@ -163,7 +169,8 @@ export const SHOP_QUERY = gql(`
 `);
 
 const HOME_QUERY = gql(`
-  query RemixHomeEditorial {
+  query RemixHomeEditorial($country: CountryCode, $language: LanguageCode)
+  @inContext(country: $country, language: $language) {
     shop {
       name
       description
@@ -245,7 +252,8 @@ const HOME_QUERY = gql(`
 `);
 
 const NAVIGATION_QUERY = gql(`
-  query RemixNavigation {
+  query RemixNavigation($country: CountryCode, $language: LanguageCode)
+  @inContext(country: $country, language: $language) {
     menu(handle: "main-menu") {
       items {
         id
@@ -285,7 +293,10 @@ const NAVIGATION_QUERY = gql(`
 `);
 
 const PRODUCT_NAVIGATION_QUERY = gql(`
-  query RemixProductNavigation {
+  query RemixProductNavigation(
+    $country: CountryCode
+    $language: LanguageCode
+  ) @inContext(country: $country, language: $language) {
     menu(handle: "product-sidebar-menu") {
       items {
         id
@@ -400,7 +411,9 @@ const PRODUCT_QUERY = gql(
     query RemixProduct(
       $handle: String!
       $selectedOptions: [SelectedOptionInput!]!
-    ) {
+      $country: CountryCode
+      $language: LanguageCode
+    ) @inContext(country: $country, language: $language) {
       product(handle: $handle) {
         id
         handle
@@ -477,7 +490,11 @@ const PRODUCT_QUERY = gql(
 );
 
 const PRODUCT_SUBSCRIPTION_QUERY = gql(`
-  query RemixBackInStockSubscription($variantId: ID!) {
+  query RemixBackInStockSubscription(
+    $variantId: ID!
+    $country: CountryCode
+    $language: LanguageCode
+  ) @inContext(country: $country, language: $language) {
     node(id: $variantId) {
       ... on ProductVariant {
         id
@@ -672,7 +689,9 @@ export async function queryCollection(
         title: collection.title,
         description: collection.description,
         products: {
-          nodes: collection.products.nodes.map(toProductCardData),
+          nodes: collection.products.nodes.map((product) =>
+            toProductCardData(product, storefrontLocale(storefront)),
+          ),
           pageInfo: collection.products.pageInfo,
         },
       },
@@ -711,9 +730,12 @@ export async function queryProductNavigation(
     let primaryDomain = result.data?.shop?.primaryDomain?.url;
     if (primaryDomain) internalHosts.add(new URL(primaryDomain).host);
 
-    return mapNavigationMenu(result.data?.menu, internalHosts, {
-      items: [],
-    });
+    return mapNavigationMenu(
+      result.data?.menu,
+      internalHosts,
+      { items: [] },
+      storefront.i18n.pathPrefix as MarketPathPrefix,
+    );
   } catch (error) {
     console.error("[hydrogen] Product navigation query failed", error);
     return { items: [] };
@@ -819,11 +841,13 @@ export async function queryShellMenus(
         result.data?.menu,
         internalHosts,
         FALLBACK_NAVIGATION_MENU,
+        storefront.i18n.pathPrefix as MarketPathPrefix,
       ),
       footerMenu: mapFooterMenu(
         result.data?.footerMenu,
         internalHosts,
         FALLBACK_FOOTER_MENU,
+        storefront.i18n.pathPrefix as MarketPathPrefix,
       ),
       // Recheck expiration after the cache lookup so a stale cached sale
       // disappears as soon as its merchant-configured end time passes.
@@ -833,9 +857,13 @@ export async function queryShellMenus(
     };
   } catch (error) {
     console.error("[hydrogen] Navigation query failed", error);
+    let pathPrefix = storefront.i18n.pathPrefix as MarketPathPrefix;
     return {
-      navigationMenu: FALLBACK_NAVIGATION_MENU,
-      footerMenu: FALLBACK_FOOTER_MENU,
+      navigationMenu: localizeNavigationMenu(
+        FALLBACK_NAVIGATION_MENU,
+        pathPrefix,
+      ),
+      footerMenu: localizeNavigationMenu(FALLBACK_FOOTER_MENU, pathPrefix),
       storeWideSale: null,
     };
   }
@@ -887,8 +915,9 @@ function mapNavigationMenu(
     | undefined,
   internalHosts: Set<string>,
   fallback: NavigationMenuData,
+  pathPrefix: MarketPathPrefix,
 ): NavigationMenuData {
-  if (!menu) return fallback;
+  if (!menu) return localizeNavigationMenu(fallback, pathPrefix);
 
   return {
     items: menu.items.flatMap((item) =>
@@ -897,7 +926,10 @@ function mapNavigationMenu(
             {
               id: item.id,
               title: item.title,
-              url: normalizeMenuUrl(item.url, internalHosts),
+              url: localizeInternalUrl(
+                normalizeMenuUrl(item.url, internalHosts),
+                pathPrefix,
+              ),
             },
           ]
         : [],
@@ -909,8 +941,9 @@ function mapFooterMenu(
   menu: Parameters<typeof mapNavigationMenu>[0],
   internalHosts: Set<string>,
   fallback: NavigationMenuData,
+  pathPrefix: MarketPathPrefix,
 ): NavigationMenuData {
-  if (!menu) return fallback;
+  if (!menu) return localizeNavigationMenu(fallback, pathPrefix);
 
   let policyPaths = new Map(
     FALLBACK_FOOTER_MENU.items.map((item) => [
@@ -929,11 +962,24 @@ function mapFooterMenu(
           title: item.title,
           url:
             policyPath && isInternalUrl(item.url, internalHosts)
-              ? policyPath
-              : normalizedUrl,
+              ? localizeInternalUrl(policyPath, pathPrefix)
+              : localizeInternalUrl(normalizedUrl, pathPrefix),
         },
       ];
     }),
+  };
+}
+
+export function localizeNavigationMenu(
+  menu: NavigationMenuData,
+  pathPrefix: MarketPathPrefix,
+): NavigationMenuData {
+  if (!pathPrefix) return menu;
+  return {
+    items: menu.items.map((item) => ({
+      ...item,
+      url: localizeInternalUrl(item.url, pathPrefix),
+    })),
   };
 }
 
@@ -1040,35 +1086,38 @@ function toHomeLookbookEntries(
   );
 }
 
-function toProductCardData(product: {
-  handle: string;
-  id: string;
-  images: {
-    nodes: Array<{
-      altText?: string | null;
-      height?: number | null;
-      id?: string | null;
-      url: string;
-      width?: number | null;
-    }>;
-  };
-  priceRange: {
-    maxVariantPrice: ProductMoney;
-  };
-  selectedOrFirstAvailableVariant?: {
-    compareAtPrice?: ProductMoney | null;
-    price: ProductMoney;
-  } | null;
-  title: string;
-}): ProductCardData {
+function toProductCardData(
+  product: {
+    handle: string;
+    id: string;
+    images: {
+      nodes: Array<{
+        altText?: string | null;
+        height?: number | null;
+        id?: string | null;
+        url: string;
+        width?: number | null;
+      }>;
+    };
+    priceRange: {
+      maxVariantPrice: ProductMoney;
+    };
+    selectedOrFirstAvailableVariant?: {
+      compareAtPrice?: ProductMoney | null;
+      price: ProductMoney;
+    } | null;
+    title: string;
+  },
+  locale: MarketLocale,
+): ProductCardData {
   let price =
     product.selectedOrFirstAvailableVariant?.price ??
     product.priceRange.maxVariantPrice;
   let compareAtPrice =
     product.selectedOrFirstAvailableVariant?.compareAtPrice ?? null;
-  let formattedPrice = formatMoney(price, { locale: "en-US" });
+  let formattedPrice = formatMoney(price, { locale });
   let formattedCompareAtPrice = compareAtPrice
-    ? formatMoney(compareAtPrice, { locale: "en-US" })
+    ? formatMoney(compareAtPrice, { locale })
     : null;
 
   return {
@@ -1088,6 +1137,10 @@ function toProductCardData(product: {
       formattedCompareAtPrice !== null &&
       formattedPrice.numericAmount < formattedCompareAtPrice.numericAmount,
   };
+}
+
+function storefrontLocale(storefront: AppStorefrontClient): MarketLocale {
+  return storefront.i18n.country === "CA" ? "en-CA" : "en-US";
 }
 
 function toSerializableFocalPoint(

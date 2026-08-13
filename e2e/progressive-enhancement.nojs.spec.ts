@@ -2,6 +2,33 @@ import { expect, test } from "playwright/test";
 
 import { openAvailableProduct } from "./storefront.ts";
 
+test("localized catalog navigation and add-to-cart work without JavaScript", async ({
+  page,
+}) => {
+  await page.goto("/en-ca/collections/all");
+  let productLink = page.locator('main a[href^="/en-ca/products/"]').first();
+  await productLink.click();
+  let addToCart = page.getByRole("button", { name: "Add to cart" });
+  let title = await page.locator("main h1").innerText();
+  let form = page
+    .locator('form[action="/en-ca/api/cart"]')
+    .filter({ has: addToCart });
+  await expect(form).toBeVisible();
+
+  let [cartResponse] = await Promise.all([
+    page.waitForResponse(
+      (response) => new URL(response.url()).pathname === "/en-ca/api/cart",
+    ),
+    addToCart.click(),
+  ]);
+  expect(cartResponse.status()).toBe(303);
+  await expect(page).toHaveURL(/\/en-ca\/products\//);
+  await page.goto("/en-ca/cart");
+  await expect(
+    page.locator("main").getByText(title, { exact: true }).first(),
+  ).toBeVisible();
+});
+
 test("catalog navigation and add-to-cart work without JavaScript", async ({
   page,
 }) => {

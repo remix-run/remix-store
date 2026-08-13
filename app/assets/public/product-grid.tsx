@@ -1,12 +1,14 @@
 import { css, type Handle } from "remix/ui";
 
 import type { ProductCardData } from "../../data/storefront.ts";
+import type { MarketPathPrefix } from "../../lib/public/market.ts";
 import { ProductCard, ProductCardSkeleton } from "./product-card.tsx";
 
 export function ProductGrid(
   handle: Handle<{
     ariaBusy?: boolean;
     loadingProductCount?: number;
+    pathPrefix?: MarketPathPrefix;
     products: ProductCardData[];
   }>,
 ) {
@@ -14,7 +16,7 @@ export function ProductGrid(
     <ul aria-busy={handle.props.ariaBusy || undefined} mix={productGridStyle}>
       {handle.props.products.map((product) => (
         <li key={product.id}>
-          <ProductCard product={product} />
+          <ProductCard pathPrefix={handle.props.pathPrefix} product={product} />
         </li>
       ))}
       {Array.from({ length: handle.props.loadingProductCount ?? 0 }).map(

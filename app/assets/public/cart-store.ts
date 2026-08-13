@@ -7,15 +7,17 @@ import {
 } from "@shopify/hydrogen";
 
 import type { CartInitialData } from "../../data/cart.ts";
-import { CART_API_PATH } from "../../lib/public/cart-routes.ts";
+import { getCartApiPath } from "../../lib/public/cart-routes.ts";
+import type { MarketPathPrefix } from "../../lib/public/market.ts";
 
 export type { CartInitialData } from "../../data/cart.ts";
-export { CART_API_PATH } from "../../lib/public/cart-routes.ts";
+export { CART_API_PATH, getCartApiPath } from "../../lib/public/cart-routes.ts";
 
 let browserCartStore: CartStore | undefined;
 let backingCartStore: CartStore | undefined;
 let backingUnsubscribe: (() => void) | undefined;
 let browserCartConnected = false;
+let browserCartPathPrefix: MarketPathPrefix | undefined;
 let browserCartListeners = new Set<
   (state: ReturnType<CartStore["getState"]>) => void
 >();
@@ -33,23 +35,32 @@ export function resetBrowserCartStore() {
   backingCartStore = undefined;
   browserCartStore = undefined;
   browserCartConnected = false;
+  browserCartPathPrefix = undefined;
   browserCartListeners.clear();
 }
 
 export function getBrowserCartStore(
   initialData?: CartInitialData,
+  pathPrefix: MarketPathPrefix = "",
 ): CartStore | undefined {
   if (typeof document === "undefined") return undefined;
 
-  configureCartEndpoint(CART_API_PATH);
+  configureCartEndpoint(getCartApiPath(pathPrefix));
+
+  if (browserCartStore && browserCartPathPrefix !== pathPrefix) {
+    browserCartPathPrefix = pathPrefix;
+    replaceCartSnapshot(initialData ?? { cart: null });
+  }
 
   if (!browserCartStore) {
     backingCartStore = createCartStore({
       initialData: initialData as CreateCartStoreOptions["initialData"],
     });
     browserCartStore = createBrowserCartFacade();
+    browserCartPathPrefix = pathPrefix;
     subscribeToBackingStore();
   } else if (initialData !== undefined) {
+    browserCartPathPrefix = pathPrefix;
     reconcileServerSnapshot(initialData);
   }
 

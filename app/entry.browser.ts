@@ -6,6 +6,7 @@ import {
   trackConfirmedCartChanges,
 } from "./assets/public/analytics.tsx";
 import { getBrowserCartStore } from "./assets/public/cart-store.ts";
+import type { MarketPathPrefix } from "./lib/public/market.ts";
 import { configureOpenCartAction } from "./assets/public/cart.tsx";
 import { routeTemplates } from "./lib/public/route-templates.ts";
 
@@ -80,5 +81,7 @@ await Promise.all([
 ]);
 
 publishPageViewed();
-trackConfirmedCartChanges(getBrowserCartStore());
+let pathPrefix = (document.documentElement.dataset.marketPrefix ||
+  "") as MarketPathPrefix;
+trackConfirmedCartChanges(getBrowserCartStore(undefined, pathPrefix));
 configureOpenCartAction();

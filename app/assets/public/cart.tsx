@@ -10,6 +10,13 @@ import {
 } from "@shopify/hydrogen";
 import { clientEntry, css, on, type Handle } from "remix/ui";
 
+import {
+  marketPath,
+  US_MARKET,
+  type ActiveMarket,
+  type MarketLocale,
+  type MarketPathPrefix,
+} from "../../lib/public/market.ts";
 import { BrandedState } from "../../ui/public/branded-state.tsx";
 import { shopifyImageUrl } from "../../ui/public/shopify-image.tsx";
 import {
@@ -19,8 +26,8 @@ import {
 } from "./analytics.tsx";
 import { PageTitle } from "./page-title.tsx";
 import {
-  CART_API_PATH,
   getBrowserCartStore,
+  getCartApiPath,
   type CartInitialData,
 } from "./cart-store.ts";
 
@@ -34,17 +41,25 @@ let openCartActionRetryQueued = false;
 // Browser entries cannot import the server-side route contract (app/routes.ts
 // is outside the public asset boundary), so these mirror the route paths
 // declared there. Keep them in sync with app/routes.ts.
-function collectionHref(handle: string): string {
-  return `/collections/${encodeURIComponent(handle)}`;
+function collectionHref(
+  handle: string,
+  pathPrefix: MarketPathPrefix = "",
+): string {
+  return marketPath(`/collections/${encodeURIComponent(handle)}`, pathPrefix);
 }
-function productHref(handle: string): string {
-  return `/products/${encodeURIComponent(handle)}`;
+function productHref(
+  handle: string,
+  pathPrefix: MarketPathPrefix = "",
+): string {
+  return marketPath(`/products/${encodeURIComponent(handle)}`, pathPrefix);
 }
 
 function openCartDrawer() {
   if (typeof document === "undefined") return;
   if (window.matchMedia("(max-width: 809px)").matches) {
-    window.location.assign("/cart");
+    let prefix = (document.documentElement.dataset.marketPrefix ||
+      "") as MarketPathPrefix;
+    window.location.assign(marketPath("/cart", prefix));
     return;
   }
   let drawer = document.getElementById(CART_DRAWER_ID);
@@ -52,7 +67,9 @@ function openCartDrawer() {
     if (drawer.dataset.cartEmpty === "true") return;
     drawer.showModal();
     setCartTriggerExpanded(true);
-    publishCartViewedWhenSettled(getBrowserCartStore());
+    let prefix = (document.documentElement.dataset.marketPrefix ||
+      "") as MarketPathPrefix;
+    publishCartViewedWhenSettled(getBrowserCartStore(undefined, prefix));
   }
 }
 
@@ -111,9 +128,14 @@ export const CartShell = clientEntry(
     handle: Handle<{
       automaticDiscountLabel?: string;
       initialData?: CartInitialData;
+      market?: ActiveMarket;
     }>,
   ) {
-    let store = getBrowserCartStore(handle.props.initialData);
+    let market = handle.props.market ?? US_MARKET;
+    let store = getBrowserCartStore(
+      handle.props.initialData,
+      market.pathPrefix,
+    );
     let state = store?.getState();
     let drawerState = state;
     let cartHadItems = Boolean(state?.data.lines.nodes.length);
@@ -147,6 +169,8 @@ export const CartShell = clientEntry(
     }
 
     return () => {
+      market = handle.props.market ?? US_MARKET;
+      getBrowserCartStore(handle.props.initialData, market.pathPrefix);
       applySnapshot(handle.props.initialData);
 
       let snapshot = getCartSnapshot(
@@ -161,7 +185,7 @@ export const CartShell = clientEntry(
 
       return (
         <>
-          <CartTrigger snapshot={snapshot} />
+          <CartTrigger snapshot={snapshot} pathPrefix={market.pathPrefix} />
           <dialog
             id={CART_DRAWER_ID}
             aria-labelledby="cart-drawer-title"
@@ -191,6 +215,7 @@ export const CartShell = clientEntry(
                 {...drawerSnapshot}
                 automaticDiscountLabel={handle.props.automaticDiscountLabel}
                 drawer
+                market={market}
                 store={store}
               />
             </div>
@@ -207,9 +232,14 @@ export const CartPageContent = clientEntry(
     handle: Handle<{
       automaticDiscountLabel?: string;
       initialData: CartInitialData;
+      market?: ActiveMarket;
     }>,
   ) {
-    let store = getBrowserCartStore(handle.props.initialData);
+    let market = handle.props.market ?? US_MARKET;
+    let store = getBrowserCartStore(
+      handle.props.initialData,
+      market.pathPrefix,
+    );
     let state = store?.getState();
     let hydrated = false;
 
@@ -238,6 +268,8 @@ export const CartPageContent = clientEntry(
     }
 
     return () => {
+      market = handle.props.market ?? US_MARKET;
+      getBrowserCartStore(handle.props.initialData, market.pathPrefix);
       applySnapshot(handle.props.initialData);
 
       return (
@@ -247,6 +279,7 @@ export const CartPageContent = clientEntry(
             handle.props.initialData,
           )}
           automaticDiscountLabel={handle.props.automaticDiscountLabel}
+          market={market}
           store={store}
         />
       );
@@ -254,7 +287,12 @@ export const CartPageContent = clientEntry(
   },
 );
 
-function CartTrigger(handle: Handle<{ snapshot: CartSnapshot }>) {
+function CartTrigger(
+  handle: Handle<{
+    pathPrefix: MarketPathPrefix;
+    snapshot: CartSnapshot;
+  }>,
+) {
   return () => {
     let { cart, loading } = handle.props.snapshot;
     let quantity = cart?.totalQuantity ?? 0;
@@ -262,7 +300,7 @@ function CartTrigger(handle: Handle<{ snapshot: CartSnapshot }>) {
     if (loading || !cart || quantity === 0) {
       return (
         <a
-          href={collectionHref("all")}
+          href={collectionHref("all", handle.props.pathPrefix)}
           mix={[triggerBaseStyle, shopTriggerStyle]}
         >
           <CartIcon />
@@ -288,7 +326,7 @@ function CartTrigger(handle: Handle<{ snapshot: CartSnapshot }>) {
     return (
       <>
         <a
-          href="/cart"
+          href={marketPath("/cart", handle.props.pathPrefix)}
           mix={[triggerBaseStyle, cartTriggerStyle, mobileCartTriggerStyle]}
         >
           {label}
@@ -340,6 +378,7 @@ type CartSnapshot = {
 type CartViewProps = CartSnapshot & {
   automaticDiscountLabel?: string;
   drawer?: boolean;
+  market: ActiveMarket;
   store?: CartStore;
 };
 
@@ -418,7 +457,7 @@ function CartView(handle: Handle<CartViewProps>) {
             kind="empty"
             heading="No items in cart"
             copy="Please browse our catalog and add items before checking out."
-            href={collectionHref("all")}
+            href={collectionHref("all", handle.props.market.pathPrefix)}
             linkLabel="Shop All"
             icon="cart"
           />
@@ -494,7 +533,10 @@ function CartView(handle: Handle<CartViewProps>) {
                 {merchandise?.image ? (
                   merchandise.product.handle ? (
                     <a
-                      href={productHref(merchandise.product.handle)}
+                      href={productHref(
+                        merchandise.product.handle,
+                        handle.props.market.pathPrefix,
+                      )}
                       aria-label={`View ${merchandise.product.title}`}
                       mix={[
                         drawer ? drawerLineImageLinkStyle : lineImageLinkStyle,
@@ -537,7 +579,10 @@ function CartView(handle: Handle<CartViewProps>) {
                   <h2 mix={lineTitleStyle}>
                     {merchandise?.product.handle ? (
                       <a
-                        href={productHref(merchandise.product.handle)}
+                        href={productHref(
+                          merchandise.product.handle,
+                          handle.props.market.pathPrefix,
+                        )}
                         mix={drawer ? on("click", closeCartDrawer) : undefined}
                       >
                         {merchandise.product.title}
@@ -559,7 +604,7 @@ function CartView(handle: Handle<CartViewProps>) {
                     ))
                   )}
                   <form
-                    action={CART_API_PATH}
+                    action={getCartApiPath(handle.props.market.pathPrefix)}
                     method="post"
                     aria-busy={linePending ? "true" : undefined}
                     mix={quantityFormStyle}
@@ -615,8 +660,14 @@ function CartView(handle: Handle<CartViewProps>) {
                     linePending ? pendingValueStyle : undefined,
                   ]}
                 >
-                  {compareAtPrice ? <s>{money(compareAtPrice)} each</s> : null}
-                  <p mix={linePriceStyle}>{money(line.cost.totalAmount)}</p>
+                  {compareAtPrice ? (
+                    <s>
+                      {money(compareAtPrice, handle.props.market.locale)} each
+                    </s>
+                  ) : null}
+                  <p mix={linePriceStyle}>
+                    {money(line.cost.totalAmount, handle.props.market.locale)}
+                  </p>
                 </div>
               </li>
             );
@@ -630,24 +681,32 @@ function CartView(handle: Handle<CartViewProps>) {
                 <div mix={drawerSubtotalStyle}>
                   <strong>Subtotal</strong>
                   <span mix={cartPending ? pendingValueStyle : undefined}>
-                    {money(cart.cost.subtotalAmount)}
+                    {money(
+                      cart.cost.subtotalAmount,
+                      handle.props.market.locale,
+                    )}
                   </span>
                 </div>
                 {discountAllocation ? (
                   <div mix={allocationStyle}>
                     <span>{automaticDiscountLabel}</span>
-                    <span>-{money(discountAllocation)}</span>
+                    <span>
+                      -{money(discountAllocation, handle.props.market.locale)}
+                    </span>
                   </div>
                 ) : null}
                 {hasFinalTotal ? (
                   <div mix={finalTotalStyle}>
                     <strong>Total</strong>
                     <span mix={cartPending ? pendingValueStyle : undefined}>
-                      {money(cart.cost.totalAmount)}
+                      {money(cart.cost.totalAmount, handle.props.market.locale)}
                     </span>
                   </div>
                 ) : null}
-                <FreeShippingProgress subtotal={cart.cost.subtotalAmount} />
+                <FreeShippingProgress
+                  locale={handle.props.market.locale}
+                  subtotal={cart.cost.subtotalAmount}
+                />
               </div>
               {cart.checkoutUrl ? (
                 <a href={cart.checkoutUrl} mix={drawerCheckoutStyle}>
@@ -662,24 +721,32 @@ function CartView(handle: Handle<CartViewProps>) {
                 <div mix={pageSubtotalStyle}>
                   <strong>Subtotal</strong>
                   <span mix={cartPending ? pendingValueStyle : undefined}>
-                    {money(cart.cost.subtotalAmount)}
+                    {money(
+                      cart.cost.subtotalAmount,
+                      handle.props.market.locale,
+                    )}
                   </span>
                 </div>
                 {discountAllocation ? (
                   <div mix={allocationStyle}>
                     <span>{automaticDiscountLabel}</span>
-                    <span>-{money(discountAllocation)}</span>
+                    <span>
+                      -{money(discountAllocation, handle.props.market.locale)}
+                    </span>
                   </div>
                 ) : null}
                 {hasFinalTotal ? (
                   <div mix={finalTotalStyle}>
                     <strong>Total</strong>
                     <span mix={cartPending ? pendingValueStyle : undefined}>
-                      {money(cart.cost.totalAmount)}
+                      {money(cart.cost.totalAmount, handle.props.market.locale)}
                     </span>
                   </div>
                 ) : null}
-                <FreeShippingProgress subtotal={cart.cost.subtotalAmount} />
+                <FreeShippingProgress
+                  locale={handle.props.market.locale}
+                  subtotal={cart.cost.subtotalAmount}
+                />
                 <p mix={taxNoteStyle}>
                   Taxes &amp; shipping details at checkout
                 </p>
@@ -744,7 +811,10 @@ function getLineCompareAtPrice(
 }
 
 function FreeShippingProgress(
-  handle: Handle<{ subtotal: { amount: string; currencyCode: string } }>,
+  handle: Handle<{
+    locale: MarketLocale;
+    subtotal: { amount: string; currencyCode: string };
+  }>,
 ) {
   return () => {
     let { subtotal } = handle.props;
@@ -759,10 +829,13 @@ function FreeShippingProgress(
       Math.min(1, Math.max(0, amount / threshold)) * 100,
     );
     let achieved = remaining === 0;
-    let remainingPrice = money({
-      amount: remaining.toFixed(2),
-      currencyCode: subtotal.currencyCode,
-    });
+    let remainingPrice = money(
+      {
+        amount: remaining.toFixed(2),
+        currencyCode: subtotal.currencyCode,
+      },
+      handle.props.locale,
+    );
 
     return (
       <div
@@ -851,8 +924,11 @@ function getBannerMessages(
   return Array.from(new Set(messages));
 }
 
-function money(value: { amount: string; currencyCode: string }): string {
-  return formatMoney(value as MoneyV2, { locale: "en-US" }).toString();
+function money(
+  value: { amount: string; currencyCode: string },
+  locale: MarketLocale,
+): string {
+  return formatMoney(value as MoneyV2, { locale }).toString();
 }
 
 const triggerBaseStyle = css({

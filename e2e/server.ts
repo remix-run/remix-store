@@ -17,11 +17,14 @@ const storefrontServer = http.createServer(async (request, response) => {
   for await (let chunk of request) body += chunk;
 
   try {
-    let { query } = JSON.parse(body) as { query: string };
+    let { query, variables } = JSON.parse(body) as {
+      query: string;
+      variables?: { country?: string };
+    };
     let operation = query.match(
       /\b(?:query|mutation)\s+([A-Za-z_][A-Za-z0-9_]*)/,
     )?.[1];
-    let data = storefrontData(operation);
+    let data = storefrontData(operation, variables?.country);
     response.writeHead(200, { "Content-Type": "application/json" });
     response.end(JSON.stringify({ data }));
   } catch (error) {
@@ -56,7 +59,10 @@ async function shutdown() {
 process.on("SIGINT", () => void shutdown().then(() => process.exit(0)));
 process.on("SIGTERM", () => void shutdown().then(() => process.exit(0)));
 
-function storefrontData(operation: string | undefined): unknown {
+function storefrontData(
+  operation: string | undefined,
+  country?: string,
+): unknown {
   switch (operation) {
     case "RemixNavigation":
       return {
@@ -96,19 +102,28 @@ function storefrontData(operation: string | undefined): unknown {
           title: "All products",
           description: "The complete catalog",
           products: {
-            nodes: [productCard()],
+            nodes: [productCard(country)],
             pageInfo: { hasNextPage: true, endCursor: "next-page" },
           },
         },
       };
+    case "RemixCanadianSitemapResources":
+    case "RemixSitemapResources":
+      return {
+        sitemap: { resources: { hasNextPage: false, items: [] } },
+      };
     case "RemixProductNavigation":
       return { menu: null, shop: null };
     case "RemixProduct":
-      return { product: product() };
+      return { product: product(country) };
     case "RemixAnalyticsShop":
       return {
         shop: { id: "gid://shopify/Shop/test" },
-        localization: { country: { currency: { isoCode: "USD" } } },
+        localization: {
+          country: {
+            currency: { isoCode: country === "CA" ? "CAD" : "USD" },
+          },
+        },
       };
     case "redirects":
       return { urlRedirects: { edges: [] } };
@@ -148,7 +163,8 @@ function cart() {
   return value;
 }
 
-function productCard() {
+function productCard(country?: string) {
+  let currencyCode = country === "CA" ? "CAD" : "USD";
   return {
     id: "product",
     handle: "test-product",
@@ -165,17 +181,18 @@ function productCard() {
       ],
     },
     selectedOrFirstAvailableVariant: {
-      price: { amount: "20.00", currencyCode: "USD" },
+      price: { amount: "20.00", currencyCode },
       compareAtPrice: null,
     },
     priceRange: {
-      maxVariantPrice: { amount: "20.00", currencyCode: "USD" },
+      maxVariantPrice: { amount: "20.00", currencyCode },
     },
   };
 }
 
-function product() {
-  let selectedVariant = variant();
+function product(country?: string) {
+  let currencyCode = country === "CA" ? "CAD" : "USD";
+  let selectedVariant = variant(currencyCode);
   return {
     id: "product",
     handle: "test-product",
@@ -187,7 +204,7 @@ function product() {
     customDescription: richTextList("This water bottle"),
     technicalDescription: richTextList("Nalgene 32 oz."),
     priceRange: {
-      minVariantPrice: { amount: "20.00", currencyCode: "USD" },
+      minVariantPrice: { amount: "20.00", currencyCode },
     },
     encodedVariantExistence: "v1_0",
     encodedVariantAvailability: "v1_0",
@@ -205,13 +222,13 @@ function product() {
   };
 }
 
-function variant() {
+function variant(currencyCode = "USD") {
   return {
     availableForSale: true,
     compareAtPrice: null,
     id: "gid://shopify/ProductVariant/111",
     image: null,
-    price: { amount: "20.00", currencyCode: "USD" },
+    price: { amount: "20.00", currencyCode },
     product: { handle: "test-product", title: "Test product" },
     selectedOptions: [{ name: "Title", value: "Default Title" }],
     title: "Default Title",

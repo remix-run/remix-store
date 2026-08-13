@@ -1,7 +1,8 @@
 import type { CartErrorState } from "@shopify/hydrogen";
 import { clientEntry, css, on, type Handle } from "remix/ui";
 
-import { CART_API_PATH, getBrowserCartStore } from "./cart-store.ts";
+import { getBrowserCartStore, getCartApiPath } from "./cart-store.ts";
+import type { MarketPathPrefix } from "../../lib/public/market.ts";
 
 type ProductAddToCartProps = {
   /** The selected variant's merchandise ID. Empty when no variant is resolved. */
@@ -10,6 +11,7 @@ type ProductAddToCartProps = {
   available: boolean;
   /** Button label, e.g. "Add to cart" or the variant's price-aware label. */
   label: string;
+  pathPrefix?: MarketPathPrefix;
 };
 
 /**
@@ -35,7 +37,7 @@ export const ProductAddToCart = clientEntry(
 
       return (
         <form
-          action={CART_API_PATH}
+          action={getCartApiPath(handle.props.pathPrefix)}
           method="post"
           aria-busy={pending ? "true" : undefined}
           mix={[
@@ -45,7 +47,10 @@ export const ProductAddToCart = clientEntry(
               event.preventDefault();
               if (disabled) return;
 
-              let store = getBrowserCartStore();
+              let store = getBrowserCartStore(
+                undefined,
+                handle.props.pathPrefix,
+              );
               if (!store) return;
 
               let currentSubmission = ++submission;
