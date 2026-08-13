@@ -104,6 +104,28 @@ describe("platform skeleton", () => {
     assert.match(html, /Test catalog product/);
   });
 
+  it("server-renders static snow only on December home requests", async () => {
+    let decemberApp = createHomeApp(() => new Date("2026-12-01T00:00:00Z"));
+    let decemberResponse = await decemberApp.fetch(
+      new Request("https://example.com" + routes.home.href()),
+    );
+    let decemberHtml = await decemberResponse.text();
+    assert.match(decemberHtml, /data-seasonal-snow="true"/);
+    assert.match(decemberHtml, /data-snow-static="true"/);
+    assert.match(decemberHtml, /<canvas aria-hidden="true"><\/canvas>/);
+    assert.match(decemberHtml, /\/assets\/component\.js/);
+
+    let nonHomeResponse = await decemberApp.fetch(
+      new Request("https://example.com/not-found"),
+    );
+    assert.doesNotMatch(await nonHomeResponse.text(), /data-seasonal-snow/);
+
+    let januaryResponse = await fetchHome(
+      () => new Date("2027-01-01T00:00:00Z"),
+    );
+    assert.doesNotMatch(await januaryResponse.text(), /data-seasonal-snow/);
+  });
+
   it("renders a branded 500 when the Storefront API returns errors", async (t) => {
     let mockFetch = (async () =>
       new Response(
@@ -139,17 +161,22 @@ describe("platform skeleton", () => {
   });
 });
 
-function fetchHome() {
-  let app = createTestApp(
+function fetchHome(clock: () => Date = () => new Date("2026-06-01T00:00:00Z")) {
+  return createHomeApp(clock).fetch(
+    new Request("https://example.com" + routes.home.href()),
+  );
+}
+
+function createHomeApp(clock: () => Date) {
+  return createTestApp(
     createStorefrontFetch({
       RemixAnalyticsShop: analyticsShopData,
       RemixCollection: collectionData,
       RemixHomeEditorial: homeData,
       RemixNavigation: navigationData,
     }),
+    { seasonalSnow: { clock } },
   );
-
-  return app.fetch(new Request("https://example.com" + routes.home.href()));
 }
 
 function navigationData() {

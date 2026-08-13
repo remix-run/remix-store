@@ -38,7 +38,7 @@ Do not add Tailwind, React Router UI hooks, React Hydrogen components, Radix, or
 | SEO/public files | Social cards, favicons, robots, sitemap, preconnects, font preloads | Metadata, assets, robots, and sitemap resources complete | Validate against the production origin at cutover | 2 |
 | Discount/permalink routes | Discount links and cart permalinks | Discount paths/query parameters and Hydrogen cart permalinks complete | Maintain safe same-origin redirects and private caching | 3 |
 | Locales | Optional `language-country` path prefix; sitemap lists US/CA locales | Fixed US/English | Defer unless localized parity is explicitly required | 3 |
-| Seasonal snow | December-only canvas snow with reduced-motion mode | None | Optional final polish | 3 |
+| Seasonal snow | December-only canvas snow with reduced-motion mode | Complete: UTC-gated home overlay with animated canvas and static fallback | Preserve deterministic server gating and lifecycle cleanup | 3 |
 
 Tier 1 establishes the recognizable storefront. Tier 2 completes the reference’s supporting experience. Tier 3 is conditional parity, not a styling prerequisite.
 
@@ -69,7 +69,7 @@ Copy the reference font, favicon, runner, logo, social-image, matrix-image, and 
 - Product imagery swaps to image two and performs a small bounce on card hover.
 - Sale prices pair a struck-through compare-at amount with a red sale amount.
 - Scroll-linked effects update through one animation-frame callback per frame.
-- `prefers-reduced-motion: reduce` disables scroll scrubbing, marquees, runners, snow, glitches, image fades, and decorative transforms while retaining all content.
+- `prefers-reduced-motion: reduce` disables scroll scrubbing, marquees, animated snow, runners, glitches, image fades, and decorative transforms while retaining all content and static decorative fallbacks.
 - Server HTML contains every essential heading, link, price, option, form, and cart action.
 
 ## Global shell
@@ -397,7 +397,7 @@ Source: `meta.ts`, robots/sitemap routes, discount route, and cart-permalink rou
 - [x] Add Shopify-backed policy/contact routes; subscribe intentionally skipped.
 - [x] Add branded 404/500 matrix enhancement.
 - [x] Add route metadata, robots, and sitemap behavior.
-- [ ] Optional December snow intentionally deferred.
+- [x] Add UTC December-gated home snow with SSR/no-JavaScript and reduced-motion static fallbacks.
 
 ## Verification matrix
 
