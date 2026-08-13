@@ -6,16 +6,20 @@ import {
 } from "@shopify/hydrogen";
 import * as assert from "remix/assert";
 import { describe, it, type TestContext } from "remix/test";
-import type { Handle } from "remix/ui";
 
 import {
   CollectionViewed,
   ProductViewed,
   createPageViewPublisher,
   publishCartViewed,
+  publishCartViewedWhenSettled,
   trackConfirmedCartChanges,
 } from "./public/analytics.tsx";
 import { createCart } from "../../test/cart-fixtures.ts";
+import {
+  createTestComponent,
+  renderTestComponent,
+} from "../../test/component-fixtures.ts";
 
 interface PublishedEvent {
   event: string;
@@ -45,7 +49,7 @@ describe("storefront analytics", () => {
     ]);
   });
 
-  it("publishes product views once per product and variant identity", (t) => {
+  it("publishes product views once per product id", (t) => {
     let events = installAnalytics(t);
     let product = analyticsProduct("1", "1");
     let component = createTestComponent(ProductViewed);
@@ -63,10 +67,6 @@ describe("storefront analytics", () => {
       {
         event: AnalyticsEvent.PRODUCT_VIEWED,
         payload: { products: [product] },
-      },
-      {
-        event: AnalyticsEvent.PRODUCT_VIEWED,
-        payload: { products: [nextVariant] },
       },
       {
         event: AnalyticsEvent.PRODUCT_VIEWED,
@@ -125,7 +125,7 @@ describe("storefront analytics", () => {
       (events[0]?.payload.cart as { updatedAt?: string })?.updatedAt,
       initialCart.updatedAt,
     );
-    assert.equal(events[0]?.payload.prevCart, null);
+    assert.equal(events[0]?.payload.prevCart, undefined);
 
     currentCart = createCart(2);
     currentCart.updatedAt = "2026-01-01T00:00:01.000Z";
@@ -143,6 +143,68 @@ describe("storefront analytics", () => {
     assert.equal(
       (events[1]?.payload.cart as { updatedAt?: string })?.updatedAt,
       currentCart.updatedAt,
+    );
+  });
+
+  it("defers a cart view until pending cart work settles", (t) => {
+    let events = installAnalytics(t);
+    let currentCart = createCart();
+    let currentState = pendingCartState(currentCart);
+    let listener: ((state: CartState) => void) | undefined;
+    let store = {
+      getState: () => currentState,
+      subscribe(next: (state: CartState) => void) {
+        listener = next;
+        return () => {
+          listener = undefined;
+        };
+      },
+    };
+
+    publishCartViewedWhenSettled(store as never);
+    assert.equal(events.length, 0);
+    assert.notEqual(listener, undefined);
+
+    currentCart = createCart(2);
+    currentCart.updatedAt = "2026-01-01T00:00:01.000Z";
+    currentState = pendingCartState(currentCart);
+    listener?.(currentState);
+    assert.equal(events.length, 0);
+
+    currentState = cartState(currentCart);
+    listener?.(currentState);
+
+    assert.equal(events.length, 1);
+    assert.equal(events[0]?.event, AnalyticsEvent.CART_VIEWED);
+    assert.equal(
+      (events[0]?.payload.cart as { updatedAt?: string })?.updatedAt,
+      currentCart.updatedAt,
+    );
+    assert.equal(listener, undefined);
+  });
+
+  it("keeps only the latest deferred cart view", (t) => {
+    let events = installAnalytics(t);
+    let currentState = pendingCartState(createCart());
+    let listeners = new Set<(state: CartState) => void>();
+    let store = {
+      getState: () => currentState,
+      subscribe(next: (state: CartState) => void) {
+        listeners.add(next);
+        return () => listeners.delete(next);
+      },
+    };
+
+    publishCartViewedWhenSettled(store as never);
+    publishCartViewedWhenSettled(store as never);
+    assert.equal(listeners.size, 1);
+
+    currentState = cartState(createCart());
+    for (let listener of listeners) listener(currentState);
+
+    assert.deepEqual(
+      events.map(({ event }) => event),
+      [AnalyticsEvent.CART_VIEWED],
     );
   });
 
@@ -184,34 +246,6 @@ describe("storefront analytics", () => {
   });
 });
 
-function createTestComponent<Props extends Record<string, unknown>>(
-  type: (handle: Handle<Props>) => () => unknown,
-) {
-  let props = {} as Props;
-  let handle = {
-    props,
-    signal: new AbortController().signal,
-    queueTask(task: (signal: AbortSignal) => void) {
-      task(AbortSignal.abort());
-    },
-  } as Handle<Props>;
-  let renderComponent: (() => unknown) | undefined;
-  return {
-    render(nextProps: Props) {
-      Object.assign(props, nextProps);
-      renderComponent ??= type(handle);
-      renderComponent();
-    },
-  };
-}
-
-function renderTestComponent<Props extends Record<string, unknown>>(
-  component: { render(props: Props): void },
-  props: Props,
-): void {
-  component.render(props);
-}
-
 function analyticsProduct(productId: string, variantId: string) {
   return {
     id: `gid://shopify/Product/${productId}`,
@@ -227,6 +261,17 @@ function analyticsProduct(productId: string, variantId: string) {
 
 function analyticsCollection(id: string, handle: string) {
   return { id: `gid://shopify/Collection/${id}`, handle };
+}
+
+function pendingCartState(cart: CartData): CartState {
+  let state = cartState(cart);
+  return {
+    ...state,
+    pending: {
+      ...state.pending,
+      lines: new Set([cart.lines.nodes[0]?.id ?? "pending-line"]),
+    },
+  };
 }
 
 function cartState(cart: CartData): CartState {

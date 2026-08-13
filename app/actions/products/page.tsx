@@ -28,7 +28,7 @@ export function ProductPage(
         socialType="product"
       >
         <main>
-          <ProductViewed product={analyticsProduct(product)} />
+          <ProductViewed key={product.id} product={analyticsProduct(product)} />
           <ProductDetails
             menu={handle.props.menu}
             product={product}

@@ -12,7 +12,11 @@ import { clientEntry, css, on, type Handle } from "remix/ui";
 
 import { BrandedState } from "../../ui/public/branded-state.tsx";
 import { shopifyImageUrl } from "../../ui/public/shopify-image.tsx";
-import { publishCartViewed } from "./analytics.tsx";
+import {
+  createSnapshotApplier,
+  hasPendingCartWork,
+  publishCartViewedWhenSettled,
+} from "./analytics.tsx";
 import { PageTitle } from "./page-title.tsx";
 import {
   CART_API_PATH,
@@ -48,7 +52,7 @@ function openCartDrawer() {
     if (drawer.dataset.cartEmpty === "true") return;
     drawer.showModal();
     setCartTriggerExpanded(true);
-    publishCartViewed(getBrowserCartStore());
+    publishCartViewedWhenSettled(getBrowserCartStore());
   }
 }
 
@@ -105,14 +109,15 @@ export const CartShell = clientEntry(
   import.meta.url,
   function CartShell(handle: Handle<{ initialData?: CartInitialData }>) {
     let store = getBrowserCartStore(handle.props.initialData);
-    let appliedSnapshotIdentity = cartInitialDataIdentity(
-      handle.props.initialData,
-    );
-    let queuedSnapshotIdentity: string | undefined;
     let state = store?.getState();
     let drawerState = state;
     let cartHadItems = Boolean(state?.data.lines.nodes.length);
     let hydrated = false;
+
+    let applySnapshot = createSnapshotApplier(handle, store, () => {
+      state = store?.getState();
+      drawerState = state;
+    });
 
     if (store) {
       let unsubscribe = store.subscribe((nextState) => {
@@ -137,31 +142,7 @@ export const CartShell = clientEntry(
     }
 
     return () => {
-      let nextInitialData = handle.props.initialData;
-      let nextSnapshotIdentity = cartInitialDataIdentity(nextInitialData);
-      if (
-        nextSnapshotIdentity !== appliedSnapshotIdentity &&
-        nextSnapshotIdentity !== queuedSnapshotIdentity
-      ) {
-        queuedSnapshotIdentity = nextSnapshotIdentity;
-        handle.queueTask((signal) => {
-          if (queuedSnapshotIdentity === nextSnapshotIdentity) {
-            queuedSnapshotIdentity = undefined;
-          }
-          if (
-            signal.aborted ||
-            cartInitialDataIdentity(handle.props.initialData) !==
-              nextSnapshotIdentity ||
-            hasPendingCartWork(store)
-          ) {
-            return;
-          }
-          getBrowserCartStore(handle.props.initialData);
-          appliedSnapshotIdentity = nextSnapshotIdentity;
-          state = store?.getState();
-          drawerState = state;
-        });
-      }
+      applySnapshot(handle.props.initialData);
 
       let snapshot = getCartSnapshot(
         hydrated ? state : undefined,
@@ -214,29 +195,17 @@ export const CartPageContent = clientEntry(
   import.meta.url,
   function CartPageContent(handle: Handle<{ initialData: CartInitialData }>) {
     let store = getBrowserCartStore(handle.props.initialData);
-    let appliedSnapshotIdentity = cartInitialDataIdentity(
-      handle.props.initialData,
-    );
-    let queuedSnapshotIdentity: string | undefined;
     let state = store?.getState();
     let hydrated = false;
-    let lastPublishedIdentity: string | undefined;
 
-    function publishCurrentCartView() {
-      if (!store) return;
-      let nextState = store.getState();
-      if (
-        nextState.pending.lines.size > 0 ||
-        nextState.pending.note ||
-        nextState.pending.discountCodes.size > 0
-      ) {
-        return;
-      }
-
-      let identity = cartSnapshotIdentity(nextState);
-      if (identity === lastPublishedIdentity) return;
-      if (publishCartViewed(store)) lastPublishedIdentity = identity;
-    }
+    let applySnapshot = createSnapshotApplier(
+      handle as Handle<{ initialData?: CartInitialData }>,
+      store,
+      () => {
+        state = store?.getState();
+        publishCartViewedWhenSettled(store);
+      },
+    );
 
     if (store) {
       let unsubscribe = store.subscribe((nextState) => {
@@ -248,37 +217,13 @@ export const CartPageContent = clientEntry(
         if (signal.aborted) return;
         hydrated = true;
         state = store.getState();
-        publishCurrentCartView();
+        publishCartViewedWhenSettled(store);
         handle.update();
       });
     }
 
     return () => {
-      let nextInitialData = handle.props.initialData;
-      let nextSnapshotIdentity = cartInitialDataIdentity(nextInitialData);
-      if (
-        nextSnapshotIdentity !== appliedSnapshotIdentity &&
-        nextSnapshotIdentity !== queuedSnapshotIdentity
-      ) {
-        queuedSnapshotIdentity = nextSnapshotIdentity;
-        handle.queueTask((signal) => {
-          if (queuedSnapshotIdentity === nextSnapshotIdentity) {
-            queuedSnapshotIdentity = undefined;
-          }
-          if (
-            signal.aborted ||
-            cartInitialDataIdentity(handle.props.initialData) !==
-              nextSnapshotIdentity ||
-            hasPendingCartWork(store)
-          ) {
-            return;
-          }
-          getBrowserCartStore(handle.props.initialData);
-          appliedSnapshotIdentity = nextSnapshotIdentity;
-          state = store?.getState();
-        });
-      }
-      if (hydrated) handle.queueTask(publishCurrentCartView);
+      applySnapshot(handle.props.initialData);
 
       return (
         <CartView
@@ -292,27 +237,6 @@ export const CartPageContent = clientEntry(
     };
   },
 );
-
-function hasPendingCartWork(store?: CartStore): boolean {
-  let pending = store?.getState().pending;
-  return Boolean(
-    pending &&
-    (pending.lines.size > 0 || pending.note || pending.discountCodes.size > 0),
-  );
-}
-
-function cartInitialDataIdentity(initialData?: CartInitialData): string {
-  if (initialData === undefined) return "omitted";
-  return initialData.cart === null
-    ? "null"
-    : `${initialData.cart.id}\u0000${initialData.cart.updatedAt}`;
-}
-
-function cartSnapshotIdentity(state: CartState): string {
-  return state.data.id === null
-    ? "null"
-    : `${state.data.id}\u0000${String(state.data.updatedAt ?? "")}`;
-}
 
 function CartTrigger(handle: Handle<{ snapshot: CartSnapshot }>) {
   return () => {
@@ -485,7 +409,7 @@ function CartView(handle: Handle<CartViewProps>) {
       );
     }
 
-    let cartPending = isCartPending(state);
+    let cartPending = hasPendingCartWork(state);
     let discountAllocation = getCartDiscountAllocation(cart);
 
     return (
@@ -859,15 +783,6 @@ function ErrorMessages(handle: Handle<{ id: string; messages: string[] }>) {
         <p key={`${message}-${index}`}>{message}</p>
       ))}
     </div>
-  );
-}
-
-function isCartPending(state?: CartState): boolean {
-  if (!state) return false;
-  return (
-    state.pending.lines.size > 0 ||
-    state.pending.discountCodes.size > 0 ||
-    Boolean(state.pending.note)
   );
 }
 

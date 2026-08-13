@@ -5,7 +5,6 @@ import {
 } from "@shopify/hydrogen";
 import * as assert from "remix/assert";
 import { describe, it, type TestContext } from "remix/test";
-import type { Handle } from "remix/ui";
 import { render } from "remix/ui/test";
 
 import type { SerializedCartData } from "../data/cart.ts";
@@ -14,6 +13,10 @@ import {
   createCartInitialData,
   VARIANT_ID,
 } from "../../test/cart-fixtures.ts";
+import {
+  createTestComponent,
+  renderTestComponent,
+} from "../../test/component-fixtures.ts";
 import { trackConfirmedCartChanges } from "./public/analytics.tsx";
 import {
   getBrowserCartStore,
@@ -179,6 +182,52 @@ describe("cart interactions", () => {
     );
   });
 
+  it("defers a drawer view opened mid-mutation until the cart settles", async (t) => {
+    useDesktopCartViewport(t);
+    let events = useAnalyticsSpy(t);
+    let api = createCartApiMock(t);
+    let initialData = createCartInitialData();
+    t.after(resetBrowserCartStore);
+
+    let { $, act, cleanup } = render(<CartShell initialData={initialData} />);
+    t.after(cleanup);
+    await flushAsync(act);
+
+    let trigger = $('button[aria-controls="cart-drawer"]');
+    let drawer = $("#cart-drawer");
+    assert.ok(trigger instanceof HTMLButtonElement);
+    assert.ok(drawer instanceof HTMLDialogElement);
+
+    let cartViews = () =>
+      events.filter(({ event }) => event === AnalyticsEvent.CART_VIEWED);
+
+    // A settled cart publishes on open, exactly as before.
+    await act(() => trigger.click());
+    assert.equal(cartViews().length, 1);
+
+    let mutation = api.enqueue();
+    let increase = $('button[aria-label="Increase quantity"]');
+    assert.ok(increase instanceof HTMLButtonElement);
+    await act(() => increase.click());
+    await waitFor(() => api.requests.length === 1, act);
+
+    // Reopening while the mutation is in flight waits for the confirmed
+    // cart instead of publishing `cart: null`.
+    await act(() => drawer.close());
+    await act(() => trigger.click());
+    assert.equal(cartViews().length, 1);
+
+    let settledCart = createCart(2);
+    settledCart.updatedAt = "2026-01-01T00:00:01.000Z";
+    mutation.resolve({ cart: settledCart, userErrors: [], warnings: [] });
+    await waitFor(() => cartViews().length === 2, act);
+
+    assert.equal(
+      (cartViews()[1]?.payload.cart as { updatedAt?: string })?.updatedAt,
+      settledCart.updatedAt,
+    );
+  });
+
   it("publishes a full cart page view with its confirmed cart", async (t) => {
     let events = useAnalyticsSpy(t);
     let initialData = createCartInitialData();
@@ -210,7 +259,7 @@ describe("cart interactions", () => {
     assert.deepEqual(events, [
       {
         event: AnalyticsEvent.CART_VIEWED,
-        payload: { cart: null, prevCart: null },
+        payload: { cart: null },
       },
     ]);
   });
@@ -639,46 +688,6 @@ describe("cart interactions", () => {
     );
   });
 });
-
-function createTestComponent<Props extends Record<string, unknown>>(
-  type: (handle: Handle<Props>) => () => unknown,
-) {
-  let props = {} as Props;
-  let tasks: Array<(signal: AbortSignal) => void> = [];
-  let updateRequested = false;
-  let handle = {
-    props,
-    signal: new AbortController().signal,
-    update: async () => {
-      updateRequested = true;
-      return new AbortController().signal;
-    },
-    queueTask(task: (signal: AbortSignal) => void) {
-      tasks.push(task);
-    },
-  } as Handle<Props>;
-  let renderComponent: (() => unknown) | undefined;
-  return {
-    render(nextProps: Props) {
-      Object.assign(props, nextProps);
-      renderComponent ??= type(handle);
-      renderComponent();
-      do {
-        updateRequested = false;
-        let pendingTasks = tasks.splice(0);
-        for (let task of pendingTasks) task(new AbortController().signal);
-        if (updateRequested) renderComponent();
-      } while (updateRequested || tasks.length > 0);
-    },
-  };
-}
-
-function renderTestComponent<Props extends Record<string, unknown>>(
-  component: { render(props: Props): void },
-  props: Props,
-): void {
-  component.render(props);
-}
 
 function useAnalyticsSpy(
   t: TestContext,

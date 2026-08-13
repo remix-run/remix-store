@@ -30,6 +30,7 @@ export function CollectionPage(
     >
       <main>
         <CollectionViewed
+          key={handle.props.id}
           collection={{ id: handle.props.id, handle: handle.props.handle }}
         />
         <PageTitle title={handle.props.title} />
