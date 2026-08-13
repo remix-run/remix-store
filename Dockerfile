@@ -12,8 +12,11 @@ WORKDIR /app
 FROM base AS dependencies
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
+# pnpm cannot verify package metadata for the pinned GitHub monorepo subdirectory
+# (`packages/remix`) against the repository root package. Keep strict checking
+# everywhere else; relax it only for this isolated production dependency install.
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
-  pnpm install --prod --frozen-lockfile
+  pnpm install --prod --frozen-lockfile --config.strict-store-pkg-content-check=false
 
 FROM base AS runtime
 
