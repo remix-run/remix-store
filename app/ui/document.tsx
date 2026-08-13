@@ -11,7 +11,7 @@ import {
   FALLBACK_FOOTER_MENU,
   FALLBACK_NAVIGATION_MENU,
 } from "../data/storefront.ts";
-import { US_MARKET } from "../lib/public/market.ts";
+import { US_MARKET, type ActiveMarket } from "../lib/public/market.ts";
 import { DocumentAssetsProvider } from "./document-assets.tsx";
 import { Navbar } from "./navbar.tsx";
 import { ShellDataProvider } from "./shell-data.tsx";
@@ -174,7 +174,7 @@ const EMPTY_SHOPIFY_SCRIPT_TAGS: ShopifyScriptTagDescriptors = {
 
 function getShopifyScripts(
   analyticsShop: AnalyticsShop | null | undefined,
-  market: typeof US_MARKET,
+  market: ActiveMarket,
 ): ShopifyScriptTagDescriptors {
   if (!analyticsShop?.shopId || !analyticsShop.myshopifyDomain) {
     return EMPTY_SHOPIFY_SCRIPT_TAGS;
@@ -182,10 +182,6 @@ function getShopifyScripts(
   return getShopifyScriptTags({
     analytics: { channel: analyticsShop.channel },
     consent: { mode: "default-banner" },
-    // The storefront serves a single US/EN market today. If markets land,
-    // derive country/language from the same resolved market used for
-    // Storefront API requests; Shopify analytics reads them from
-    // `window.Shopify.locale` and `window.Shopify.currency.active`.
     i18n: {
       country: market.country,
       language: market.language,

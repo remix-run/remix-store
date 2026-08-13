@@ -100,11 +100,6 @@ export function cartApiPath(pathPrefix: MarketPathPrefix): string {
   return marketPath("/api/cart", pathPrefix);
 }
 
-export function marketFromPathname(pathname: string): ActiveMarket {
-  let resolution = resolveMarketPath(pathname);
-  return resolution.kind === "market" ? resolution.market : US_MARKET;
-}
-
 export function localizeInternalUrl(
   value: string,
   pathPrefix: MarketPathPrefix,

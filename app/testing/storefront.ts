@@ -63,9 +63,6 @@ export function createStorefrontFetch(
     ) {
       return graphqlResponse(await handlers.RemixSitemapIndex(body));
     }
-    if (!handler && operationName === "RemixStoreWideSale") {
-      return graphqlResponse({ shop: { storeWideSale: null } });
-    }
     if (!handler) {
       throw new Error(`Unexpected Storefront operation: ${operationName}`);
     }
