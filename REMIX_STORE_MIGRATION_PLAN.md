@@ -13,7 +13,7 @@ Goal: replace the React Router 7 storefront on `main` with the Remix 3 + framewo
 - Node has a bounded in-memory Storefront cache. Fly has Docker, health checks, graceful shutdown, immutable asset IDs, and deployment smoke checks.
 - Shopify requests use a server-only private Storefront token; target-specific adapters resolve trusted Oxygen/Fly buyer IPs. `PUBLIC_CHECKOUT_DOMAIN` is retired; checkout uses `cart.checkoutUrl`.
 - Locales/Markets is complete: unprefixed EN-US plus canonical `/en-ca` EN-CA routing share one controller graph; aliases normalize permanently, unsupported locale-like prefixes 404, navigation/cart/compatibility/Shopify context stay market-aware, and sitemaps publish only accurate EN-US/EN-CA alternates.
-- The remaining feature work starts with the session audit; the platform and completed feature history do not need further migration planning.
+- Feature migration is complete. Durable application sessions and `SESSION_SECRET` are retired.
 
 ## Fixed decisions
 
@@ -37,7 +37,7 @@ Complete in dependency order unless surfaces are independent. Every feature PR c
 | 2.14 | Subscribe and back-in-stock | **Complete:** server-only Admin API boundary, generic progressive newsletter route, server-verified sold-out variant subscriptions, explicit-checkbox `SINGLE_OPT_IN` consent, bounded abuse protection, safe errors, and no PII logging. |
 | 2.15 | Locales/Markets | **Complete:** one validated prefix-normalization middleware keeps controllers prefix-free; unprefixed EN-US and `/en-ca` EN-CA drive links, Storefront/ShopifyScripts context, money, cart/compatibility routes, canonicals, and reciprocal sitemap alternates; `/en-us` and `/fr-ca` normalize permanently and unsupported locale-like prefixes 404. |
 | 2.16 | Seasonal snow | **Complete:** a deterministic UTC December server gate renders a home-only public canvas client entry; SSR, no-JavaScript, reduced-motion, and canvas-failure paths retain a static decorative fallback, while normal motion has DPR-aware particles, resize handling, and abort-safe RAF cleanup. |
-| 2.17 | Sessions | Determine whether any remaining feature requires durable session state. Implement a signed `SESSION_SECRET` boundary or remove the unused variable and document its retirement. |
+| 2.17 | Sessions | **Complete:** no migrated feature needs durable app state. `SESSION_SECRET` is retired; cart remains Shopify cookie-backed. |
 
 ## Remaining deployment work
 
@@ -47,7 +47,7 @@ Complete in dependency order unless surfaces are independent. Every feature PR c
 - Run the portable acceptance suite against both deployed targets, not only local fixtures or Fly smoke checks.
 - Verify canonical, indexing, social metadata, `robots.txt`, and sitemap resources against each deployed origin; deterministic request-origin coverage is complete, but live SEO verification remains a cutover gate.
 - Prove an Oxygen production-environment deployment from a test branch before cutover.
-- Verify all consuming environment values on both targets as features land. Keep Admin and session credentials server-only.
+- Verify every consumed environment value on both targets. Admin credentials remain server-only; neither target needs `SESSION_SECRET`.
 - Subscription throttling reserves the trusted-IP and one-way email-digest keys atomically (5 submissions per key per 10 minutes; at most 10,000 local keys). The default is process/isolate-local defense in depth. Before enabling Admin credentials in production, configure and verify a shared edge/WAF quota for `POST /subscribe` on both origins; a future async shared `RateLimiter` may replace that deployment gate when a storage vendor is standardized.
 - Admin customer operations pin stable `2026-07`. `pnpm typecheck` validates their exact operation set against `admin-2026-07.schema.json` separately from Hydrogen Storefront `gql()`; deployment still requires the read-only live version/scope check in `docs/admin-api.md`.
 - After cutover, restrict both deployment workflows to `main` and protect production credentials/approvals with GitHub environments.
@@ -67,7 +67,7 @@ For each remaining surface:
 
 Do not merge `v3` into `main` until:
 
-- every remaining feature row is complete and the session decision is resolved;
+- every feature row is complete;
 - the same commit passes CI and deployed acceptance tests on Oxygen and Fly;
 - SEO checks and live analytics verification pass;
 - a real purchase, cart permalink, and discount flow complete on staging/preview, with the purchase refunded;

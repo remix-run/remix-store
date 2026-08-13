@@ -189,7 +189,8 @@ export function storefront(options: StorefrontOptions = {}): Middleware<
     let shopifyResponse = await handleShopifyRoutes({
       request: routingRequest,
       requestContext,
-      sessionManager: createRouteSessionManager(routingRequest),
+      sessionManager:
+        createEphemeralHydrogenRouteSessionManager(routingRequest),
       storefrontClient,
       handlers: [cartHandlers],
     });
@@ -423,11 +424,19 @@ function matchSeoRoute(url: URL): SeoRoute | null {
   return seoRouteMatcher.match(url)?.data ?? null;
 }
 
-type RouteSessionManager = Parameters<
+type EphemeralHydrogenRouteSessionManager = Parameters<
   typeof handleShopifyRoutes
 >[0]["sessionManager"];
 
-function createRouteSessionManager(request: Request): RouteSessionManager {
+/**
+ * Request-local scratch state required by Hydrogen compatibility routes.
+ * Values never survive the request and are never committed to a cookie. This
+ * is not a durable session boundary and is unsafe for Customer Account API
+ * authentication, OAuth state/PKCE/nonces, or any cross-request state.
+ */
+function createEphemeralHydrogenRouteSessionManager(
+  request: Request,
+): EphemeralHydrogenRouteSessionManager {
   let values = new Map<string, unknown>();
 
   return {

@@ -27,8 +27,9 @@ uses Remix's HTTP adapter client address, which comes from the socket unless an
 operator explicitly enables `TRUST_PROXY=true` behind a trusted proxy that
 overwrites forwarding headers. Never proxy a client-supplied buyer-IP header.
 `PUBLIC_CHECKOUT_DOMAIN` was retired: checkout
-buttons and `/checkout` resolve Shopify's authoritative `cart.checkoutUrl`. Add
-sessions and Admin API credentials when their consuming features land.
+buttons and `/checkout` resolve Shopify's authoritative `cart.checkoutUrl`.
+Fly does not need `SESSION_SECRET`. Add the server-only Admin API credentials
+only when enabling their consuming subscription features.
 
 ## Deployment behavior
 
