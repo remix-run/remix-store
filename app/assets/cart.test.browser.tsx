@@ -480,6 +480,7 @@ describe("cart interactions", () => {
     };
     cart.lines.nodes[0]!.discountAllocations = [
       {
+        __typename: "CartAutomaticDiscountAllocation",
         discountedAmount: { amount: "5", currencyCode: "USD" },
       },
     ];
@@ -499,6 +500,53 @@ describe("cart interactions", () => {
     assert.match(container.textContent, /Automatic discount-\$5\.00/);
     assert.match(container.textContent, /Total\$10\.00/);
     assert.match(container.textContent, /Taxes & shipping details at checkout/);
+  });
+
+  it("labels automatic line allocations with the sale title", (t) => {
+    let cart = createCart();
+    cart.cost.totalAmount.amount = "8";
+    cart.lines.nodes[0]!.discountAllocations = [
+      {
+        __typename: "CartAutomaticDiscountAllocation",
+        discountedAmount: { amount: "2", currencyCode: "USD" },
+      },
+    ];
+    t.after(resetBrowserCartStore);
+
+    let { container, cleanup } = render(
+      <CartPageContent
+        initialData={{ cart }}
+        automaticDiscountLabel="Summer Sale"
+      />,
+    );
+    t.after(cleanup);
+
+    assert.match(container.textContent, /Summer Sale-\$2\.00/);
+    assert.doesNotMatch(container.textContent, /Automatic discount/);
+  });
+
+  it("does not label code discounts as the store-wide sale", (t) => {
+    let cart = createCart();
+    cart.cost.totalAmount.amount = "7";
+    cart.lines.nodes[0]!.discountAllocations = [
+      {
+        __typename: "CartCodeDiscountAllocation",
+        discountedAmount: { amount: "3", currencyCode: "USD" },
+      },
+    ];
+    t.after(resetBrowserCartStore);
+
+    let { container, cleanup } = render(
+      <CartPageContent
+        initialData={{ cart }}
+        automaticDiscountLabel="Summer Sale"
+      />,
+    );
+    t.after(cleanup);
+
+    assert.match(container.textContent, /Total\$7\.00/);
+    assert.doesNotMatch(container.textContent, /Summer Sale/);
+    assert.doesNotMatch(container.textContent, /Automatic discount/);
   });
 
   it("updates the cart without opening the dialog after add-to-cart succeeds", async (t) => {

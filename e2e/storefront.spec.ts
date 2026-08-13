@@ -13,6 +13,39 @@ test("renders the current storefront skeleton", async ({ page }) => {
   ).toBeVisible();
 });
 
+test("renders the active sale, offsets the header, and labels cart allocations", async ({
+  page,
+}) => {
+  await page.goto("/");
+
+  let marquee = page.locator("[data-store-wide-sale]");
+  await expect(marquee).toBeVisible();
+  await expect(marquee).toHaveCSS("height", "48px");
+  await expect(marquee.locator("p")).toHaveText("Sale. Now. Ends Jun.2.");
+  let marqueeTrack = marquee.locator('[aria-hidden="true"]');
+  await expect(marqueeTrack).toHaveCSS(
+    "animation-name",
+    "store-wide-sale-marquee",
+  );
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await expect(marqueeTrack).toHaveCSS("animation-name", "none");
+  await expect(page.locator("body > header")).toHaveCSS("top", "48px");
+
+  let cartResponse = await page.request.post("/api/cart", {
+    form: {
+      merchandiseId: "gid://shopify/ProductVariant/111",
+      quantity: "1",
+    },
+    headers: { Accept: "text/html", Referer: page.url() },
+  });
+  expect(cartResponse.ok()).toBe(true);
+  await page.goto("/cart");
+
+  let cartSummary = page.locator("main");
+  await expect(cartSummary.getByText("Sale", { exact: true })).toBeVisible();
+  await expect(cartSummary.getByText("-$2.00", { exact: true })).toBeVisible();
+});
+
 test("serves cart permalink, discount, and admin compatibility redirects", async ({
   request,
 }) => {

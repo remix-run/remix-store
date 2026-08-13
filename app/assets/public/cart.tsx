@@ -107,7 +107,12 @@ configureOpenCartAction();
 
 export const CartShell = clientEntry(
   import.meta.url,
-  function CartShell(handle: Handle<{ initialData?: CartInitialData }>) {
+  function CartShell(
+    handle: Handle<{
+      automaticDiscountLabel?: string;
+      initialData?: CartInitialData;
+    }>,
+  ) {
     let store = getBrowserCartStore(handle.props.initialData);
     let state = store?.getState();
     let drawerState = state;
@@ -182,7 +187,12 @@ export const CartShell = clientEntry(
               </button>
             </header>
             <div mix={drawerBodyStyle}>
-              <CartView {...drawerSnapshot} drawer store={store} />
+              <CartView
+                {...drawerSnapshot}
+                automaticDiscountLabel={handle.props.automaticDiscountLabel}
+                drawer
+                store={store}
+              />
             </div>
           </dialog>
         </>
@@ -193,7 +203,12 @@ export const CartShell = clientEntry(
 
 export const CartPageContent = clientEntry(
   import.meta.url,
-  function CartPageContent(handle: Handle<{ initialData: CartInitialData }>) {
+  function CartPageContent(
+    handle: Handle<{
+      automaticDiscountLabel?: string;
+      initialData: CartInitialData;
+    }>,
+  ) {
     let store = getBrowserCartStore(handle.props.initialData);
     let state = store?.getState();
     let hydrated = false;
@@ -231,6 +246,7 @@ export const CartPageContent = clientEntry(
             hydrated ? state : undefined,
             handle.props.initialData,
           )}
+          automaticDiscountLabel={handle.props.automaticDiscountLabel}
           store={store}
         />
       );
@@ -322,6 +338,7 @@ type CartSnapshot = {
 };
 
 type CartViewProps = CartSnapshot & {
+  automaticDiscountLabel?: string;
   drawer?: boolean;
   store?: CartStore;
 };
@@ -411,6 +428,11 @@ function CartView(handle: Handle<CartViewProps>) {
 
     let cartPending = hasPendingCartWork(state);
     let discountAllocation = getCartDiscountAllocation(cart);
+    let hasFinalTotal =
+      Number(cart.cost.subtotalAmount.amount) !==
+      Number(cart.cost.totalAmount.amount);
+    let automaticDiscountLabel =
+      handle.props.automaticDiscountLabel?.trim() || "Automatic discount";
 
     return (
       <section
@@ -613,8 +635,16 @@ function CartView(handle: Handle<CartViewProps>) {
                 </div>
                 {discountAllocation ? (
                   <div mix={allocationStyle}>
-                    <span>Automatic discount</span>
+                    <span>{automaticDiscountLabel}</span>
                     <span>-{money(discountAllocation)}</span>
+                  </div>
+                ) : null}
+                {hasFinalTotal ? (
+                  <div mix={finalTotalStyle}>
+                    <strong>Total</strong>
+                    <span mix={cartPending ? pendingValueStyle : undefined}>
+                      {money(cart.cost.totalAmount)}
+                    </span>
                   </div>
                 ) : null}
                 <FreeShippingProgress subtotal={cart.cost.subtotalAmount} />
@@ -637,12 +667,12 @@ function CartView(handle: Handle<CartViewProps>) {
                 </div>
                 {discountAllocation ? (
                   <div mix={allocationStyle}>
-                    <span>Automatic discount</span>
+                    <span>{automaticDiscountLabel}</span>
                     <span>-{money(discountAllocation)}</span>
                   </div>
                 ) : null}
-                {discountAllocation ? (
-                  <div mix={pageTotalStyle}>
+                {hasFinalTotal ? (
+                  <div mix={finalTotalStyle}>
                     <strong>Total</strong>
                     <span mix={cartPending ? pendingValueStyle : undefined}>
                       {money(cart.cost.totalAmount)}
@@ -669,18 +699,24 @@ function CartView(handle: Handle<CartViewProps>) {
 }
 
 type CartDiscountAllocationData = {
+  __typename?: string;
   discountedAmount: MoneyV2;
 };
 
 function getCartDiscountAllocation(cart: CartData): MoneyV2 | null {
-  let allocations = cart.lines.nodes.flatMap(
-    (line) =>
-      (
-        line as typeof line & {
-          discountAllocations?: CartDiscountAllocationData[];
-        }
-      ).discountAllocations ?? [],
-  );
+  let allocations = cart.lines.nodes
+    .flatMap(
+      (line) =>
+        (
+          line as typeof line & {
+            discountAllocations?: CartDiscountAllocationData[];
+          }
+        ).discountAllocations ?? [],
+    )
+    .filter(
+      (allocation) =>
+        allocation.__typename === "CartAutomaticDiscountAllocation",
+    );
   let first = allocations[0]?.discountedAmount;
   if (!first) return null;
 
@@ -892,9 +928,9 @@ const drawerStyle = css({
   borderRadius: "32px 32px 42px 42px",
   boxShadow: "0 20px 60px rgba(0,0,0,.28)",
   color: "var(--color-white)",
-  inset: "108px 36px auto auto",
+  inset: "calc(108px + var(--store-wide-sale-height)) 36px auto auto",
   margin: 0,
-  maxHeight: "calc(100dvh - 124px)",
+  maxHeight: "calc(100dvh - 124px - var(--store-wide-sale-height))",
   overflow: "hidden",
   padding: 0,
   position: "fixed",
@@ -964,7 +1000,7 @@ const pageTitleStyle = css({
   "@media (min-width: 810px)": { display: "block" },
 });
 const mobileCartSpacerStyle = css({
-  height: "112px",
+  height: "calc(112px + var(--store-wide-sale-height))",
   "@media (min-width: 810px)": { display: "none" },
 });
 const mobileCartTitleStyle = css({
@@ -1104,7 +1140,7 @@ const allocationStyle = css({
   fontWeight: 600,
   justifyContent: "space-between",
 });
-const pageTotalStyle = css({
+const finalTotalStyle = css({
   alignItems: "center",
   borderTop: "1px solid rgba(255,255,255,.2)",
   display: "flex",

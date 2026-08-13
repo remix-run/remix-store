@@ -22,6 +22,7 @@ import {
   type AnalyticsShop,
   type AppStorefrontClient,
   type NavigationMenuData,
+  type StoreWideSaleData,
 } from "../data/storefront.ts";
 import { routeTemplates } from "../lib/public/route-templates.ts";
 import { routes } from "../routes.ts";
@@ -36,11 +37,13 @@ export interface StorefrontOptions {
 export const StorefrontClient = createContextKey<AppStorefrontClient>();
 export const NavigationMenuConfig = createContextKey<NavigationMenuData>();
 export const FooterMenuConfig = createContextKey<NavigationMenuData>();
+export const StoreWideSaleConfig = createContextKey<StoreWideSaleData | null>();
 export const CartInitialDataConfig = createContextKey<CartInitialData>();
 export const AnalyticsShopConfig = createContextKey<AnalyticsShop | null>();
 const storefrontProperty = { property: "storefrontClient" } as const;
 const navigationMenuProperty = { property: "navigationMenu" } as const;
 const footerMenuProperty = { property: "footerMenu" } as const;
+const storeWideSaleProperty = { property: "storeWideSale" } as const;
 const cartInitialDataProperty = { property: "cartInitialData" } as const;
 const analyticsShopProperty = { property: "analyticsShop" } as const;
 
@@ -60,6 +63,11 @@ export function storefront(options: StorefrontOptions = {}): Middleware<
       key: typeof FooterMenuConfig;
       value: NavigationMenuData;
       property: "footerMenu";
+    },
+    {
+      key: typeof StoreWideSaleConfig;
+      value: StoreWideSaleData | null;
+      property: "storeWideSale";
     },
     {
       key: typeof CartInitialDataConfig;
@@ -134,6 +142,7 @@ export function storefront(options: StorefrontOptions = {}): Middleware<
         navigationMenuProperty,
       );
       context.set(FooterMenuConfig, FALLBACK_FOOTER_MENU, footerMenuProperty);
+      context.set(StoreWideSaleConfig, null, storeWideSaleProperty);
       context.set(
         CartInitialDataConfig,
         { cart: null },
@@ -201,6 +210,11 @@ export function storefront(options: StorefrontOptions = {}): Middleware<
       navigationMenuProperty,
     );
     context.set(FooterMenuConfig, shellMenus.footerMenu, footerMenuProperty);
+    context.set(
+      StoreWideSaleConfig,
+      shellMenus.storeWideSale,
+      storeWideSaleProperty,
+    );
     context.set(
       CartInitialDataConfig,
       cartInitialData,

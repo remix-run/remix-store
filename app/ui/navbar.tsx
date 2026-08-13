@@ -3,35 +3,48 @@ import { css, type Handle } from "remix/ui";
 import { CartShell } from "../assets/public/cart.tsx";
 import { MobileMenu, RemixLogo } from "../assets/public/navbar.tsx";
 import type { CartInitialData } from "../data/cart.ts";
-import type { NavigationMenuData } from "../data/storefront.ts";
+import type {
+  NavigationMenuData,
+  StoreWideSaleData,
+} from "../data/storefront.ts";
+import { StoreWideSaleMarquee } from "./store-wide-sale.tsx";
 
 interface NavbarProps {
   cartInitialData?: CartInitialData;
   menu: NavigationMenuData;
+  storeWideSale: StoreWideSaleData | null;
 }
 
 export function Navbar(handle: Handle<NavbarProps>) {
   return () => (
-    <header mix={navbarStyle}>
-      <a href="/" aria-label="Remix Store home" mix={homeLinkStyle}>
-        <RemixLogo />
-      </a>
+    <>
+      {handle.props.storeWideSale ? (
+        <StoreWideSaleMarquee sale={handle.props.storeWideSale} />
+      ) : null}
+      <header mix={navbarStyle}>
+        <a href="/" aria-label="Remix Store home" mix={homeLinkStyle}>
+          <RemixLogo />
+        </a>
 
-      <nav aria-label="Main navigation" mix={desktopNavStyle}>
-        <ul>
-          {handle.props.menu.items.map((item) => (
-            <li key={item.id}>
-              <a href={item.url}>{item.title}</a>
-            </li>
-          ))}
-        </ul>
-      </nav>
+        <nav aria-label="Main navigation" mix={desktopNavStyle}>
+          <ul>
+            {handle.props.menu.items.map((item) => (
+              <li key={item.id}>
+                <a href={item.url}>{item.title}</a>
+              </li>
+            ))}
+          </ul>
+        </nav>
 
-      <div mix={actionsStyle}>
-        <MobileMenu menu={handle.props.menu} />
-        <CartShell initialData={handle.props.cartInitialData} />
-      </div>
-    </header>
+        <div mix={actionsStyle}>
+          <MobileMenu menu={handle.props.menu} />
+          <CartShell
+            initialData={handle.props.cartInitialData}
+            automaticDiscountLabel={handle.props.storeWideSale?.title}
+          />
+        </div>
+      </header>
+    </>
   );
 }
 
@@ -45,7 +58,7 @@ const navbarStyle = css({
   padding: "16px",
   position: "fixed",
   right: 0,
-  top: 0,
+  top: "var(--store-wide-sale-height)",
   width: "100%",
   zIndex: 10,
   "@media (min-width: 810px)": {
