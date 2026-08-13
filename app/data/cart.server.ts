@@ -12,6 +12,7 @@ import type { CartInitialData } from "./cart.ts";
 // The Storefront API `gql check` validates this against the pinned schema.
 const CART_FRAGMENT = gql(`
   fragment CartFragment on Cart {
+    updatedAt
     lines(first: 250) {
       nodes {
         discountAllocations {

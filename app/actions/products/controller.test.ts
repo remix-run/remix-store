@@ -144,6 +144,7 @@ function productData() {
     requiresSellingPlan: false,
     selectedOrFirstAvailableVariant: red,
     seo: { description: "A test product", title: "Test Product" },
+    vendor: "Test Vendor",
     technicalDescription: {
       value: JSON.stringify({
         children: [
@@ -194,6 +195,7 @@ function variant({
     image,
     price: { amount: "20.00", currencyCode: "USD" },
     product: { handle: "test-product", title: "Test Product" },
+    sku: `SKU-${id.split("/").at(-1)}`,
     selectedOptions,
     title: selectedOptions[0]?.value ?? "Default Title",
   };

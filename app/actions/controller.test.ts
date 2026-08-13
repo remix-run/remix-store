@@ -37,6 +37,9 @@ describe("platform skeleton", () => {
       html,
       /<meta name="twitter:card" content="summary_large_image"/,
     );
+    assert.match(html, /id="shopify-consent"/);
+    assert.match(html, /storefront-banner\.js/);
+    assert.match(html, /"mode":"default-banner"/);
     assert.match(html, /Main navigation/);
     assert.match(html, /All Products/);
     assert.match(html, /Store policies/);

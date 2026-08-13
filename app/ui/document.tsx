@@ -166,6 +166,11 @@ function getShopifyScripts(
   }
   return getShopifyScriptTags({
     analytics: { channel: analyticsShop.channel },
+    consent: { mode: "default-banner" },
+    // The storefront serves a single US/EN market today. If markets land,
+    // derive country/language from the same resolved market used for
+    // Storefront API requests; Shopify analytics reads them from
+    // `window.Shopify.locale` and `window.Shopify.currency.active`.
     i18n: {
       country: "US",
       language: "EN",

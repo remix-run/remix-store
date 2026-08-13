@@ -13,6 +13,7 @@ export function createProduct(redVariantId = RED_VARIANT_ID): ProductData {
     compareAtPrice: null,
     image: image("red", "Red product"),
     product: { title: "Test Product", handle: "test-product" },
+    sku: "RED-SKU",
   };
   let blueVariant = {
     id: BLUE_VARIANT_ID,
@@ -23,6 +24,7 @@ export function createProduct(redVariantId = RED_VARIANT_ID): ProductData {
     compareAtPrice: { amount: "20.00", currencyCode: "USD" },
     image: image("blue", "Blue product"),
     product: { title: "Test Product", handle: "test-product" },
+    sku: "BLUE-SKU",
   };
   let greenVariant = {
     id: "gid://shopify/ProductVariant/333",
@@ -33,6 +35,7 @@ export function createProduct(redVariantId = RED_VARIANT_ID): ProductData {
     compareAtPrice: null,
     image: image("green", "Green product"),
     product: { title: "Related Product", handle: "related-product" },
+    sku: "GREEN-SKU",
   };
 
   return {
