@@ -33,21 +33,17 @@ export function SubscribeFormComponent(handle: Handle<SubscribeFormProps>) {
   return () => {
     let backInStock = handle.props.mode === "back-in-stock";
     let complete = result?.success === true;
-    let title = backInStock ? "Notify me when it’s back" : undefined;
     return (
-      <section aria-label={title} mix={formSectionStyle}>
-        {title ? <h2>{title}</h2> : null}
-        {backInStock ? (
-          <p>
-            Enter your email and we’ll let you know when this option returns.
-          </p>
-        ) : null}
+      <section
+        aria-label={backInStock ? "Notify me when it’s back" : undefined}
+        mix={backInStock ? backInStockSectionStyle : formSectionStyle}
+      >
         <form
           action={handle.props.action}
           method="post"
           aria-busy={pending ? "true" : undefined}
           mix={[
-            formStyle,
+            backInStock ? backInStockFormStyle : formStyle,
             on("submit", async (event, signal) => {
               event.preventDefault();
               // Capture currentTarget synchronously: browsers clear it after
@@ -87,10 +83,15 @@ export function SubscribeFormComponent(handle: Handle<SubscribeFormProps>) {
             }),
           ]}
         >
-          <label for={backInStock ? "back-in-stock-email" : "subscribe-email"}>
-            Email address
+          <label
+            for={backInStock ? "back-in-stock-email" : "subscribe-email"}
+            mix={visuallyHiddenStyle}
+          >
+            {backInStock
+              ? "Email address for stock notifications"
+              : "Email address"}
           </label>
-          <div mix={controlsStyle}>
+          <div mix={backInStock ? notifyRowStyle : newsletterRowStyle}>
             <input
               id={backInStock ? "back-in-stock-email" : "subscribe-email"}
               type="email"
@@ -101,36 +102,37 @@ export function SubscribeFormComponent(handle: Handle<SubscribeFormProps>) {
               placeholder="run@remix.run"
               required
               disabled={pending}
-              mix={on("input", () => {
-                if (!result) return;
-                result = undefined;
-                handle.update();
-              })}
+              mix={[
+                backInStock ? backInStockInputStyle : emailInputStyle,
+                complete ? successInputStyle : undefined,
+                on("input", () => {
+                  if (!result) return;
+                  result = undefined;
+                  handle.update();
+                }),
+              ]}
             />
-            <button type="submit" disabled={pending || complete}>
+            <button
+              type="submit"
+              disabled={pending || complete}
+              mix={backInStock ? notifyButtonStyle : subscribeButtonStyle}
+            >
               {pending
-                ? "Subscribing…"
+                ? backInStock
+                  ? "Signing up…"
+                  : "Subscribing…"
                 : result?.success
-                  ? "Subscribed ✓"
+                  ? backInStock
+                    ? "Notify me"
+                    : "Subscribed ✓"
                   : backInStock
                     ? "Notify me"
                     : "Subscribe"}
             </button>
           </div>
-          <label mix={consentStyle}>
-            <input
-              type="checkbox"
-              name="consent"
-              value="yes"
-              required
-              disabled={pending || complete}
-            />
-            <span>
-              I agree to receive email updates and marketing from Remix.
-            </span>
-          </label>
           {backInStock ? (
             <>
+              <input type="hidden" name="consent" value="yes" />
               <input
                 type="hidden"
                 name="product-handle"
@@ -142,7 +144,20 @@ export function SubscribeFormComponent(handle: Handle<SubscribeFormProps>) {
                 value={handle.props.variantId}
               />
             </>
-          ) : null}
+          ) : (
+            <label mix={consentStyle}>
+              <input
+                type="checkbox"
+                name="consent"
+                value="yes"
+                required
+                disabled={pending || complete}
+              />
+              <span>
+                I agree to receive email updates and marketing from Remix.
+              </span>
+            </label>
+          )}
           {result?.success ? (
             <p role="status" mix={successStyle}>
               {result.message}
@@ -150,6 +165,11 @@ export function SubscribeFormComponent(handle: Handle<SubscribeFormProps>) {
           ) : result?.error ? (
             <p role="alert" mix={errorStyle}>
               {result.error}
+            </p>
+          ) : backInStock ? (
+            <p mix={helperStyle}>
+              This size is currently out of stock. Sign up to be notified by
+              email when restock this size.
             </p>
           ) : null}
         </form>
@@ -179,45 +199,107 @@ const formSectionStyle = css({
   display: "flex",
   flexDirection: "column",
   gap: "12px",
-  "& h2, & p": { margin: 0 },
+});
+const backInStockSectionStyle = css({
+  display: "flex",
+  flexDirection: "column",
+  gap: "16px",
+  minWidth: 0,
 });
 const formStyle = css({
   display: "flex",
   flexDirection: "column",
   gap: "12px",
-  "& > label:first-child": {
-    clip: "rect(0 0 0 0)",
-    clipPath: "inset(50%)",
-    height: "1px",
-    overflow: "hidden",
-    position: "absolute",
-    whiteSpace: "nowrap",
-    width: "1px",
-  },
 });
-const controlsStyle = css({
+const newsletterRowStyle = css({
   display: "grid",
   gap: "8px",
   "@media (min-width: 540px)": { gridTemplateColumns: "minmax(0, 1fr) auto" },
-  "& input": {
-    background: "transparent",
-    border: "3px solid var(--color-white)",
-    borderRadius: "54px",
-    color: "var(--color-white)",
-    fontSize: "1rem",
-    minHeight: "56px",
-    padding: "12px 20px",
+});
+const backInStockFormStyle = css({
+  display: "flex",
+  flexDirection: "column",
+  gap: "16px",
+  minWidth: 0,
+});
+const notifyRowStyle = css({
+  display: "grid",
+  gap: "16px",
+  minWidth: 0,
+  "@media (min-width: 1400px)": {
+    gap: "12px",
+    gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
   },
-  "& button": {
-    background: "var(--color-white)",
-    borderRadius: "54px",
-    color: "var(--color-black)",
-    fontSize: "1rem",
-    fontWeight: 700,
-    minHeight: "56px",
-    padding: "12px 24px",
+});
+const visuallyHiddenStyle = css({
+  clip: "rect(0, 0, 0, 0)",
+  clipPath: "inset(50%)",
+  height: "1px",
+  overflow: "hidden",
+  position: "absolute",
+  whiteSpace: "nowrap",
+  width: "1px",
+});
+const emailInputStyle = css({
+  background: "transparent",
+  border: "3px solid var(--color-white)",
+  borderRadius: "54px",
+  color: "var(--color-white)",
+  fontSize: "1rem",
+  minHeight: "56px",
+  padding: "12px 20px",
+  width: "100%",
+});
+const backInStockInputStyle = css({
+  background: "transparent",
+  border: "3px solid var(--color-white)",
+  borderRadius: "54px",
+  color: "var(--color-white)",
+  fontSize: "1.125rem",
+  fontWeight: 600,
+  minHeight: "64px",
+  outline: "none",
+  padding: "16px 24px",
+  width: "100%",
+  "&::placeholder": { color: "rgba(255,255,255,.6)", fontSize: "1.25rem" },
+  "@media (min-width: 1400px)": {
+    gridColumn: "span 2",
+    minHeight: "66px",
   },
-  "& button:disabled": { opacity: 0.6 },
+});
+const successInputStyle = css({
+  borderColor: "var(--color-green-brand)",
+  color: "var(--color-green-brand)",
+});
+const subscribeButtonStyle = css({
+  background: "var(--color-white)",
+  border: 0,
+  borderRadius: "54px",
+  color: "var(--color-black)",
+  fontSize: "1rem",
+  fontWeight: 700,
+  minHeight: "56px",
+  padding: "12px 24px",
+  "&:disabled": { opacity: 0.6 },
+});
+const notifyButtonStyle = css({
+  background: "var(--color-white)",
+  border: 0,
+  borderRadius: "54px",
+  color: "var(--color-black)",
+  fontSize: "1.25rem",
+  fontWeight: 600,
+  height: "64px",
+  minHeight: "64px",
+  padding: "16px 12px",
+  whiteSpace: "nowrap",
+  width: "100%",
+  "&:disabled": {
+    background: "rgba(255,255,255,.2)",
+    color: "rgba(255,255,255,.8)",
+    cursor: "not-allowed",
+  },
+  "@media (min-width: 1400px)": { height: "66px", minHeight: "66px" },
 });
 const consentStyle = css({
   alignItems: "start",
@@ -227,5 +309,25 @@ const consentStyle = css({
   lineHeight: 1.4,
   "& input": { marginTop: "3px" },
 });
-const successStyle = css({ color: "var(--color-green-brand)", margin: 0 });
-const errorStyle = css({ color: "var(--color-red-brand)", margin: 0 });
+const helperStyle = css({
+  color: "rgba(255,255,255,.6)",
+  fontSize: ".75rem",
+  gridColumn: "1 / -1",
+  lineHeight: 1.4,
+  margin: 0,
+  "@media (min-width: 1400px)": { fontSize: ".875rem" },
+});
+const successStyle = css({
+  color: "var(--color-green-brand)",
+  fontSize: ".75rem",
+  gridColumn: "1 / -1",
+  margin: 0,
+  "@media (min-width: 1400px)": { fontSize: ".875rem" },
+});
+const errorStyle = css({
+  color: "var(--color-red-brand)",
+  fontSize: ".75rem",
+  gridColumn: "1 / -1",
+  margin: 0,
+  "@media (min-width: 1400px)": { fontSize: ".875rem" },
+});

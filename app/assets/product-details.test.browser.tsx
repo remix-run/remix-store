@@ -120,10 +120,7 @@ describe("product form", () => {
     );
     assert.match($("h1")?.closest("section")?.textContent ?? "", /\$15\.00/);
     assert.equal($('button[name="add-to-cart"]')?.textContent, "Sold out");
-    shopPay = $("shop-pay-button");
-    assert.ok(shopPay instanceof HTMLElement);
-    assert.equal(shopPay.getAttribute("variants"), "222:1");
-    assert.equal(shopPay.hasAttribute("disabled"), true);
+    assert.equal($("shop-pay-button"), null);
     assert.equal(navigatedTo, "/products/test-product?ref=campaign&Color=Blue");
 
     let combinedListing = $('a[href*="related-product"]');
@@ -183,13 +180,10 @@ describe("product form", () => {
     assert.equal($('input[name="variant-title"]'), null);
 
     let email = $("#back-in-stock-email");
-    let consent = $('input[name="consent"]');
     let form = email?.closest("form");
     assert.ok(email instanceof HTMLInputElement);
-    assert.ok(consent instanceof HTMLInputElement);
     assert.ok(form instanceof HTMLFormElement);
     email.value = "member@example.com";
-    consent.checked = true;
     await act(() =>
       form.dispatchEvent(
         new SubmitEvent("submit", { bubbles: true, cancelable: true }),

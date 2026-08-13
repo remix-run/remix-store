@@ -28,7 +28,8 @@ describe("subscribe form", () => {
       "gid://shopify/ProductVariant/222",
     );
     assert.equal($('input[name="variant-title"]'), null);
-    assert.ok($('input[name="consent"][required]'));
+    assert.equal($('input[name="consent"]')?.getAttribute("type"), "hidden");
+    assert.equal($('input[name="consent"]')?.getAttribute("value"), "yes");
   });
 
   it("posts the hydrated form and renders pending then success", async (t) => {

@@ -365,51 +365,77 @@ export const ProductDetails = clientEntry(
               </p>
             </div>
 
-            <div mix={purchaseStyle}>
-              {options.length ? (
-                <div mix={optionsStyle}>
-                  {options.map((option) => {
-                    let selectedName = option.values.find(
-                      (value) => value.selected,
-                    )?.name;
-                    return (
-                      <details
-                        key={option.name}
-                        mix={[optionMenuStyle, productOptionMenuBehavior()]}
-                      >
-                        <summary>
-                          <span>
-                            <span mix={visuallyHiddenStyle}>
-                              {option.name}:{" "}
+            <div mix={purchaseGroupStyle}>
+              <div mix={purchaseStyle}>
+                {options.length ? (
+                  <div mix={optionsStyle}>
+                    {options.map((option) => {
+                      let selectedName = option.values.find(
+                        (value) => value.selected,
+                      )?.name;
+                      return (
+                        <details
+                          key={option.name}
+                          mix={[optionMenuStyle, productOptionMenuBehavior()]}
+                        >
+                          <summary>
+                            <span>
+                              <span mix={visuallyHiddenStyle}>
+                                {option.name}:{" "}
+                              </span>
+                              {selectedName ?? option.name}
                             </span>
-                            {selectedName ?? option.name}
-                          </span>
-                          <Icon name="chevron-down" />
-                        </summary>
-                        <div>
-                          {option.values.map((value) => {
-                            let href = variantHref(
-                              value.handle,
-                              value.selectedOptions,
-                              product.options,
-                              search,
-                            );
-                            let label = value.available
-                              ? value.name
-                              : `${value.name} — Sold out`;
-
-                            if (!value.exists) {
-                              return (
-                                <button key={value.name} type="button" disabled>
-                                  {value.name}
-                                </button>
+                            <Icon name="chevron-down" />
+                          </summary>
+                          <div>
+                            {option.values.map((value) => {
+                              let href = variantHref(
+                                value.handle,
+                                value.selectedOptions,
+                                product.options,
+                                search,
                               );
-                            }
+                              let label = value.available
+                                ? value.name
+                                : `${value.name} — Sold out`;
 
-                            if (
-                              !activeState ||
-                              value.handle !== product.handle
-                            ) {
+                              if (!value.exists) {
+                                return (
+                                  <button
+                                    key={value.name}
+                                    type="button"
+                                    disabled
+                                  >
+                                    {value.name}
+                                  </button>
+                                );
+                              }
+
+                              if (
+                                !activeState ||
+                                value.handle !== product.handle
+                              ) {
+                                return (
+                                  <a
+                                    key={value.name}
+                                    href={href}
+                                    aria-current={
+                                      value.selected ? "true" : undefined
+                                    }
+                                  >
+                                    <span>{label}</span>
+                                    {value.selected ? (
+                                      <Icon name="check" />
+                                    ) : null}
+                                  </a>
+                                );
+                              }
+
+                              let optionRegistration = register("optionValue", {
+                                optionName: option.name,
+                                value: value.name,
+                              });
+
                               return (
                                 <a
                                   key={value.name}
@@ -417,6 +443,13 @@ export const ProductDetails = clientEntry(
                                   aria-current={
                                     value.selected ? "true" : undefined
                                   }
+                                  mix={on("click", (event) => {
+                                    event.preventDefault();
+                                    (event.currentTarget as HTMLElement)
+                                      .closest("details")
+                                      ?.removeAttribute("open");
+                                    optionRegistration.onClick();
+                                  })}
                                 >
                                   <span>{label}</span>
                                   {value.selected ? (
@@ -424,109 +457,84 @@ export const ProductDetails = clientEntry(
                                   ) : null}
                                 </a>
                               );
-                            }
+                            })}
+                          </div>
+                        </details>
+                      );
+                    })}
+                  </div>
+                ) : null}
 
-                            let optionRegistration = register("optionValue", {
-                              optionName: option.name,
-                              value: value.name,
-                            });
-
-                            return (
-                              <a
-                                key={value.name}
-                                href={href}
-                                aria-current={
-                                  value.selected ? "true" : undefined
-                                }
-                                mix={on("click", (event) => {
-                                  event.preventDefault();
-                                  (event.currentTarget as HTMLElement)
-                                    .closest("details")
-                                    ?.removeAttribute("open");
-                                  optionRegistration.onClick();
-                                })}
-                              >
-                                <span>{label}</span>
-                                {value.selected ? <Icon name="check" /> : null}
-                              </a>
-                            );
-                          })}
-                        </div>
-                      </details>
-                    );
-                  })}
-                </div>
-              ) : null}
-
-              <div
-                mix={[
-                  buyActionsStyle,
-                  options.length ? undefined : buyActionsOnlyStyle,
-                ]}
-              >
-                <form
-                  action={CART_API_PATH}
-                  method="post"
-                  aria-busy={pending ? "true" : undefined}
+                <div
                   mix={[
-                    addFormStyle,
-                    pending ? pendingStyle : undefined,
-                    on("submit", async (event) => {
-                      event.preventDefault();
-                      if (!store || !cartStore || !addEnabled) return;
-
-                      let currentSubmission = ++submission;
-                      submissionError = "";
-                      pending = true;
-                      handle.update();
-
-                      try {
-                        await store.handleFormSubmit(event);
-                      } catch (error) {
-                        if (currentSubmission === submission) {
-                          submissionError =
-                            error instanceof Error
-                              ? error.message
-                              : "The item could not be added.";
-                        }
-                      } finally {
-                        if (currentSubmission === submission) {
-                          pending = false;
-                          handle.update();
-                        }
-                      }
-                    }),
+                    buyActionsStyle,
+                    options.length ? undefined : buyActionsOnlyStyle,
                   ]}
                 >
-                  <input type="hidden" {...register("merchandiseId", {})} />
-                  <input
-                    type="hidden"
-                    {...register("quantity", { value: 1 })}
-                  />
-                  <button
-                    {...register("addToCart", {})}
-                    disabled={!addEnabled || pending}
+                  <form
+                    action={CART_API_PATH}
+                    method="post"
+                    aria-busy={pending ? "true" : undefined}
+                    mix={[
+                      addFormStyle,
+                      pending ? pendingStyle : undefined,
+                      on("submit", async (event) => {
+                        event.preventDefault();
+                        if (!store || !cartStore || !addEnabled) return;
+
+                        let currentSubmission = ++submission;
+                        submissionError = "";
+                        pending = true;
+                        handle.update();
+
+                        try {
+                          await store.handleFormSubmit(event);
+                        } catch (error) {
+                          if (currentSubmission === submission) {
+                            submissionError =
+                              error instanceof Error
+                                ? error.message
+                                : "The item could not be added.";
+                          }
+                        } finally {
+                          if (currentSubmission === submission) {
+                            pending = false;
+                            handle.update();
+                          }
+                        }
+                      }),
+                    ]}
                   >
-                    {pending
-                      ? "Adding…"
-                      : addToCartLabel(product, selectedVariant)}
-                  </button>
-                  {errors.length ? (
-                    <div role="alert" mix={errorStyle}>
-                      {errors.map((message) => (
-                        <p key={message}>{message}</p>
-                      ))}
-                    </div>
+                    <input type="hidden" {...register("merchandiseId", {})} />
+                    <input
+                      type="hidden"
+                      {...register("quantity", { value: 1 })}
+                    />
+                    <button
+                      {...register("addToCart", {})}
+                      disabled={!addEnabled || pending}
+                    >
+                      {pending
+                        ? "Adding…"
+                        : addToCartLabel(product, selectedVariant)}
+                    </button>
+                    {errors.length ? (
+                      <div role="alert" mix={errorStyle}>
+                        {errors.map((message) => (
+                          <p key={message}>{message}</p>
+                        ))}
+                      </div>
+                    ) : null}
+                  </form>
+                  {selectedVariant && addEnabled ? (
+                    <ExpressShopPayButton
+                      disabled={pending}
+                      pending={pending}
+                      storeUrl={handle.props.shopPayStoreUrl}
+                      variantId={selectedVariant.id}
+                    />
                   ) : null}
-                </form>
-                {selectedVariant ? (
-                  <ExpressShopPayButton
-                    disabled={!addEnabled || pending}
-                    pending={pending}
-                    storeUrl={handle.props.shopPayStoreUrl}
-                    variantId={selectedVariant.id}
-                  />
-                ) : null}
+                </div>
               </div>
               {selectedVariant &&
               !selectedVariant.availableForSale &&
@@ -1013,6 +1021,12 @@ const priceStyle = css({
   gap: "10px !important",
   "& s": { color: "rgba(255,255,255,.55)" },
   "& [data-sale]": { color: "var(--color-red-brand)" },
+});
+const purchaseGroupStyle = css({
+  display: "flex",
+  flexDirection: "column",
+  gap: "16px",
+  minWidth: 0,
 });
 const purchaseStyle = css({
   display: "grid",

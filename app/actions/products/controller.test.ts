@@ -91,7 +91,12 @@ describe("product routes", () => {
     );
     let html = await response.text();
     assert.equal(response.status, 200);
-    assert.match(html, /Notify me when it’s back/);
+    assert.match(html, /aria-label="Notify me when it’s back"/);
+    assert.match(html, /Notify me/);
+    assert.match(
+      html,
+      /This size is currently out of stock\. Sign up to be notified by\s+email when restock this size\./,
+    );
     assert.match(html, /action="\/subscribe" method="post"/);
     assert.match(html, /name="product-handle" value="test-product"/);
     assert.match(
