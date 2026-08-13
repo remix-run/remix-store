@@ -587,22 +587,19 @@ function ProductImageFrame(
     return (
       <div
         data-product-image={mobile ? undefined : image.id || image.url}
-        style={{
-          backgroundImage: `url(${JSON.stringify(shopifyImageUrl(image.url, 32))})`,
-        }}
         mix={[
           productImageFrameStyle,
           ref((element, signal) => {
-            let imageElement = element.querySelector("img");
+            let imageElement = element.querySelector<HTMLImageElement>(
+              "img:not([data-preview-image])",
+            );
             if (!imageElement) return;
             if (imageElement.complete) {
-              element.style.backgroundImage = "none";
+              element.dataset.loaded = "true";
               return;
             }
-            element.dataset.loading = "true";
             let settle = () => {
-              delete element.dataset.loading;
-              element.style.backgroundImage = "none";
+              element.dataset.loaded = "true";
             };
             imageElement.addEventListener("load", settle, { once: true });
             imageElement.addEventListener("error", settle, { once: true });
@@ -613,6 +610,14 @@ function ProductImageFrame(
           }),
         ]}
       >
+        {/* Blurred low-res preview shown while the full image loads */}
+        <img
+          src={shopifyImageUrl(image.url, 32)}
+          alt=""
+          aria-hidden="true"
+          draggable={false}
+          data-preview-image="true"
+        />
         <ShopifyImage
           image={image}
           alt={image.altText ?? "Product image"}
@@ -878,23 +883,36 @@ const imageFallbackStyle = css({
 const productImageFrameStyle = css({
   aspectRatio: "1",
   backgroundColor: "var(--color-black)",
-  backgroundPosition: "center",
-  backgroundRepeat: "no-repeat",
-  backgroundSize: "cover",
   overflow: "hidden",
+  position: "relative",
   transition: "opacity 180ms ease",
-  "& img": {
+  "& [data-preview-image]": {
+    position: "absolute",
+    inset: 0,
+    width: "100%",
+    height: "100%",
+    objectFit: "cover",
+    filter: "blur(20px)",
+    // Scale up so the blur does not reveal transparent edges.
+    transform: "scale(1.1)",
+    opacity: 1,
+    transition: "opacity 750ms ease",
+  },
+  "& img:not([data-preview-image])": {
     height: "100%",
     objectFit: "contain",
-    opacity: 1,
-    transition: "opacity 220ms ease",
+    position: "relative",
     width: "100%",
+    filter: "blur(20px)",
+    transition: "filter 750ms ease",
   },
-  "&[data-loading] img": { opacity: 0 },
+  "&[data-loaded] [data-preview-image]": { opacity: 0 },
+  "&[data-loaded] img:not([data-preview-image])": { filter: "blur(0)" },
   "@media (min-width: 810px)": { borderRadius: "24px" },
   "@media (prefers-reduced-motion: reduce)": {
     transition: "none",
-    "& img": { transition: "none" },
+    "& [data-preview-image]": { transition: "none" },
+    "& img:not([data-preview-image])": { transition: "none" },
   },
 });
 const mobileGalleryShellStyle = css({
