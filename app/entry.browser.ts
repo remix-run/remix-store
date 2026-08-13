@@ -89,12 +89,21 @@ configureOpenCartAction();
 // visitor accepts the consent banner. `import.meta.hot` is only present during
 // Vite dev, never in a production build, so this block is stripped from Oxygen.
 if (import.meta.hot) {
-  let bus = getAnalytics();
-  if (bus) {
-    for (let event of Object.values(AnalyticsEvent)) {
+  let events = Object.values(AnalyticsEvent);
+  function attachAnalyticsLogger() {
+    let bus = getAnalytics();
+    if (!bus) {
+      // The analytics bus is created by an inline ShopifyScripts script that
+      // loads asynchronously. Retry until it's available.
+      setTimeout(attachAnalyticsLogger, 200);
+      return;
+    }
+    for (let event of events) {
       bus.subscribe(event, (payload) => {
         console.debug(`[analytics] ${event}`, payload);
       });
     }
+    console.log("[analytics] dev logger attached");
   }
+  attachAnalyticsLogger();
 }
