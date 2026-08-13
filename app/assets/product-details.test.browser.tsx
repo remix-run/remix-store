@@ -114,7 +114,10 @@ describe("product form", () => {
       $('input[name="merchandiseId"]')?.getAttribute("value"),
       BLUE_VARIANT_ID,
     );
-    assert.match($("img")?.getAttribute("src") ?? "", /blue\.jpg\?width=1200/);
+    assert.match(
+      $('img[alt="Blue product"]')?.getAttribute("src") ?? "",
+      /blue\.jpg\?width=1200/,
+    );
     assert.match($("h1")?.closest("section")?.textContent ?? "", /\$15\.00/);
     assert.equal($('button[name="add-to-cart"]')?.textContent, "Sold out");
     shopPay = $("shop-pay-button");
