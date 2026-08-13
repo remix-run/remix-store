@@ -12,6 +12,11 @@ import { clientEntry, css, on, type Handle } from "remix/ui";
 
 import { BrandedState } from "../../ui/public/branded-state.tsx";
 import { shopifyImageUrl } from "../../ui/public/shopify-image.tsx";
+import {
+  createSnapshotApplier,
+  hasPendingCartWork,
+  publishCartViewedWhenSettled,
+} from "./analytics.tsx";
 import { PageTitle } from "./page-title.tsx";
 import {
   CART_API_PATH,
@@ -47,7 +52,7 @@ function openCartDrawer() {
     if (drawer.dataset.cartEmpty === "true") return;
     drawer.showModal();
     setCartTriggerExpanded(true);
-    // TODO(2.12): publish cart_viewed analytics event.
+    publishCartViewedWhenSettled(getBrowserCartStore());
   }
 }
 
@@ -109,6 +114,11 @@ export const CartShell = clientEntry(
     let cartHadItems = Boolean(state?.data.lines.nodes.length);
     let hydrated = false;
 
+    let applySnapshot = createSnapshotApplier(handle, store, () => {
+      state = store?.getState();
+      drawerState = state;
+    });
+
     if (store) {
       let unsubscribe = store.subscribe((nextState) => {
         let cartHasItems = nextState.data.lines.nodes.length > 0;
@@ -132,6 +142,8 @@ export const CartShell = clientEntry(
     }
 
     return () => {
+      applySnapshot(handle.props.initialData);
+
       let snapshot = getCartSnapshot(
         hydrated ? state : undefined,
         handle.props.initialData,
@@ -186,6 +198,15 @@ export const CartPageContent = clientEntry(
     let state = store?.getState();
     let hydrated = false;
 
+    let applySnapshot = createSnapshotApplier(
+      handle as Handle<{ initialData?: CartInitialData }>,
+      store,
+      () => {
+        state = store?.getState();
+        publishCartViewedWhenSettled(store);
+      },
+    );
+
     if (store) {
       let unsubscribe = store.subscribe((nextState) => {
         state = nextState;
@@ -196,19 +217,24 @@ export const CartPageContent = clientEntry(
         if (signal.aborted) return;
         hydrated = true;
         state = store.getState();
+        publishCartViewedWhenSettled(store);
         handle.update();
       });
     }
 
-    return () => (
-      <CartView
-        {...getCartSnapshot(
-          hydrated ? state : undefined,
-          handle.props.initialData,
-        )}
-        store={store}
-      />
-    );
+    return () => {
+      applySnapshot(handle.props.initialData);
+
+      return (
+        <CartView
+          {...getCartSnapshot(
+            hydrated ? state : undefined,
+            handle.props.initialData,
+          )}
+          store={store}
+        />
+      );
+    };
   },
 );
 
@@ -383,7 +409,7 @@ function CartView(handle: Handle<CartViewProps>) {
       );
     }
 
-    let cartPending = isCartPending(state);
+    let cartPending = hasPendingCartWork(state);
     let discountAllocation = getCartDiscountAllocation(cart);
 
     return (
@@ -757,15 +783,6 @@ function ErrorMessages(handle: Handle<{ id: string; messages: string[] }>) {
         <p key={`${message}-${index}`}>{message}</p>
       ))}
     </div>
-  );
-}
-
-function isCartPending(state?: CartState): boolean {
-  if (!state) return false;
-  return (
-    state.pending.lines.size > 0 ||
-    state.pending.discountCodes.size > 0 ||
-    Boolean(state.pending.note)
   );
 }
 

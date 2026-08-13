@@ -359,6 +359,7 @@ const PRODUCT_VARIANT_FRAGMENT = gql(`
       amount
       currencyCode
     }
+    sku
     product {
       handle
       title
@@ -381,6 +382,7 @@ const PRODUCT_QUERY = gql(
         id
         handle
         title
+        vendor
         description
         requiresSellingPlan
         category {

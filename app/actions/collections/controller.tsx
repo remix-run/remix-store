@@ -44,6 +44,7 @@ export default createController(routes.collections, {
       return render(
         <CollectionPage
           canonicalUrl={url.origin + routes.collections.show.href(params)}
+          id={collection.data.id}
           handle={collection.data.handle}
           title={collection.data.title}
           description={collection.data.description}

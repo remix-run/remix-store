@@ -1,5 +1,6 @@
 import { type Handle } from "remix/ui";
 
+import { ProductViewed } from "../../assets/public/analytics.tsx";
 import { ProductDetails } from "../../assets/public/product-details.tsx";
 import type { NavigationMenuData, ProductData } from "../../data/storefront.ts";
 import { Document } from "../../ui/document.tsx";
@@ -27,6 +28,7 @@ export function ProductPage(
         socialType="product"
       >
         <main>
+          <ProductViewed key={product.id} product={analyticsProduct(product)} />
           <ProductDetails
             menu={handle.props.menu}
             product={product}
@@ -36,6 +38,20 @@ export function ProductPage(
         </main>
       </Document>
     );
+  };
+}
+
+function analyticsProduct(product: ProductData) {
+  let variant = product.selectedOrFirstAvailableVariant;
+  return {
+    id: product.id,
+    title: product.title,
+    price: variant?.price.amount ?? product.priceRange.minVariantPrice.amount,
+    vendor: product.vendor,
+    variantId: variant?.id ?? product.id,
+    variantTitle: variant?.title ?? product.title,
+    quantity: 1,
+    sku: variant?.sku,
   };
 }
 

@@ -1,5 +1,6 @@
 import { type Handle } from "remix/ui";
 
+import { CollectionViewed } from "../../assets/public/analytics.tsx";
 import { CollectionProductGrid } from "../../assets/public/collection-grid.tsx";
 import type {
   ProductCardData,
@@ -14,6 +15,7 @@ export function CollectionPage(
     canonicalUrl: string;
     description: string;
     handle: string;
+    id: string;
     pageInfo: ProductPageInfoData;
     products: ProductCardData[];
     title: string;
@@ -27,6 +29,10 @@ export function CollectionPage(
       socialImage="/social-collections.jpg"
     >
       <main>
+        <CollectionViewed
+          key={handle.props.id}
+          collection={{ id: handle.props.id, handle: handle.props.handle }}
+        />
         <PageTitle title={handle.props.title} />
         {handle.props.products.length ? (
           <CollectionProductGrid

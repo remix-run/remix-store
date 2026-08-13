@@ -51,7 +51,9 @@ test("keeps product details when navigating from the home page", async ({
   await productRegion.locator('a[href^="/products/"]').click();
 
   await expect(page).toHaveURL(/\/products\//);
-  await expect(page.locator("main h1")).toHaveText(productName);
+  await expect(
+    page.getByRole("heading", { exact: true, level: 1, name: productName }),
+  ).toBeVisible();
 });
 
 test("returns a real branded 404 response and navigates home", async ({
