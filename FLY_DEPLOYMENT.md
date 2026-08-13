@@ -28,11 +28,8 @@ operator explicitly enables `TRUST_PROXY=true` behind a trusted proxy that
 overwrites forwarding headers. Never proxy a client-supplied buyer-IP header.
 `PUBLIC_CHECKOUT_DOMAIN` was retired: checkout
 buttons and `/checkout` resolve Shopify's authoritative `cart.checkoutUrl`.
-Application sessions and `SESSION_SECRET` are also retired; Fly needs neither.
-Hydrogen compatibility routes receive request-local scratch state that is not
-persisted and must not be reused for Customer Account API authentication, OAuth,
-or other cross-request state. Add the server-only Admin API credentials only
-when enabling their consuming subscription features.
+Fly does not need `SESSION_SECRET`. Add the server-only Admin API credentials
+only when enabling their consuming subscription features.
 
 ## Deployment behavior
 

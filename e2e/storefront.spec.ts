@@ -1,16 +1,9 @@
 import { expect, test } from "playwright/test";
 
-test("renders without an application session secret or cookie", async ({
-  page,
-}) => {
-  // The local public-app fixture intentionally provides no SESSION_SECRET.
+test("renders the current storefront skeleton", async ({ page }) => {
   let response = await page.goto("/");
 
   expect(response?.status()).toBe(200);
-  let cookieNames = (await page.context().cookies()).map(
-    (cookie) => cookie.name,
-  );
-  expect(cookieNames).not.toContain("session");
   await expect(page.locator("main")).toBeVisible();
   await expect(
     page.getByRole("heading", { name: "Remix 3 Racing Team Collection" }),
