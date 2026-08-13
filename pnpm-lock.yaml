@@ -42,6 +42,9 @@ importers:
       '@types/sanitize-html':
         specifier: 2.16.1
         version: 2.16.1
+      graphql:
+        specifier: 16.14.0
+        version: 16.14.0
       magic-string:
         specifier: 0.30.21
         version: 0.30.21
