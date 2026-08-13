@@ -11,6 +11,8 @@ import {
   type StoreWideSaleData,
 } from "../data/storefront.ts";
 import type { CartInitialData } from "../data/cart.ts";
+import { US_MARKET, type ActiveMarket } from "../lib/public/market.ts";
+import { MarketConfig } from "./market.tsx";
 import {
   AnalyticsShopConfig,
   CartInitialDataConfig,
@@ -53,12 +55,15 @@ export function render(options: RenderOptions) {
           | AnalyticsShop
           | null
           | undefined) ?? null;
+      let market =
+        (context.get(MarketConfig) as ActiveMarket | undefined) ?? US_MARKET;
       let stream = renderToStream(
         <DocumentAssetsProvider {...options.documentAssets}>
           <ShellDataProvider
             analyticsShop={analyticsShop}
             cartInitialData={cartInitialData}
             footerMenu={footerMenu}
+            market={market}
             navigationMenu={navigationMenu}
             storeWideSale={storeWideSale}
           >

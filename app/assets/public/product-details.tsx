@@ -26,7 +26,12 @@ import type {
   NavigationMenuData,
   ProductData,
 } from "../../data/storefront.ts";
-import { CART_API_PATH } from "../../lib/public/cart-routes.ts";
+import { getCartApiPath } from "../../lib/public/cart-routes.ts";
+import {
+  marketPath,
+  US_MARKET,
+  type ActiveMarket,
+} from "../../lib/public/market.ts";
 import { productSubscriptionsEnabled } from "../../lib/public/subscription.ts";
 import { RichText } from "../../ui/public/rich-text.tsx";
 import {
@@ -37,6 +42,7 @@ import { getBrowserCartStore } from "./cart-store.ts";
 import { SubscribeForm } from "./subscribe-form.tsx";
 
 type ProductDetailsProps = {
+  market?: ActiveMarket;
   menu?: NavigationMenuData;
   product: ProductData;
   search: string;
@@ -51,7 +57,8 @@ type ProductState = ProductFormStoreState<
 export const ProductDetails = clientEntry(
   import.meta.url,
   function ProductDetails(handle: Handle<ProductDetailsProps>) {
-    let cartStore = getBrowserCartStore();
+    let market = handle.props.market ?? US_MARKET;
+    let cartStore = getBrowserCartStore(undefined, market.pathPrefix);
     let store = cartStore
       ? createProductFormStore(handle.props.product, cartStore)
       : undefined;
@@ -104,6 +111,8 @@ export const ProductDetails = clientEntry(
     }
 
     return () => {
+      market = handle.props.market ?? US_MARKET;
+      getBrowserCartStore(undefined, market.pathPrefix);
       let { menu, product, search } = handle.props;
       let nextIdentity = productIdentity(product);
 
@@ -150,6 +159,7 @@ export const ProductDetails = clientEntry(
               result.selectedOptions,
               product.options,
               search,
+              market.pathPrefix,
             ),
             { history: "replace", resetScroll: false },
           );
@@ -353,7 +363,7 @@ export const ProductDetails = clientEntry(
                 {selectedVariant?.compareAtPrice ? (
                   <s>
                     {formatMoney(selectedVariant.compareAtPrice, {
-                      locale: "en-US",
+                      locale: market.locale,
                     }).toString()}
                   </s>
                 ) : null}
@@ -362,7 +372,9 @@ export const ProductDetails = clientEntry(
                     selectedVariant?.compareAtPrice ? "true" : undefined
                   }
                 >
-                  {formatMoney(price, { locale: "en-US" }).toString()}
+                  {formatMoney(price, {
+                    locale: market.locale,
+                  }).toString()}
                 </span>
               </p>
             </div>
@@ -396,6 +408,7 @@ export const ProductDetails = clientEntry(
                                 value.selectedOptions,
                                 product.options,
                                 search,
+                                market.pathPrefix,
                               );
                               let label = value.available
                                 ? value.name
@@ -474,7 +487,7 @@ export const ProductDetails = clientEntry(
                   ]}
                 >
                   <form
-                    action={CART_API_PATH}
+                    action={getCartApiPath(market.pathPrefix)}
                     method="post"
                     aria-busy={pending ? "true" : undefined}
                     mix={[
@@ -545,7 +558,7 @@ export const ProductDetails = clientEntry(
               !selectedVariant.availableForSale &&
               productSubscriptionsEnabled(product) ? (
                 <SubscribeForm
-                  action="/subscribe"
+                  action={marketPath("/subscribe", market.pathPrefix)}
                   mode="back-in-stock"
                   productHandle={product.handle}
                   variantId={selectedVariant.id}
@@ -555,6 +568,7 @@ export const ProductDetails = clientEntry(
 
             {product.customDescription ? (
               <RichText
+                pathPrefix={market.pathPrefix}
                 value={product.customDescription.value}
                 variant="product-description"
               />
@@ -566,6 +580,7 @@ export const ProductDetails = clientEntry(
               <div mix={technicalStyle}>
                 <h2>Technical Description</h2>
                 <RichText
+                  pathPrefix={market.pathPrefix}
                   value={product.technicalDescription.value}
                   variant="product-description"
                 />
@@ -741,12 +756,16 @@ export function variantHref(
   selectedOptions: ReadonlyArray<SelectedOption>,
   options: ReadonlyArray<{ name: string }>,
   currentSearch = "",
+  pathPrefix: ActiveMarket["pathPrefix"] = "",
 ): string {
   let search = new URLSearchParams(currentSearch);
   for (let option of options) search.delete(option.name);
   for (let option of selectedOptions) search.set(option.name, option.value);
   let query = search.toString();
-  return `/products/${encodeURIComponent(handle)}${query ? `?${query}` : ""}`;
+  return marketPath(
+    `/products/${encodeURIComponent(handle)}${query ? `?${query}` : ""}`,
+    pathPrefix,
+  );
 }
 
 function ExpressShopPayButton(

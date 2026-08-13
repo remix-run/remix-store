@@ -11,6 +11,7 @@ import {
   FALLBACK_FOOTER_MENU,
   FALLBACK_NAVIGATION_MENU,
 } from "../data/storefront.ts";
+import { US_MARKET, type ActiveMarket } from "../lib/public/market.ts";
 import { DocumentAssetsProvider } from "./document-assets.tsx";
 import { Navbar } from "./navbar.tsx";
 import { ShellDataProvider } from "./shell-data.tsx";
@@ -43,16 +44,23 @@ export function Document(handle: Handle<DocumentProps>) {
       analyticsShop: null,
       cartInitialData: undefined,
       footerMenu: FALLBACK_FOOTER_MENU,
+      market: US_MARKET,
       navigationMenu: FALLBACK_NAVIGATION_MENU,
       storeWideSale: null,
     };
     let socialImageUrl = canonicalUrl
       ? new URL(socialImage, canonicalUrl).href
       : socialImage;
-    let shopifyScripts = getShopifyScripts(shellData.analyticsShop);
+    let shopifyScripts = getShopifyScripts(
+      shellData.analyticsShop,
+      shellData.market,
+    );
 
     return (
-      <html lang="en">
+      <html
+        lang={shellData.market.locale}
+        data-market-prefix={shellData.market.pathPrefix || undefined}
+      >
         <head>
           <meta charSet="utf-8" />
           <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -140,11 +148,15 @@ export function Document(handle: Handle<DocumentProps>) {
         <body mix={bodyStyle}>
           <Navbar
             cartInitialData={shellData.cartInitialData}
+            market={shellData.market}
             menu={shellData.navigationMenu}
             storeWideSale={shellData.storeWideSale}
           />
           {children}
-          <Footer menu={shellData.footerMenu} />
+          <Footer
+            menu={shellData.footerMenu}
+            pathPrefix={shellData.market.pathPrefix}
+          />
           {shopifyScripts.scripts.map((descriptor) => (
             <ShopifyTag descriptor={descriptor} />
           ))}
@@ -161,7 +173,8 @@ const EMPTY_SHOPIFY_SCRIPT_TAGS: ShopifyScriptTagDescriptors = {
 };
 
 function getShopifyScripts(
-  analyticsShop?: AnalyticsShop | null,
+  analyticsShop: AnalyticsShop | null | undefined,
+  market: ActiveMarket,
 ): ShopifyScriptTagDescriptors {
   if (!analyticsShop?.shopId || !analyticsShop.myshopifyDomain) {
     return EMPTY_SHOPIFY_SCRIPT_TAGS;
@@ -169,14 +182,11 @@ function getShopifyScripts(
   return getShopifyScriptTags({
     analytics: { channel: analyticsShop.channel },
     consent: { mode: "default-banner" },
-    // The storefront serves a single US/EN market today. If markets land,
-    // derive country/language from the same resolved market used for
-    // Storefront API requests; Shopify analytics reads them from
-    // `window.Shopify.locale` and `window.Shopify.currency.active`.
     i18n: {
-      country: "US",
-      language: "EN",
+      country: market.country,
+      language: market.language,
       currency: analyticsShop.currency,
+      pathPrefix: market.pathPrefix,
     },
     shop: {
       myshopifyDomain: analyticsShop.myshopifyDomain,

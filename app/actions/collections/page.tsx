@@ -7,6 +7,7 @@ import type {
   ProductPageInfoData,
 } from "../../data/storefront.ts";
 import { PageTitle } from "../../assets/public/page-title.tsx";
+import { marketPath, type ActiveMarket } from "../../lib/public/market.ts";
 import { routes } from "../../routes.ts";
 import { Document } from "../../ui/document.tsx";
 
@@ -16,6 +17,7 @@ export function CollectionPage(
     description: string;
     handle: string;
     id: string;
+    market: ActiveMarket;
     pageInfo: ProductPageInfoData;
     products: ProductCardData[];
     title: string;
@@ -36,9 +38,11 @@ export function CollectionPage(
         <PageTitle title={handle.props.title} />
         {handle.props.products.length ? (
           <CollectionProductGrid
-            action={routes.collections.show.href({
-              handle: handle.props.handle,
-            })}
+            action={marketPath(
+              routes.collections.show.href({ handle: handle.props.handle }),
+              handle.props.market.pathPrefix,
+            )}
+            pathPrefix={handle.props.market.pathPrefix}
             products={handle.props.products}
             pageInfo={handle.props.pageInfo}
           />

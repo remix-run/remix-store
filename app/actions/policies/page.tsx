@@ -3,10 +3,15 @@ import { css, type Handle } from "remix/ui";
 import { PageTitle } from "../../assets/public/page-title.tsx";
 import type { PolicyData } from "../../data/policies.ts";
 import { sanitizePolicyHtml } from "../../lib/policy-html.ts";
+import type { ActiveMarket } from "../../lib/public/market.ts";
 import { Document } from "../../ui/document.tsx";
 
 export function PolicyPage(
-  handle: Handle<{ canonicalUrl: string; policy: PolicyData }>,
+  handle: Handle<{
+    canonicalUrl: string;
+    market: ActiveMarket;
+    policy: PolicyData;
+  }>,
 ) {
   return () => (
     <Document
@@ -17,7 +22,10 @@ export function PolicyPage(
         <PageTitle title={handle.props.policy.title} />
         <article
           mix={policyContentStyle}
-          innerHTML={sanitizePolicyHtml(handle.props.policy.body)}
+          innerHTML={sanitizePolicyHtml(
+            handle.props.policy.body,
+            handle.props.market.pathPrefix,
+          )}
         />
       </main>
     </Document>

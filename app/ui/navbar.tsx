@@ -3,6 +3,7 @@ import { css, type Handle } from "remix/ui";
 import { CartShell } from "../assets/public/cart.tsx";
 import { MobileMenu, RemixLogo } from "../assets/public/navbar.tsx";
 import type { CartInitialData } from "../data/cart.ts";
+import { marketPath, type ActiveMarket } from "../lib/public/market.ts";
 import type {
   NavigationMenuData,
   StoreWideSaleData,
@@ -11,6 +12,7 @@ import { StoreWideSaleMarquee } from "./store-wide-sale.tsx";
 
 interface NavbarProps {
   cartInitialData?: CartInitialData;
+  market: ActiveMarket;
   menu: NavigationMenuData;
   storeWideSale: StoreWideSaleData | null;
 }
@@ -19,10 +21,17 @@ export function Navbar(handle: Handle<NavbarProps>) {
   return () => (
     <>
       {handle.props.storeWideSale ? (
-        <StoreWideSaleMarquee sale={handle.props.storeWideSale} />
+        <StoreWideSaleMarquee
+          locale={handle.props.market.locale}
+          sale={handle.props.storeWideSale}
+        />
       ) : null}
       <header mix={navbarStyle}>
-        <a href="/" aria-label="Remix Store home" mix={homeLinkStyle}>
+        <a
+          href={marketPath("/", handle.props.market.pathPrefix)}
+          aria-label="Remix Store home"
+          mix={homeLinkStyle}
+        >
           <RemixLogo />
         </a>
 
@@ -41,6 +50,7 @@ export function Navbar(handle: Handle<NavbarProps>) {
           <CartShell
             initialData={handle.props.cartInitialData}
             automaticDiscountLabel={handle.props.storeWideSale?.title}
+            market={handle.props.market}
           />
         </div>
       </header>

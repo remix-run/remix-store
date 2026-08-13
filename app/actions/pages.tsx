@@ -12,6 +12,7 @@ import type {
   ProductPageInfoData,
 } from "../data/storefront.ts";
 import { focalPointPosition } from "../lib/image-utils.ts";
+import { marketPath, type ActiveMarket } from "../lib/public/market.ts";
 import { routes } from "../routes.ts";
 import { BrandedState } from "../ui/public/branded-state.tsx";
 import { Document } from "../ui/document.tsx";
@@ -25,6 +26,7 @@ export function HomePage(
     description?: string | null;
     hero: HomeHeroData | null;
     lookbookEntries: HomeLookbookEntryData[];
+    market: ActiveMarket;
     pageInfo: ProductPageInfoData;
     products: ProductCardData[];
     shopName: string;
@@ -44,22 +46,33 @@ export function HomePage(
         <main>
           <HomeHero
             assetImages={hero?.assetImages ?? []}
-            collectionHref={routes.collections.show.href({
-              handle: collectionHandle,
-            })}
+            collectionHref={marketPath(
+              routes.collections.show.href({ handle: collectionHandle }),
+              handle.props.market.pathPrefix,
+            )}
             heading="Remix 3 Racing Team Collection"
             cta="Shop New Items"
           />
           <div mix={editorialStyle}>
-            {firstEntry ? <LookbookEntry entry={firstEntry} /> : null}
+            {firstEntry ? (
+              <LookbookEntry entry={firstEntry} market={handle.props.market} />
+            ) : null}
             <RunnerPanel />
             {remainingEntries.map((entry) => (
-              <LookbookEntry key={entry.id} entry={entry} />
+              <LookbookEntry
+                key={entry.id}
+                entry={entry}
+                market={handle.props.market}
+              />
             ))}
             {handle.props.products.length ? (
               <div data-home-catalog="true" mix={homeCatalogStyle}>
                 <CollectionProductGrid
-                  action={routes.collections.show.href({ handle: "all" })}
+                  action={marketPath(
+                    routes.collections.show.href({ handle: "all" }),
+                    handle.props.market.pathPrefix,
+                  )}
+                  pathPrefix={handle.props.market.pathPrefix}
                   products={handle.props.products}
                   pageInfo={handle.props.pageInfo}
                 />
@@ -72,11 +85,15 @@ export function HomePage(
   };
 }
 
-function LookbookEntry(handle: Handle<{ entry: HomeLookbookEntryData }>) {
+function LookbookEntry(
+  handle: Handle<{ entry: HomeLookbookEntryData; market: ActiveMarket }>,
+) {
   return () => {
     let { entry } = handle.props;
     let { product } = entry;
-    let price = product ? lookbookPrice(product.price) : null;
+    let price = product
+      ? lookbookPrice(product.price, handle.props.market.locale)
+      : null;
 
     return (
       <section aria-label={product?.title ?? "Coming soon"} mix={lookbookStyle}>
@@ -90,7 +107,10 @@ function LookbookEntry(handle: Handle<{ entry: HomeLookbookEntryData }>) {
         </div>
         {product && price ? (
           <a
-            href={`/products/${encodeURIComponent(product.handle)}`}
+            href={marketPath(
+              `/products/${encodeURIComponent(product.handle)}`,
+              handle.props.market.pathPrefix,
+            )}
             aria-label={`${product.title}, ${price}`}
             mix={[pillLinkStyle, lookbookLinkStyle]}
           >
@@ -140,10 +160,13 @@ function RunnerPanel() {
   );
 }
 
-function lookbookPrice(price: ProductMoney): string {
+function lookbookPrice(
+  price: ProductMoney,
+  locale: ActiveMarket["locale"],
+): string {
   let amount = Number(price.amount);
   if (!Number.isFinite(amount)) return "Price unavailable";
-  return new Intl.NumberFormat("en-US", {
+  return new Intl.NumberFormat(locale, {
     style: "currency",
     currency: price.currencyCode,
     minimumFractionDigits: Number.isInteger(amount) ? 0 : 2,
@@ -152,7 +175,11 @@ function lookbookPrice(price: ProductMoney): string {
 }
 
 export function CartPage(
-  handle: Handle<{ canonicalUrl?: string; initialData: CartInitialData }>,
+  handle: Handle<{
+    canonicalUrl?: string;
+    initialData: CartInitialData;
+    market: ActiveMarket;
+  }>,
 ) {
   return () => {
     let storeWideSale = handle.context.get(ShellDataProvider)?.storeWideSale;
@@ -163,6 +190,7 @@ export function CartPage(
           <CartPageContent
             initialData={handle.props.initialData}
             automaticDiscountLabel={storeWideSale?.title}
+            market={handle.props.market}
           />
         </main>
       </Document>
@@ -170,40 +198,46 @@ export function CartPage(
   };
 }
 
-export function NotFoundPage() {
-  return () => (
-    <Document title="Not found" noIndex>
-      <main>
-        <BrandedState
-          kind="404"
-          heading="Page not found"
-          copy="The page you requested does not exist."
-          href="/"
-          icon="fast-forward"
-          linkLabel="Return home"
-          reverseIcon
-        />
-      </main>
-    </Document>
-  );
+export function NotFoundPage(handle: Handle) {
+  return () => {
+    let market = handle.context.get(ShellDataProvider)?.market;
+    return (
+      <Document title="Not found" noIndex>
+        <main>
+          <BrandedState
+            kind="404"
+            heading="Page not found"
+            copy="The page you requested does not exist."
+            href={marketPath("/", market?.pathPrefix ?? "")}
+            icon="fast-forward"
+            linkLabel="Return home"
+            reverseIcon
+          />
+        </main>
+      </Document>
+    );
+  };
 }
 
-export function ErrorPage() {
-  return () => (
-    <Document title="Storefront unavailable" noIndex>
-      <main>
-        <BrandedState
-          kind="500"
-          heading="Storefront unavailable"
-          copy="The storefront could not load. Please try again."
-          href="/"
-          icon="fast-forward"
-          linkLabel="Return home"
-          reverseIcon
-        />
-      </main>
-    </Document>
-  );
+export function ErrorPage(handle: Handle) {
+  return () => {
+    let market = handle.context.get(ShellDataProvider)?.market;
+    return (
+      <Document title="Storefront unavailable" noIndex>
+        <main>
+          <BrandedState
+            kind="500"
+            heading="Storefront unavailable"
+            copy="The storefront could not load. Please try again."
+            href={marketPath("/", market?.pathPrefix ?? "")}
+            icon="fast-forward"
+            linkLabel="Return home"
+            reverseIcon
+          />
+        </main>
+      </Document>
+    );
+  };
 }
 
 const cartMainStyle = css({ minHeight: "70vh" });

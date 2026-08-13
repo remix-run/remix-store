@@ -1,6 +1,7 @@
 import { createController } from "remix/router";
 
 import { queryHome } from "../data/storefront.ts";
+import { marketPath } from "../lib/public/market.ts";
 import { routes } from "../routes.ts";
 import { CartPage, HomePage } from "./pages.tsx";
 function noStoreResponseInit(init?: ResponseInit): ResponseInit {
@@ -11,13 +12,17 @@ function noStoreResponseInit(init?: ResponseInit): ResponseInit {
 
 export default createController(routes, {
   actions: {
-    async home({ request, render, storefrontClient }) {
+    async home({ market, request, render, storefrontClient }) {
       let home = await queryHome(storefrontClient);
       if (!home.ok) throw new Error(home.message, { cause: home.errors });
 
       return render(
         <HomePage
-          canonicalUrl={new URL(request.url).origin + routes.home.href()}
+          canonicalUrl={
+            new URL(request.url).origin +
+            marketPath(routes.home.href(), market.pathPrefix)
+          }
+          market={market}
           shopName={home.data.shop.name}
           description={home.data.shop.description}
           hero={home.data.hero}
@@ -27,11 +32,15 @@ export default createController(routes, {
         />,
       );
     },
-    async cart({ cartInitialData, render, request }) {
+    async cart({ cartInitialData, market, render, request }) {
       return render(
         <CartPage
-          canonicalUrl={new URL(request.url).origin + routes.cart.href()}
+          canonicalUrl={
+            new URL(request.url).origin +
+            marketPath(routes.cart.href(), market.pathPrefix)
+          }
           initialData={cartInitialData}
+          market={market}
         />,
         noStoreResponseInit(),
       );

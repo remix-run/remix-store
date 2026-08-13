@@ -1,11 +1,16 @@
 import sanitizeHtml from "sanitize-html";
 
+import { localizeInternalUrl, type MarketPathPrefix } from "./public/market.ts";
+
 /**
  * Shopify policy and page bodies are merchant-authored HTML. Preserve the
  * formatting needed for legal/contact content while removing executable or
  * layout-owning markup before it reaches the document.
  */
-export function sanitizePolicyHtml(html: string): string {
+export function sanitizePolicyHtml(
+  html: string,
+  pathPrefix: MarketPathPrefix = "",
+): string {
   return sanitizeHtml(html, {
     allowedTags: [
       "a",
@@ -51,6 +56,9 @@ export function sanitizePolicyHtml(html: string): string {
     allowProtocolRelative: false,
     transformTags: {
       a(tagName, attributes) {
+        if (attributes.href) {
+          attributes.href = localizeInternalUrl(attributes.href, pathPrefix);
+        }
         if (attributes.target === "_blank") {
           attributes.rel = "noopener noreferrer";
         }

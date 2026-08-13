@@ -1,17 +1,20 @@
 import { css, type Handle } from "remix/ui";
 
 import type { StoreWideSaleData } from "../data/storefront.ts";
+import type { MarketLocale } from "../lib/public/market.ts";
 
 // Two identical groups animate by exactly one group width. Ten compact
 // messages per group is enough to cover the storefront's widest viewport.
 const MARQUEE_REPETITIONS = 10;
 
 export function StoreWideSaleMarquee(
-  handle: Handle<{ sale: StoreWideSaleData }>,
+  handle: Handle<{ locale?: MarketLocale; sale: StoreWideSaleData }>,
 ) {
   return () => {
     let { sale } = handle.props;
-    let endDate = sale.endDateTime ? formatSaleEndDate(sale.endDateTime) : null;
+    let endDate = sale.endDateTime
+      ? formatSaleEndDate(sale.endDateTime, handle.props.locale)
+      : null;
     let accessibleText = `${sale.title}. ${sale.description}.${endDate ? ` Ends ${endDate}.` : ""}`;
 
     return (
@@ -48,8 +51,11 @@ function MarqueeGroup(
   );
 }
 
-function formatSaleEndDate(value: string): string {
-  return new Intl.DateTimeFormat("en-US", {
+function formatSaleEndDate(
+  value: string,
+  locale: MarketLocale = "en-US",
+): string {
+  return new Intl.DateTimeFormat(locale, {
     day: "numeric",
     month: "short",
   })

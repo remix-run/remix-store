@@ -8,6 +8,7 @@ import { describe, it, type TestContext } from "remix/test";
 import { render } from "remix/ui/test";
 
 import type { SerializedCartData } from "../data/cart.ts";
+import { CA_MARKET } from "../lib/public/market.ts";
 import {
   createCart,
   createCartInitialData,
@@ -356,6 +357,21 @@ describe("cart interactions", () => {
     assert.equal(store.getState().data.totalQuantity, 2);
   });
 
+  it("replaces the cart snapshot when client navigation changes markets", (t) => {
+    t.after(resetBrowserCartStore);
+    let usCart = createCart(1);
+    let caCart = createCart(2);
+    caCart.id = usCart.id;
+    caCart.updatedAt = usCart.updatedAt;
+
+    let store = getBrowserCartStore({ cart: usCart }, "");
+    assert.equal(store?.getState().data.totalQuantity, 1);
+
+    let sameFacade = getBrowserCartStore({ cart: caCart }, "/en-ca");
+    assert.equal(sameFacade, store);
+    assert.equal(store?.getState().data.totalQuantity, 2);
+  });
+
   it("reveals the cart trigger label by width without fading it", (t) => {
     useDesktopCartViewport(t);
     t.after(resetBrowserCartStore);
@@ -433,6 +449,24 @@ describe("cart interactions", () => {
     await act(() => closeButton.click());
     assert.equal(drawer.open, false);
     assert.equal(trigger.getAttribute("aria-expanded"), "false");
+  });
+
+  it("renders Canadian cart links, forms, and money with the active market", (t) => {
+    let cart = createCart();
+    // en-CA disambiguates the USD fixture with a US prefix; this proves the
+    // formatter is using the active market locale rather than converting money.
+    t.after(resetBrowserCartStore);
+
+    let { container, cleanup } = render(
+      <CartPageContent initialData={{ cart }} market={CA_MARKET} />,
+    );
+    t.after(cleanup);
+
+    assert.ok(
+      container.querySelector('a[href="/en-ca/products/test-product"]'),
+    );
+    assert.ok(container.querySelector('form[action="/en-ca/api/cart"]'));
+    assert.match(container.textContent, /US\$10\.00/);
   });
 
   it("closes after removing the final line without rendering an empty dialog", async (t) => {

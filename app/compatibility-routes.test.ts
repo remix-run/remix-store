@@ -54,6 +54,57 @@ describe("Shopify compatibility routes", () => {
     assert.equal(location.searchParams.get("payment"), "shop_pay");
   });
 
+  it("handles localized cart API, checkout, permalink, and AJAX paths", async (t) => {
+    let upstreamUrl: string | undefined;
+    t.mock.method(globalThis, "fetch", (async (input) => {
+      upstreamUrl = String(input);
+      return new Response(JSON.stringify({ item_count: 2 }), {
+        headers: { "Content-Type": "application/json" },
+      });
+    }) as typeof globalThis.fetch);
+
+    let cart = createCart();
+    cart.checkoutUrl = "https://checkout.example.test/cart/c/ca";
+    let app = createTestApp(createStorefrontFetch({ Cart: () => ({ cart }) }));
+    let cookie = createCartCookie(CART_ID).split(";", 1)[0];
+
+    let api = await app.fetch(
+      new Request(`${origin}/en-ca/api/cart`, {
+        headers: { Cookie: cookie ?? "" },
+      }),
+    );
+    assert.equal(api.status, 200);
+
+    let checkout = await app.fetch(
+      new Request(`${origin}/en-ca/checkout`, {
+        headers: { Cookie: cookie ?? "" },
+      }),
+    );
+    assert.equal(checkout.status, 302);
+    assert.equal(
+      new URL(checkout.headers.get("Location")!).origin,
+      "https://checkout.example.test",
+    );
+
+    let permalink = await app.fetch(
+      new Request(`${origin}/en-ca/cart/111:1?discount=CA`),
+    );
+    assert.equal(permalink.status, 302);
+    assert.equal(
+      new URL(permalink.headers.get("Location")!).pathname,
+      "/cart/111:1",
+    );
+
+    let ajax = await app.fetch(
+      new Request(`${origin}/en-ca/cart.js?sections=cart-drawer`),
+    );
+    assert.equal(ajax.status, 200);
+    assert.equal(
+      upstreamUrl,
+      "https://example.myshopify.com/cart.js?sections=cart-drawer",
+    );
+  });
+
   it("proxies Shopify AJAX cart requests before app routing", async (t) => {
     let upstreamUrl: string | undefined;
     let upstreamFetch = (async (input) => {
@@ -145,6 +196,40 @@ describe("Shopify compatibility routes", () => {
 });
 
 describe("discount compatibility links", () => {
+  it("keeps Canadian discount redirects and context localized", async () => {
+    let requestBody: StorefrontRequestBody | undefined;
+    let app = createTestApp(
+      createStorefrontFetch({
+        RemixDiscountCartCreate(body) {
+          requestBody = body;
+          return {
+            cartCreate: {
+              cart: { id: CART_ID },
+              userErrors: [],
+              warnings: [],
+            },
+          };
+        },
+      }),
+    );
+
+    let response = await app.fetch(
+      new Request(
+        `${origin}/en-ca/discount/CA20?redirect=${encodeURIComponent("/products/remix-cap?size=M")}`,
+      ),
+    );
+
+    assert.equal(response.status, 303);
+    assert.equal(
+      response.headers.get("Location"),
+      "/en-ca/products/remix-cap?size=M",
+    );
+    assert.deepEqual(requestBody?.variables, {
+      country: "CA",
+      discountCodes: ["CA20"],
+      language: "EN",
+    });
+  });
   it("creates a cart for a discount query and removes the control parameter", async () => {
     let requestBody: StorefrontRequestBody | undefined;
     let app = createTestApp(
@@ -174,7 +259,11 @@ describe("discount compatibility links", () => {
       "/collections/all?sort_by=best-selling",
     );
     assert.match(response.headers.get("Set-Cookie") ?? "", /cart=/);
-    assert.deepEqual(requestBody?.variables, { discountCodes: ["LAUNCH"] });
+    assert.deepEqual(requestBody?.variables, {
+      country: "US",
+      discountCodes: ["LAUNCH"],
+      language: "EN",
+    });
     assert.equal(response.headers.get("Cache-Control"), "private, no-store");
   });
 
@@ -241,7 +330,9 @@ describe("discount compatibility links", () => {
     assert.equal(response.headers.get("Location"), "/?utm_source=shopify");
     assert.deepEqual(requestBody?.variables, {
       cartId: CART_ID,
+      country: "US",
       discountCodes: ["WELCOME", "LAUNCH"],
+      language: "EN",
     });
     assert.equal(response.headers.get("Set-Cookie"), null);
   });

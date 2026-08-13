@@ -3,7 +3,13 @@ const XML_HEADERS = {
   "Content-Type": "application/xml; charset=utf-8",
 };
 
+export type SitemapAlternate = {
+  href: string;
+  hreflang: "en-US" | "en-CA";
+};
+
 export type SitemapUrl = {
+  alternates?: SitemapAlternate[];
   changeFrequency?:
     | "always"
     | "hourly"
@@ -42,10 +48,14 @@ export function sitemapResponse(
         },
       ];
   let hasImages = entries.some((url) => url.image);
+  let hasAlternates = entries.some((url) => url.alternates?.length);
   let imageNamespace = hasImages
     ? ' xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"'
     : "";
-  let body = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"${imageNamespace}>\n${entries.map(renderUrl).join("\n")}\n</urlset>`;
+  let xhtmlNamespace = hasAlternates
+    ? ' xmlns:xhtml="http://www.w3.org/1999/xhtml"'
+    : "";
+  let body = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"${imageNamespace}${xhtmlNamespace}>\n${entries.map(renderUrl).join("\n")}\n</urlset>`;
   return new Response(body, { headers: XML_HEADERS });
 }
 
@@ -57,6 +67,11 @@ function renderUrl(url: SitemapUrl): string {
   fields.push(
     `    <changefreq>${url.changeFrequency ?? "weekly"}</changefreq>`,
   );
+  for (let alternate of url.alternates ?? []) {
+    fields.push(
+      `    <xhtml:link rel="alternate" hreflang="${alternate.hreflang}" href="${escapeXml(alternate.href)}" />`,
+    );
+  }
   if (url.image) {
     fields.push("    <image:image>");
     fields.push(

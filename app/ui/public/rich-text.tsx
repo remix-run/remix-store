@@ -1,6 +1,12 @@
 import { css, type Handle, type RemixNode } from "remix/ui";
 
+import {
+  localizeInternalUrl,
+  type MarketPathPrefix,
+} from "../../lib/public/market.ts";
+
 interface RichTextProps {
+  pathPrefix?: MarketPathPrefix;
   variant?: "product-description";
   value: string;
 }
@@ -29,7 +35,7 @@ export function RichText(handle: Handle<RichTextProps>) {
           : undefined,
       ]}
     >
-      {renderNodes(root.children ?? [])}
+      {renderNodes(root.children ?? [], handle.props.pathPrefix ?? "")}
     </div>
   );
 }
@@ -45,12 +51,19 @@ function parseRichText(value: string): RichTextNode {
   }
 }
 
-function renderNodes(nodes: RichTextNode[]): RemixNode[] {
-  return nodes.map((node, index) => renderNode(node, index));
+function renderNodes(
+  nodes: RichTextNode[],
+  pathPrefix: MarketPathPrefix,
+): RemixNode[] {
+  return nodes.map((node, index) => renderNode(node, index, pathPrefix));
 }
 
-function renderNode(node: RichTextNode, key: number): RemixNode {
-  let children = renderNodes(node.children ?? []);
+function renderNode(
+  node: RichTextNode,
+  key: number,
+  pathPrefix: MarketPathPrefix,
+): RemixNode {
+  let children = renderNodes(node.children ?? [], pathPrefix);
   switch (node.type) {
     case "text": {
       let content: RemixNode = node.value ?? "";
@@ -75,7 +88,7 @@ function renderNode(node: RichTextNode, key: number): RemixNode {
     case "list-item":
       return <li key={key}>{children}</li>;
     case "link": {
-      let href = safeHref(node.url);
+      let href = safeHref(node.url, pathPrefix);
       return href ? (
         <a
           key={key}
@@ -93,9 +106,13 @@ function renderNode(node: RichTextNode, key: number): RemixNode {
   }
 }
 
-function safeHref(value?: string): string | undefined {
+function safeHref(
+  value: string | undefined,
+  pathPrefix: MarketPathPrefix,
+): string | undefined {
   if (!value) return undefined;
-  if (value.startsWith("/") || value.startsWith("#")) return value;
+  if (value.startsWith("/")) return localizeInternalUrl(value, pathPrefix);
+  if (value.startsWith("#")) return value;
   try {
     let url = new URL(value);
     return url.protocol === "http:" || url.protocol === "https:"

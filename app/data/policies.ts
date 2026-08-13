@@ -67,8 +67,11 @@ const POLICY_QUERY = gql(
 );
 
 const CONTACT_QUERY = gql(`
-  query RemixContact($handle: String!, $language: LanguageCode)
-  @inContext(language: $language) {
+  query RemixContact(
+    $handle: String!
+    $country: CountryCode
+    $language: LanguageCode
+  ) @inContext(country: $country, language: $language) {
     page(handle: $handle) {
       body
       id

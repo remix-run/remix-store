@@ -6,7 +6,11 @@ import {
 } from "@shopify/hydrogen";
 
 const DISCOUNT_CART_CREATE_MUTATION = gql(`
-  mutation RemixDiscountCartCreate($discountCodes: [String!]) {
+  mutation RemixDiscountCartCreate(
+    $discountCodes: [String!]
+    $country: CountryCode
+    $language: LanguageCode
+  ) @inContext(country: $country, language: $language) {
     cartCreate(input: { discountCodes: $discountCodes }) {
       cart {
         id
@@ -22,7 +26,11 @@ const DISCOUNT_CART_CREATE_MUTATION = gql(`
 `);
 
 const DISCOUNT_CART_QUERY = gql(`
-  query RemixDiscountCart($cartId: ID!) {
+  query RemixDiscountCart(
+    $cartId: ID!
+    $country: CountryCode
+    $language: LanguageCode
+  ) @inContext(country: $country, language: $language) {
     cart(id: $cartId) {
       discountCodes {
         code
@@ -35,7 +43,9 @@ const CART_DISCOUNT_CODES_UPDATE_MUTATION = gql(`
   mutation RemixCartDiscountCodesUpdate(
     $cartId: ID!
     $discountCodes: [String!]!
-  ) {
+    $country: CountryCode
+    $language: LanguageCode
+  ) @inContext(country: $country, language: $language) {
     cartDiscountCodesUpdate(
       cartId: $cartId
       discountCodes: $discountCodes

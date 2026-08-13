@@ -74,6 +74,47 @@ describe("product routes", () => {
     assert.doesNotMatch(html, /href="javascript:/);
   });
 
+  it("keeps Canadian product navigation, money, cart, and subscribe actions localized", async () => {
+    let variables: Record<string, unknown> | undefined;
+    let data = productData();
+    data.selectedOrFirstAvailableVariant = data.adjacentVariants[0]!;
+    data.selectedOrFirstAvailableVariant.price = {
+      amount: "20.00",
+      currencyCode: "CAD",
+    };
+    let app = createTestApp(
+      createStorefrontFetch({
+        RemixAnalyticsShop: () => ({
+          shop: { id: "gid://shopify/Shop/test" },
+          localization: { country: { currency: { isoCode: "CAD" } } },
+        }),
+        RemixNavigation: navigationData,
+        RemixProductNavigation: () => ({ menu: null, shop: null }),
+        RemixProduct(body) {
+          variables = body.variables;
+          return { product: data };
+        },
+      }),
+    );
+
+    let response = await app.fetch(
+      new Request("https://example.com/en-ca/products/test-product?Color=Blue"),
+    );
+    let html = await response.text();
+
+    assert.equal(response.status, 200);
+    assert.equal(variables?.country, "CA");
+    assert.equal(variables?.language, "EN");
+    assert.match(
+      html,
+      /rel="canonical" href="https:\/\/example\.com\/en-ca\/products\/test-product"/,
+    );
+    assert.match(html, /action="\/en-ca\/api\/cart" method="post"/);
+    assert.match(html, /action="\/en-ca\/subscribe" method="post"/);
+    assert.match(html, /href="\/en-ca\/products\/test-product\?/);
+    assert.match(html, /currencyCode.{0,20}CAD/);
+  });
+
   it("server-renders a verified-input back-in-stock form for an enabled sold-out variant", async () => {
     let data = productData();
     data.selectedOrFirstAvailableVariant = data.adjacentVariants[0]!;

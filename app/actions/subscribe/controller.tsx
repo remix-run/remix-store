@@ -15,6 +15,7 @@ import {
   parseSubscriptionForm,
 } from "../../data/subscription.ts";
 import { verifyBackInStockSubscription } from "../../data/storefront.ts";
+import { marketPath, type ActiveMarket } from "../../lib/public/market.ts";
 import { getRuntime } from "../../runtime.ts";
 import { routes } from "../../routes.ts";
 import { SubscribePage } from "./page.tsx";
@@ -36,22 +37,28 @@ export function createSubscribeController(
 ) {
   return createController(routes.subscribe, {
     actions: {
-      async index({ render, url }) {
+      async index({ market, render, url }) {
         return render(
           <SubscribePage
-            action={routes.subscribe.action.href()}
-            canonicalUrl={url.origin + routes.subscribe.index.href()}
+            action={marketPath(
+              routes.subscribe.action.href(),
+              market.pathPrefix,
+            )}
+            canonicalUrl={
+              url.origin +
+              marketPath(routes.subscribe.index.href(), market.pathPrefix)
+            }
           />,
         );
       },
-      async action({ render, request, storefrontClient, url }) {
+      async action({ market, render, request, storefrontClient, url }) {
         let headers = new Headers({ "Cache-Control": "private, no-store" });
         let respond = (
           body: SubscriptionBody,
           status: number,
           successRedirect?: string,
         ) =>
-          subscriptionResponse(request, url, render, {
+          subscriptionResponse(request, url, render, market, {
             body,
             headers,
             status,
@@ -164,7 +171,9 @@ export function createSubscribeController(
         return respond(
           { message, success: true },
           200,
-          parsed.productHandle ? "/collections/all" : undefined,
+          parsed.productHandle
+            ? marketPath("/collections/all", market.pathPrefix)
+            : undefined,
         );
       },
     },
@@ -249,6 +258,7 @@ function subscriptionResponse(
   request: Request,
   url: URL,
   render: (node: RemixNode, init?: ResponseInit) => Response,
+  market: ActiveMarket,
   init: {
     body: SubscriptionBody;
     headers: Headers;
@@ -269,8 +279,11 @@ function subscriptionResponse(
   }
   return render(
     <SubscribePage
-      action={routes.subscribe.action.href()}
-      canonicalUrl={url.origin + routes.subscribe.index.href()}
+      action={marketPath(routes.subscribe.action.href(), market.pathPrefix)}
+      canonicalUrl={
+        url.origin +
+        marketPath(routes.subscribe.index.href(), market.pathPrefix)
+      }
       result={init.body}
     />,
     { status: init.status, headers: init.headers },

@@ -1,13 +1,14 @@
 import { createController } from "remix/router";
 
 import { isPolicyHandle, queryPolicy } from "../../data/policies.ts";
+import { marketPath } from "../../lib/public/market.ts";
 import { routes } from "../../routes.ts";
 import { NotFoundPage } from "../pages.tsx";
 import { PolicyPage } from "./page.tsx";
 
 export default createController(routes.policies, {
   actions: {
-    async show({ params, render, storefrontClient, url }) {
+    async show({ market, params, render, storefrontClient, url }) {
       if (!isPolicyHandle(params.handle)) {
         return render(<NotFoundPage />, { status: 404 });
       }
@@ -22,7 +23,11 @@ export default createController(routes.policies, {
 
       return render(
         <PolicyPage
-          canonicalUrl={url.origin + routes.policies.show.href(params)}
+          canonicalUrl={
+            url.origin +
+            marketPath(routes.policies.show.href(params), market.pathPrefix)
+          }
+          market={market}
           policy={result.data}
         />,
       );

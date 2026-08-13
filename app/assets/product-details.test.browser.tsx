@@ -8,6 +8,7 @@ import {
   RED_VARIANT_ID,
   createProduct,
 } from "../../test/product-fixtures.ts";
+import { CA_MARKET } from "../lib/public/market.ts";
 import { resetBrowserCartStore } from "./public/cart-store.ts";
 import { ProductDetails, variantHref } from "./public/product-details.tsx";
 
@@ -254,6 +255,37 @@ describe("product form", () => {
     assert.equal($('input[name="merchandiseId"]')?.getAttribute("value"), "");
     assert.equal($('a[aria-current="true"]'), null);
     assert.equal($("shop-pay-button"), null);
+  });
+
+  it("retains the Canadian prefix in variant and form navigation", async (t) => {
+    let product = createProduct();
+    t.after(resetBrowserCartStore);
+    let { $, act, cleanup } = render(
+      <ProductDetails
+        market={CA_MARKET}
+        product={product}
+        search="?ref=campaign&Color=Red"
+        shopPayStoreUrl={shopPayStoreUrl}
+      />,
+    );
+    t.after(cleanup);
+    await flushAsync(act);
+
+    assert.match(
+      $('a[href*="Color=Blue"]')?.getAttribute("href") ?? "",
+      /^\/en-ca\/products\/test-product\?/,
+    );
+    assert.equal($("form")?.getAttribute("action"), "/en-ca/api/cart");
+    assert.equal(
+      variantHref(
+        "test-product",
+        [{ name: "Color", value: "Blue" }],
+        [{ name: "Color" }],
+        "",
+        "/en-ca",
+      ),
+      "/en-ca/products/test-product?Color=Blue",
+    );
   });
 
   it("builds variant URLs by replacing only product option parameters", () => {

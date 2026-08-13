@@ -46,6 +46,42 @@ describe("platform skeleton", () => {
     assert.equal(response.headers.get("Cache-Control"), "private, no-store");
   });
 
+  it("renders Canadian pages with localized links, scripts, canonical, and context", async () => {
+    let productVariables: Record<string, unknown> | undefined;
+    let app = createTestApp(
+      createStorefrontFetch({
+        RemixAnalyticsShop: () => ({
+          shop: { id: "gid://shopify/Shop/test" },
+          localization: { country: { currency: { isoCode: "CAD" } } },
+        }),
+        RemixCollection(body) {
+          productVariables = body.variables;
+          return collectionData();
+        },
+        RemixHomeEditorial: homeData,
+        RemixNavigation: navigationData,
+      }),
+    );
+
+    let response = await app.fetch(new Request("https://example.com/en-ca/"));
+    let html = await response.text();
+
+    assert.equal(response.status, 200);
+    assert.match(html, /<html lang="en-CA" data-market-prefix="\/en-ca"/);
+    assert.match(
+      html,
+      /rel="canonical" href="https:\/\/example\.com\/en-ca\/"/,
+    );
+    assert.match(html, /href="\/en-ca\/collections\/racing"/);
+    assert.match(html, /href="\/en-ca\/products\/test-catalog-product"/);
+    assert.match(html, /country.{0,20}CA/);
+    assert.match(html, /active.{0,20}CAD/);
+    assert.match(html, /root.{0,30}en-ca/);
+    assert.equal(productVariables?.country, "CA");
+    assert.equal(productVariables?.language, "EN");
+    assert.equal(productVariables?.handle, "all");
+  });
+
   it("server-renders the active sale marquee in the shell", async () => {
     let response = await fetchHome();
     let html = await response.text();
