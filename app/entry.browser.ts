@@ -1,9 +1,8 @@
-import { AnalyticsEvent, initializeShopifyScripts } from "@shopify/hydrogen";
+import { initializeShopifyScripts } from "@shopify/hydrogen";
 import { navigate as remixNavigate, run, type FrameContent } from "remix/ui";
 
 import {
   createPageViewPublisher,
-  getAnalytics,
   trackConfirmedCartChanges,
 } from "./assets/public/analytics.tsx";
 import { getBrowserCartStore } from "./assets/public/cart-store.ts";
@@ -83,27 +82,3 @@ await Promise.all([
 publishPageViewed();
 trackConfirmedCartChanges(getBrowserCartStore());
 configureOpenCartAction();
-
-// Log every published analytics event to the console in development. Raw
-// subscribers see events before consent gating, so this works even before the
-// visitor accepts the consent banner. `import.meta.hot` is only present during
-// Vite dev, never in a production build, so this block is stripped from Oxygen.
-if (import.meta.hot) {
-  let events = Object.values(AnalyticsEvent);
-  function attachAnalyticsLogger() {
-    let bus = getAnalytics();
-    if (!bus) {
-      // The analytics bus is created by an inline ShopifyScripts script that
-      // loads asynchronously. Retry until it's available.
-      setTimeout(attachAnalyticsLogger, 200);
-      return;
-    }
-    for (let event of events) {
-      bus.subscribe(event, (payload) => {
-        console.debug(`[analytics] ${event}`, payload);
-      });
-    }
-    console.log("[analytics] dev logger attached");
-  }
-  attachAnalyticsLogger();
-}
