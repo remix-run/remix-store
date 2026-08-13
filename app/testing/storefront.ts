@@ -9,7 +9,9 @@ export const testEnv = {
 
 export function createTestApp(
   fetch: typeof globalThis.fetch,
-  options: Pick<AppOptions, "subscribe"> & { buyerIp?: string } = {},
+  options: Pick<AppOptions, "seasonalSnow" | "subscribe"> & {
+    buyerIp?: string;
+  } = {},
 ) {
   let app = createApp({
     renderer: render({
@@ -18,6 +20,7 @@ export function createTestApp(
         return { href: "/assets/component.js", exportName: component.name };
       },
     }),
+    seasonalSnow: options.seasonalSnow,
     subscribe: options.subscribe,
     storefront: {
       cache: new MemoryStorefrontCache(),

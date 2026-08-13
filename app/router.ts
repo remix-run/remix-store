@@ -6,7 +6,10 @@ import {
   type MiddlewareContext,
 } from "remix/router";
 
-import rootController from "./actions/controller.tsx";
+import {
+  createRootController,
+  type RootControllerOptions,
+} from "./actions/controller.tsx";
 import collectionsController from "./actions/collections/controller.tsx";
 import policiesController from "./actions/policies/controller.tsx";
 import productsController from "./actions/products/controller.tsx";
@@ -27,6 +30,7 @@ export interface AppOptions {
   renderer: ReturnType<typeof render>;
   storefront?: StorefrontOptions;
   subscribe?: SubscribeControllerOptions;
+  seasonalSnow?: RootControllerOptions;
 }
 
 const passThrough: Middleware = (_context, next) => next();
@@ -83,7 +87,7 @@ export function createApp(options: AppOptions) {
     },
   });
 
-  router.map(routes, rootController);
+  router.map(routes, createRootController(options.seasonalSnow));
   router.map(routes.collections, collectionsController);
   router.map(routes.policies, policiesController);
   router.map(routes.products, productsController);

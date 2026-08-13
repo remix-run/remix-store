@@ -6,6 +6,7 @@ import {
   browserEntryHref,
   closeNodeApp,
   productDetailsEntryHref,
+  snowFieldEntryHref,
 } from "./node.ts";
 
 after(closeNodeApp);
@@ -45,6 +46,17 @@ describe("node platform", () => {
     assert.match(response.headers.get("Content-Type") ?? "", /javascript/);
     assert.match(source, /productSubscriptionsEnabled/);
     assert.doesNotMatch(source, /data\/subscription/);
+  });
+
+  it("compiles the seasonal snow public client entry", async () => {
+    let response = await app.fetch(
+      new Request(`http://localhost${snowFieldEntryHref}`),
+    );
+    let source = await response.text();
+
+    assert.equal(response.status, 200);
+    assert.match(response.headers.get("Content-Type") ?? "", /javascript/);
+    assert.match(source, /data-seasonal-snow/);
   });
 
   it("does not expose non-browser files through the asset mount", async () => {
