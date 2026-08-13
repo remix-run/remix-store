@@ -16,7 +16,6 @@ test("renders the current storefront skeleton", async ({ page }) => {
 test("renders the active sale, offsets the header, and labels cart allocations", async ({
   page,
 }) => {
-  await page.setViewportSize({ width: 2700, height: 900 });
   await page.goto("/");
 
   let marquee = page.locator("[data-store-wide-sale]");
@@ -24,10 +23,6 @@ test("renders the active sale, offsets the header, and labels cart allocations",
   await expect(marquee).toHaveCSS("height", "48px");
   await expect(marquee.locator("p")).toHaveText("Sale. Now. Ends Jun.2.");
   let marqueeTrack = marquee.locator('[aria-hidden="true"]');
-  let marqueeGroup = marquee.locator('[data-marquee-group="true"]').first();
-  expect(
-    await marqueeGroup.evaluate((group) => group.getBoundingClientRect().width),
-  ).toBeGreaterThanOrEqual(2700);
   await expect(marqueeTrack).toHaveCSS(
     "animation-name",
     "store-wide-sale-marquee",

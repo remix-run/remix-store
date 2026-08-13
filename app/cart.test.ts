@@ -35,8 +35,7 @@ describe("cart routes", () => {
   it("server-renders an existing cart with progressive line forms", async (t) => {
     let cart = createCart();
     let cartRequest: StorefrontRequestBody | undefined;
-    let storefrontUrl: string | undefined;
-    let fixtureFetch = createStorefrontFetch({
+    let mockFetch = createStorefrontFetch({
       Cart(body) {
         cartRequest = body;
         return { cart };
@@ -44,10 +43,6 @@ describe("cart routes", () => {
       RemixAnalyticsShop: analyticsShopData,
       RemixNavigation: navigationData,
     });
-    let mockFetch = ((input, init) => {
-      storefrontUrl = input instanceof Request ? input.url : String(input);
-      return fixtureFetch(input, init);
-    }) as typeof globalThis.fetch;
     t.mock.method(globalThis, "fetch", mockFetch);
     let app = createTestApp(mockFetch);
     let cookie = createCartCookie(CART_ID).split(";", 1)[0];
@@ -61,7 +56,6 @@ describe("cart routes", () => {
 
     assert.equal(response.status, 200);
     assert.equal(response.headers.get("Cache-Control"), "private, no-store");
-    assert.match(storefrontUrl ?? "", /\/api\/2026-04\/graphql\.json$/);
     assert.match(html, /Test Product/);
     assert.match(html, /name="lineId"/);
     assert.match(html, /name="quantity"/);
@@ -69,44 +63,23 @@ describe("cart routes", () => {
     assert.match(html, /href="https:\/\/checkout\.example\.test\/cart"/);
     assert.match(
       cartRequest?.query ?? "",
-      /fragment CartFragment on Cart\s*\{\s*updatedAt\s*discountAllocations/,
+      /fragment CartFragment on Cart\s*\{\s*updatedAt/,
     );
   });
 
-  it("server-renders the authoritative root automatic allocation once", async (t) => {
+  it("labels automatic line allocations with the active sale title", async (t) => {
     let cart = createCart();
-    cart.discountAllocations = [
-      {
-        __typename: "CartAutomaticDiscountAllocation",
-        discountedAmount: { amount: "2", currencyCode: "USD" },
-      },
-    ];
+    cart.cost.totalAmount.amount = "8";
     cart.lines.nodes[0]!.discountAllocations = [
       {
         __typename: "CartAutomaticDiscountAllocation",
         discountedAmount: { amount: "2", currencyCode: "USD" },
       },
-      {
-        __typename: "CartAutomaticDiscountAllocation",
-        discountedAmount: { amount: "1", currencyCode: "USD" },
-      },
     ];
     let mockFetch = createStorefrontFetch({
       Cart: () => ({ cart }),
       RemixAnalyticsShop: analyticsShopData,
-      RemixNavigation: navigationData,
-      RemixStoreWideSale: () => ({
-        shop: {
-          storeWideSale: {
-            reference: {
-              __typename: "Metaobject",
-              title: { value: "Summer Sale" },
-              description: { value: "20% off everything" },
-              endDateTime: { value: "2099-06-02T12:00:00Z" },
-            },
-          },
-        },
-      }),
+      RemixNavigation: saleNavigationData,
     });
     t.mock.method(globalThis, "fetch", mockFetch);
     let app = createTestApp(mockFetch);
@@ -121,39 +94,6 @@ describe("cart routes", () => {
 
     assert.match(html, /Summer Sale/);
     assert.match(html, /-\$2\.00/);
-    assert.doesNotMatch(html, /-\$3\.00/);
-    assert.doesNotMatch(html, /-\$5\.00/);
-    assert.doesNotMatch(html, /Automatic discount/);
-  });
-
-  it("server-renders an authoritative code-only total without a sale label", async (t) => {
-    let cart = createCart();
-    cart.cost.totalAmount.amount = "7";
-    cart.lines.nodes[0]!.discountAllocations = [
-      {
-        __typename: "CartCodeDiscountAllocation",
-        discountedAmount: { amount: "3", currencyCode: "USD" },
-      },
-    ];
-    let mockFetch = createStorefrontFetch({
-      Cart: () => ({ cart }),
-      RemixAnalyticsShop: analyticsShopData,
-      RemixNavigation: navigationData,
-    });
-    t.mock.method(globalThis, "fetch", mockFetch);
-    let app = createTestApp(mockFetch);
-    let cookie = createCartCookie(CART_ID).split(";", 1)[0];
-
-    let response = await app.fetch(
-      new Request(new URL(routes.cart.href(), origin), {
-        headers: { Cookie: cookie ?? "" },
-      }),
-    );
-    let html = await response.text();
-
-    assert.match(html, /Total/);
-    assert.match(html, /\$7\.00/);
-    assert.doesNotMatch(html, /Summer Sale/);
     assert.doesNotMatch(html, /Automatic discount/);
   });
 
@@ -230,3 +170,21 @@ describe("cart routes", () => {
     });
   });
 });
+
+function saleNavigationData() {
+  let data = navigationData();
+  return {
+    ...data,
+    shop: {
+      ...data.shop,
+      storeWideSale: {
+        reference: {
+          __typename: "Metaobject",
+          title: { value: "Summer Sale" },
+          description: { value: "20% off everything" },
+          endDateTime: { value: "2099-06-02T12:00:00Z" },
+        },
+      },
+    },
+  };
+}

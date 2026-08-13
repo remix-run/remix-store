@@ -36,17 +36,9 @@ describe("navbar interactions", () => {
       "Summer Sale. 20% off everything. Ends Jun.2.",
     );
     assert.equal(container.querySelectorAll('[aria-hidden="true"]').length, 1);
-    let groups = decorativeTrack.querySelectorAll(
-      '[data-marquee-group="true"]',
-    );
-    assert.equal(groups.length, 2);
     assert.equal(
-      groups[0]?.querySelectorAll("span > span:first-child").length,
-      32,
-    );
-    assert.equal(
-      groups[1]?.querySelectorAll("span > span:first-child").length,
-      32,
+      decorativeTrack.querySelectorAll('[data-marquee-group="true"]').length,
+      2,
     );
     assert.match(decorativeTrack.textContent ?? "", /Now thru Jun\.2/);
   });

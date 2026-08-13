@@ -428,10 +428,9 @@ function CartView(handle: Handle<CartViewProps>) {
 
     let cartPending = hasPendingCartWork(state);
     let discountAllocation = getCartDiscountAllocation(cart);
-    let hasAuthoritativeFinalTotal = moneyAmountsDiffer(
-      cart.cost.subtotalAmount,
-      cart.cost.totalAmount,
-    );
+    let hasFinalTotal =
+      Number(cart.cost.subtotalAmount.amount) !==
+      Number(cart.cost.totalAmount.amount);
     let automaticDiscountLabel =
       handle.props.automaticDiscountLabel?.trim() || "Automatic discount";
 
@@ -640,7 +639,7 @@ function CartView(handle: Handle<CartViewProps>) {
                     <span>-{money(discountAllocation)}</span>
                   </div>
                 ) : null}
-                {hasAuthoritativeFinalTotal ? (
+                {hasFinalTotal ? (
                   <div mix={finalTotalStyle}>
                     <strong>Total</strong>
                     <span mix={cartPending ? pendingValueStyle : undefined}>
@@ -672,7 +671,7 @@ function CartView(handle: Handle<CartViewProps>) {
                     <span>-{money(discountAllocation)}</span>
                   </div>
                 ) : null}
-                {hasAuthoritativeFinalTotal ? (
+                {hasFinalTotal ? (
                   <div mix={finalTotalStyle}>
                     <strong>Total</strong>
                     <span mix={cartPending ? pendingValueStyle : undefined}>
@@ -705,24 +704,19 @@ type CartDiscountAllocationData = {
 };
 
 function getCartDiscountAllocation(cart: CartData): MoneyV2 | null {
-  let cartAllocations = getAutomaticDiscountAllocations(
-    (cart as CartData & { discountAllocations?: CartDiscountAllocationData[] })
-      .discountAllocations,
-  );
-  // Shopify can represent the same discount at both cart and line level. The
-  // cart-level amount is authoritative; line allocations are only a fallback
-  // for responses that do not include an automatic root allocation.
-  let allocations = cartAllocations.length
-    ? cartAllocations
-    : cart.lines.nodes.flatMap((line) =>
-        getAutomaticDiscountAllocations(
-          (
-            line as typeof line & {
-              discountAllocations?: CartDiscountAllocationData[];
-            }
-          ).discountAllocations,
-        ),
-      );
+  let allocations = cart.lines.nodes
+    .flatMap(
+      (line) =>
+        (
+          line as typeof line & {
+            discountAllocations?: CartDiscountAllocationData[];
+          }
+        ).discountAllocations ?? [],
+    )
+    .filter(
+      (allocation) =>
+        allocation.__typename === "CartAutomaticDiscountAllocation",
+    );
   let first = allocations[0]?.discountedAmount;
   if (!first) return null;
 
@@ -733,36 +727,6 @@ function getCartDiscountAllocation(cart: CartData): MoneyV2 | null {
   return amount > 0
     ? { amount: String(amount), currencyCode: first.currencyCode }
     : null;
-}
-
-function getAutomaticDiscountAllocations(
-  allocations?: CartDiscountAllocationData[],
-): CartDiscountAllocationData[] {
-  return (
-    allocations?.filter(
-      (allocation) =>
-        allocation.__typename === "CartAutomaticDiscountAllocation",
-    ) ?? []
-  );
-}
-
-function moneyAmountsDiffer(first: MoneyV2, second: MoneyV2): boolean {
-  return (
-    first.currencyCode !== second.currencyCode ||
-    normalizeDecimalAmount(first.amount) !==
-      normalizeDecimalAmount(second.amount)
-  );
-}
-
-function normalizeDecimalAmount(value: string): string {
-  let match = /^([+-]?)(\d+)(?:\.(\d+))?$/.exec(value);
-  if (!match) return value;
-
-  let integer = match[2]!.replace(/^0+(?=\d)/, "");
-  let fraction = match[3]?.replace(/0+$/, "") ?? "";
-  let isZero = integer === "0" && !fraction;
-  let sign = match[1] === "-" && !isZero ? "-" : "";
-  return `${sign}${integer}${fraction ? `.${fraction}` : ""}`;
 }
 
 function getLineCompareAtPrice(

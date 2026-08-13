@@ -7,20 +7,9 @@ import {
 
 import type { CartInitialData } from "./cart.ts";
 
-// Extend the default Hydrogen cart fragment with both cart- and line-level
-// discount allocations. Cart.discountAllocations is valid in the runtime's
-// pinned Storefront API 2026-04 contract; line allocations remain a fallback
-// for responses that expose automatic discounts there.
 const CART_FRAGMENT = gql(`
   fragment CartFragment on Cart {
     updatedAt
-    discountAllocations {
-      __typename
-      discountedAmount {
-        amount
-        currencyCode
-      }
-    }
     lines(first: 250) {
       nodes {
         discountAllocations {

@@ -61,7 +61,6 @@ export type SerializedCartData = SerializableObject & {
     subtotalAmount: SerializedMoney;
     totalAmount: SerializedMoney;
   };
-  discountAllocations: SerializedCartDiscountAllocation[];
   discountCodes: Array<
     SerializableObject & {
       applicable: boolean;

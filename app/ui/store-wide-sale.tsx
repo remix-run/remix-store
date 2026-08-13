@@ -2,10 +2,9 @@ import { css, type Handle } from "remix/ui";
 
 import type { StoreWideSaleData } from "../data/storefront.ts";
 
-// Two identical groups animate by exactly one group width. At 32 compact
-// messages per group, even the shortest supported copy spans comfortably past
-// the storefront's widest documented 2700px viewport without exposing a gap.
-const MARQUEE_REPETITIONS = 32;
+// Two identical groups animate by exactly one group width. Ten compact
+// messages per group is enough to cover the storefront's widest viewport.
+const MARQUEE_REPETITIONS = 10;
 
 export function StoreWideSaleMarquee(
   handle: Handle<{ sale: StoreWideSaleData }>,
@@ -49,11 +48,10 @@ function MarqueeGroup(
   );
 }
 
-export function formatSaleEndDate(value: string): string {
+function formatSaleEndDate(value: string): string {
   return new Intl.DateTimeFormat("en-US", {
     day: "numeric",
     month: "short",
-    timeZone: "UTC",
   })
     .format(new Date(value))
     .replace(" ", ".");

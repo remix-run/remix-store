@@ -137,12 +137,7 @@ export function Document(handle: Handle<DocumentProps>) {
           ))}
           <title>{title}</title>
         </head>
-        <body
-          data-active-store-wide-sale={
-            shellData.storeWideSale ? "true" : undefined
-          }
-          mix={bodyStyle}
-        >
+        <body mix={bodyStyle}>
           <Navbar
             cartInitialData={shellData.cartInitialData}
             menu={shellData.navigationMenu}
@@ -282,7 +277,6 @@ const globalStyles = `
     --header-height: 80px;
     --store-wide-sale-height: 0px;
   }
-  body[data-active-store-wide-sale="true"],
   body:has([data-store-wide-sale="true"]) {
     --store-wide-sale-height: 48px;
   }

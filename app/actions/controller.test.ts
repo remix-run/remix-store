@@ -110,7 +110,6 @@ function fetchHome() {
       RemixCollection: collectionData,
       RemixHomeEditorial: homeData,
       RemixNavigation: navigationData,
-      RemixStoreWideSale: storeWideSaleData,
     }),
   );
 
@@ -131,13 +130,6 @@ function navigationData() {
     footerMenu: null,
     shop: {
       primaryDomain: { url: "https://shop.example.com" },
-    },
-  };
-}
-
-function storeWideSaleData() {
-  return {
-    shop: {
       storeWideSale: {
         reference: {
           __typename: "Metaobject",

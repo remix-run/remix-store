@@ -264,13 +264,6 @@ const NAVIGATION_QUERY = gql(`
       primaryDomain {
         url
       }
-    }
-  }
-`);
-
-const STORE_WIDE_SALE_QUERY = gql(`
-  query RemixStoreWideSale {
-    shop {
       storeWideSale: metafield(namespace: "custom", key: "storewide_sale") {
         reference {
           __typename
@@ -741,21 +734,6 @@ export async function queryShellMenus(
   storefront: AppStorefrontClient,
   storeDomain: string,
 ): Promise<ShellMenusData> {
-  let [menus, storeWideSale] = await Promise.all([
-    queryLongLivedShellMenus(storefront, storeDomain),
-    queryActiveStoreWideSale(storefront),
-  ]);
-
-  return { ...menus, storeWideSale };
-}
-
-async function queryLongLivedShellMenus(
-  storefront: AppStorefrontClient,
-  storeDomain: string,
-): Promise<{
-  footerMenu: NavigationMenuData;
-  navigationMenu: NavigationMenuData;
-}> {
   try {
     let result = await storefront.graphql(NAVIGATION_QUERY, {
       cache: STABLE_CACHE,
@@ -782,44 +760,26 @@ async function queryLongLivedShellMenus(
         internalHosts,
         FALLBACK_FOOTER_MENU,
       ),
+      // Recheck expiration after the cache lookup so a stale cached sale
+      // disappears as soon as its merchant-configured end time passes.
+      storeWideSale: toActiveStoreWideSale(
+        result.data?.shop?.storeWideSale?.reference,
+      ),
     };
   } catch (error) {
     console.error("[hydrogen] Navigation query failed", error);
     return {
       navigationMenu: FALLBACK_NAVIGATION_MENU,
       footerMenu: FALLBACK_FOOTER_MENU,
+      storeWideSale: null,
     };
-  }
-}
-
-async function queryActiveStoreWideSale(
-  storefront: AppStorefrontClient,
-): Promise<StoreWideSaleData | null> {
-  try {
-    let result = await storefront.graphql(STORE_WIDE_SALE_QUERY, {
-      cache: CATALOG_CACHE,
-    });
-    if (result.errors) {
-      console.error(
-        "[hydrogen] Store-wide sale query returned partial data",
-        result.errors,
-      );
-      return null;
-    }
-
-    // Always validate after the cache lookup so stale sale metadata disappears
-    // immediately after its merchant-configured expiration.
-    return toActiveStoreWideSale(result.data?.shop?.storeWideSale?.reference);
-  } catch (error) {
-    console.error("[hydrogen] Store-wide sale query failed", error);
-    return null;
   }
 }
 
 /**
  * Accepts only complete merchant copy and a valid, future expiration. An
- * omitted expiration intentionally represents an open-ended sale; a present
- * but malformed value hides the promotion rather than publishing stale copy.
+ * omitted expiration is an open-ended sale; a present but unparsable value
+ * hides the promotion rather than publishing stale copy.
  */
 export function toActiveStoreWideSale(
   reference:
@@ -839,49 +799,14 @@ export function toActiveStoreWideSale(
   let description = reference.description?.value?.trim();
   if (!title || !description) return null;
 
-  let endDateTime = reference.endDateTime?.value;
-  if (endDateTime !== null && endDateTime !== undefined) {
-    endDateTime = endDateTime.trim();
-    if (!endDateTime || !isIsoDateTime(endDateTime)) return null;
+  let endDateTime = reference.endDateTime?.value?.trim();
+  if (endDateTime) {
     let expiresAt = Date.parse(endDateTime);
     if (!Number.isFinite(expiresAt) || expiresAt <= now) return null;
+    return { title, description, endDateTime };
   }
 
-  return endDateTime
-    ? { title, description, endDateTime }
-    : { title, description };
-}
-
-function isIsoDateTime(value: string): boolean {
-  let match =
-    /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2})(?:\.\d{1,9})?)?(?:Z|[+-](\d{2}):(\d{2}))$/.exec(
-      value,
-    );
-  if (!match) return false;
-
-  let [, yearValue, monthValue, dayValue, hourValue, minuteValue, secondValue] =
-    match;
-  let year = Number(yearValue);
-  let month = Number(monthValue);
-  let day = Number(dayValue);
-  let hour = Number(hourValue);
-  let minute = Number(minuteValue);
-  let second = Number(secondValue ?? "0");
-  let offsetHour = Number(match[7] ?? "0");
-  let offsetMinute = Number(match[8] ?? "0");
-  let daysInMonth = new Date(Date.UTC(year, month, 0)).getUTCDate();
-
-  return (
-    month >= 1 &&
-    month <= 12 &&
-    day >= 1 &&
-    day <= daysInMonth &&
-    hour <= 23 &&
-    minute <= 59 &&
-    second <= 59 &&
-    offsetHour <= 23 &&
-    offsetMinute <= 59
-  );
+  return { title, description };
 }
 
 function mapNavigationMenu(

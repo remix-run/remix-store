@@ -28,10 +28,6 @@ import { routeTemplates } from "../lib/public/route-templates.ts";
 import { routes } from "../routes.ts";
 import { getRuntime, type Env } from "../runtime.ts";
 
-// Pin runtime requests explicitly; Hydrogen's preview validation schema already
-// contains post-2026-04 deprecations, so it is not itself a reliable version pin.
-export const STOREFRONT_API_VERSION = "2026-04";
-
 export interface StorefrontOptions {
   cache?: CacheInstance;
   env?: Env;
@@ -120,7 +116,6 @@ export function storefront(options: StorefrontOptions = {}): Middleware<
       requestContext,
       config: {
         storeDomain,
-        apiVersion: STOREFRONT_API_VERSION,
         privateStorefrontToken,
         buyerIp,
         cache,

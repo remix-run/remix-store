@@ -502,97 +502,51 @@ describe("cart interactions", () => {
     assert.match(container.textContent, /Taxes & shipping details at checkout/);
   });
 
-  it("treats root allocations as the authoritative cart-wide amount", (t) => {
-    let discountedCart = createCart();
-    discountedCart.discountAllocations = [
+  it("labels automatic line allocations with the sale title", (t) => {
+    let cart = createCart();
+    cart.cost.totalAmount.amount = "8";
+    cart.lines.nodes[0]!.discountAllocations = [
       {
         __typename: "CartAutomaticDiscountAllocation",
-        discountedAmount: { amount: "2", currencyCode: "USD" },
-      },
-      {
-        __typename: "CartCodeDiscountAllocation",
-        discountedAmount: { amount: "3", currencyCode: "USD" },
-      },
-    ];
-    discountedCart.lines.nodes[0]!.discountAllocations = [
-      {
-        __typename: "CartAutomaticDiscountAllocation",
-        discountedAmount: { amount: "2", currencyCode: "USD" },
-      },
-    ];
-    let codeDiscountedCart = createCart();
-    codeDiscountedCart.cost.totalAmount.amount = "7";
-    codeDiscountedCart.lines.nodes[0]!.discountAllocations = [
-      {
-        __typename: "CartCodeDiscountAllocation",
-        discountedAmount: { amount: "3", currencyCode: "USD" },
-      },
-    ];
-    let customDiscountedCart = createCart();
-    customDiscountedCart.cost.totalAmount.amount = "8";
-    customDiscountedCart.lines.nodes[0]!.discountAllocations = [
-      {
-        __typename: "CartCustomDiscountAllocation",
         discountedAmount: { amount: "2", currencyCode: "USD" },
       },
     ];
     t.after(resetBrowserCartStore);
 
-    let page = render(
+    let { container, cleanup } = render(
       <CartPageContent
-        initialData={{ cart: discountedCart }}
+        initialData={{ cart }}
         automaticDiscountLabel="Summer Sale"
       />,
     );
-    t.after(page.cleanup);
-    // Root allocations are cart-wide totals. Line allocations can repeat the
-    // same discounts (and may contain additional detail), so they must not be
-    // added once the authoritative root surface is present.
-    assert.match(page.container.textContent, /Summer Sale-\$2\.00/);
-    assert.doesNotMatch(page.container.textContent, /Summer Sale-\$4\.00/);
-    assert.doesNotMatch(page.container.textContent, /Automatic discount/);
+    t.after(cleanup);
 
-    page.cleanup();
-    resetBrowserCartStore();
-    let drawer = render(
-      <CartShell
-        initialData={{ cart: discountedCart }}
-        automaticDiscountLabel="Summer Sale"
-      />,
-    );
-    t.after(drawer.cleanup);
-    assert.match(
-      drawer.$("#cart-drawer")?.textContent ?? "",
-      /Summer Sale-\$2\.00/,
-    );
+    assert.match(container.textContent, /Summer Sale-\$2\.00/);
+    assert.doesNotMatch(container.textContent, /Automatic discount/);
+  });
 
-    drawer.cleanup();
-    resetBrowserCartStore();
-    let codeOnly = render(
+  it("does not label code discounts as the store-wide sale", (t) => {
+    let cart = createCart();
+    cart.cost.totalAmount.amount = "7";
+    cart.lines.nodes[0]!.discountAllocations = [
+      {
+        __typename: "CartCodeDiscountAllocation",
+        discountedAmount: { amount: "3", currencyCode: "USD" },
+      },
+    ];
+    t.after(resetBrowserCartStore);
+
+    let { container, cleanup } = render(
       <CartPageContent
-        initialData={{ cart: codeDiscountedCart }}
+        initialData={{ cart }}
         automaticDiscountLabel="Summer Sale"
       />,
     );
-    t.after(codeOnly.cleanup);
-    assert.match(codeOnly.container.textContent, /Total\$7\.00/);
-    assert.doesNotMatch(codeOnly.container.textContent, /Summer Sale/);
-    assert.doesNotMatch(codeOnly.container.textContent, /Automatic discount/);
+    t.after(cleanup);
 
-    codeOnly.cleanup();
-    resetBrowserCartStore();
-    let customOnlyDrawer = render(
-      <CartShell
-        initialData={{ cart: customDiscountedCart }}
-        automaticDiscountLabel="Summer Sale"
-      />,
-    );
-    t.after(customOnlyDrawer.cleanup);
-    let customDrawerText =
-      customOnlyDrawer.$("#cart-drawer")?.textContent ?? "";
-    assert.match(customDrawerText, /Total\$8\.00/);
-    assert.doesNotMatch(customDrawerText, /Summer Sale/);
-    assert.doesNotMatch(customDrawerText, /Automatic discount/);
+    assert.match(container.textContent, /Total\$7\.00/);
+    assert.doesNotMatch(container.textContent, /Summer Sale/);
+    assert.doesNotMatch(container.textContent, /Automatic discount/);
   });
 
   it("updates the cart without opening the dialog after add-to-cart succeeds", async (t) => {
