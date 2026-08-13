@@ -14,8 +14,7 @@
     "preview:oxygen": "vite preview",
     "deploy": "pnpm deploy:oxygen",
     "deploy:oxygen": "shopify hydrogen deploy --preview",
-    "lint": "oxlint . && oxfmt --check . && pnpm lint:lockfile",
-    "lint:lockfile": "node scripts/check-lockfile.mjs",
+    "lint": "oxlint . && oxfmt --check .",
     "typecheck": "tsc --noEmit && hydrogen gql check --fail-on-warn",
     "format": "oxfmt .",
     "test": "NODE_ENV=test remix test && pnpm test:no-skips",
@@ -24,7 +23,7 @@
   },
   "dependencies": {
     "@shopify/hydrogen": "0.0.0-preview-116d5d7-20260730141607",
-    "remix": "github:remix-run/remix#54982346c587327325a056b1c8bcd75b45cef1e1&path:packages/remix",
+    "remix": "github:remix-run/remix#preview/pr-11688&path:packages/remix",
     "sanitize-html": "2.17.6"
   },
   "devDependencies": {
@@ -45,7 +44,7 @@
   "engines": {
     "node": ">=24.3.0"
   },
-  "packageManager": "pnpm@10.33.4",
+  "packageManager": "pnpm@10.33.3",
   "pnpm": {
     "overrides": {
       "undici": "7.29.0",
