@@ -16,6 +16,7 @@ import {
   type SubscribeControllerOptions,
 } from "./actions/subscribe/controller.tsx";
 import { ErrorPage, NotFoundPage } from "./actions/pages.tsx";
+import { market } from "./middleware/market.tsx";
 import { render } from "./middleware/render.tsx";
 import { storefront, type StorefrontOptions } from "./middleware/storefront.ts";
 import { routes } from "./routes.ts";
@@ -35,6 +36,7 @@ function createMiddleware(options: AppOptions) {
     options.platform ?? passThrough,
     options.renderer,
     errorPages(),
+    market(),
     storefront(options.storefront),
   ] as const;
 }

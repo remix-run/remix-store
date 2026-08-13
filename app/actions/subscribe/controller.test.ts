@@ -325,6 +325,49 @@ describe("subscribe routes", () => {
     assert.equal(response.headers.get("Cache-Control"), "private, no-store");
   });
 
+  it("keeps localized no-JavaScript back-in-stock redirects in Canada", async () => {
+    let variables: Record<string, unknown> | undefined;
+    let app = createTestApp(
+      createStorefrontFetch({
+        ...shellHandlers,
+        RemixBackInStockSubscription(body) {
+          variables = body.variables;
+          return {
+            node: {
+              availableForSale: false,
+              id: "gid://shopify/ProductVariant/222",
+              product: {
+                handle: "test-product",
+                subscribeIfBackInStock: { value: "true" },
+              },
+              title: "Blue",
+            },
+          };
+        },
+      }),
+      {
+        subscribe: { adminFetch: adminFetch([]), rateLimiter: allowAll() },
+      },
+    );
+    let request = formRequest({
+      consent: "yes",
+      email: "member@example.com",
+      "product-handle": "test-product",
+      "variant-id": "gid://shopify/ProductVariant/222",
+    });
+    request = new Request(
+      request.url.replace("/subscribe", "/en-ca/subscribe"),
+      request,
+    );
+    request.headers.delete("Accept");
+
+    let response = await app.fetch(request);
+    assert.equal(response.status, 303);
+    assert.equal(response.headers.get("Location"), "/en-ca/collections/all");
+    assert.equal(variables?.country, "CA");
+    assert.equal(variables?.language, "EN");
+  });
+
   it("returns a generic Admin failure without logging the email or response", async (t) => {
     let logs: unknown[][] = [];
     t.mock.method(console, "error", (...args: unknown[]) => logs.push(args));

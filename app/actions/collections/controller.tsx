@@ -3,6 +3,7 @@ import { createController } from "remix/router";
 import { redirect } from "remix/response/redirect";
 
 import { queryCollection } from "../../data/storefront.ts";
+import { marketPath } from "../../lib/public/market.ts";
 import { routes } from "../../routes.ts";
 import { NotFoundPage } from "../pages.tsx";
 import { CollectionPage } from "./page.tsx";
@@ -11,10 +12,15 @@ const MAX_CURSOR_LENGTH = 2_048;
 
 export default createController(routes.collections, {
   actions: {
-    index() {
-      return redirect(routes.collections.show.href({ handle: "all" }));
+    index({ market }) {
+      return redirect(
+        marketPath(
+          routes.collections.show.href({ handle: "all" }),
+          market.pathPrefix,
+        ),
+      );
     },
-    async show({ params, render, request, storefrontClient, url }) {
+    async show({ market, params, render, request, storefrontClient, url }) {
       let cursor = url.searchParams.get("cursor")?.trim() || undefined;
       if (cursor && cursor.length > MAX_CURSOR_LENGTH) {
         return new Response("Invalid cursor", { status: 400 });
@@ -43,7 +49,11 @@ export default createController(routes.collections, {
 
       return render(
         <CollectionPage
-          canonicalUrl={url.origin + routes.collections.show.href(params)}
+          canonicalUrl={
+            url.origin +
+            marketPath(routes.collections.show.href(params), market.pathPrefix)
+          }
+          market={market}
           id={collection.data.id}
           handle={collection.data.handle}
           title={collection.data.title}

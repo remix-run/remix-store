@@ -49,6 +49,20 @@ export function createStorefrontFetch(
     if (!handler && operationName === "redirects") {
       return graphqlResponse({ urlRedirects: { edges: [] } });
     }
+    if (
+      !handler &&
+      operationName === "RemixCanadianSitemapResources" &&
+      handlers.RemixSitemapResources
+    ) {
+      return graphqlResponse(await handlers.RemixSitemapResources(body));
+    }
+    if (
+      !handler &&
+      operationName === "RemixCanadianSitemapIndex" &&
+      handlers.RemixSitemapIndex
+    ) {
+      return graphqlResponse(await handlers.RemixSitemapIndex(body));
+    }
     if (!handler) {
       throw new Error(`Unexpected Storefront operation: ${operationName}`);
     }

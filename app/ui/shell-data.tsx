@@ -1,6 +1,7 @@
 import { type Handle, type RemixNode } from "remix/ui";
 
 import type { CartInitialData } from "../data/cart.ts";
+import type { ActiveMarket } from "../lib/public/market.ts";
 import type {
   AnalyticsShop,
   NavigationMenuData,
@@ -12,6 +13,7 @@ interface ShellDataProviderProps {
   cartInitialData?: CartInitialData;
   children?: RemixNode;
   footerMenu: NavigationMenuData;
+  market: ActiveMarket;
   navigationMenu: NavigationMenuData;
   storeWideSale: StoreWideSaleData | null;
 }
@@ -20,6 +22,7 @@ export interface ShellData {
   analyticsShop?: AnalyticsShop | null;
   cartInitialData?: CartInitialData;
   footerMenu: NavigationMenuData;
+  market: ActiveMarket;
   navigationMenu: NavigationMenuData;
   storeWideSale: StoreWideSaleData | null;
 }
@@ -31,6 +34,7 @@ export function ShellDataProvider(
     analyticsShop: handle.props.analyticsShop,
     cartInitialData: handle.props.cartInitialData,
     footerMenu: handle.props.footerMenu,
+    market: handle.props.market,
     navigationMenu: handle.props.navigationMenu,
     storeWideSale: handle.props.storeWideSale,
   });

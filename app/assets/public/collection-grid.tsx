@@ -10,11 +10,13 @@ import type {
   ProductCardData,
   ProductPageInfoData,
 } from "../../data/storefront.ts";
+import type { MarketPathPrefix } from "../../lib/public/market.ts";
 import { ProductGrid } from "./product-grid.tsx";
 
 interface CollectionProductGridProps extends SerializableObject {
   action: string;
   pageInfo: ProductPageInfoData;
+  pathPrefix?: MarketPathPrefix;
   products: ProductCardData[];
 }
 
@@ -34,6 +36,7 @@ export const CollectionProductGrid = clientEntry(
       <section aria-label="Collection products">
         <ProductGrid
           products={products}
+          pathPrefix={handle.props.pathPrefix}
           ariaBusy={status === "loading"}
           loadingProductCount={status === "loading" ? 8 : 0}
         />

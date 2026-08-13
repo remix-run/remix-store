@@ -1,12 +1,18 @@
 import { css, type Handle } from "remix/ui";
 
 import type { ProductCardData } from "../../data/storefront.ts";
+import { marketPath, type MarketPathPrefix } from "../../lib/public/market.ts";
 import { ShopifyImage } from "../../ui/public/shopify-image.tsx";
 
 const PRODUCT_IMAGE_SIZES =
   "(min-width: 2700px) 14vw, (min-width: 2000px) 17.5vw, (min-width: 1400px) 23.33vw, (min-width: 810px) 35vw, 70vw";
 
-export function ProductCard(handle: Handle<{ product: ProductCardData }>) {
+export function ProductCard(
+  handle: Handle<{
+    pathPrefix?: MarketPathPrefix;
+    product: ProductCardData;
+  }>,
+) {
   return () => {
     let product = handle.props.product;
     let [firstImage, secondImage] = product.images;
@@ -14,7 +20,10 @@ export function ProductCard(handle: Handle<{ product: ProductCardData }>) {
     return (
       <article mix={cardStyle}>
         <a
-          href={`/products/${encodeURIComponent(product.handle)}`}
+          href={marketPath(
+            `/products/${encodeURIComponent(product.handle)}`,
+            handle.props.pathPrefix ?? "",
+          )}
           mix={linkStyle}
         >
           <div

@@ -8,7 +8,22 @@ import {
 import type { AppStorefrontClient } from "./storefront.ts";
 
 const SITEMAP_INDEX_QUERY = gql(`
-  query RemixSitemapIndex {
+  query RemixSitemapIndex @inContext(country: US, language: EN) {
+    products: sitemap(type: PRODUCT) {
+      pagesCount {
+        count
+      }
+    }
+    collections: sitemap(type: COLLECTION) {
+      pagesCount {
+        count
+      }
+    }
+  }
+`);
+
+const CANADIAN_SITEMAP_INDEX_QUERY = gql(`
+  query RemixCanadianSitemapIndex @inContext(country: CA, language: EN) {
     products: sitemap(type: PRODUCT) {
       pagesCount {
         count
@@ -23,7 +38,29 @@ const SITEMAP_INDEX_QUERY = gql(`
 `);
 
 const SITEMAP_RESOURCES_QUERY = gql(`
-  query RemixSitemapResources($type: SitemapType!, $page: Int!) {
+  query RemixSitemapResources($type: SitemapType!, $page: Int!)
+  @inContext(country: US, language: EN) {
+    sitemap(type: $type) {
+      resources(page: $page) {
+        hasNextPage
+        items {
+          handle
+          updatedAt
+          ... on SitemapResource {
+            image {
+              alt
+              filepath
+            }
+          }
+        }
+      }
+    }
+  }
+`);
+
+const CANADIAN_SITEMAP_RESOURCES_QUERY = gql(`
+  query RemixCanadianSitemapResources($type: SitemapType!, $page: Int!)
+  @inContext(country: CA, language: EN) {
     sitemap(type: $type) {
       resources(page: $page) {
         hasNextPage
@@ -59,11 +96,17 @@ export type SitemapPage = {
 
 export async function querySitemapPageCounts(
   storefront: AppStorefrontClient,
+  market: "US" | "CA" = "US",
 ): Promise<Record<SitemapResourceType, number>> {
   try {
-    let result = await storefront.graphql(SITEMAP_INDEX_QUERY, {
-      cache: SITEMAP_CACHE,
-    });
+    let result =
+      market === "CA"
+        ? await storefront.graphql(CANADIAN_SITEMAP_INDEX_QUERY, {
+            cache: SITEMAP_CACHE,
+          })
+        : await storefront.graphql(SITEMAP_INDEX_QUERY, {
+            cache: SITEMAP_CACHE,
+          });
     let collectionCount = result.data?.collections.pagesCount?.count;
     let productCount = result.data?.products.pagesCount?.count;
     if (
@@ -88,9 +131,14 @@ export async function querySitemapResources(
   storefront: AppStorefrontClient,
   type: SitemapResourceType,
   page: number,
+  market: "US" | "CA" = "US",
 ): Promise<SitemapPage> {
   try {
-    let result = await storefront.graphql(SITEMAP_RESOURCES_QUERY, {
+    let document =
+      market === "CA"
+        ? CANADIAN_SITEMAP_RESOURCES_QUERY
+        : SITEMAP_RESOURCES_QUERY;
+    let result = await storefront.graphql(document, {
       cache: SITEMAP_CACHE,
       variables: { page, type: type === "products" ? "PRODUCT" : "COLLECTION" },
     });

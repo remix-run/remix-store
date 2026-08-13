@@ -13,6 +13,60 @@ test("renders the current storefront skeleton", async ({ page }) => {
   ).toBeVisible();
 });
 
+test("keeps the Canadian market through navigation, cart, money, and metadata", async ({
+  page,
+}) => {
+  let response = await page.goto("/en-ca/");
+
+  expect(response?.status()).toBe(200);
+  await expect(page).toHaveURL(/\/en-ca\/$/);
+  await expect(page.locator("html")).toHaveAttribute("lang", "en-CA");
+  await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
+    "href",
+    /\/en-ca\/$/,
+  );
+  await expect(
+    page.locator('main a[href^="/en-ca/products/"]').first(),
+  ).toBeVisible();
+
+  await page.locator('main a[href^="/en-ca/products/"]').first().click();
+  await expect(page).toHaveURL(/\/en-ca\/products\/test-product/);
+  await expect(page.locator("main")).toContainText("$20.00");
+  expect(await page.evaluate(() => window.Shopify?.currency?.active)).toBe(
+    "CAD",
+  );
+  let cartResponse = await page.request.post("/en-ca/api/cart", {
+    form: {
+      merchandiseId: "gid://shopify/ProductVariant/111",
+      quantity: "1",
+    },
+    headers: { Accept: "text/html", Referer: page.url() },
+  });
+  expect(cartResponse.ok()).toBe(true);
+  await page.goto("/en-ca/cart");
+  await expect(page.locator("main")).toContainText("$10.00");
+});
+
+test("canonical locale aliases redirect and unsupported locale paths 404", async ({
+  request,
+}) => {
+  let us = await request.get("/en-us/products/test-product?ref=test", {
+    maxRedirects: 0,
+  });
+  expect(us.status()).toBe(308);
+  expect(us.headers().location).toBe("/products/test-product?ref=test");
+
+  let ca = await request.get("/fr-ca/products/test-product?ref=test", {
+    maxRedirects: 0,
+  });
+  expect(ca.status()).toBe(308);
+  expect(ca.headers().location).toBe("/en-ca/products/test-product?ref=test");
+
+  let unsupported = await request.get("/de-de/products/test-product");
+  expect(unsupported.status()).toBe(404);
+  expect(await unsupported.text()).toContain("Page not found");
+});
+
 test("renders the active sale and labels cart allocations", async ({
   page,
 }) => {

@@ -24,9 +24,14 @@ import {
   type NavigationMenuData,
   type StoreWideSaleData,
 } from "../data/storefront.ts";
+import {
+  localizeInternalUrl,
+  type ActiveMarket,
+} from "../lib/public/market.ts";
 import { routeTemplates } from "../lib/public/route-templates.ts";
 import { routes } from "../routes.ts";
 import { getRuntime, type Env } from "../runtime.ts";
+import { MarketConfig } from "./market.tsx";
 
 export interface StorefrontOptions {
   cache?: CacheInstance;
@@ -125,9 +130,10 @@ export function storefront(options: StorefrontOptions = {}): Middleware<
       throw new Error("The runtime adapter must provide a trusted buyer IP.");
     }
 
+    let activeMarket = context.get(MarketConfig) as ActiveMarket;
     let requestContext = createShopifyRequestContext({
       request: context.request,
-      i18n: { country: "US", language: "EN" },
+      i18n: activeMarket,
       buyerIp,
     });
     let storefrontFetch = createRetryingStorefrontFetch({
@@ -177,19 +183,30 @@ export function storefront(options: StorefrontOptions = {}): Middleware<
     }
 
     // Shopify-owned checkout, permalink, AJAX cart, and /api/cart routes must
-    // run before the app router. Hydrogen applies request-context headers.
+    // run before the app router. Match them against the prefix-free app path
+    // while retaining the active market on the request-scoped client.
+    let routingRequest = requestWithUrl(context.request, context.url);
     let shopifyResponse = await handleShopifyRoutes({
-      request: context.request,
+      request: routingRequest,
       requestContext,
-      sessionManager: createRouteSessionManager(context.request),
+      sessionManager: createRouteSessionManager(routingRequest),
       storefrontClient,
       handlers: [cartHandlers],
     });
-    if (shopifyResponse) return noStore(shopifyResponse);
+    if (shopifyResponse) {
+      return noStore(
+        localizeRedirect(shopifyResponse, activeMarket, context.url),
+      );
+    }
 
-    let discount = getDiscountRequest(context.request);
+    let discount = getDiscountRequest(routingRequest);
     if (discount) {
-      let headers = new Headers({ Location: discount.location });
+      let headers = new Headers({
+        Location: localizeInternalUrl(
+          discount.location,
+          activeMarket.pathPrefix,
+        ),
+      });
       headers.set("Cache-Control", "private, no-store");
 
       if (discount.code && context.request.method === "GET") {
@@ -271,13 +288,50 @@ export function storefront(options: StorefrontOptions = {}): Middleware<
     if (response.status === 404) {
       response =
         (await handleShopifyRedirects({
-          request: context.request,
+          request: routingRequest,
           storefrontClient,
           routeTemplates,
         })) ?? response;
+      response = localizeRedirect(response, activeMarket, context.url);
     }
     return applyResponseHeaders(requestContext, noStoreRedirect(response));
   };
+}
+
+function requestWithUrl(request: Request, url: URL): Request {
+  if (request.url === url.href) return request;
+  // Compatibility routing may inspect a localized POST before an app-owned
+  // controller consumes it. Clone so the original body remains readable.
+  return new Request(url, request.clone());
+}
+
+function localizeRedirect(
+  response: Response,
+  market: ActiveMarket,
+  requestUrl: URL,
+): Response {
+  if (!market.pathPrefix || response.status < 300 || response.status >= 400) {
+    return response;
+  }
+  let location = response.headers.get("Location");
+  if (!location) return response;
+
+  let target: URL;
+  try {
+    target = new URL(location, requestUrl);
+  } catch {
+    return response;
+  }
+  if (target.origin !== requestUrl.origin) return response;
+
+  let localized = localizeInternalUrl(
+    `${target.pathname}${target.search}${target.hash}`,
+    market.pathPrefix,
+  );
+  if (localized === location) return response;
+  let mutable = new Response(response.body, response);
+  mutable.headers.set("Location", localized);
+  return mutable;
 }
 
 interface DiscountRequest {

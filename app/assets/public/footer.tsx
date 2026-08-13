@@ -7,6 +7,7 @@ import {
 } from "remix/ui";
 
 import type { NavigationMenuData } from "../../data/storefront.ts";
+import { marketPath, type MarketPathPrefix } from "../../lib/public/market.ts";
 
 const FOOTER_GRADIENT_STRIP_COUNT = 33;
 const FOOTER_GRADIENT_STAGGER_MS = 80;
@@ -24,6 +25,7 @@ const SOCIALS = [
 
 interface FooterProps extends SerializableObject {
   menu: NavigationMenuData;
+  pathPrefix: MarketPathPrefix;
 }
 
 export const Footer = clientEntry(
@@ -79,7 +81,9 @@ export const Footer = clientEntry(
         <div data-footer-content="true" mix={footerContentStyle}>
           <div mix={footerInnerStyle}>
             <div mix={catalogStyle}>
-              <a href="/collections/all">Remix Soft Wear Catalog V.1.4</a>
+              <a href={marketPath("/collections/all", handle.props.pathPrefix)}>
+                Remix Soft Wear Catalog V.1.4
+              </a>
               <p>Designed in USA</p>
             </div>
 
