@@ -535,8 +535,6 @@ export const ProductDetails = clientEntry(
                   </form>
                   {selectedVariant && addEnabled ? (
                     <ExpressShopPayButton
-                      disabled={pending}
-                      pending={pending}
                       storeUrl={handle.props.shopPayStoreUrl}
                       variantId={selectedVariant.id}
                     />
@@ -753,8 +751,6 @@ export function variantHref(
 
 function ExpressShopPayButton(
   handle: Handle<{
-    disabled: boolean;
-    pending: boolean;
     storeUrl: string;
     variantId: string;
   }>,
@@ -764,7 +760,6 @@ function ExpressShopPayButton(
       checkoutUrl: handle.props.storeUrl,
       variants: [{ id: handle.props.variantId, quantity: 1 }],
       channel: "hydrogen",
-      disabled: handle.props.disabled,
       width: "100%",
       borderRadius: "54px",
     };
@@ -775,7 +770,6 @@ function ExpressShopPayButton(
       <div
         role="group"
         aria-label="Express checkout"
-        aria-busy={handle.props.pending ? "true" : undefined}
         mix={[
           shopPayStyle,
           ref((element, signal) => {
