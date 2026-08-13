@@ -1,8 +1,9 @@
-import { initializeShopifyScripts } from "@shopify/hydrogen";
+import { AnalyticsEvent, initializeShopifyScripts } from "@shopify/hydrogen";
 import { navigate as remixNavigate, run, type FrameContent } from "remix/ui";
 
 import {
   createPageViewPublisher,
+  getAnalytics,
   trackConfirmedCartChanges,
 } from "./assets/public/analytics.tsx";
 import { getBrowserCartStore } from "./assets/public/cart-store.ts";
@@ -82,3 +83,17 @@ await Promise.all([
 publishPageViewed();
 trackConfirmedCartChanges(getBrowserCartStore());
 configureOpenCartAction();
+
+// Log every published analytics event to the console in development. Raw
+// subscribers see events before consent gating, so this works even before the
+// visitor accepts the consent banner.
+if (import.meta.env.DEV) {
+  let bus = getAnalytics();
+  if (bus) {
+    for (let event of Object.values(AnalyticsEvent)) {
+      bus.subscribe(event, (payload) => {
+        console.debug(`[analytics] ${event}`, payload);
+      });
+    }
+  }
+}
