@@ -8,6 +8,7 @@ import {
   FALLBACK_NAVIGATION_MENU,
   type AnalyticsShop,
   type NavigationMenuData,
+  type StoreWideSaleData,
 } from "../data/storefront.ts";
 import type { CartInitialData } from "../data/cart.ts";
 import {
@@ -15,6 +16,7 @@ import {
   CartInitialDataConfig,
   FooterMenuConfig,
   NavigationMenuConfig,
+  StoreWideSaleConfig,
 } from "./storefront.ts";
 import {
   DocumentAssetsProvider,
@@ -38,6 +40,11 @@ export function render(options: RenderOptions) {
       let footerMenu =
         (context.get(FooterMenuConfig) as NavigationMenuData | undefined) ??
         FALLBACK_FOOTER_MENU;
+      let storeWideSale =
+        (context.get(StoreWideSaleConfig) as
+          | StoreWideSaleData
+          | null
+          | undefined) ?? null;
       let cartInitialData = (context.get(CartInitialDataConfig) as
         | CartInitialData
         | undefined) ?? { cart: null };
@@ -53,6 +60,7 @@ export function render(options: RenderOptions) {
             cartInitialData={cartInitialData}
             footerMenu={footerMenu}
             navigationMenu={navigationMenu}
+            storeWideSale={storeWideSale}
           >
             {node}
           </ShellDataProvider>

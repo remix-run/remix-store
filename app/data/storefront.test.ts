@@ -14,6 +14,7 @@ import {
   queryProductNavigation,
   queryShellMenus,
   queryShop,
+  toActiveStoreWideSale,
 } from "./storefront.ts";
 
 describe("Storefront data", () => {
@@ -338,6 +339,39 @@ describe("Storefront data", () => {
         url: "https://remix.run/privacy",
       },
     ]);
+    assert.equal(result.storeWideSale, null);
+  });
+
+  it("accepts only complete, active store-wide sale metadata", () => {
+    let now = Date.parse("2026-06-01T12:00:00Z");
+    let activeSale = {
+      __typename: "Metaobject",
+      title: { value: " Summer Sale " },
+      description: { value: " 20% off everything " },
+      endDateTime: { value: "2026-06-02T12:00:00Z" },
+    };
+
+    assert.deepEqual(toActiveStoreWideSale(activeSale, now), {
+      title: "Summer Sale",
+      description: "20% off everything",
+      endDateTime: "2026-06-02T12:00:00Z",
+    });
+    assert.deepEqual(
+      toActiveStoreWideSale({ ...activeSale, endDateTime: null }, now),
+      { title: "Summer Sale", description: "20% off everything" },
+    );
+
+    for (let invalid of [
+      { ...activeSale, __typename: "Product" },
+      { ...activeSale, title: { value: " " } },
+      { ...activeSale, description: { value: "" } },
+      { ...activeSale, endDateTime: { value: "not-a-date" } },
+      { ...activeSale, endDateTime: { value: "2026-02-30T12:00:00Z" } },
+      { ...activeSale, endDateTime: { value: "2026-06-01T12:00:00Z" } },
+      { ...activeSale, endDateTime: { value: "2026-05-01T12:00:00Z" } },
+    ]) {
+      assert.equal(toActiveStoreWideSale(invalid, now), null);
+    }
   });
 
   it("normalizes the dedicated product sidebar menu", async () => {
@@ -363,9 +397,55 @@ describe("Storefront data", () => {
     ]);
   });
 
-  it("falls back when menu data is unavailable", async (t) => {
-    let client = createTestClient(async () => {
-      throw new TypeError("connection lost");
+  it("preserves live menus when the independent sale query fails", async (t) => {
+    let client = createTestClient(async (_input, init) => {
+      let operation = storefrontOperation(init);
+      if (operation === "RemixStoreWideSale") {
+        throw new TypeError("sale connection lost");
+      }
+      return storefrontResponse({
+        menu: {
+          items: [
+            {
+              id: "all",
+              title: "All Products",
+              url: "https://shop.example.com/collections/all",
+            },
+          ],
+        },
+        footerMenu: { items: [] },
+        shop: { primaryDomain: { url: "https://shop.example.com" } },
+      });
+    });
+    t.mock.method(console, "error", () => {});
+
+    let result = await queryShellMenus(client, "example.myshopify.com");
+
+    assert.deepEqual(result.navigationMenu.items, [
+      { id: "all", title: "All Products", url: "/collections/all" },
+    ]);
+    assert.deepEqual(result.footerMenu.items, []);
+    assert.equal(result.storeWideSale, null);
+  });
+
+  it("preserves an active sale when the independent menu query fails", async (t) => {
+    let client = createTestClient(async (_input, init) => {
+      let operation = storefrontOperation(init);
+      if (operation === "RemixNavigation") {
+        throw new TypeError("menu connection lost");
+      }
+      return storefrontResponse({
+        shop: {
+          storeWideSale: {
+            reference: {
+              __typename: "Metaobject",
+              title: { value: "Summer Sale" },
+              description: { value: "20% off everything" },
+              endDateTime: { value: "2099-06-02T12:00:00Z" },
+            },
+          },
+        },
+      });
     });
     t.mock.method(console, "error", () => {});
 
@@ -373,6 +453,35 @@ describe("Storefront data", () => {
 
     assert.equal(result.navigationMenu, FALLBACK_NAVIGATION_MENU);
     assert.equal(result.footerMenu, FALLBACK_FOOTER_MENU);
+    assert.deepEqual(result.storeWideSale, {
+      title: "Summer Sale",
+      description: "20% off everything",
+      endDateTime: "2099-06-02T12:00:00Z",
+    });
+  });
+
+  it("rechecks cached sale metadata expiration at the shell boundary", async () => {
+    let client = createTestClient(async (_input, init) => {
+      if (storefrontOperation(init) === "RemixNavigation") {
+        return storefrontResponse({ menu: null, footerMenu: null, shop: null });
+      }
+      return storefrontResponse({
+        shop: {
+          storeWideSale: {
+            reference: {
+              __typename: "Metaobject",
+              title: { value: "Expired Sale" },
+              description: { value: "No longer active" },
+              endDateTime: { value: "2000-01-01T00:00:00Z" },
+            },
+          },
+        },
+      });
+    });
+
+    let result = await queryShellMenus(client, "example.myshopify.com");
+
+    assert.equal(result.storeWideSale, null);
   });
 
   it("returns transport failures instead of exposing them", async () => {
@@ -410,6 +519,13 @@ class TestCache {
   get() {}
   set() {}
   delete() {}
+}
+
+function storefrontOperation(init?: RequestInit): string {
+  let body = JSON.parse(String(init?.body)) as { query: string };
+  let operation = body.query.match(/\bquery\s+([A-Za-z_][A-Za-z0-9_]*)/)?.[1];
+  if (!operation) throw new Error("Storefront request has no operation name");
+  return operation;
 }
 
 function storefrontResponse(

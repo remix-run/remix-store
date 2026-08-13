@@ -70,7 +70,22 @@ function storefrontData(operation: string | undefined): unknown {
           ],
         },
         footerMenu: { items: [] },
-        shop: { primaryDomain: { url: "http://localhost:44110" } },
+        shop: {
+          primaryDomain: { url: "http://localhost:44110" },
+        },
+      };
+    case "RemixStoreWideSale":
+      return {
+        shop: {
+          storeWideSale: {
+            reference: {
+              __typename: "Metaobject",
+              title: { value: "Sale" },
+              description: { value: "Now" },
+              endDateTime: { value: "2099-06-02T12:00:00Z" },
+            },
+          },
+        },
       };
     case "RemixHomeEditorial":
       return {
@@ -127,6 +142,19 @@ function cart() {
   if (line?.merchandise) {
     line.merchandise.id = "gid://shopify/ProductVariant/111";
     line.merchandise.product.title = "Test product";
+    value.discountAllocations = [
+      {
+        __typename: "CartAutomaticDiscountAllocation",
+        discountedAmount: { amount: "2", currencyCode: "USD" },
+      },
+    ];
+    line.discountAllocations = [
+      {
+        __typename: "CartAutomaticDiscountAllocation",
+        discountedAmount: { amount: "2", currencyCode: "USD" },
+      },
+    ];
+    value.cost.totalAmount.amount = "8";
   }
   return value;
 }

@@ -42,6 +42,9 @@ export function createStorefrontFetch(
     if (!handler && operationName === "redirects") {
       return graphqlResponse({ urlRedirects: { edges: [] } });
     }
+    if (!handler && operationName === "RemixStoreWideSale") {
+      return graphqlResponse({ shop: { storeWideSale: null } });
+    }
     if (!handler) {
       throw new Error(`Unexpected Storefront operation: ${operationName}`);
     }

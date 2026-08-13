@@ -46,6 +46,15 @@ describe("platform skeleton", () => {
     assert.equal(response.headers.get("Cache-Control"), "private, no-store");
   });
 
+  it("server-renders the active sale marquee in the shell", async () => {
+    let response = await fetchHome();
+    let html = await response.text();
+
+    assert.match(html, /data-store-wide-sale="true"/);
+    assert.match(html, /Summer Sale\. 20% off everything\. Ends Jun\.2\./);
+    assert.match(html, /Now thru Jun\.2/);
+  });
+
   it("server-renders home editorial and catalog data", async () => {
     let response = await fetchHome();
     let html = await response.text();
@@ -101,6 +110,7 @@ function fetchHome() {
       RemixCollection: collectionData,
       RemixHomeEditorial: homeData,
       RemixNavigation: navigationData,
+      RemixStoreWideSale: storeWideSaleData,
     }),
   );
 
@@ -119,7 +129,24 @@ function navigationData() {
       ],
     },
     footerMenu: null,
-    shop: { primaryDomain: { url: "https://shop.example.com" } },
+    shop: {
+      primaryDomain: { url: "https://shop.example.com" },
+    },
+  };
+}
+
+function storeWideSaleData() {
+  return {
+    shop: {
+      storeWideSale: {
+        reference: {
+          __typename: "Metaobject",
+          title: { value: "Summer Sale" },
+          description: { value: "20% off everything" },
+          endDateTime: { value: "2099-06-02T12:00:00Z" },
+        },
+      },
+    },
   };
 }
 

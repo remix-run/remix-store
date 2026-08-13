@@ -33,6 +33,14 @@ export type SerializedCartMerchandise = SerializableObject & {
   title?: string;
 };
 
+export type SerializedCartDiscountAllocation = SerializableObject & {
+  __typename:
+    | "CartAutomaticDiscountAllocation"
+    | "CartCodeDiscountAllocation"
+    | "CartCustomDiscountAllocation";
+  discountedAmount: SerializedMoney;
+};
+
 export type SerializedCartLine = SerializableObject & {
   cost: SerializableObject & {
     amountPerQuantity: SerializedMoney;
@@ -40,11 +48,7 @@ export type SerializedCartLine = SerializableObject & {
     subtotalAmount: SerializedMoney;
     totalAmount: SerializedMoney;
   };
-  discountAllocations: Array<
-    SerializableObject & {
-      discountedAmount: SerializedMoney;
-    }
-  >;
+  discountAllocations: SerializedCartDiscountAllocation[];
   id: string;
   merchandise?: SerializedCartMerchandise;
   quantity: number;
@@ -57,6 +61,7 @@ export type SerializedCartData = SerializableObject & {
     subtotalAmount: SerializedMoney;
     totalAmount: SerializedMoney;
   };
+  discountAllocations: SerializedCartDiscountAllocation[];
   discountCodes: Array<
     SerializableObject & {
       applicable: boolean;

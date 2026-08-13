@@ -8,11 +8,11 @@ Goal: replace the React Router 7 storefront on `main` with the Remix 3 + framewo
 
 - `main` remains the production RR7 storefront.
 - `v3` has the Remix 3 platform, native Node/Remix Assets runtime, Oxygen runtime, and continuous Fly/Oxygen deployment foundations.
-- Feature ports complete on `v3`: shared primitives and assets, Storefront data, shell, home, collections/load-more, product details/variants, cart, consent-aware analytics, Shopify-backed policies/contact, SEO resources/metadata, and Shopify compatibility redirects/permalinks/discounts.
+- Feature ports complete on `v3`: shared primitives and assets, Storefront data, shell, home, collections/load-more, product details/variants, cart, consent-aware analytics, Shopify-backed policies/contact, SEO resources/metadata, Shopify compatibility redirects/permalinks/discounts, and the timed store-wide sale marquee with cart discount labels.
 - Browser-reachable modules use colocated `app/**/public/**` directories; shared application code remains runtime-neutral.
 - Node has a bounded in-memory Storefront cache. Fly has Docker, health checks, graceful shutdown, immutable asset IDs, and deployment smoke checks.
 - Shopify requests use a server-only private Storefront token; target-specific adapters resolve trusted Oxygen/Fly buyer IPs. `PUBLIC_CHECKOUT_DOMAIN` is retired; checkout uses `cart.checkoutUrl`.
-- The remaining feature work starts with the store-wide sale; the platform and completed feature history do not need further migration planning.
+- The remaining feature work starts with subscribe and back-in-stock; the platform and completed feature history do not need further migration planning.
 
 ## Fixed decisions
 
@@ -32,7 +32,7 @@ Complete in dependency order unless surfaces are independent. Every feature PR c
 
 | # | Work | Completion criteria |
 | ---: | --- | --- |
-| 2.13 | Store-wide sale | Port the active-sale metaobject query and reduced-motion marquee; use the sale title for automatic-discount labels. |
+| 2.13 | Store-wide sale | **Complete:** strict `custom.storewide_sale` validation, SSR reduced-motion marquee/header offset, and sale-title labels for allocated automatic discounts on drawer/page cart summaries. |
 | 2.14 | Subscribe and back-in-stock | Build the Admin API boundary, newsletter route, and sold-out variant form with validation, rate limiting, consent handling, server-only credentials, and no PII logging. |
 | 2.15 | Locales/Markets | Implement the fixed English US/Canada decision: preserve paths and query strings across redirects, carry market context through internal navigation, use `@inContext`, and emit only accurate `en-US`/`en-CA` sitemap alternates. Unsupported locale prefixes must not create duplicate or mislabeled localized pages. |
 | 2.16 | Seasonal snow | Port the December-only canvas effect with reduced-motion and static fallbacks. |

@@ -56,6 +56,7 @@ export function createCart(quantity = 1): SerializedCartData {
           ]
         : [],
     },
+    discountAllocations: [],
     discountCodes: [],
   };
 }
