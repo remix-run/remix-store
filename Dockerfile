@@ -12,11 +12,10 @@ WORKDIR /app
 FROM base AS dependencies
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
-# pnpm cannot verify package metadata for the pinned GitHub monorepo subdirectory
-# (`packages/remix`) against the repository root package. Keep strict checking
-# everywhere else; relax it only for this isolated production dependency install.
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
-  pnpm install --prod --frozen-lockfile --config.strict-store-pkg-content-check=false
+# Include the pinned Remix commit in the cache ID. Reusing the older repository-
+# root package cache for the same tarball corrupts pnpm's subdirectory install.
+RUN --mount=type=cache,id=pnpm-remix-55865fa,target=/pnpm/store \
+  pnpm install --prod --frozen-lockfile
 
 FROM base AS runtime
 
