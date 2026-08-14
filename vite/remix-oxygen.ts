@@ -6,7 +6,7 @@ import MagicString from "magic-string";
 import { parseSync } from "oxc-parser";
 import type { Plugin, PluginOption } from "vite";
 
-const CLIENT_ENTRY = "app/entry.browser";
+const CLIENT_ENTRY = "app/actions/public/entry";
 const SERVER_ENTRY = "app/entry.oxygen";
 const SERVER_ENVIRONMENT = "ssr";
 const WORKER_PATH = "dist/ssr/index.js";

@@ -1,15 +1,15 @@
-import { initializeShopifyScripts } from "@shopify/hydrogen";
+import {
+  initializeShopifyScripts,
+  trackCartAnalytics,
+} from "@shopify/hydrogen";
 import { navigate as remixNavigate, run } from "remix/ui";
 
-import {
-  createPageViewPublisher,
-  trackConfirmedCartChanges,
-} from "./assets/public/analytics.tsx";
-import { getBrowserCartStore } from "./assets/public/cart-store.ts";
-import type { MarketPathPrefix } from "./lib/public/market.ts";
-import { configureOpenCartAction } from "./assets/public/cart.tsx";
-import { routeTemplates } from "./lib/public/route-templates.ts";
-import { resolveFrameResponse } from "./assets/public/frame-resolver.ts";
+import { createPageViewPublisher } from "../../assets/public/analytics.tsx";
+import { getBrowserCartStore } from "../../assets/public/cart-store.ts";
+import { configureOpenCartAction } from "../../assets/public/cart.tsx";
+import { resolveFrameResponse } from "../../assets/public/frame-resolver.ts";
+import type { MarketPathPrefix } from "../../lib/public/market.ts";
+import { routeTemplates } from "../../lib/public/route-templates.ts";
 
 let app = run({
   async loadModule(moduleUrl, exportName) {
@@ -55,5 +55,6 @@ await Promise.all([
 publishPageViewed();
 let pathPrefix = (document.documentElement.dataset.marketPrefix ||
   "") as MarketPathPrefix;
-trackConfirmedCartChanges(getBrowserCartStore(undefined, pathPrefix));
+let cartStore = getBrowserCartStore(undefined, pathPrefix);
+if (cartStore) trackCartAnalytics(cartStore);
 configureOpenCartAction();

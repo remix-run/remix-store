@@ -20,7 +20,6 @@ import {
 import { BrandedState } from "../../ui/public/branded-state.tsx";
 import { shopifyImageUrl } from "../../ui/public/shopify-image.tsx";
 import {
-  createSnapshotApplier,
   hasPendingCartWork,
   publishCartViewedWhenSettled,
 } from "./analytics.tsx";
@@ -132,25 +131,13 @@ export const CartShell = clientEntry(
     }>,
   ) {
     let market = handle.props.market ?? US_MARKET;
-    let appliedMarketPathPrefix = market.pathPrefix;
     let store = getBrowserCartStore(
       handle.props.initialData,
       market.pathPrefix,
     );
-    let state = store?.getState();
-    let drawerState = state;
-    let cartHadItems = Boolean(state?.data.lines.nodes.length);
-    let hydrated = false;
-
-    let applySnapshot = createSnapshotApplier(
-      handle,
-      store,
-      () => {
-        state = store?.getState();
-        drawerState = state;
-      },
-      () => market.pathPrefix,
-    );
+    let state: CartState | undefined;
+    let drawerState: CartState | undefined;
+    let cartHadItems = false;
 
     if (store) {
       let unsubscribe = store.subscribe((nextState) => {
@@ -159,42 +146,30 @@ export const CartShell = clientEntry(
         cartHadItems = cartHasItems;
         state = nextState;
         if (cartHasItems) drawerState = nextState;
-        if (hydrated) {
-          if (removedFinalLine) closeCartDrawer();
-          handle.update();
-        }
-      });
-      handle.signal.addEventListener("abort", unsubscribe, { once: true });
-      handle.queueTask((signal) => {
-        if (signal.aborted) return;
-        hydrated = true;
-        state = store.getState();
-        drawerState = state;
+        if (removedFinalLine) closeCartDrawer();
         handle.update();
       });
+      handle.signal.addEventListener("abort", unsubscribe, { once: true });
+      // Subscribe before reading so no connected-store update can be missed.
+      state = store.getState();
+      drawerState = state;
+      cartHadItems = state.data.lines.nodes.length > 0;
     }
 
     return () => {
       market = handle.props.market ?? US_MARKET;
-      if (market.pathPrefix !== appliedMarketPathPrefix) {
-        appliedMarketPathPrefix = market.pathPrefix;
-        getBrowserCartStore(handle.props.initialData, market.pathPrefix);
-      }
-      applySnapshot(handle.props.initialData);
 
-      let snapshot = getCartSnapshot(
-        hydrated ? state : undefined,
+      let viewState = resolveCartViewState(state, handle.props.initialData);
+      let drawerViewState = resolveCartViewState(
+        drawerState,
         handle.props.initialData,
       );
-      let drawerSnapshot = getCartSnapshot(
-        hydrated ? drawerState : undefined,
-        handle.props.initialData,
-      );
-      let cartIsEmpty = !snapshot.loading && !snapshot.cart?.lines.nodes.length;
+      let cartIsEmpty =
+        !viewState.loading && !viewState.cart?.lines.nodes.length;
 
       return (
         <>
-          <CartTrigger snapshot={snapshot} pathPrefix={market.pathPrefix} />
+          <CartTrigger viewState={viewState} pathPrefix={market.pathPrefix} />
           <dialog
             id={CART_DRAWER_ID}
             aria-labelledby="cart-drawer-title"
@@ -210,7 +185,7 @@ export const CartShell = clientEntry(
             ]}
           >
             <header mix={drawerHeaderStyle}>
-              <h2 id="cart-drawer-title">{cartDialogTitle(drawerSnapshot)}</h2>
+              <h2 id="cart-drawer-title">{cartDialogTitle(drawerViewState)}</h2>
               <button
                 type="button"
                 aria-label="Close cart"
@@ -221,7 +196,7 @@ export const CartShell = clientEntry(
             </header>
             <div mix={drawerBodyStyle}>
               <CartView
-                {...drawerSnapshot}
+                {...drawerViewState}
                 automaticDiscountLabel={handle.props.automaticDiscountLabel}
                 drawer
                 market={market}
@@ -245,53 +220,31 @@ export const CartPageContent = clientEntry(
     }>,
   ) {
     let market = handle.props.market ?? US_MARKET;
-    let appliedMarketPathPrefix = market.pathPrefix;
     let store = getBrowserCartStore(
       handle.props.initialData,
       market.pathPrefix,
     );
-    let state = store?.getState();
-    let hydrated = false;
-
-    let applySnapshot = createSnapshotApplier(
-      handle as Handle<{ initialData?: CartInitialData }>,
-      store,
-      () => {
-        state = store?.getState();
-        publishCartViewedWhenSettled(store);
-      },
-      () => market.pathPrefix,
-    );
+    let state: CartState | undefined;
 
     if (store) {
       let unsubscribe = store.subscribe((nextState) => {
         state = nextState;
-        if (hydrated) handle.update();
+        handle.update();
       });
       handle.signal.addEventListener("abort", unsubscribe, { once: true });
+      // Subscribe before reading so no connected-store update can be missed.
+      state = store.getState();
       handle.queueTask((signal) => {
-        if (signal.aborted) return;
-        hydrated = true;
-        state = store.getState();
-        publishCartViewedWhenSettled(store);
-        handle.update();
+        if (!signal.aborted) publishCartViewedWhenSettled(store);
       });
     }
 
     return () => {
       market = handle.props.market ?? US_MARKET;
-      if (market.pathPrefix !== appliedMarketPathPrefix) {
-        appliedMarketPathPrefix = market.pathPrefix;
-        getBrowserCartStore(handle.props.initialData, market.pathPrefix);
-      }
-      applySnapshot(handle.props.initialData);
 
       return (
         <CartView
-          {...getCartSnapshot(
-            hydrated ? state : undefined,
-            handle.props.initialData,
-          )}
+          {...resolveCartViewState(state, handle.props.initialData)}
           automaticDiscountLabel={handle.props.automaticDiscountLabel}
           market={market}
           store={store}
@@ -304,11 +257,11 @@ export const CartPageContent = clientEntry(
 function CartTrigger(
   handle: Handle<{
     pathPrefix: MarketPathPrefix;
-    snapshot: CartSnapshot;
+    viewState: CartViewState;
   }>,
 ) {
   return () => {
-    let { cart, loading } = handle.props.snapshot;
+    let { cart, loading } = handle.props.viewState;
     let quantity = cart?.totalQuantity ?? 0;
 
     if (loading || !cart || quantity === 0) {
@@ -376,30 +329,30 @@ function SpriteIcon(handle: Handle<{ name: string }>) {
   );
 }
 
-function cartDialogTitle(snapshot: CartSnapshot): string {
-  let quantity = snapshot.cart?.totalQuantity;
-  if (!quantity) return snapshot.loading ? "Loading cart" : "Your cart";
+function cartDialogTitle(viewState: CartViewState): string {
+  let quantity = viewState.cart?.totalQuantity;
+  if (!quantity) return viewState.loading ? "Loading cart" : "Your cart";
   return `${quantity} item(s) in cart`;
 }
 
-type CartSnapshot = {
+type CartViewState = {
   cart: CartData | null;
   errors?: CartErrorState;
   loading: boolean;
   state?: CartState;
 };
 
-type CartViewProps = CartSnapshot & {
+type CartViewProps = CartViewState & {
   automaticDiscountLabel?: string;
   drawer?: boolean;
   market: ActiveMarket;
   store?: CartStore;
 };
 
-function getCartSnapshot(
+function resolveCartViewState(
   state?: CartState,
   initialData?: CartInitialData,
-): CartSnapshot {
+): CartViewState {
   if (state && (!state.loading || initialData === undefined)) {
     return {
       cart: state.data.id === null ? null : state.data,

@@ -21,7 +21,7 @@ const assetServer = createAssetServer({
     "/node_modules/*path": "node_modules/*path",
   },
 
-  allowFiles: ["app/**/public/**", "app/entry.browser.ts"],
+  allowFiles: ["app/**/public/**"],
   allowPackages: ["remix", "@shopify/hydrogen"],
   denyFiles: ["app/**/*.test.*", "app/**/*.spec.*"],
   sourceMaps: isDevelopment ? "external" : undefined,
@@ -45,7 +45,7 @@ const assetServer = createAssetServer({
 });
 
 export const browserEntryHref = await assetServer.getHref(
-  "app/entry.browser.ts",
+  "app/actions/public/entry.tsx",
 );
 export const productDetailsEntryHref = await assetServer.getHref(
   "app/assets/public/product-details.tsx",
