@@ -132,6 +132,7 @@ export const CartShell = clientEntry(
     }>,
   ) {
     let market = handle.props.market ?? US_MARKET;
+    let appliedMarketPathPrefix = market.pathPrefix;
     let store = getBrowserCartStore(
       handle.props.initialData,
       market.pathPrefix,
@@ -141,10 +142,15 @@ export const CartShell = clientEntry(
     let cartHadItems = Boolean(state?.data.lines.nodes.length);
     let hydrated = false;
 
-    let applySnapshot = createSnapshotApplier(handle, store, () => {
-      state = store?.getState();
-      drawerState = state;
-    });
+    let applySnapshot = createSnapshotApplier(
+      handle,
+      store,
+      () => {
+        state = store?.getState();
+        drawerState = state;
+      },
+      () => market.pathPrefix,
+    );
 
     if (store) {
       let unsubscribe = store.subscribe((nextState) => {
@@ -170,7 +176,10 @@ export const CartShell = clientEntry(
 
     return () => {
       market = handle.props.market ?? US_MARKET;
-      getBrowserCartStore(handle.props.initialData, market.pathPrefix);
+      if (market.pathPrefix !== appliedMarketPathPrefix) {
+        appliedMarketPathPrefix = market.pathPrefix;
+        getBrowserCartStore(handle.props.initialData, market.pathPrefix);
+      }
       applySnapshot(handle.props.initialData);
 
       let snapshot = getCartSnapshot(
@@ -236,6 +245,7 @@ export const CartPageContent = clientEntry(
     }>,
   ) {
     let market = handle.props.market ?? US_MARKET;
+    let appliedMarketPathPrefix = market.pathPrefix;
     let store = getBrowserCartStore(
       handle.props.initialData,
       market.pathPrefix,
@@ -250,6 +260,7 @@ export const CartPageContent = clientEntry(
         state = store?.getState();
         publishCartViewedWhenSettled(store);
       },
+      () => market.pathPrefix,
     );
 
     if (store) {
@@ -269,7 +280,10 @@ export const CartPageContent = clientEntry(
 
     return () => {
       market = handle.props.market ?? US_MARKET;
-      getBrowserCartStore(handle.props.initialData, market.pathPrefix);
+      if (market.pathPrefix !== appliedMarketPathPrefix) {
+        appliedMarketPathPrefix = market.pathPrefix;
+        getBrowserCartStore(handle.props.initialData, market.pathPrefix);
+      }
       applySnapshot(handle.props.initialData);
 
       return (
