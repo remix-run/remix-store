@@ -210,6 +210,13 @@ test("product pages preserve their canonical URL", async ({ page }) => {
 
 test("adds a product to the cart from the product page", async ({ page }) => {
   await page.goto("/products/test-product");
+  await page.evaluate(async () => {
+    let entry = document.querySelector<HTMLScriptElement>(
+      'script[type="module"]',
+    );
+    if (!entry?.src) throw new Error("Browser entry module was not found");
+    await import(entry.src);
+  });
 
   await Promise.all([
     page.waitForResponse((response) => {
@@ -220,6 +227,10 @@ test("adds a product to the cart from the product page", async ({ page }) => {
     }),
     page.getByRole("button", { name: "Add to cart" }).click(),
   ]);
+  await expect(
+    page.getByRole("button", { name: "1 Item in cart" }),
+  ).toBeVisible();
+
   await page.goto("/cart");
 
   await expect(

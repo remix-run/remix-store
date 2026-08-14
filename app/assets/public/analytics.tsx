@@ -11,6 +11,7 @@ import {
 import { clientEntry, type Handle, type SerializableObject } from "remix/ui";
 
 import type { CartInitialData } from "../../data/cart.ts";
+import type { MarketPathPrefix } from "../../lib/public/market.ts";
 import { getBrowserCartStore } from "./cart-store.ts";
 
 let analytics: StorefrontAnalytics | null = null;
@@ -331,12 +332,14 @@ export function cartInitialDataIdentity(initialData?: CartInitialData): string {
  * `initialData` prop. When the snapshot identity changes, the apply is
  * deferred to `handle.queueTask` so it lands only after pending cart work
  * settles and the latest prop is still the one we queued for. `onApplied`
- * runs after the store absorbs the snapshot (e.g. to publish a cart view).
+ * runs after the store absorbs the snapshot (e.g. to publish a cart view),
+ * while `getPathPrefix` keeps the cart endpoint aligned with the active market.
  */
 export function createSnapshotApplier(
   handle: Handle<{ initialData?: CartInitialData }>,
   store: CartStore | undefined,
   onApplied: () => void,
+  getPathPrefix: () => MarketPathPrefix = () => "",
 ): (initialData?: CartInitialData) => void {
   let appliedIdentity = cartInitialDataIdentity(handle.props.initialData);
   let queuedIdentity: string | undefined;
@@ -356,7 +359,7 @@ export function createSnapshotApplier(
       ) {
         return;
       }
-      getBrowserCartStore(handle.props.initialData);
+      getBrowserCartStore(handle.props.initialData, getPathPrefix());
       appliedIdentity = nextIdentity;
       onApplied();
     });
