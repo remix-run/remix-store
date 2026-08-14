@@ -5,8 +5,8 @@ import type { Handle } from "remix/ui";
  * tests can drive re-renders without a DOM tree.
  *
  * `queueTask` tasks are flushed with a live `AbortSignal` after each render so
- * post-update side effects (analytics publishes, snapshot applies) run in the
- * same order the runtime would run them. `handle.update()` re-renders
+ * post-update side effects run in the same order the runtime would run them.
+ * `handle.update()` re-renders
  * synchronously until both updates and queued tasks settle.
  */
 export function createTestComponent<Props extends Record<string, unknown>>(

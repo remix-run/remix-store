@@ -62,7 +62,7 @@ export const ProductAddToCart = clientEntry(
               try {
                 await store.handleFormSubmit(event);
                 // Standard Actions resolves the request before all listeners'
-                // promise callbacks have published their reconciled snapshots.
+                // promise callbacks have published their reconciled state.
                 await Promise.resolve();
                 let state = store.getState();
                 if (state.data.totalQuantity <= previousQuantity) {

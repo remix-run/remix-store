@@ -1,6 +1,5 @@
 import {
   AnalyticsEvent,
-  trackCartAnalytics,
   type AnalyticsCart,
   type CartData,
   type CartState,
@@ -9,10 +8,6 @@ import {
   type StorefrontAnalytics,
 } from "@shopify/hydrogen";
 import { clientEntry, type Handle, type SerializableObject } from "remix/ui";
-
-import type { CartInitialData } from "../../data/cart.ts";
-import type { MarketPathPrefix } from "../../lib/public/market.ts";
-import { getBrowserCartStore } from "./cart-store.ts";
 
 let analytics: StorefrontAnalytics | null = null;
 
@@ -42,92 +37,6 @@ export function createPageViewPublisher(
     if (!bus) return;
     bus.publish(AnalyticsEvent.PAGE_VIEWED, { url });
     lastPublishedUrl = url;
-  };
-}
-
-/**
- * Starts Hydrogen's confirmed-cart diff tracker for the shared cart store.
- *
- * TODO(hydrogen-preview): The facade and restart logic below exist because
- * the pinned tracker dedupes by `updatedAt` before cart ID, so a cart switch
- * with equal timestamps or unrelated line IDs could emit cross-cart deltas.
- * Delete this wrapper and subscribe the store directly once the preview
- * tracker keys its baseline by cart ID.
- */
-export function trackConfirmedCartChanges(store?: CartStore): () => void {
-  if (!store || !getAnalytics()) return () => {};
-
-  let stopped = false;
-  let currentState = store.getState();
-  let activeCartId = settledCart(currentState)?.id ?? null;
-  let trackerListener: ((state: CartState) => void) | undefined;
-  let stopTracker = () => {};
-  let nullSnapshotVersion = 0;
-  let trackerStore = {
-    ...store,
-    getState: () => currentState,
-    subscribe(listener: (state: CartState) => void) {
-      trackerListener = listener;
-      return () => {
-        if (trackerListener === listener) trackerListener = undefined;
-      };
-    },
-  } satisfies CartStore;
-
-  function restartTracker() {
-    stopTracker();
-    stopTracker = trackCartAnalytics(trackerStore);
-  }
-
-  restartTracker();
-  let stopStore = store.subscribe((nextState) => {
-    currentState = nextState;
-    if (hasPendingCartWork(nextState)) {
-      trackerListener?.(nextState);
-      return;
-    }
-
-    let nextCartId = nextState.data.id;
-    if (nextCartId === null) {
-      // Same-ID snapshot replacement emits a synchronous empty state between
-      // reset and hydrate. Delay treating null as a new baseline so that
-      // transition still produces a line delta from the prior cart.
-      trackerListener?.(nextState);
-      let version = ++nullSnapshotVersion;
-      queueMicrotask(() => {
-        if (
-          stopped ||
-          version !== nullSnapshotVersion ||
-          hasPendingCartWork(currentState) ||
-          currentState.data.id !== null
-        ) {
-          return;
-        }
-        activeCartId = null;
-        restartTracker();
-      });
-      return;
-    }
-
-    nullSnapshotVersion += 1;
-    if (activeCartId !== null && activeCartId !== nextCartId) {
-      // Hydrogen's pinned tracker dedupes by updatedAt before cart ID. Start a
-      // fresh baseline when the shopper switches carts so equal timestamps and
-      // unrelated line IDs cannot create cross-cart deltas.
-      activeCartId = nextCartId;
-      restartTracker();
-      return;
-    }
-
-    trackerListener?.(nextState);
-    activeCartId = nextCartId;
-  });
-
-  return () => {
-    stopped = true;
-    nullSnapshotVersion += 1;
-    stopStore();
-    stopTracker();
   };
 }
 
@@ -314,54 +223,3 @@ export const CollectionViewed = clientEntry(
     };
   },
 );
-
-/**
- * Computes a stable identity for a server-provided cart snapshot so the UI
- * can skip re-applying the same snapshot and defer newer ones until pending
- * cart work settles.
- */
-export function cartInitialDataIdentity(initialData?: CartInitialData): string {
-  if (initialData === undefined) return "omitted";
-  return initialData.cart === null
-    ? "null"
-    : `${initialData.cart.id}\u0000${initialData.cart.updatedAt}`;
-}
-
-/**
- * Returns a function the cart UI calls on every render with the current
- * `initialData` prop. When the snapshot identity changes, the apply is
- * deferred to `handle.queueTask` so it lands only after pending cart work
- * settles and the latest prop is still the one we queued for. `onApplied`
- * runs after the store absorbs the snapshot (e.g. to publish a cart view),
- * while `getPathPrefix` keeps the cart endpoint aligned with the active market.
- */
-export function createSnapshotApplier(
-  handle: Handle<{ initialData?: CartInitialData }>,
-  store: CartStore | undefined,
-  onApplied: () => void,
-  getPathPrefix: () => MarketPathPrefix = () => "",
-): (initialData?: CartInitialData) => void {
-  let appliedIdentity = cartInitialDataIdentity(handle.props.initialData);
-  let queuedIdentity: string | undefined;
-
-  return (initialData?: CartInitialData) => {
-    let nextIdentity = cartInitialDataIdentity(initialData);
-    if (nextIdentity === appliedIdentity || nextIdentity === queuedIdentity) {
-      return;
-    }
-    queuedIdentity = nextIdentity;
-    handle.queueTask((signal) => {
-      if (queuedIdentity === nextIdentity) queuedIdentity = undefined;
-      if (
-        signal.aborted ||
-        cartInitialDataIdentity(handle.props.initialData) !== nextIdentity ||
-        hasPendingCartWork(store)
-      ) {
-        return;
-      }
-      getBrowserCartStore(handle.props.initialData, getPathPrefix());
-      appliedIdentity = nextIdentity;
-      onApplied();
-    });
-  };
-}

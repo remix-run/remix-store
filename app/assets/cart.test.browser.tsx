@@ -14,15 +14,7 @@ import {
   createCartInitialData,
   VARIANT_ID,
 } from "../../test/cart-fixtures.ts";
-import {
-  createTestComponent,
-  renderTestComponent,
-} from "../../test/component-fixtures.ts";
-import { trackConfirmedCartChanges } from "./public/analytics.tsx";
-import {
-  getBrowserCartStore,
-  resetBrowserCartStore,
-} from "./public/cart-store.ts";
+import { resetBrowserCartStore } from "./public/cart-store.ts";
 import {
   CartPageContent,
   CartShell,
@@ -265,113 +257,6 @@ describe("cart interactions", () => {
     ]);
   });
 
-  it("reconciles repeated cart page props and views each snapshot once", async (t) => {
-    let events = useAnalyticsSpy(t);
-    let initialData = createCartInitialData();
-    t.after(resetBrowserCartStore);
-
-    let component = createTestComponent(CartPageContent);
-    renderTestComponent(component, { initialData });
-
-    renderTestComponent(component, { initialData });
-    let newerCart = createCart(2);
-    newerCart.updatedAt = "2026-01-01T00:00:01.000Z";
-    renderTestComponent(component, { initialData: { cart: newerCart } });
-
-    let differentCart = createCart(3);
-    differentCart.id = "gid://shopify/Cart/different";
-    renderTestComponent(component, { initialData: { cart: differentCart } });
-
-    renderTestComponent(component, { initialData: { cart: null } });
-
-    let store = getBrowserCartStore();
-    assert.equal(store?.getState().data.id, null);
-    assert.equal(store?.getState().loading, false);
-    let cartViews = events
-      .filter(({ event }) => event === AnalyticsEvent.CART_VIEWED)
-      .map(({ payload }) => {
-        let cart = payload.cart as { id?: string; updatedAt?: string } | null;
-        return cart ? `${cart.id}:${cart.updatedAt}` : null;
-      });
-    assert.deepEqual(cartViews, [
-      `${initialData.cart?.id}:${initialData.cart?.updatedAt}`,
-      `${newerCart.id}:${newerCart.updatedAt}`,
-      `${differentCart.id}:${differentCart.updatedAt}`,
-      null,
-    ]);
-  });
-
-  it("defers changing frame snapshots until optimistic work settles", async (t) => {
-    let api = createCartApiMock(t);
-    let initialData = createCartInitialData();
-    t.after(resetBrowserCartStore);
-
-    let view = render(<CartPageContent initialData={initialData} />);
-    t.after(view.cleanup);
-    await flushAsync(view.act);
-
-    let component = createTestComponent(CartPageContent);
-    renderTestComponent(component, { initialData });
-    let mutation = api.enqueue();
-    let increase = view.$('button[aria-label="Increase quantity"]');
-    assert.ok(increase instanceof HTMLButtonElement);
-    await view.act(() => increase.click());
-    await waitFor(() => api.requests.length === 1, view.act);
-
-    let nullInitialData = { cart: null };
-    renderTestComponent(component, { initialData: nullInitialData });
-    assert.equal(getBrowserCartStore()?.getState().data.totalQuantity, 2);
-    assert.notEqual(getBrowserCartStore()?.getState().data.id, null);
-
-    mutation.resolve({ cart: createCart(2), userErrors: [], warnings: [] });
-    await waitFor(
-      () => getBrowserCartStore()?.getState().pending.lines.size === 0,
-      view.act,
-    );
-    renderTestComponent(component, { initialData: nullInitialData });
-    assert.equal(getBrowserCartStore()?.getState().data.id, null);
-    assert.equal(getBrowserCartStore()?.getState().loading, false);
-  });
-
-  it("tracks a newer confirmed same-cart snapshot from frame data", (t) => {
-    let events = useAnalyticsSpy(t);
-    localStorage.removeItem("cartLastUpdatedAt");
-    t.after(() => localStorage.removeItem("cartLastUpdatedAt"));
-    t.after(resetBrowserCartStore);
-
-    let initialCart = createCart();
-    let store = getBrowserCartStore({ cart: initialCart });
-    assert.ok(store);
-    let stopTracking = trackConfirmedCartChanges(store);
-    t.after(stopTracking);
-
-    let updatedCart = createCart(2);
-    updatedCart.updatedAt = "2026-01-01T00:00:01.000Z";
-    assert.equal(getBrowserCartStore({ cart: updatedCart }), store);
-
-    assert.deepEqual(
-      events.map(({ event }) => event),
-      [AnalyticsEvent.CART_UPDATED, AnalyticsEvent.PRODUCT_ADD_TO_CART],
-    );
-    assert.equal(store.getState().data.updatedAt, updatedCart.updatedAt);
-    assert.equal(store.getState().data.totalQuantity, 2);
-  });
-
-  it("replaces the cart snapshot when client navigation changes markets", (t) => {
-    t.after(resetBrowserCartStore);
-    let usCart = createCart(1);
-    let caCart = createCart(2);
-    caCart.id = usCart.id;
-    caCart.updatedAt = usCart.updatedAt;
-
-    let store = getBrowserCartStore({ cart: usCart }, "");
-    assert.equal(store?.getState().data.totalQuantity, 1);
-
-    let sameFacade = getBrowserCartStore({ cart: caCart }, "/en-ca");
-    assert.equal(sameFacade, store);
-    assert.equal(store?.getState().data.totalQuantity, 2);
-  });
-
   it("reveals the cart trigger label by width without fading it", (t) => {
     useDesktopCartViewport(t);
     t.after(resetBrowserCartStore);
@@ -583,9 +468,9 @@ describe("cart interactions", () => {
     assert.doesNotMatch(container.textContent, /Automatic discount/);
   });
 
-  it("updates the cart without opening the dialog after add-to-cart succeeds", async (t) => {
+  it("keeps one live cart across an empty-cart add and stale server props", async (t) => {
     let api = createCartApiMock(t);
-    let initialData = createCartInitialData(0);
+    let initialData = { cart: null };
     t.after(resetBrowserCartStore);
 
     let { $, act, cleanup } = render(
@@ -621,6 +506,11 @@ describe("cart interactions", () => {
       $('button[aria-controls="cart-drawer"]')?.textContent ?? "",
       /1Item in cart/,
     );
+
+    let cartPage = render(<CartPageContent initialData={initialData} />);
+    t.after(cartPage.cleanup);
+    await flushAsync(cartPage.act);
+    assert.match(cartPage.container.textContent, /Test Product/);
   });
 
   it("keeps the dialog closed and reports rejected add-to-cart errors inline", async (t) => {

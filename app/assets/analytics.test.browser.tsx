@@ -13,7 +13,6 @@ import {
   createPageViewPublisher,
   publishCartViewed,
   publishCartViewedWhenSettled,
-  trackConfirmedCartChanges,
 } from "./public/analytics.tsx";
 import { createCart } from "../../test/cart-fixtures.ts";
 import {
@@ -99,50 +98,17 @@ describe("storefront analytics", () => {
     ]);
   });
 
-  it("tracks only confirmed cart timestamp changes and publishes cart views", (t) => {
+  it("publishes a cart view from confirmed store state", (t) => {
     let events = installAnalytics(t);
-    localStorage.removeItem("cartLastUpdatedAt");
-    t.after(() => localStorage.removeItem("cartLastUpdatedAt"));
-
-    let initialCart = createCart();
-    let currentCart = initialCart;
-    let listener: ((state: ReturnType<typeof cartState>) => void) | undefined;
-    let store = {
-      getState: () => cartState(currentCart),
-      subscribe(next: typeof listener) {
-        listener = next;
-        return () => {
-          listener = undefined;
-        };
-      },
-    };
-    let stopTracking = trackConfirmedCartChanges(store as never);
-    t.after(stopTracking);
+    let cart = createCart();
+    let store = { getState: () => cartState(cart) };
 
     publishCartViewed(store as never);
+
     assert.equal(events[0]?.event, AnalyticsEvent.CART_VIEWED);
     assert.equal(
       (events[0]?.payload.cart as { updatedAt?: string })?.updatedAt,
-      initialCart.updatedAt,
-    );
-    assert.equal(events[0]?.payload.prevCart, undefined);
-
-    currentCart = createCart(2);
-    currentCart.updatedAt = "2026-01-01T00:00:01.000Z";
-    listener?.(cartState(currentCart));
-    listener?.(cartState(currentCart));
-
-    assert.deepEqual(
-      events.map(({ event }) => event),
-      [
-        AnalyticsEvent.CART_VIEWED,
-        AnalyticsEvent.CART_UPDATED,
-        AnalyticsEvent.PRODUCT_ADD_TO_CART,
-      ],
-    );
-    assert.equal(
-      (events[1]?.payload.cart as { updatedAt?: string })?.updatedAt,
-      currentCart.updatedAt,
+      cart.updatedAt,
     );
   });
 
@@ -205,43 +171,6 @@ describe("storefront analytics", () => {
     assert.deepEqual(
       events.map(({ event }) => event),
       [AnalyticsEvent.CART_VIEWED],
-    );
-  });
-
-  it("starts a fresh cart baseline when cart IDs change at one timestamp", (t) => {
-    let events = installAnalytics(t);
-    localStorage.removeItem("cartLastUpdatedAt");
-    t.after(() => localStorage.removeItem("cartLastUpdatedAt"));
-
-    let currentCart = createCart();
-    let listener: ((state: ReturnType<typeof cartState>) => void) | undefined;
-    let store = {
-      getState: () => cartState(currentCart),
-      subscribe(next: typeof listener) {
-        listener = next;
-        return () => {
-          listener = undefined;
-        };
-      },
-    };
-    let stopTracking = trackConfirmedCartChanges(store as never);
-    t.after(stopTracking);
-
-    currentCart = createCart(2);
-    currentCart.id = "gid://shopify/Cart/2";
-    listener?.(cartState(currentCart));
-    currentCart = createCart(3);
-    currentCart.id = "gid://shopify/Cart/2";
-    currentCart.updatedAt = "2026-01-01T00:00:01.000Z";
-    listener?.(cartState(currentCart));
-
-    assert.deepEqual(
-      events.map(({ event }) => event),
-      [AnalyticsEvent.CART_UPDATED, AnalyticsEvent.PRODUCT_ADD_TO_CART],
-    );
-    assert.equal(
-      (events[0]?.payload.prevCart as { id?: string })?.id,
-      "gid://shopify/Cart/2",
     );
   });
 });

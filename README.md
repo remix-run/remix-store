@@ -61,7 +61,7 @@ Oxygen preview deployments use `.github/workflows/oxygen-deployment.yml`. Fly se
 - `app/runtime.ts` binds environment, cache, and `waitUntil` values to each request.
 - `server.node.ts` owns the Node/Fly-compatible HTTP lifecycle.
 - `app/entry.oxygen.ts` composes and serves the Oxygen Worker runtime.
-- `app/entry.browser.ts` hydrates browser components on both targets.
+- `app/actions/public/entry.tsx` hydrates browser components on both targets.
 - `vite/remix-oxygen.ts` owns the temporary Remix 3/Oxygen build integration.
 
 ## License

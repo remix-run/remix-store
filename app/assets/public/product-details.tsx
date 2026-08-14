@@ -112,7 +112,6 @@ export const ProductDetails = clientEntry(
 
     return () => {
       market = handle.props.market ?? US_MARKET;
-      getBrowserCartStore(undefined, market.pathPrefix);
       let { menu, product, search } = handle.props;
       let nextIdentity = productIdentity(product);
 
