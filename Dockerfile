@@ -12,9 +12,7 @@ WORKDIR /app
 FROM base AS dependencies
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
-# Include the pinned Remix commit in the cache ID. Reusing the older repository-
-# root package cache for the same tarball corrupts pnpm's subdirectory install.
-RUN --mount=type=cache,id=pnpm-remix-55865fa,target=/pnpm/store \
+RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store \
   pnpm install --prod --frozen-lockfile
 
 FROM base AS runtime

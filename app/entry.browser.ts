@@ -1,5 +1,5 @@
 import { initializeShopifyScripts } from "@shopify/hydrogen";
-import { navigate as remixNavigate, run, type FrameContent } from "remix/ui";
+import { navigate as remixNavigate, run } from "remix/ui";
 
 import {
   createPageViewPublisher,
@@ -9,6 +9,7 @@ import { getBrowserCartStore } from "./assets/public/cart-store.ts";
 import type { MarketPathPrefix } from "./lib/public/market.ts";
 import { configureOpenCartAction } from "./assets/public/cart.tsx";
 import { routeTemplates } from "./lib/public/route-templates.ts";
+import { resolveFrameResponse } from "./assets/public/frame-resolver.ts";
 
 let app = run({
   async loadModule(moduleUrl, exportName) {
@@ -16,38 +17,9 @@ let app = run({
     return module[exportName];
   },
   async resolveFrame(src, options) {
-    return resolveFrameResponse(
-      new URL(src, window.location.href),
-      options?.signal,
-      options?.target,
-    );
+    return resolveFrameResponse(new URL(src, window.location.href), options);
   },
 });
-
-async function resolveFrameResponse(
-  url: URL,
-  signal?: AbortSignal,
-  target?: string,
-): Promise<FrameContent> {
-  let headers = new Headers({ Accept: "text/html", "X-Remix-Frame": "true" });
-  if (target) headers.set("X-Remix-Target", target);
-
-  let response = await fetch(url, {
-    credentials: "same-origin",
-    headers,
-    signal,
-  });
-  let contentType = response.headers.get("Content-Type") ?? "";
-  if (!contentType.toLowerCase().includes("text/html")) {
-    throw new Error(
-      `Failed to resolve HTML frame: ${response.status} ${response.statusText}`,
-    );
-  }
-
-  // Error statuses still contain the branded document that navigation should
-  // render (for example, when traversing history back to a 404).
-  return response.body ?? response.text();
-}
 
 if (import.meta.hot) {
   import.meta.hot.on("server:update", async () => {

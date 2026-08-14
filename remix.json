@@ -1,6 +1,7 @@
 {
   "test": {
     "exclude": ["node_modules/**"],
+    "quiet": true,
     "playwright": {
       "projects": ["chromium"]
     }

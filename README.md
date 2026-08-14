@@ -43,7 +43,7 @@ pnpm build:oxygen
 pnpm preview:oxygen
 ```
 
-The end-to-end suite starts the native Node app with a deterministic local Storefront fixture by default. Set `BASE_URL` to run it against an existing Oxygen or Fly deployment. Skipped tests are disallowed; acceptance cases should be added as shopper surfaces ship.
+The end-to-end suite starts the native Node app with a deterministic local Storefront fixture by default. Set `BASE_URL` to run it against an existing Oxygen or Fly deployment.
 
 The Oxygen build produces a self-contained Worker at `dist/ssr/index.js` and browser assets in `dist/client/`. The Node server compiles browser modules through `remix/assets` for Fly.
 

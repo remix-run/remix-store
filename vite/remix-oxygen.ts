@@ -72,15 +72,7 @@ function build(): Plugin {
       await builder.build(ssr);
       await builder.build(client);
 
-      let fullstackBuilder = builder as typeof builder & {
-        writeAssetsManifest?: () => Promise<void>;
-      };
-      if (!fullstackBuilder.writeAssetsManifest) {
-        throw new Error(
-          "The fullstack asset manifest writer was not installed.",
-        );
-      }
-      await fullstackBuilder.writeAssetsManifest();
+      await builder.writeAssetsManifest();
       finalizeWorker(builder.config.root);
     },
   };
