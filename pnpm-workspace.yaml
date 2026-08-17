@@ -9,7 +9,6 @@ minimumReleaseAgeStrict: true
 ignoredBuiltDependencies:
   - esbuild
   - workerd
+onlyBuiltDependencies:
+  - remix
 trustPolicy: no-downgrade
-trustPolicyExclude:
-  - chokidar@4.0.3
-  - semver@6.3.1
