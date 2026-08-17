@@ -9,11 +9,6 @@ import { CartPage, HomePage } from "./pages.tsx";
 export interface RootControllerOptions {
   clock?: Clock;
 }
-function noStoreResponseInit(init?: ResponseInit): ResponseInit {
-  let headers = new Headers(init?.headers);
-  headers.set("Cache-Control", "private, no-store");
-  return { ...init, headers };
-}
 
 export function createRootController(options: RootControllerOptions = {}) {
   let clock = options.clock ?? (() => new Date());
@@ -50,7 +45,6 @@ export function createRootController(options: RootControllerOptions = {}) {
             initialData={cartInitialData}
             market={market}
           />,
-          noStoreResponseInit(),
         );
       },
     },

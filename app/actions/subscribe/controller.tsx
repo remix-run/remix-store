@@ -1,4 +1,5 @@
 import { createController } from "remix/router";
+import { redirect } from "remix/response/redirect";
 import type { RemixNode, SerializableObject } from "remix/ui";
 
 import {
@@ -273,9 +274,10 @@ function subscriptionResponse(
     });
   }
   if (init.body.success && init.successRedirect) {
-    let headers = new Headers(init.headers);
-    headers.set("Location", init.successRedirect);
-    return new Response(null, { status: 303, headers });
+    return redirect(init.successRedirect, {
+      status: 303,
+      headers: init.headers,
+    });
   }
   return render(
     <SubscribePage

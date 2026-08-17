@@ -1,9 +1,10 @@
 import { Renderer } from "remix/middleware/render";
 import { createElement, type RemixNode } from "remix/ui";
 import {
+  createMiddleware,
   createRouter,
   type Middleware,
-  type MiddlewareContext,
+  type RouterContext,
 } from "remix/router";
 
 import {
@@ -35,14 +36,14 @@ export interface AppOptions {
 
 const passThrough: Middleware = (_context, next) => next();
 
-function createMiddleware(options: AppOptions) {
-  return [
+function createAppMiddleware(options: AppOptions) {
+  return createMiddleware(
     options.platform ?? passThrough,
     options.renderer,
     errorPages(),
     market(),
     storefront(options.storefront),
-  ] as const;
+  );
 }
 
 function errorPages(): Middleware {
@@ -66,17 +67,9 @@ function errorPages(): Middleware {
   };
 }
 
-type AppContext = MiddlewareContext<ReturnType<typeof createMiddleware>>;
-
-declare module "remix/router" {
-  interface RouterTypes {
-    context: AppContext;
-  }
-}
-
-export function createApp(options: AppOptions) {
-  let router = createRouter<AppContext>({
-    middleware: createMiddleware(options),
+function createAppRouter(options: AppOptions) {
+  return createRouter({
+    middleware: createAppMiddleware(options),
     defaultHandler(context) {
       if (context.method !== "GET") {
         return new Response(`Not Found: ${context.url.pathname}`, {
@@ -86,6 +79,18 @@ export function createApp(options: AppOptions) {
       return context.render(createElement(NotFoundPage, {}), { status: 404 });
     },
   });
+}
+
+type AppContext = RouterContext<ReturnType<typeof createAppRouter>>;
+
+declare module "remix/router" {
+  interface RouterTypes {
+    context: AppContext;
+  }
+}
+
+export function createApp(options: AppOptions) {
+  let router = createAppRouter(options);
 
   router.map(routes, createRootController(options.seasonalSnow));
   router.map(routes.collections, collectionsController);
