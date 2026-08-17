@@ -1,5 +1,6 @@
 import { Renderer } from "remix/middleware/render";
 import { createContextKey, type Middleware } from "remix/router";
+import { redirect } from "remix/response/redirect";
 import { createElement, type RemixNode } from "remix/ui";
 
 import { NotFoundPage } from "../actions/pages.tsx";
@@ -22,10 +23,7 @@ export function market(): Middleware<{
 
     if (resolution.kind === "redirect") {
       let location = `${resolution.pathname}${context.url.search}${context.url.hash}`;
-      return new Response(null, {
-        status: 308,
-        headers: { Location: location },
-      });
+      return redirect(location, 308);
     }
 
     if (resolution.kind === "unsupported") {

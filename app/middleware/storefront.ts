@@ -7,6 +7,7 @@ import {
 } from "@shopify/hydrogen";
 import { createMultiMatcher } from "remix/route-pattern/match";
 import { createContextKey, type Middleware } from "remix/router";
+import { redirect } from "remix/response/redirect";
 
 import { cartHandlers, getCartData } from "../data/cart.server.ts";
 import type { CartInitialData } from "../data/cart.ts";
@@ -202,11 +203,12 @@ export function storefront(options: StorefrontOptions = {}): Middleware<
 
     let discount = getDiscountRequest(routingRequest);
     if (discount) {
+      let location = localizeInternalUrl(
+        discount.location,
+        activeMarket.pathPrefix,
+      );
       let headers = new Headers({
-        Location: localizeInternalUrl(
-          discount.location,
-          activeMarket.pathPrefix,
-        ),
+        Location: location,
       });
       headers.set("Cache-Control", "private, no-store");
 
@@ -231,7 +233,7 @@ export function storefront(options: StorefrontOptions = {}): Middleware<
 
       return applyResponseHeaders(
         requestContext,
-        new Response(null, { status: 303, headers }),
+        redirect(location, { status: 303, headers }),
       );
     }
 

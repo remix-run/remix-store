@@ -7,7 +7,7 @@ export const CART_UPDATED_AT = "2026-01-01T00:00:00.000Z";
 
 const USD = "USD";
 
-function money(amount: string) {
+function money(amount: string): SerializedCartData["cost"]["totalAmount"] {
   return { amount, currencyCode: USD };
 }
 
