@@ -44,9 +44,9 @@ const assetServer = createAssetServer({
   ...(buildId ? { fingerprint: { buildId } } : {}),
 });
 
-export const browserEntryHref = await assetServer.getHref(
-  "app/actions/public/entry.tsx",
-);
+const browserEntry = "app/actions/public/entry.tsx";
+export const browserEntryHref = await assetServer.getHref(browserEntry);
+const browserEntryPreloads = await assetServer.getPreloads(browserEntry);
 export const productDetailsEntryHref = await assetServer.getHref(
   "app/assets/public/product-details.tsx",
 );
@@ -60,7 +60,7 @@ export const app = createApp({
     documentAssets: {
       css: [],
       entry: browserEntryHref,
-      js: [],
+      js: browserEntryPreloads.map((href) => ({ href })),
     },
     async resolveClientEntry(entryId, component) {
       if (!entryId.startsWith("file://")) {
@@ -69,10 +69,16 @@ export const app = createApp({
         );
       }
 
+      let [href, preloads] = await Promise.all([
+        assetServer.getHref(entryId),
+        assetServer.getPreloads(entryId),
+      ]);
+
       return {
-        href: await assetServer.getHref(entryId),
+        href,
         exportName:
           entryId.split("#")[1] || component.name || titleCaseFileName(entryId),
+        preloads,
       };
     },
   }),
