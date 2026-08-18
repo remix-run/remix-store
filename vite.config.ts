@@ -12,6 +12,7 @@ export default defineConfig({
             entry: "./app/entry.oxygen.ts",
             previewEntry: "./dist/ssr/index.js",
           }),
-          remixOxygen(),
+          // The preview package's 2026-10 date is not available in Oxygen yet.
+          remixOxygen({ compatibilityDate: "2026-04-01" }),
         ],
 });
