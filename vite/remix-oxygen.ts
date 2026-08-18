@@ -10,11 +10,13 @@ const CLIENT_ENTRY = "app/actions/public/entry";
 const SERVER_ENTRY = "app/entry.oxygen";
 const SERVER_ENVIRONMENT = "ssr";
 const WORKER_PATH = "dist/ssr/index.js";
+const OXYGEN_CONFIG_PATH = "dist/ssr/oxygen.json";
 const ASSETS_MANIFEST_PATH = "dist/ssr/__fullstack_assets_manifest.js";
 const ASSETS_MANIFEST_IMPORT =
   /import\s+(\w+)\s+from\s*["']\.\/__fullstack_assets_manifest\.js["'];?/;
 
 interface RemixOxygenOptions {
+  compatibilityDate?: string;
   serverHandler?: boolean;
 }
 
@@ -25,16 +27,17 @@ interface RemixOxygenOptions {
  * final inlining that keeps the deployed Worker self-contained.
  */
 export function remixOxygen({
+  compatibilityDate,
   serverHandler = false,
 }: RemixOxygenOptions = {}): PluginOption {
   return [
     fullstack({ serverEnvironments: [SERVER_ENVIRONMENT], serverHandler }),
-    build(),
+    build(compatibilityDate),
     clientEntryTransform(),
   ];
 }
 
-function build(): Plugin {
+function build(compatibilityDate?: string): Plugin {
   return {
     name: "remix-oxygen:build",
     config() {
@@ -73,7 +76,7 @@ function build(): Plugin {
       await builder.build(client);
 
       await builder.writeAssetsManifest();
-      finalizeWorker(builder.config.root);
+      finalizeWorker(builder.config.root, compatibilityDate);
     },
   };
 }
@@ -174,7 +177,10 @@ function findClientEntryCalls(program: Program) {
   return calls;
 }
 
-function finalizeWorker(root: string): void {
+function finalizeWorker(
+  root: string,
+  compatibilityDate: string | undefined,
+): void {
   let workerPath = resolve(root, WORKER_PATH);
   let manifestPath = resolve(root, ASSETS_MANIFEST_PATH);
   if (!existsSync(workerPath))
@@ -229,6 +235,22 @@ function finalizeWorker(root: string): void {
     ),
   );
   rmSync(manifestPath);
+
+  if (compatibilityDate) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(compatibilityDate)) {
+      throw new Error(
+        `Invalid Oxygen compatibility date: ${compatibilityDate}`,
+      );
+    }
+    writeFileSync(
+      resolve(root, OXYGEN_CONFIG_PATH),
+      JSON.stringify(
+        { version: 1, compatibility_date: compatibilityDate },
+        null,
+        2,
+      ),
+    );
+  }
 }
 
 function validateHydrationEntries(
