@@ -22,7 +22,7 @@
   },
   "dependencies": {
     "@shopify/hydrogen": "0.0.0-preview-116d5d7-20260730141607",
-    "remix": "github:remix-run/remix#preview/main&path:packages/remix",
+    "remix": "3.0.0-beta.10",
     "sanitize-html": "2.17.6"
   },
   "devDependencies": {
