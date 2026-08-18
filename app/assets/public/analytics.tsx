@@ -97,10 +97,14 @@ export function hasPendingCartWork(
     state = source;
   }
   if (!state) return false;
+  let pendingCost =
+    state.pending.cost ??
+    (state.pending.lines.size > 0 || state.pending.discountCodes.size > 0);
   return (
-    state.pending.lines.size > 0 ||
-    Boolean(state.pending.note) ||
-    state.pending.discountCodes.size > 0
+    state.revalidating === true ||
+    pendingCost ||
+    state.pending.note ||
+    state.pending.attributes
   );
 }
 

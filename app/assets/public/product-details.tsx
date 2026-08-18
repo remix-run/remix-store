@@ -4,22 +4,11 @@ import {
   createProductFormRegister,
   createProductFormStore,
   formatMoney,
-  getShopPayButtonAttributes,
-  getShopPayButtonStyleProperties,
-  loadShopJs,
+  renderShopPayButton,
   type ProductFormStoreState,
   type SelectedOption,
-  type ShopPayButtonOptions,
 } from "@shopify/hydrogen";
-import {
-  clientEntry,
-  createElement,
-  css,
-  navigate,
-  on,
-  ref,
-  type Handle,
-} from "remix/ui";
+import { clientEntry, css, navigate, on, ref, type Handle } from "remix/ui";
 
 import type {
   ImageData,
@@ -767,6 +756,19 @@ export function variantHref(
   );
 }
 
+const SHOP_PAY_HEIGHT_OVERRIDE_ATTRIBUTE = "data-remix-height-override";
+const SHOP_PAY_HEIGHT_OVERRIDE_CSS = `
+  .shop-pay-button { height: 64px; }
+  @media (min-width: 1400px) {
+    .shop-pay-button { height: 66px; }
+  }
+`;
+
+// Hydrogen intentionally exposes only width and borderRadius. Keep this
+// isolated override in sync with its internal `.shop-pay-button` class when
+// upgrading Hydrogen so the new local renderer retains the previous height.
+const SHOP_PAY_HEIGHT_OVERRIDE_HTML = `<style ${SHOP_PAY_HEIGHT_OVERRIDE_ATTRIBUTE}>${SHOP_PAY_HEIGHT_OVERRIDE_CSS}</style>`;
+
 function ExpressShopPayButton(
   handle: Handle<{
     storeUrl: string;
@@ -774,59 +776,41 @@ function ExpressShopPayButton(
   }>,
 ) {
   return () => {
-    let options: ShopPayButtonOptions = {
+    let html = renderShopPayButton({
       checkoutUrl: handle.props.storeUrl,
       variants: [{ id: handle.props.variantId, quantity: 1 }],
-      channel: "hydrogen",
       width: "100%",
       borderRadius: "54px",
-    };
-    let attributes = getShopPayButtonAttributes(options);
-    let style = getShopPayButtonStyleProperties(options);
+    }).replace("</template>", `${SHOP_PAY_HEIGHT_OVERRIDE_HTML}</template>`);
 
     return (
       <div
-        role="group"
-        aria-label="Express checkout"
+        innerHTML={html}
         mix={[
           shopPayStyle,
-          ref((element, signal) => {
-            let active = true;
-            let syncFocusVisible = () => {
-              queueMicrotask(() => {
-                if (signal.aborted) return;
-                let shopPayButton = element.querySelector(
-                  SHOP_PAY_BUTTON_TAG_NAME,
-                );
-                let focusedControl = shopPayButton?.shadowRoot?.activeElement;
-                element.toggleAttribute(
-                  "data-focus-visible",
-                  Boolean(
-                    element.matches(":focus-within") &&
-                    focusedControl?.matches(":focus-visible"),
-                  ),
-                );
-              });
-            };
-
-            void loadShopJs().catch((error) => {
-              if (active)
-                console.error("[hydrogen] Shop Pay failed to load", error);
-            });
-            element.addEventListener("focusin", syncFocusVisible);
-            element.addEventListener("focusout", syncFocusVisible);
-            signal.addEventListener("abort", () => {
-              active = false;
-              element.removeEventListener("focusin", syncFocusVisible);
-              element.removeEventListener("focusout", syncFocusVisible);
-            });
+          ref((element) => {
+            let shopPayButton = element.querySelector(SHOP_PAY_BUTTON_TAG_NAME);
+            ensureShopPayHeight(shopPayButton);
           }),
         ]}
-      >
-        {createElement(SHOP_PAY_BUTTON_TAG_NAME, { ...attributes, style })}
-      </div>
+      ></div>
     );
   };
+}
+
+function ensureShopPayHeight(shopPayButton: Element | null): void {
+  let shadowRoot = shopPayButton?.shadowRoot;
+  if (
+    !shadowRoot ||
+    shadowRoot.querySelector(`style[${SHOP_PAY_HEIGHT_OVERRIDE_ATTRIBUTE}]`)
+  ) {
+    return;
+  }
+
+  let style = document.createElement("style");
+  style.setAttribute(SHOP_PAY_HEIGHT_OVERRIDE_ATTRIBUTE, "");
+  style.textContent = SHOP_PAY_HEIGHT_OVERRIDE_CSS;
+  shadowRoot.append(style);
 }
 
 function canAddServerVariant(product: ProductData): boolean {
@@ -1209,26 +1193,8 @@ const addPendingStyle = css({
   },
 });
 const shopPayStyle = css({
-  borderRadius: "54px",
-  height: "64px",
-  minHeight: "64px",
   width: "100%",
-  "& shop-pay-button": {
-    borderRadius: "inherit",
-    display: "flex",
-    height: "100%",
-    overflow: "hidden",
-    width: "100%",
-  },
-  "&:focus-within[data-focus-visible]": {
-    outline: "3px solid var(--color-yellow-brand)",
-    outlineOffset: "4px",
-  },
-  "@media (min-width: 1400px)": {
-    gridColumn: "1 / -1",
-    height: "66px",
-    minHeight: "66px",
-  },
+  "@media (min-width: 1400px)": { gridColumn: "1 / -1" },
 });
 const errorStyle = css({
   color: "var(--color-red-brand)",

@@ -13,6 +13,7 @@ export function ProductPage(
     menu: NavigationMenuData;
     product: ProductData;
     search: string;
+    shopPayStoreUrl: string;
   }>,
 ) {
   return () => {
@@ -36,7 +37,7 @@ export function ProductPage(
             menu={handle.props.menu}
             product={product}
             search={handle.props.search}
-            shopPayStoreUrl={new URL(handle.props.canonicalUrl).origin}
+            shopPayStoreUrl={handle.props.shopPayStoreUrl}
           />
         </main>
       </Document>

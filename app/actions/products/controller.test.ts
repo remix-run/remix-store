@@ -53,7 +53,16 @@ describe("product routes", () => {
     assert.match(html, /<h1[^>]*>Test Product<\/h1>/);
     assert.match(html, /aria-label="Product collections"/);
     assert.match(html, /href="\/collections\/all">All products<\/a>/);
-    assert.match(html, /<shop-pay-button[^>]*variants="111:1"/);
+    let shopPayTag = html.match(
+      /<a [^>]*aria-label="Buy with Shop Pay"[^>]*>/,
+    )?.[0];
+    assert.ok(shopPayTag);
+    let shopPayHref = shopPayTag.match(/href="([^"]+)"/)?.[1];
+    assert.ok(shopPayHref);
+    let shopPayUrl = new URL(shopPayHref.replaceAll("&amp;", "&"));
+    assert.equal(shopPayUrl.origin, "https://checkout.example.com");
+    assert.equal(shopPayUrl.pathname, "/cart/111:1");
+    assert.equal(shopPayUrl.searchParams.get("payment"), "shop_pay");
     assert.match(
       html,
       /href="\/products\/test-product\?ref=campaign&amp;Color=Blue"/,

@@ -6,6 +6,7 @@ import {
   analyticsShopData,
   createStorefrontFetch,
   createTestApp,
+  testEnv,
 } from "../testing/storefront.ts";
 
 const shellMenuFetch = createStorefrontFetch({
@@ -44,6 +45,32 @@ describe("platform skeleton", () => {
     assert.match(html, /All Products/);
     assert.match(html, /Store policies/);
     assert.equal(response.headers.get("Cache-Control"), "private, no-store");
+  });
+
+  it("attributes Storefront API requests to the configured storefront", async () => {
+    let headers: Headers[] = [];
+    let upstreamFetch = createStorefrontFetch({
+      RemixAnalyticsShop: analyticsShopData,
+      RemixCollection: collectionData,
+      RemixHomeEditorial: homeData,
+      RemixNavigation: navigationData,
+    });
+    let storefrontFetch = (async (input, init) => {
+      headers.push(new Headers(init?.headers));
+      return upstreamFetch(input, init);
+    }) as typeof globalThis.fetch;
+    let app = createTestApp(storefrontFetch);
+
+    let response = await app.fetch(new Request("https://example.com/"));
+
+    assert.equal(response.status, 200);
+    assert.ok(headers.length > 0);
+    for (let requestHeaders of headers) {
+      assert.equal(
+        requestHeaders.get("Shopify-Storefront-Id"),
+        testEnv.PUBLIC_STOREFRONT_ID,
+      );
+    }
   });
 
   it("renders Canadian pages with localized links, scripts, canonical, and context", async () => {

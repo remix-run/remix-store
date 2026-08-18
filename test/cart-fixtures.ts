@@ -20,6 +20,7 @@ export function createCart(quantity = 1): SerializedCartData {
     totalQuantity: quantity,
     updatedAt: CART_UPDATED_AT,
     note: null,
+    attributes: [],
     cost: {
       checkoutChargeAmount: money(amount),
       subtotalAmount: money(amount),
@@ -32,6 +33,7 @@ export function createCart(quantity = 1): SerializedCartData {
               discountAllocations: [],
               id: CART_LINE_ID,
               quantity,
+              attributes: [],
               cost: {
                 amountPerQuantity: money("10"),
                 compareAtAmountPerQuantity: null,
@@ -52,6 +54,7 @@ export function createCart(quantity = 1): SerializedCartData {
                 image: null,
                 sku: "TEST-SKU",
               },
+              sellingPlanAllocation: null,
             },
           ]
         : [],

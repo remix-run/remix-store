@@ -79,13 +79,13 @@ describe("product form", () => {
     let blueButton = blue as HTMLAnchorElement;
     let missingButton = missing as HTMLButtonElement;
     assert.equal(redButton.getAttribute("aria-current"), "true");
-    let shopPay = $("shop-pay-button");
-    assert.ok(shopPay instanceof HTMLElement);
-    assert.equal(shopPay.getAttribute("variants"), "111:1");
-    assert.equal(shopPay.getAttribute("source"), "hydrogen");
-    assert.equal(shopPay.getAttribute("channel"), "hydrogen");
-    assert.equal(shopPay.getAttribute("store-url"), shopPayStoreUrl);
-    assert.equal(shopPay.hasAttribute("disabled"), false);
+    let shopPayLink = getShopPayLink($);
+    assert.ok(shopPayLink);
+    assert.equal(shopPayLink.getAttribute("aria-label"), "Buy with Shop Pay");
+    let checkoutUrl = new URL(shopPayLink.href);
+    assert.equal(checkoutUrl.origin, shopPayStoreUrl);
+    assert.equal(checkoutUrl.pathname, "/cart/111:1");
+    assert.equal(getComputedStyle(shopPayLink).height, "64px");
     assert.match(blueButton.textContent ?? "", /Sold out/);
     assert.equal(missingButton.disabled, true);
 
@@ -121,7 +121,7 @@ describe("product form", () => {
     );
     assert.match($("h1")?.closest("section")?.textContent ?? "", /\$15\.00/);
     assert.equal($('button[name="add-to-cart"]')?.textContent, "Sold out");
-    assert.equal($("shop-pay-button"), null);
+    assert.equal(getShopPayLink($), null);
     assert.equal(navigatedTo, "/products/test-product?ref=campaign&Color=Blue");
 
     let combinedListing = $('a[href*="related-product"]');
@@ -136,7 +136,7 @@ describe("product form", () => {
       $('input[name="merchandiseId"]')?.getAttribute("value"),
       RED_VARIANT_ID,
     );
-    assert.equal($("shop-pay-button")?.hasAttribute("disabled"), false);
+    assert.equal(getShopPayLink($)?.hasAttribute("href"), true);
   });
 
   it("hydrates and submits only verified identifiers for the selected sold-out variant", async (t) => {
@@ -230,7 +230,6 @@ describe("product form", () => {
     assert.ok(addButton instanceof HTMLButtonElement);
     assert.equal(addButton.disabled, false);
     assert.equal(addButton.textContent, "Add to cart");
-    assert.equal($("shop-pay-button")?.getAttribute("variants"), "111:1");
   });
 
   it("disables add-to-cart until a variant is resolved", async (t) => {
@@ -254,7 +253,7 @@ describe("product form", () => {
     assert.equal(addButton?.textContent, "Select options");
     assert.equal($('input[name="merchandiseId"]')?.getAttribute("value"), "");
     assert.equal($('a[aria-current="true"]'), null);
-    assert.equal($("shop-pay-button"), null);
+    assert.equal(getShopPayLink($), null);
   });
 
   it("retains the Canadian prefix in variant and form navigation", async (t) => {
@@ -303,6 +302,13 @@ describe("product form", () => {
     );
   });
 });
+
+function getShopPayLink(
+  query: (selector: string) => Element | null,
+): HTMLAnchorElement | null {
+  let link = query("hydrogen-shop-pay-button")?.shadowRoot?.querySelector("a");
+  return link instanceof HTMLAnchorElement ? link : null;
+}
 
 function createDefaultVariantProduct() {
   let product = createProduct();

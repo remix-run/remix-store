@@ -137,6 +137,10 @@ describe("storefront analytics", () => {
     listener?.(currentState);
     assert.equal(events.length, 0);
 
+    currentState = { ...cartState(currentCart), revalidating: true };
+    listener?.(currentState);
+    assert.equal(events.length, 0);
+
     currentState = cartState(currentCart);
     listener?.(currentState);
 
@@ -207,17 +211,24 @@ function cartState(cart: CartData): CartState {
   return {
     data: cart,
     loading: false,
-    pending: { lines: new Set(), note: false, discountCodes: new Set() },
+    pending: {
+      lines: new Set(),
+      note: false,
+      attributes: false,
+      discountCodes: new Set(),
+    },
     errors: {
       cart: { userErrors: [], warnings: [] },
       lines: new Map(),
       note: { userErrors: [], warnings: [] },
+      attributes: new Map(),
       discountCodes: new Map(),
       network: [],
       lastUpdatedAt: 0,
       cartUpdatedAt: 0,
       linesUpdatedAt: 0,
       noteUpdatedAt: 0,
+      attributesUpdatedAt: 0,
       discountCodesUpdatedAt: 0,
       networkUpdatedAt: 0,
     },
