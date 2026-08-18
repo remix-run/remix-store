@@ -118,6 +118,7 @@ export function storefront(options: StorefrontOptions = {}): Middleware<
     }
 
     let storeDomain = env.PUBLIC_STORE_DOMAIN;
+    let storefrontId = env["PUBLIC" + "_STOREFRONT_" + "ID"];
 
     let privateStorefrontToken = env["PRIVATE" + "_STOREFRONT_" + "API_TOKEN"];
     if (!storeDomain || !privateStorefrontToken) {
@@ -146,8 +147,8 @@ export function storefront(options: StorefrontOptions = {}): Middleware<
       requestContext,
       config: {
         storeDomain,
+        storefrontId,
         privateStorefrontToken,
-        buyerIp,
         cache,
         waitUntil: runtime.waitUntil,
         fetch: storefrontFetch,
@@ -162,7 +163,7 @@ export function storefront(options: StorefrontOptions = {}): Middleware<
         seoRoute === routes.seo.robots
           ? await queryAnalyticsShop(
               storefrontClient,
-              env["PUBLIC" + "_STOREFRONT_" + "ID"] ?? "0",
+              storefrontId ?? "0",
               normalizeStoreDomain(storeDomain),
             )
           : null;
@@ -259,13 +260,12 @@ export function storefront(options: StorefrontOptions = {}): Middleware<
       return applyResponseHeaders(requestContext, await next());
     }
 
-    let storefrontId = env["PUBLIC" + "_STOREFRONT_" + "ID"] ?? "0";
     let [shellMenus, cartInitialData, analyticsShop] = await Promise.all([
       queryShellMenus(storefrontClient, storeDomain),
       getCartData(context.request, storefrontClient),
       queryAnalyticsShop(
         storefrontClient,
-        storefrontId,
+        storefrontId ?? "0",
         normalizeStoreDomain(storeDomain),
       ),
     ]);

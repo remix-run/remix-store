@@ -2,13 +2,14 @@ import { createController } from "remix/router";
 
 import { queryProduct, queryProductNavigation } from "../../data/storefront.ts";
 import { marketPath } from "../../lib/public/market.ts";
+import { getRuntime } from "../../runtime.ts";
 import { routes } from "../../routes.ts";
 import { NotFoundPage } from "../pages.tsx";
 import { ProductPage } from "./page.tsx";
 
 export default createController(routes.products, {
   actions: {
-    async show({ market, params, render, storefrontClient, url }) {
+    async show({ market, params, render, request, storefrontClient, url }) {
       let [product, productNavigation] = await Promise.all([
         queryProduct(storefrontClient, params.handle, url.searchParams),
         queryProductNavigation(storefrontClient, url.host),
@@ -28,6 +29,10 @@ export default createController(routes.products, {
           menu={productNavigation}
           product={product.data}
           search={url.search}
+          shopPayStoreUrl={
+            getRuntime(request).env?.PUBLIC_CHECKOUT_DOMAIN?.trim() ||
+            storefrontClient.storeUrl
+          }
         />,
       );
     },

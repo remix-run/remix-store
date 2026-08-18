@@ -101,7 +101,7 @@ describe("Shopify compatibility routes", () => {
     assert.equal(ajax.status, 200);
     assert.equal(
       upstreamUrl,
-      "https://example.myshopify.com/cart.js?sections=cart-drawer",
+      "https://example.myshopify.com/cart.json?sections=cart-drawer",
     );
   });
 
@@ -123,7 +123,7 @@ describe("Shopify compatibility routes", () => {
     assert.equal(response.status, 200);
     assert.equal(
       upstreamUrl,
-      "https://example.myshopify.com/cart.js?sections=cart-drawer",
+      "https://example.myshopify.com/cart.json?sections=cart-drawer",
     );
     assert.deepEqual(await response.json(), { item_count: 2 });
     assert.equal(response.headers.get("Cache-Control"), "private, no-store");

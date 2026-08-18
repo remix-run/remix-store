@@ -3,7 +3,9 @@ import { render } from "../middleware/render.tsx";
 import { createApp, type AppOptions } from "../router.ts";
 
 export const testEnv = {
+  PUBLIC_CHECKOUT_DOMAIN: "checkout.example.com",
   PUBLIC_STORE_DOMAIN: "example.myshopify.com",
+  ["PUBLIC" + "_STOREFRONT_" + "ID"]: "test-storefront-id",
   ["PRIVATE_" + "STOREFRONT_API_TOKEN"]: "test-token",
 };
 
