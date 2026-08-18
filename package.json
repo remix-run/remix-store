@@ -13,7 +13,7 @@
     "preview": "pnpm preview:oxygen",
     "preview:oxygen": "vite preview",
     "deploy": "pnpm deploy:oxygen",
-    "deploy:oxygen": "shopify hydrogen deploy --preview",
+    "deploy:oxygen": "shopify hydrogen deploy --preview --assets-dir dist/client --worker-dir dist/ssr",
     "lint": "oxlint . && oxfmt --check .",
     "typecheck": "tsc --noEmit && hydrogen gql check --fail-on-warn && node scripts/check-admin-graphql.mjs",
     "format": "oxfmt .",
