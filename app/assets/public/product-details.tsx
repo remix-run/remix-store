@@ -756,32 +756,51 @@ export function variantHref(
   );
 }
 
-const SHOP_PAY_HEIGHT_OVERRIDE_ATTRIBUTE = "data-remix-height-override";
-const SHOP_PAY_HEIGHT_OVERRIDE_CSS = `
-  .shop-pay-button { height: 64px; }
-  @media (min-width: 1400px) {
-    .shop-pay-button { height: 66px; }
-  }
-`;
-
-// Hydrogen intentionally exposes only width and borderRadius. Keep this
-// isolated override in sync with its internal `.shop-pay-button` class when
-// upgrading Hydrogen so the new local renderer retains the previous height.
-const SHOP_PAY_HEIGHT_OVERRIDE_HTML = `<style ${SHOP_PAY_HEIGHT_OVERRIDE_ATTRIBUTE}>${SHOP_PAY_HEIGHT_OVERRIDE_CSS}</style>`;
-
 function ExpressShopPayButton(
   handle: Handle<{
     storeUrl: string;
     variantId: string;
   }>,
 ) {
+  // Hydrogen intentionally exposes only width and borderRadius. Keep this
+  // isolated override in sync with its internal `.shop-pay-button` class when
+  // upgrading Hydrogen so the new local renderer retains the previous height.
+  let heightOverrideId = "data-remix-height-override";
+  let heightOverride = `
+    <style ${heightOverrideId}>
+      .shop-pay-button { height: 64px; }
+      @media (min-width: 1400px) {
+        .shop-pay-button { height: 66px; }
+      }
+    </style>
+  `;
+
+  let container: Element | undefined;
+
   return () => {
     let html = renderShopPayButton({
       checkoutUrl: handle.props.storeUrl,
       variants: [{ id: handle.props.variantId, quantity: 1 }],
       width: "100%",
       borderRadius: "54px",
-    }).replace("</template>", `${SHOP_PAY_HEIGHT_OVERRIDE_HTML}</template>`);
+    }).replace("</template>", `${heightOverride}</template>`);
+
+    handle.queueTask((signal) => {
+      if (signal.aborted || !container) return;
+      let shadowRoot = container.querySelector(
+        SHOP_PAY_BUTTON_TAG_NAME,
+      )?.shadowRoot;
+      if (
+        !shadowRoot ||
+        shadowRoot.querySelector(`style[${heightOverrideId}]`)
+      ) {
+        return;
+      }
+
+      let template = document.createElement("template");
+      template.innerHTML = heightOverride;
+      shadowRoot.append(template.content);
+    });
 
     return (
       <div
@@ -789,28 +808,12 @@ function ExpressShopPayButton(
         mix={[
           shopPayStyle,
           ref((element) => {
-            let shopPayButton = element.querySelector(SHOP_PAY_BUTTON_TAG_NAME);
-            ensureShopPayHeight(shopPayButton);
+            container = element;
           }),
         ]}
-      ></div>
+      />
     );
   };
-}
-
-function ensureShopPayHeight(shopPayButton: Element | null): void {
-  let shadowRoot = shopPayButton?.shadowRoot;
-  if (
-    !shadowRoot ||
-    shadowRoot.querySelector(`style[${SHOP_PAY_HEIGHT_OVERRIDE_ATTRIBUTE}]`)
-  ) {
-    return;
-  }
-
-  let style = document.createElement("style");
-  style.setAttribute(SHOP_PAY_HEIGHT_OVERRIDE_ATTRIBUTE, "");
-  style.textContent = SHOP_PAY_HEIGHT_OVERRIDE_CSS;
-  shadowRoot.append(style);
 }
 
 function canAddServerVariant(product: ProductData): boolean {
