@@ -16,11 +16,12 @@ describe("collection grid interactions", () => {
     let fetchPromise = new Promise<Response>((resolve) => {
       resolveFetch = resolve;
     });
-    t.mock.method(globalThis, "fetch", (async (input, init) => {
+    let fetchMock: typeof globalThis.fetch = async (input, init) => {
       requestedUrl = new URL(String(input));
       requestedInit = init;
       return fetchPromise;
-    }) as typeof globalThis.fetch);
+    };
+    t.mock.method(globalThis, "fetch", fetchMock);
 
     let { $, $$, act, cleanup, container } = render(
       <CollectionProductGrid
@@ -54,17 +55,15 @@ describe("collection grid interactions", () => {
     );
 
     assert.ok(resolveFetch);
+    let resolveResponse = resolveFetch;
     let rendered = waitForDom(container, () => $("form") === null, t.signal);
     await act(async () => {
-      resolveFetch!({
-        ok: true,
-        async json() {
-          return {
-            products: [firstProduct, secondProduct],
-            pageInfo: { hasNextPage: false, endCursor: null },
-          };
-        },
-      } as Response);
+      resolveResponse(
+        Response.json({
+          products: [firstProduct, secondProduct],
+          pageInfo: { hasNextPage: false, endCursor: null },
+        }),
+      );
       await fetchPromise;
       await Promise.resolve();
     });

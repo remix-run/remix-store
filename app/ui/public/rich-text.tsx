@@ -11,6 +11,18 @@ interface RichTextProps {
   value: string;
 }
 
+type RichTextJson =
+  | boolean
+  | number
+  | string
+  | null
+  | RichTextJson[]
+  | RichTextJsonObject;
+
+interface RichTextJsonObject {
+  [key: string]: RichTextJson;
+}
+
 type RichTextNode = {
   bold?: boolean;
   children?: RichTextNode[];
@@ -42,13 +54,34 @@ export function RichText(handle: Handle<RichTextProps>) {
 
 function parseRichText(value: string): RichTextNode {
   try {
-    let parsed: unknown = JSON.parse(value);
-    return isRecord(parsed) ? (parsed as RichTextNode) : { children: [] };
+    let parsed: RichTextJson = JSON.parse(value);
+    return parseRichTextNode(parsed) ?? { children: [] };
   } catch {
     return {
       children: [{ type: "paragraph", children: [{ type: "text", value }] }],
     };
   }
+}
+
+function parseRichTextNode(value: RichTextJson): RichTextNode | null {
+  if (!isRichTextObject(value)) return null;
+
+  let node: RichTextNode = {};
+  if (value.bold === true) node.bold = true;
+  if (value.italic === true) node.italic = true;
+  if (value.underline === true) node.underline = true;
+  if (value.level === 3) node.level = 3;
+  if (isRichTextString(value.listType)) node.listType = value.listType;
+  if (isRichTextString(value.type)) node.type = value.type;
+  if (isRichTextString(value.url)) node.url = value.url;
+  if (isRichTextString(value.value)) node.value = value.value;
+  if (Array.isArray(value.children)) {
+    node.children = value.children.flatMap((child) => {
+      let parsedChild = parseRichTextNode(child);
+      return parsedChild ? [parsedChild] : [];
+    });
+  }
+  return node;
 }
 
 function renderNodes(
@@ -123,8 +156,14 @@ function safeHref(
   }
 }
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return Boolean(value && typeof value === "object" && !Array.isArray(value));
+function isRichTextObject(
+  value: RichTextJson | undefined,
+): value is RichTextJsonObject {
+  return value !== null && !Array.isArray(value) && Object(value) === value;
+}
+
+function isRichTextString(value: RichTextJson | undefined): value is string {
+  return Object.prototype.toString.call(value) === "[object String]";
 }
 
 const richTextStyle = css({

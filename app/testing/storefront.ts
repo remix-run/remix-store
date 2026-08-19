@@ -1,3 +1,19 @@
+import {
+  array,
+  boolean,
+  null_,
+  number,
+  object,
+  parseSafe,
+  record,
+  string,
+  union,
+  type InferOutput,
+  type Schema,
+} from "remix/data-schema";
+import { lazy } from "remix/data-schema/lazy";
+import type { SerializableObject } from "remix/ui";
+
 import { MemoryStorefrontCache } from "../data/storefront-cache.ts";
 import { render } from "../middleware/render.tsx";
 import { createApp, type AppOptions } from "../router.ts";
@@ -42,13 +58,10 @@ export function createTestApp(
 }
 
 export function createStorefrontFetch(
-  handlers: Record<
-    string,
-    (body: StorefrontRequestBody) => unknown | Promise<unknown>
-  >,
+  handlers: Record<string, StorefrontHandler>,
 ): typeof globalThis.fetch {
   return async (_input, init) => {
-    let body = JSON.parse(String(init?.body)) as StorefrontRequestBody;
+    let body = parseStorefrontRequestBody(init?.body);
     let operationName = operationNameFrom(body.query);
     let handler = handlers[operationName];
     if (!handler && operationName === "redirects") {
@@ -76,7 +89,7 @@ export function createStorefrontFetch(
 }
 
 export function graphqlResponse(
-  data: unknown,
+  data: StorefrontResponseData,
   errors?: Array<{ message: string }>,
 ): Response {
   return new Response(JSON.stringify(errors ? { data, errors } : { data }), {
@@ -99,9 +112,55 @@ export function analyticsShopData() {
   };
 }
 
-export interface StorefrontRequestBody {
-  query: string;
-  variables: Record<string, unknown>;
+export type StorefrontJsonValue =
+  | boolean
+  | number
+  | string
+  | null
+  | StorefrontJsonValue[]
+  | StorefrontJsonObject;
+
+export interface StorefrontJsonObject {
+  [key: string]: StorefrontJsonValue;
+}
+
+const storefrontJsonValueSchema: Schema<unknown, StorefrontJsonValue> = lazy(
+  () =>
+    union([
+      null_(),
+      boolean(),
+      number(),
+      string(),
+      array(storefrontJsonValueSchema),
+      record(string(), storefrontJsonValueSchema),
+    ]),
+);
+const storefrontJsonObjectSchema: Schema<unknown, StorefrontJsonObject> =
+  record(string(), storefrontJsonValueSchema);
+const storefrontRequestBodySchema = object({
+  query: string(),
+  variables: storefrontJsonObjectSchema,
+});
+
+export type StorefrontResponseData = StorefrontJsonObject | SerializableObject;
+export type StorefrontRequestBody = InferOutput<
+  typeof storefrontRequestBodySchema
+>;
+
+export interface StorefrontHandler {
+  (
+    body: StorefrontRequestBody,
+  ): StorefrontResponseData | Promise<StorefrontResponseData>;
+}
+
+function parseStorefrontRequestBody(
+  body: BodyInit | null | undefined,
+): StorefrontRequestBody {
+  let result = parseSafe(storefrontRequestBodySchema, JSON.parse(String(body)));
+  if (!result.success) {
+    throw new Error("Invalid Storefront request body");
+  }
+  return result.value;
 }
 
 function operationNameFrom(query: string): string {

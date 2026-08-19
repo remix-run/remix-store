@@ -56,12 +56,13 @@ describe("Shopify compatibility routes", () => {
 
   it("handles localized cart API, checkout, permalink, and AJAX paths", async (t) => {
     let upstreamUrl: string | undefined;
-    t.mock.method(globalThis, "fetch", (async (input) => {
+    let ajaxFetch: typeof globalThis.fetch = async (input) => {
       upstreamUrl = String(input);
       return new Response(JSON.stringify({ item_count: 2 }), {
         headers: { "Content-Type": "application/json" },
       });
-    }) as typeof globalThis.fetch);
+    };
+    t.mock.method(globalThis, "fetch", ajaxFetch);
 
     let cart = createCart();
     cart.checkoutUrl = "https://checkout.example.test/cart/c/ca";
@@ -107,12 +108,12 @@ describe("Shopify compatibility routes", () => {
 
   it("proxies Shopify AJAX cart requests before app routing", async (t) => {
     let upstreamUrl: string | undefined;
-    let upstreamFetch = (async (input) => {
+    let upstreamFetch: typeof globalThis.fetch = async (input) => {
       upstreamUrl = String(input);
       return new Response(JSON.stringify({ item_count: 2 }), {
         headers: { "Content-Type": "application/json" },
       });
-    }) as typeof globalThis.fetch;
+    };
     t.mock.method(globalThis, "fetch", upstreamFetch);
     let app = createTestApp(unexpectedStorefrontFetch());
 

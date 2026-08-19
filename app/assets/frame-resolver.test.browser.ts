@@ -9,10 +9,14 @@ describe("browser frame resolver", () => {
     let frameResponse = new Response("<!doctype html><h1>Subscribed</h1>", {
       headers: { "Content-Type": "text/html; charset=utf-8" },
     });
-    t.mock.method(globalThis, "fetch", (async (input, init) => {
-      request = new Request(input, init);
-      return frameResponse;
-    }) as typeof globalThis.fetch);
+    t.mock.method(
+      globalThis,
+      "fetch",
+      async (input: RequestInfo | URL, init?: RequestInit) => {
+        request = new Request(input, init);
+        return frameResponse;
+      },
+    );
     let formData = new FormData();
     formData.set("email", "runner@example.com");
     formData.set("consent", "yes");

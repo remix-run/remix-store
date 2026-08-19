@@ -1,7 +1,10 @@
 import {
   AnalyticsEvent,
+  type AnalyticsEventName,
   type CartData,
   type CartState,
+  type CartStore,
+  type EventPayloads,
   type StorefrontAnalytics,
 } from "@shopify/hydrogen";
 import * as assert from "remix/assert";
@@ -21,8 +24,8 @@ import {
 } from "../../test/component-fixtures.ts";
 
 interface PublishedEvent {
-  event: string;
-  payload: Record<string, unknown>;
+  event: AnalyticsEventName;
+  payload: EventPayloads;
 }
 
 describe("storefront analytics", () => {
@@ -101,15 +104,14 @@ describe("storefront analytics", () => {
   it("publishes a cart view from confirmed store state", (t) => {
     let events = installAnalytics(t);
     let cart = createCart();
-    let store = { getState: () => cartState(cart) };
+    let store = testCartStore(() => cartState(cart));
 
-    publishCartViewed(store as never);
+    publishCartViewed(store);
 
     assert.equal(events[0]?.event, AnalyticsEvent.CART_VIEWED);
-    assert.equal(
-      (events[0]?.payload.cart as { updatedAt?: string })?.updatedAt,
-      cart.updatedAt,
-    );
+    let payload = events[0]?.payload;
+    assert.ok(payload && "cart" in payload);
+    assert.equal(payload.cart?.updatedAt, cart.updatedAt);
   });
 
   it("defers a cart view until pending cart work settles", (t) => {
@@ -117,17 +119,17 @@ describe("storefront analytics", () => {
     let currentCart = createCart();
     let currentState = pendingCartState(currentCart);
     let listener: ((state: CartState) => void) | undefined;
-    let store = {
-      getState: () => currentState,
-      subscribe(next: (state: CartState) => void) {
+    let store = testCartStore(
+      () => currentState,
+      (next: (state: CartState) => void) => {
         listener = next;
         return () => {
           listener = undefined;
         };
       },
-    };
+    );
 
-    publishCartViewedWhenSettled(store as never);
+    publishCartViewedWhenSettled(store);
     assert.equal(events.length, 0);
     assert.notEqual(listener, undefined);
 
@@ -146,10 +148,9 @@ describe("storefront analytics", () => {
 
     assert.equal(events.length, 1);
     assert.equal(events[0]?.event, AnalyticsEvent.CART_VIEWED);
-    assert.equal(
-      (events[0]?.payload.cart as { updatedAt?: string })?.updatedAt,
-      currentCart.updatedAt,
-    );
+    let payload = events[0]?.payload;
+    assert.ok(payload && "cart" in payload);
+    assert.equal(payload.cart?.updatedAt, currentCart.updatedAt);
     assert.equal(listener, undefined);
   });
 
@@ -157,16 +158,16 @@ describe("storefront analytics", () => {
     let events = installAnalytics(t);
     let currentState = pendingCartState(createCart());
     let listeners = new Set<(state: CartState) => void>();
-    let store = {
-      getState: () => currentState,
-      subscribe(next: (state: CartState) => void) {
+    let store = testCartStore(
+      () => currentState,
+      (next: (state: CartState) => void) => {
         listeners.add(next);
         return () => listeners.delete(next);
       },
-    };
+    );
 
-    publishCartViewedWhenSettled(store as never);
-    publishCartViewedWhenSettled(store as never);
+    publishCartViewedWhenSettled(store);
+    publishCartViewedWhenSettled(store);
     assert.equal(listeners.size, 1);
 
     currentState = cartState(createCart());
@@ -235,11 +236,27 @@ function cartState(cart: CartData): CartState {
   };
 }
 
+function testCartStore(
+  getState: () => CartState,
+  subscribe: CartStore["subscribe"] = () => () => {},
+): CartStore {
+  return {
+    connect() {},
+    destroy() {},
+    hydrate() {},
+    getState,
+    subscribe,
+    fetch: () => Promise.resolve(),
+    reset() {},
+    handleFormSubmit: () => Promise.resolve(),
+  };
+}
+
 function installAnalytics(t: TestContext): PublishedEvent[] {
   let events: PublishedEvent[] = [];
   let originalShopify = window.Shopify;
-  let analytics = {
-    publish(event: string, payload: Record<string, unknown> = {}) {
+  let analytics: StorefrontAnalytics = {
+    publish(event, ...[payload = {}]) {
       events.push({ event, payload });
     },
     subscribe() {
@@ -259,7 +276,7 @@ function installAnalytics(t: TestContext): PublishedEvent[] {
         consent: { mode: "default-banner" as const },
       };
     },
-  } as StorefrontAnalytics;
+  };
 
   Object.defineProperty(window, "Shopify", {
     configurable: true,

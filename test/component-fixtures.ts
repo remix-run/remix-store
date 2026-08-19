@@ -1,4 +1,4 @@
-import type { Handle } from "remix/ui";
+import type { Handle, RemixNode } from "remix/ui";
 
 /**
  * Mounts a client entry component outside the real reconciler so prop-diff
@@ -9,12 +9,14 @@ import type { Handle } from "remix/ui";
  * `handle.update()` re-renders
  * synchronously until both updates and queued tasks settle.
  */
-export function createTestComponent<Props extends Record<string, unknown>>(
-  type: (handle: Handle<Props>) => () => unknown,
+export function createTestComponent<Props extends object>(
+  type: (handle: Handle<Props>) => () => RemixNode,
 ) {
+  // SAFETY: The stable object is populated before the component first observes it.
   let props = {} as Props;
   let tasks: Array<(signal: AbortSignal) => void> = [];
   let updateRequested = false;
+  // SAFETY: Mounted components use only these Handle members during setup and rendering.
   let handle = {
     props,
     signal: new AbortController().signal,
@@ -26,7 +28,7 @@ export function createTestComponent<Props extends Record<string, unknown>>(
       tasks.push(task);
     },
   } as Handle<Props>;
-  let renderComponent: (() => unknown) | undefined;
+  let renderComponent: (() => RemixNode) | undefined;
   return {
     render(nextProps: Props) {
       Object.assign(props, nextProps);
@@ -42,7 +44,7 @@ export function createTestComponent<Props extends Record<string, unknown>>(
   };
 }
 
-export function renderTestComponent<Props extends Record<string, unknown>>(
+export function renderTestComponent<Props extends object>(
   component: { render(props: Props): void },
   props: Props,
 ): void {

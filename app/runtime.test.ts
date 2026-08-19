@@ -25,8 +25,8 @@ describe("request runtime", () => {
   });
 
   it("converts unexpected failures to a generic response", async (t) => {
-    let logged: unknown;
-    t.mock.method(console, "error", (error: unknown) => {
+    let logged: Error | undefined;
+    t.mock.method(console, "error", (error: Error) => {
       logged = error;
     });
     let failure = new Error("private failure");

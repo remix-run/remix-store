@@ -1,4 +1,5 @@
 import * as assert from "remix/assert";
+import * as s from "remix/data-schema";
 import { describe, it } from "remix/test";
 
 import type { RateLimiter } from "../../data/rate-limit.ts";
@@ -7,6 +8,8 @@ import {
   createStorefrontFetch,
   createTestApp,
   navigationData,
+  type StorefrontJsonObject,
+  type StorefrontRequestBody,
 } from "../../testing/storefront.ts";
 
 const shellHandlers = {
@@ -191,10 +194,7 @@ describe("subscribe routes", () => {
     assert.equal(response.headers.get("Cache-Control"), "private, no-store");
     assert.match(await response.text(), /Thanks for subscribing/);
     assert.equal(bodies.length, 2);
-    assert.deepEqual(
-      (bodies[1]!.variables.input as { tags: string[] }).tags,
-      [],
-    );
+    assert.deepEqual(adminInputTags(bodies[1]!), []);
   });
 
   it("verifies product state and derives back-in-stock tags server-side", async () => {
@@ -229,7 +229,7 @@ describe("subscribe routes", () => {
 
     assert.equal(response.status, 200);
     assert.match(await response.text(), /back in stock/);
-    assert.deepEqual((bodies[1]!.variables.input as { tags: string[] }).tags, [
+    assert.deepEqual(adminInputTags(bodies[1]!), [
       "back-in-stock-subscriber",
       "test-product-blue-large-back-in-stock-subscriber",
     ]);
@@ -326,7 +326,7 @@ describe("subscribe routes", () => {
   });
 
   it("keeps localized no-JavaScript back-in-stock redirects in Canada", async () => {
-    let variables: Record<string, unknown> | undefined;
+    let variables: StorefrontRequestBody["variables"] | undefined;
     let app = createTestApp(
       createStorefrontFetch({
         ...shellHandlers,
@@ -395,9 +395,19 @@ describe("subscribe routes", () => {
   });
 });
 
+interface VerifiedVariantFixture extends StorefrontJsonObject {
+  availableForSale: boolean;
+  id: string;
+  product: {
+    handle: string;
+    subscribeIfBackInStock: { value: string };
+  };
+  title: string;
+}
+
 function verifiedVariant(
-  overrides: Record<string, unknown> = {},
-): Record<string, unknown> {
+  overrides: Partial<VerifiedVariantFixture> = {},
+): VerifiedVariantFixture {
   return {
     availableForSale: false,
     id: "gid://shopify/ProductVariant/222",
@@ -436,14 +446,20 @@ function allowAll(): RateLimiter {
   };
 }
 
-interface AdminBody {
-  query: string;
-  variables: Record<string, unknown>;
-}
+const AdminBodySchema = s.object({
+  query: s.string(),
+  variables: s.record(s.string(), s.any()),
+});
+
+const AdminInputTagsSchema = s.object({
+  input: s.object({ tags: s.array(s.string()) }),
+});
+
+type AdminBody = s.InferOutput<typeof AdminBodySchema>;
 
 function adminFetch(bodies: AdminBody[]): typeof globalThis.fetch {
   return async (_input, init) => {
-    let body = JSON.parse(String(init?.body)) as AdminBody;
+    let body = parseAdminBody(init?.body);
     bodies.push(body);
     if (body.query.includes("RemixCustomerByEmail")) {
       return adminResponse({ customerByIdentifier: null });
@@ -454,8 +470,16 @@ function adminFetch(bodies: AdminBody[]): typeof globalThis.fetch {
   };
 }
 
-function adminResponse(data: unknown) {
+function adminResponse(data: StorefrontJsonObject) {
   return new Response(JSON.stringify({ data }), {
     headers: { "Content-Type": "application/json" },
   });
+}
+
+function parseAdminBody(body: BodyInit | null | undefined): AdminBody {
+  return s.parse(AdminBodySchema, JSON.parse(String(body)));
+}
+
+function adminInputTags(body: AdminBody): string[] {
+  return s.parse(AdminInputTagsSchema, body.variables).input.tags;
 }

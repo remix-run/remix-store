@@ -58,6 +58,8 @@ function errorPages(): Middleware {
       )
         throw error;
       console.error(error);
+      // SAFETY: createAppMiddleware installs the UI renderer before this error
+      // boundary runs; Remix's generic Renderer key erases its input type.
       let renderPage = context.get(Renderer) as (
         node: RemixNode,
         init?: ResponseInit,

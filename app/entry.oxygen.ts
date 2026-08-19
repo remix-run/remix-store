@@ -33,8 +33,7 @@ export default {
     env?: Env,
     context?: ExecutionContext,
   ): Promise<Response> {
-    let cache =
-      typeof caches === "undefined" ? undefined : await caches.open("hydrogen");
+    let cache = await globalThis.caches?.open("hydrogen");
 
     return app.fetch(request, {
       buyerIp: resolveOxygenBuyerIp(request),

@@ -123,8 +123,8 @@ export default createController(routes.seo, {
   },
 });
 
-function sitemapUnavailable(error: unknown): Response {
-  console.error("[seo] Sitemap generation failed", error);
+function sitemapUnavailable(cause: unknown): Response {
+  console.error("[seo] Sitemap generation failed", cause);
   return new Response("Sitemap temporarily unavailable", {
     status: 503,
     headers: {

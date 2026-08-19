@@ -92,7 +92,7 @@ export const HomeHero = clientEntry(
           mix={[
             heroStyle,
             ref((element, signal) => {
-              if (typeof window === "undefined") return;
+              if (!globalThis.window) return;
               section = element;
               let reducedMotion = window.matchMedia(
                 "(prefers-reduced-motion: reduce)",

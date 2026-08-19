@@ -1,5 +1,9 @@
+import { object, parseSafe, string } from "remix/data-schema";
+
 const RETRY_DELAY_MS = 100;
 const RETRYABLE_STATUS_CODES = new Set([408, 500, 502, 503, 504]);
+const StringBodySchema = string();
+const StorefrontQuerySchema = object({ query: string() });
 
 interface RetryingStorefrontFetchOptions {
   delayMs?: number;
@@ -32,11 +36,15 @@ export function createRetryingStorefrontFetch({
 }
 
 function isStorefrontQuery(body: BodyInit | null | undefined): boolean {
-  if (typeof body !== "string") return false;
+  let stringBody = parseSafe(StringBodySchema, body);
+  if (!stringBody.success) return false;
 
   try {
-    let query = JSON.parse(body)?.query;
-    return typeof query === "string" && !/\bmutation\b/i.test(query);
+    let request = parseSafe(
+      StorefrontQuerySchema,
+      JSON.parse(stringBody.value),
+    );
+    return request.success && !/\bmutation\b/i.test(request.value.query);
   } catch {
     return false;
   }

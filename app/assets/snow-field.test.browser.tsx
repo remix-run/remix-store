@@ -5,6 +5,7 @@ import { render } from "remix/ui/test";
 import { SnowField } from "./public/snow-field.tsx";
 
 type FrameCallback = (time: number) => void;
+type MotionListener = (event: MediaQueryListEvent) => void;
 
 type CanvasHarness = ReturnType<typeof installCanvasHarness>;
 
@@ -73,7 +74,9 @@ describe("seasonal snow browser lifecycle", () => {
     assert.ok(fallback instanceof HTMLDivElement);
     assert.equal(overlay.getAttribute("data-snow-canvas-ready"), "true");
     assert.equal(getComputedStyle(fallback).display, "none");
-    assert.equal(getComputedStyle(view.$("canvas")!).display, "block");
+    let canvas = view.$("canvas");
+    assert.ok(canvas instanceof HTMLCanvasElement);
+    assert.equal(getComputedStyle(canvas).display, "block");
     assert.equal(harness.frames.size, 1);
 
     harness.setReducedMotion(true);
@@ -147,9 +150,9 @@ function installCanvasHarness(
   let observerCallback: (() => void) | null = null;
   let observerDisconnected = false;
   let reducedMotion = options.reducedMotion ?? false;
-  let motionListeners = new Set<() => void>();
+  let motionListeners = new Set<MotionListener>();
 
-  let context = {
+  let contextDouble: Partial<CanvasRenderingContext2D> = {
     beginPath() {},
     clearRect() {},
     fill() {},
@@ -158,10 +161,13 @@ function installCanvasHarness(
     arc() {
       arcs++;
     },
-    setTransform(...values: number[]) {
-      transforms.push(values);
-    },
-  } as unknown as CanvasRenderingContext2D;
+  };
+  Object.defineProperty(contextDouble, "setTransform", {
+    value: (...values: number[]) => transforms.push(values),
+  });
+  // SAFETY: SnowField only calls the canvas methods and writable properties
+  // implemented by this focused browser test double.
+  let context = contextDouble as CanvasRenderingContext2D;
 
   t.mock.method(HTMLCanvasElement.prototype, "getContext", function () {
     contextRequests++;
@@ -184,39 +190,40 @@ function installCanvasHarness(
     cancelledFrames.push(id);
     frames.delete(id);
   });
-  replaceProperty(t, window, "matchMedia", () => ({
-    get matches() {
-      return reducedMotion;
-    },
-    media: "(prefers-reduced-motion: reduce)",
-    onchange: null,
-    addEventListener(_type: string, listener: () => void) {
-      motionListeners.add(listener);
-    },
-    removeEventListener(_type: string, listener: () => void) {
-      motionListeners.delete(listener);
-    },
-    addListener() {},
-    removeListener() {},
-    dispatchEvent() {
-      return true;
-    },
-  }));
-  replaceProperty(
-    t,
-    globalThis,
-    "ResizeObserver",
-    class {
-      constructor(callback: () => void) {
-        observerCallback = callback;
-      }
-      observe() {}
-      unobserve() {}
-      disconnect() {
-        observerDisconnected = true;
-      }
-    },
-  );
+  replaceProperty(t, window, "matchMedia", () => {
+    let mediaQueryListDouble = {
+      get matches() {
+        return reducedMotion;
+      },
+      media: "(prefers-reduced-motion: reduce)",
+      onchange: null,
+      addEventListener(_type: string, listener: MotionListener) {
+        motionListeners.add(listener);
+      },
+      removeEventListener(_type: string, listener: MotionListener) {
+        motionListeners.delete(listener);
+      },
+      addListener() {},
+      removeListener() {},
+      dispatchEvent() {
+        return true;
+      },
+    };
+    // SAFETY: SnowField only uses the motion state and change-listener methods
+    // implemented by this focused MediaQueryList test double.
+    return mediaQueryListDouble as MediaQueryList;
+  });
+  class CanvasResizeObserver implements ResizeObserver {
+    constructor(callback: ResizeObserverCallback) {
+      observerCallback = () => callback([], this);
+    }
+    observe(_target: Element, _options?: ResizeObserverOptions) {}
+    unobserve(_target: Element) {}
+    disconnect() {
+      observerDisconnected = true;
+    }
+  }
+  replaceProperty(t, globalThis, "ResizeObserver", CanvasResizeObserver);
 
   return {
     get arcs() {
@@ -252,7 +259,11 @@ function installCanvasHarness(
     },
     setReducedMotion(value: boolean) {
       reducedMotion = value;
-      for (let listener of motionListeners) listener();
+      let event = new MediaQueryListEvent("change", {
+        matches: reducedMotion,
+        media: "(prefers-reduced-motion: reduce)",
+      });
+      for (let listener of motionListeners) listener(event);
     },
     transforms,
     get width() {
@@ -272,11 +283,13 @@ function takeFrame(harness: CanvasHarness): FrameCallback {
   return callback;
 }
 
-function mockGetter(
+type GetterOwner = HTMLElement | Window;
+
+function mockGetter<Owner extends GetterOwner, Key extends keyof Owner>(
   t: TestContext,
-  target: object,
-  property: string,
-  getter: () => unknown,
+  target: Owner,
+  property: Key,
+  getter: () => Owner[Key],
 ) {
   let descriptor = Object.getOwnPropertyDescriptor(target, property);
   Object.defineProperty(target, property, { configurable: true, get: getter });
@@ -286,12 +299,12 @@ function mockGetter(
   });
 }
 
-function replaceProperty(
-  t: TestContext,
-  target: object,
-  property: string,
-  value: unknown,
-) {
+type BrowserPropertyOwner = Window | typeof globalThis;
+
+function replaceProperty<
+  Owner extends BrowserPropertyOwner,
+  Key extends keyof Owner,
+>(t: TestContext, target: Owner, property: Key, value: Owner[Key]) {
   let descriptor = Object.getOwnPropertyDescriptor(target, property);
   Object.defineProperty(target, property, { configurable: true, value });
   t.after(() => {

@@ -1,4 +1,3 @@
-import type { ShopifyGlobal } from "@shopify/hydrogen";
 import * as assert from "remix/assert";
 import { describe, it } from "remix/test";
 import { render } from "remix/ui/test";
@@ -12,19 +11,32 @@ import { CA_MARKET } from "../lib/public/market.ts";
 import { resetBrowserCartStore } from "./public/cart-store.ts";
 import { ProductDetails, variantHref } from "./public/product-details.tsx";
 
+type ProductCartUpdatePayload = {
+  lines?: Array<{
+    merchandiseId?: string;
+    quantity: number;
+  }>;
+};
+
+type ProductCartUpdateResult = {
+  cart: null;
+};
+
 type UpdateCartConfig = {
   eventTarget(meta: { type: string; action?: string }): EventTarget | null;
   handler(
-    defaultHandler: () => Promise<unknown>,
-    payload: unknown,
-  ): Promise<unknown>;
+    defaultHandler: () => Promise<ProductCartUpdateResult>,
+    payload: ProductCartUpdatePayload,
+  ): Promise<ProductCartUpdateResult>;
 };
 
 const shopPayStoreUrl = "https://example.myshopify.com";
 
 let updateCartConfig: UpdateCartConfig | undefined;
 
-async function updateCart(payload: unknown): Promise<unknown> {
+async function updateCart(
+  payload: ProductCartUpdatePayload,
+): Promise<ProductCartUpdateResult> {
   if (!updateCartConfig) throw new Error("updateCart was not configured");
   return updateCartConfig.handler(async () => ({ cart: null }), payload);
 }
@@ -46,7 +58,7 @@ Object.defineProperty(window, "Shopify", {
       getCart: async () => ({ cart: null }),
       updateCart,
     },
-  } as unknown as ShopifyGlobal,
+  },
 });
 
 describe("product form", () => {
@@ -69,15 +81,12 @@ describe("product form", () => {
     t.after(cleanup);
     await flushAsync(act);
 
-    let red = $('a[href*="Color=Red"]');
-    let blue = $('a[href*="Color=Blue"]');
-    let missing = $("button:disabled");
-    assert.ok(red instanceof HTMLAnchorElement);
-    assert.ok(blue instanceof HTMLAnchorElement);
-    assert.ok(missing instanceof HTMLButtonElement);
-    let redButton = red as HTMLAnchorElement;
-    let blueButton = blue as HTMLAnchorElement;
-    let missingButton = missing as HTMLButtonElement;
+    let redButton = $('a[href*="Color=Red"]');
+    let blueButton = $('a[href*="Color=Blue"]');
+    let missingButton = $("button:disabled");
+    assert.ok(redButton instanceof HTMLAnchorElement);
+    assert.ok(blueButton instanceof HTMLAnchorElement);
+    assert.ok(missingButton instanceof HTMLButtonElement);
     assert.equal(redButton.getAttribute("aria-current"), "true");
     let shopPayLink = getShopPayLink($);
     assert.ok(shopPayLink);
@@ -102,15 +111,13 @@ describe("product form", () => {
     assert.equal(document.activeElement, optionSummary);
 
     await act(() => blueButton.click());
-    red = $('a[href*="Color=Red"]');
-    blue = $('a[href*="Color=Blue"]');
-    assert.ok(red instanceof HTMLAnchorElement);
-    assert.ok(blue instanceof HTMLAnchorElement);
-    redButton = red as HTMLAnchorElement;
-    blueButton = blue as HTMLAnchorElement;
+    let updatedRedButton = $('a[href*="Color=Red"]');
+    let updatedBlueButton = $('a[href*="Color=Blue"]');
+    assert.ok(updatedRedButton instanceof HTMLAnchorElement);
+    assert.ok(updatedBlueButton instanceof HTMLAnchorElement);
 
-    assert.equal(blueButton.getAttribute("aria-current"), "true");
-    assert.equal(redButton.getAttribute("aria-current"), null);
+    assert.equal(updatedBlueButton.getAttribute("aria-current"), "true");
+    assert.equal(updatedRedButton.getAttribute("aria-current"), null);
     assert.equal(
       $('input[name="merchandiseId"]')?.getAttribute("value"),
       BLUE_VARIANT_ID,
@@ -131,7 +138,7 @@ describe("product form", () => {
       "/products/related-product?ref=campaign&Color=Green",
     );
 
-    await act(() => redButton.click());
+    await act(() => updatedRedButton.click());
     assert.equal(
       $('input[name="merchandiseId"]')?.getAttribute("value"),
       RED_VARIANT_ID,
@@ -184,7 +191,7 @@ describe("product form", () => {
       globalThis,
       "fetch",
       async (_input: RequestInfo | URL, init?: RequestInit) => {
-        requestBody = init?.body as URLSearchParams;
+        requestBody = parseUrlEncodedBody(init?.body);
         return Response.json({ message: "Notification saved", success: true });
       },
     );
@@ -225,7 +232,8 @@ describe("product form", () => {
     );
     await waitFor(() => $('[role="status"]') !== null, act);
 
-    assert.deepEqual([...requestBody!.keys()].sort(), [
+    assert.ok(requestBody);
+    assert.deepEqual([...requestBody.keys()].sort(), [
       "consent",
       "email",
       "product-handle",
@@ -282,8 +290,8 @@ describe("product form", () => {
 
     let addButton = $('button[name="add-to-cart"]');
     assert.ok(addButton instanceof HTMLButtonElement);
-    assert.equal((addButton as HTMLButtonElement).disabled, true);
-    assert.equal(addButton?.textContent, "Select options");
+    assert.equal(addButton.disabled, true);
+    assert.equal(addButton.textContent, "Select options");
     assert.equal($('input[name="merchandiseId"]')?.getAttribute("value"), "");
     assert.equal($('a[aria-current="true"]'), null);
     assert.equal(getShopPayLink($), null);
@@ -335,6 +343,13 @@ describe("product form", () => {
     );
   });
 });
+
+function parseUrlEncodedBody(
+  body: BodyInit | null | undefined,
+): URLSearchParams {
+  if (body instanceof URLSearchParams) return body;
+  throw new Error("Expected a URL-encoded subscription request body");
+}
 
 function getShopPayLink(
   query: (selector: string) => Element | null,

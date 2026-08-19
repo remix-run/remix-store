@@ -31,6 +31,8 @@ export function market(): Middleware<{
       if (context.method !== "GET" && context.method !== "HEAD") {
         return new Response("Not Found", { status: 404 });
       }
+      // SAFETY: The app's renderer middleware runs before market resolution;
+      // Remix's generic Renderer key erases the concrete RemixNode input type.
       let renderPage = context.get(Renderer) as
         | ((node: RemixNode, init?: ResponseInit) => Response)
         | undefined;

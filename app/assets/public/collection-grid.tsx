@@ -1,4 +1,14 @@
 import {
+  array,
+  boolean,
+  nullable,
+  number,
+  object,
+  optional,
+  parse,
+  string,
+} from "remix/data-schema";
+import {
   clientEntry,
   css,
   on,
@@ -20,10 +30,31 @@ interface CollectionProductGridProps extends SerializableObject {
   products: ProductCardData[];
 }
 
-interface ProductsPageResponse {
-  pageInfo: ProductPageInfoData;
-  products: ProductCardData[];
-}
+const ProductsPageResponseSchema = object({
+  pageInfo: object({
+    endCursor: optional(nullable(string())),
+    hasNextPage: boolean(),
+  }),
+  products: array(
+    object({
+      compareAtPrice: optional(nullable(string())),
+      handle: string(),
+      id: string(),
+      images: array(
+        object({
+          altText: optional(nullable(string())),
+          height: optional(nullable(number())),
+          id: optional(nullable(string())),
+          url: string(),
+          width: optional(nullable(number())),
+        }),
+      ),
+      isOnSale: boolean(),
+      price: string(),
+      title: string(),
+    }),
+  ),
+});
 
 export const CollectionProductGrid = clientEntry(
   import.meta.url,
@@ -50,8 +81,7 @@ export const CollectionProductGrid = clientEntry(
               let url = new URL(form.action, window.location.href);
               let data = new FormData(form);
               for (let [name, value] of data) {
-                if (typeof value === "string")
-                  url.searchParams.set(name, value);
+                if (!(value instanceof File)) url.searchParams.set(name, value);
               }
 
               status = "loading";
@@ -64,13 +94,10 @@ export const CollectionProductGrid = clientEntry(
                 if (!response.ok)
                   throw new Error(`Request failed with ${response.status}`);
 
-                let nextPage = (await response.json()) as ProductsPageResponse;
-                if (
-                  !Array.isArray(nextPage.products) ||
-                  !isPageInfo(nextPage.pageInfo)
-                ) {
-                  throw new Error("Invalid collection response");
-                }
+                let nextPage = parse(
+                  ProductsPageResponseSchema,
+                  await response.json(),
+                );
 
                 let productsById = new Map(
                   [...products, ...nextPage.products].map((product) => [
@@ -111,15 +138,6 @@ export const CollectionProductGrid = clientEntry(
     );
   },
 );
-
-function isPageInfo(value: unknown): value is ProductPageInfoData {
-  return (
-    typeof value === "object" &&
-    value !== null &&
-    "hasNextPage" in value &&
-    typeof value.hasNextPage === "boolean"
-  );
-}
 
 const loadMoreStyle = css({
   background: "var(--color-blue-brand)",

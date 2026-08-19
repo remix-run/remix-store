@@ -8,7 +8,8 @@ describe("Storefront query cache", () => {
     let cache = new MemoryStorefrontCache();
     cache.set("shop", { name: "Remix" }, { ttl: 10 });
 
-    let first = cache.get("shop") as { name: string };
+    let first = cache.get("shop");
+    assert.deepEqual(first, { name: "Remix" });
     first.name = "Changed";
 
     assert.deepEqual(cache.get("shop"), { name: "Remix" });

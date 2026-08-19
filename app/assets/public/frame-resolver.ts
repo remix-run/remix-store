@@ -42,13 +42,13 @@ function submissionBody(
     return Array.from(
       formData,
       ([name, value]) =>
-        `${name}=${typeof value === "string" ? value : value.name}\r\n`,
+        `${name}=${value instanceof File ? value.name : value}\r\n`,
     ).join("");
   }
 
   let searchParams = new URLSearchParams();
   for (let [name, value] of formData) {
-    searchParams.append(name, typeof value === "string" ? value : value.name);
+    searchParams.append(name, value instanceof File ? value.name : value);
   }
   return searchParams;
 }

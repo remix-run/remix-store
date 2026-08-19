@@ -1,5 +1,6 @@
 import * as http from "node:http";
 
+import { object, optional, parse, string } from "remix/data-schema";
 import { createRequestListener } from "remix/node-fetch-server";
 
 import { app, closeNodeApp } from "../app/node.ts";
@@ -12,19 +13,27 @@ const env = {
   PRIVATE_STOREFRONT_API_TOKEN: "e2e-token",
 };
 
+const storefrontRequestSchema = object({
+  query: string(),
+  variables: optional(
+    object({
+      country: optional(string()),
+    }),
+  ),
+});
+
+type StorefrontRequest = { query: string; country?: string };
+
 const storefrontServer = http.createServer(async (request, response) => {
   let body = "";
   for await (let chunk of request) body += chunk;
 
   try {
-    let { query, variables } = JSON.parse(body) as {
-      query: string;
-      variables?: { country?: string };
-    };
+    let { query, country } = parseStorefrontRequest(body);
     let operation = query.match(
       /\b(?:query|mutation)\s+([A-Za-z_][A-Za-z0-9_]*)/,
     )?.[1];
-    let data = storefrontData(operation, variables?.country);
+    let data = storefrontData(operation, country);
     response.writeHead(200, { "Content-Type": "application/json" });
     response.end(JSON.stringify({ data }));
   } catch (error) {
@@ -59,10 +68,16 @@ async function shutdown() {
 process.on("SIGINT", () => void shutdown().then(() => process.exit(0)));
 process.on("SIGTERM", () => void shutdown().then(() => process.exit(0)));
 
-function storefrontData(
-  operation: string | undefined,
-  country?: string,
-): unknown {
+function parseStorefrontRequest(body: string): StorefrontRequest {
+  let { query, variables: parsedVariables } = parse(
+    storefrontRequestSchema,
+    JSON.parse(body),
+  );
+  let variables: { country?: string } = parsedVariables ?? {};
+  return { query, country: variables.country };
+}
+
+function storefrontData(operation: string | undefined, country?: string) {
   switch (operation) {
     case "RemixNavigation":
       return {

@@ -13,7 +13,7 @@ const isDevelopment = nodeEnv === "development";
 const buildId = process.env.ASSET_BUILD_ID;
 const isHmr = Boolean(isDevelopment && process.env.REMIX_NODE_HMR);
 
-const assetServer = createAssetServer({
+const assetServerOptions: Parameters<typeof createAssetServer>[0] = {
   basePath: "/assets",
   rootDir: process.cwd(),
   fileMap: {
@@ -41,8 +41,10 @@ const assetServer = createAssetServer({
       ? [(await import("remix/ui-hmr/assets")).uiHmr()]
       : undefined,
   },
-  ...(buildId ? { fingerprint: { buildId } } : {}),
-});
+};
+if (buildId) assetServerOptions.fingerprint = { buildId };
+
+const assetServer = createAssetServer(assetServerOptions);
 
 const browserEntry = "app/actions/public/entry.tsx";
 export const browserEntryHref = await assetServer.getHref(browserEntry);

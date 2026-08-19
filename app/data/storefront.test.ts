@@ -5,6 +5,7 @@ import {
 import * as assert from "remix/assert";
 import { describe, it } from "remix/test";
 
+import { US_MARKET } from "../lib/public/market.ts";
 import {
   queryCollection,
   queryHome,
@@ -170,7 +171,7 @@ describe("Storefront data", () => {
   });
 
   it("maps collection cards and preserves pagination variables", async () => {
-    let requestBody: { variables?: Record<string, unknown> } | undefined;
+    let requestBody: CollectionRequestBody | undefined;
     let client = createTestClient(async (_input, init) => {
       requestBody = JSON.parse(String(init?.body));
       return storefrontResponse({
@@ -463,7 +464,7 @@ function createTestClient(fetch: typeof globalThis.fetch) {
     type: "public",
     requestContext: createShopifyRequestContext({
       request: new Request("https://storefront.example/"),
-      i18n: { country: "US", language: "EN" },
+      i18n: US_MARKET,
     }),
     config: {
       storeDomain: "example.myshopify.com",
@@ -480,8 +481,18 @@ class TestCache {
   delete() {}
 }
 
-function storefrontResponse(
-  data: unknown,
+interface CollectionRequestBody {
+  variables?: {
+    after?: string;
+    country?: string;
+    first?: number;
+    handle?: string;
+    language?: string;
+  };
+}
+
+function storefrontResponse<Data>(
+  data: Data,
   errors?: Array<{ message: string }>,
 ) {
   return new Response(JSON.stringify(errors ? { data, errors } : { data }), {

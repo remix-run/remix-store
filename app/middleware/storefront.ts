@@ -132,7 +132,7 @@ export function storefront(options: StorefrontOptions = {}): Middleware<
       throw new Error("The runtime adapter must provide a trusted buyer IP.");
     }
 
-    let activeMarket = context.get(MarketConfig) as ActiveMarket;
+    let activeMarket = context.get(MarketConfig);
     let requestContext = createShopifyRequestContext({
       request: context.request,
       i18n: activeMarket,
@@ -429,6 +429,9 @@ function matchSeoRoute(url: URL): SeoRoute | null {
 type EphemeralHydrogenRouteSessionManager = Parameters<
   typeof handleShopifyRoutes
 >[0]["sessionManager"];
+type EphemeralSessionItem = Parameters<
+  EphemeralHydrogenRouteSessionManager["setSessionItem"]
+>[1];
 
 /**
  * Request-local scratch state required by Hydrogen compatibility routes.
@@ -439,7 +442,7 @@ type EphemeralHydrogenRouteSessionManager = Parameters<
 function createEphemeralHydrogenRouteSessionManager(
   request: Request,
 ): EphemeralHydrogenRouteSessionManager {
-  let values = new Map<string, unknown>();
+  let values = new Map<string, EphemeralSessionItem>();
 
   return {
     getSessionOrigin() {
@@ -448,7 +451,7 @@ function createEphemeralHydrogenRouteSessionManager(
     getSessionItem(key: string) {
       return values.get(key);
     },
-    setSessionItem(key: string, value: unknown) {
+    setSessionItem(key: string, value: EphemeralSessionItem) {
       values.set(key, value);
     },
     removeSessionItem(key: string) {

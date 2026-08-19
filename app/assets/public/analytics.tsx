@@ -13,7 +13,7 @@ let analytics: StorefrontAnalytics | null = null;
 
 /** Returns the single consent-aware analytics bus created by ShopifyScripts. */
 export function getAnalytics(): StorefrontAnalytics | null {
-  if (typeof window === "undefined") return null;
+  if (!globalThis.window) return null;
   let globalAnalytics = window.Shopify?.analytics ?? null;
   if (globalAnalytics !== analytics) analytics = globalAnalytics;
   return analytics;
@@ -123,24 +123,48 @@ function settledCart(state: CartState): CartData | null {
  * instead of coerced to empty strings. Re-diff against the upstream source
  * on every Hydrogen preview bump, and delete this once Hydrogen exports it.
  */
+type AnalyticsCartContract = {
+  id: string;
+  updatedAt?: string;
+  cost: CartData["cost"];
+  lines: {
+    nodes: Array<{
+      id: string;
+      quantity: number;
+      cost: CartData["lines"]["nodes"][number]["cost"];
+      merchandise?: {
+        id: string;
+        title?: string;
+        sku?: string | null;
+        product: {
+          id: string;
+          title: string;
+          vendor: string;
+          productType?: string | null;
+          handle?: string;
+        };
+      };
+    }>;
+  };
+};
+
 function toAnalyticsCart(cart: CartData | null): AnalyticsCart | null {
-  if (!cart?.id || typeof cart.updatedAt !== "string" || !cart.updatedAt) {
-    return null;
-  }
+  if (!cart?.id) return null;
+  // SAFETY: The app cart fragment selects `updatedAt`, and Hydrogen's standard
+  // cart fragment selects the product analytics fields modeled above.
+  let analyticsCart = cart as AnalyticsCartContract;
+  if (!analyticsCart.updatedAt) return null;
 
   return {
-    id: cart.id,
-    updatedAt: cart.updatedAt,
+    id: analyticsCart.id,
+    updatedAt: analyticsCart.updatedAt,
     cost: cart.cost,
     lines: {
-      nodes: cart.lines.nodes.flatMap((line) => {
+      nodes: analyticsCart.lines.nodes.flatMap((line) => {
         let merchandise = line.merchandise;
         if (!merchandise) return [];
         let productId = merchandise.product.id;
         let vendor = merchandise.product.vendor;
-        if (typeof productId !== "string" || typeof vendor !== "string") {
-          return [];
-        }
 
         return [
           {
@@ -150,15 +174,12 @@ function toAnalyticsCart(cart: CartData | null): AnalyticsCart | null {
               id: merchandise.id,
               title: merchandise.title ?? merchandise.product.title,
               price: line.cost.amountPerQuantity,
-              sku: typeof merchandise.sku === "string" ? merchandise.sku : null,
+              sku: merchandise.sku ?? null,
               product: {
                 id: productId,
                 title: merchandise.product.title,
                 vendor,
-                productType:
-                  typeof merchandise.product.productType === "string"
-                    ? merchandise.product.productType
-                    : undefined,
+                productType: merchandise.product.productType ?? undefined,
                 handle: merchandise.product.handle,
               },
             },

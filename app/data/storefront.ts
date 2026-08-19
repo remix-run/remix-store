@@ -6,6 +6,7 @@ import {
   StorefrontApiError,
   StorefrontTimeoutError,
   type CachingStrategy,
+  type GraphQLFormattedError,
   type StorefrontApi,
   type StorefrontClient,
 } from "@shopify/hydrogen";
@@ -22,9 +23,15 @@ export type AppStorefrontClient = StorefrontClient<{
   cache?: CachingStrategy;
 }>;
 
+export type StorefrontQueryFailureCause =
+  | GraphQLFormattedError[]
+  | StorefrontApiError
+  | StorefrontTimeoutError
+  | undefined;
+
 export type StorefrontQueryResult<T> =
   | { ok: true; data: T }
-  | { ok: false; message: string; errors: unknown };
+  | { ok: false; message: string; errors: StorefrontQueryFailureCause };
 
 export type NavigationMenuItemData = SerializableObject & {
   id: string;
@@ -734,7 +741,7 @@ export async function queryProductNavigation(
       result.data?.menu,
       internalHosts,
       { items: [] },
-      storefront.i18n.pathPrefix as MarketPathPrefix,
+      getMarketPathPrefix(storefront),
     );
   } catch (error) {
     console.error("[hydrogen] Product navigation query failed", error);
@@ -841,13 +848,13 @@ export async function queryShellMenus(
         result.data?.menu,
         internalHosts,
         FALLBACK_NAVIGATION_MENU,
-        storefront.i18n.pathPrefix as MarketPathPrefix,
+        getMarketPathPrefix(storefront),
       ),
       footerMenu: mapFooterMenu(
         result.data?.footerMenu,
         internalHosts,
         FALLBACK_FOOTER_MENU,
-        storefront.i18n.pathPrefix as MarketPathPrefix,
+        getMarketPathPrefix(storefront),
       ),
       // Recheck expiration after the cache lookup so a stale cached sale
       // disappears as soon as its merchant-configured end time passes.
@@ -857,7 +864,7 @@ export async function queryShellMenus(
     };
   } catch (error) {
     console.error("[hydrogen] Navigation query failed", error);
-    let pathPrefix = storefront.i18n.pathPrefix as MarketPathPrefix;
+    let pathPrefix = getMarketPathPrefix(storefront);
     return {
       navigationMenu: localizeNavigationMenu(
         FALLBACK_NAVIGATION_MENU,
@@ -900,6 +907,14 @@ export function toActiveStoreWideSale(
   }
 
   return { title, description };
+}
+
+function getMarketPathPrefix(
+  storefront: AppStorefrontClient,
+): MarketPathPrefix {
+  let pathPrefix = storefront.i18n.pathPrefix;
+  if (pathPrefix === "" || pathPrefix === "/en-ca") return pathPrefix;
+  throw new Error("Unsupported market path prefix.");
 }
 
 function mapNavigationMenu(

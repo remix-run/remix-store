@@ -1,4 +1,5 @@
 import * as assert from "remix/assert";
+import { array, boolean, object, parse, string } from "remix/data-schema";
 import { describe, it } from "remix/test";
 
 import { routes } from "../../routes.ts";
@@ -12,7 +13,7 @@ import {
 
 describe("collection routes", () => {
   it("renders catalog cards and keeps load more as a GET fallback", async () => {
-    let variables: Record<string, unknown> | undefined;
+    let variables: StorefrontRequestBody["variables"] | undefined;
     let app = createTestApp(
       storefrontFetch((body) => {
         variables = body.variables;
@@ -63,7 +64,7 @@ describe("collection routes", () => {
   });
 
   it("returns only a page of JSON for enhanced load more", async () => {
-    let variables: Record<string, unknown> | undefined;
+    let variables: StorefrontRequestBody["variables"] | undefined;
     let app = createTestApp(
       storefrontFetch((body) => {
         variables = body.variables;
@@ -78,10 +79,13 @@ describe("collection routes", () => {
     let response = await app.fetch(
       new Request(url, { headers: { Accept: "application/json" } }),
     );
-    let data = (await response.json()) as {
-      pageInfo: { hasNextPage: boolean };
-      products: Array<{ id: string }>;
-    };
+    let data = parse(
+      object({
+        products: array(object({ id: string() })),
+        pageInfo: object({ hasNextPage: boolean() }),
+      }),
+      await response.json(),
+    );
 
     assert.equal(response.status, 200);
     assert.equal(response.headers.get("Content-Type"), "application/json");
@@ -147,7 +151,7 @@ describe("collection routes", () => {
 });
 
 function storefrontFetch(
-  collection: (body: StorefrontRequestBody) => unknown,
+  collection: Parameters<typeof createStorefrontFetch>[0][string],
 ): typeof globalThis.fetch {
   return createStorefrontFetch({
     RemixAnalyticsShop: analyticsShopData,

@@ -42,8 +42,8 @@ export async function getCartData(
 
   try {
     let result = await cartHandlers.get({ request, storefrontClient });
-    // Hydrogen's cart types contain open `unknown` extension fields. The
-    // selected GraphQL result is JSON-safe at this browser serialization edge.
+    // SAFETY: Hydrogen produced this nested, JSON-serializable GraphQL result
+    // from CART_FRAGMENT; only its open extension fields block inference.
     return result.data as CartInitialData;
   } catch (error) {
     if (request.signal.aborted && error === request.signal.reason) throw error;

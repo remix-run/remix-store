@@ -7,11 +7,12 @@ import {
   createStorefrontFetch,
   createTestApp,
   navigationData,
+  type StorefrontRequestBody,
 } from "../../testing/storefront.ts";
 
 describe("product routes", () => {
   it("resolves URL options and renders safe, no-JS variant and cart controls", async () => {
-    let variables: Record<string, unknown> | undefined;
+    let variables: StorefrontRequestBody["variables"] | undefined;
     let app = createTestApp(
       createStorefrontFetch({
         RemixAnalyticsShop: analyticsShopData,
@@ -84,7 +85,7 @@ describe("product routes", () => {
   });
 
   it("keeps Canadian product navigation, money, cart, and subscribe actions localized", async () => {
-    let variables: Record<string, unknown> | undefined;
+    let variables: StorefrontRequestBody["variables"] | undefined;
     let data = productData();
     data.selectedOrFirstAvailableVariant = data.adjacentVariants[0]!;
     data.selectedOrFirstAvailableVariant.price = {

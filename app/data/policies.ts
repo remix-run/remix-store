@@ -9,6 +9,7 @@ import type { SerializableObject } from "remix/ui";
 
 import type {
   AppStorefrontClient,
+  StorefrontQueryFailureCause,
   StorefrontQueryResult,
 } from "./storefront.ts";
 
@@ -165,6 +166,6 @@ function policyFrom(data: PolicyQueryData, key: PolicyKey) {
   return data.shop[key];
 }
 
-function queryFailure(message: string, errors: unknown) {
+function queryFailure(message: string, errors: StorefrontQueryFailureCause) {
   return { ok: false, message, errors } as const;
 }

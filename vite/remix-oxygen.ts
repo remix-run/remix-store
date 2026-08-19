@@ -4,6 +4,14 @@ import { resolve } from "node:path";
 import fullstack from "@hiogawa/vite-plugin-fullstack";
 import MagicString from "magic-string";
 import { parseSync } from "oxc-parser";
+import {
+  object,
+  optional,
+  parseSafe,
+  record,
+  string,
+  type InferOutput,
+} from "remix/data-schema";
 import type { Plugin, PluginOption } from "vite";
 
 const CLIENT_ENTRY = "app/actions/public/entry";
@@ -19,6 +27,20 @@ interface RemixOxygenOptions {
   compatibilityDate?: string;
   serverHandler?: boolean;
 }
+
+const FULLSTACK_ASSET_MANIFEST_SCHEMA = object(
+  {
+    client: record(
+      string(),
+      object({ entry: optional(string()) }, { unknownKeys: "passthrough" }),
+    ),
+  },
+  { unknownKeys: "passthrough" },
+);
+
+type ClientAssets = InferOutput<
+  typeof FULLSTACK_ASSET_MANIFEST_SCHEMA
+>["client"];
 
 /**
  * The Remix 3 build adapter for this Oxygen-only app.
@@ -197,36 +219,34 @@ function finalizeWorker(
     .trim()
     .replace(/^export\s+default\s*/, "")
     .replace(/;$/, "");
-  let parsedAssets: unknown;
+  let assets: unknown;
   try {
-    parsedAssets = JSON.parse(manifest);
+    assets = JSON.parse(manifest);
   } catch (error) {
     throw new Error(`Invalid JSON in ${ASSETS_MANIFEST_PATH}`, {
       cause: error,
     });
   }
-  if (
-    !parsedAssets ||
-    typeof parsedAssets !== "object" ||
-    Array.isArray(parsedAssets)
-  ) {
-    throw new Error(
-      `Invalid asset manifest structure in ${ASSETS_MANIFEST_PATH}`,
-    );
-  }
-  let assets = parsedAssets as {
-    client?: Record<string, { entry?: string }>;
-    [environment: string]: unknown;
-  };
-  if (
-    !assets.client ||
-    typeof assets.client !== "object" ||
-    Array.isArray(assets.client)
-  ) {
-    throw new Error(`Missing client assets in ${ASSETS_MANIFEST_PATH}`);
+  let result = parseSafe(FULLSTACK_ASSET_MANIFEST_SCHEMA, assets, {
+    abortEarly: true,
+  });
+  if (!result.success) {
+    let path = result.issues[0]?.path;
+    if (!path || path.length === 0 || path[0] !== "client") {
+      throw new Error(
+        `Invalid asset manifest structure in ${ASSETS_MANIFEST_PATH}`,
+      );
+    }
+    if (path.length === 1) {
+      throw new Error(`Missing client assets in ${ASSETS_MANIFEST_PATH}`);
+    }
+    if (path[2] === "entry") {
+      throw new Error(`Invalid client asset entry in ${ASSETS_MANIFEST_PATH}`);
+    }
+    throw new Error(`Invalid client assets in ${ASSETS_MANIFEST_PATH}`);
   }
 
-  validateHydrationEntries(root, assets.client);
+  validateHydrationEntries(root, result.value.client);
   writeFileSync(
     workerPath,
     worker.replace(
@@ -255,7 +275,7 @@ function finalizeWorker(
 
 function validateHydrationEntries(
   root: string,
-  clientAssets: Record<string, { entry?: string }>,
+  clientAssets: ClientAssets,
 ): void {
   for (let [sourcePath, assets] of Object.entries(clientAssets)) {
     let sourceFile = resolve(root, sourcePath);

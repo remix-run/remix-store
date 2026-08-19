@@ -2,9 +2,22 @@ import type { CacheInstance } from "@shopify/hydrogen";
 
 import { getRuntime } from "../runtime.ts";
 
+type StorefrontCacheProperty =
+  | boolean
+  | number
+  | string
+  | null
+  | undefined
+  | StorefrontCacheProperty[]
+  | StorefrontCacheValue;
+
+interface StorefrontCacheValue {
+  [key: string]: StorefrontCacheProperty;
+}
+
 interface CacheEntry {
   expiresAt: number;
-  value: unknown;
+  value: StorefrontCacheValue;
 }
 
 interface MemoryStorefrontCacheOptions {
@@ -29,7 +42,7 @@ export class MemoryStorefrontCache {
     this.#now = now;
   }
 
-  get(key: string): unknown {
+  get(key: string): StorefrontCacheValue | undefined {
     let entry = this.#entries.get(key);
     if (!entry) return undefined;
     if (entry.expiresAt <= this.#now()) {
@@ -42,7 +55,11 @@ export class MemoryStorefrontCache {
     return structuredClone(entry.value);
   }
 
-  set(key: string, value: unknown, options?: { ttl?: number }): void {
+  set(
+    key: string,
+    value: StorefrontCacheValue,
+    options?: { ttl?: number },
+  ): void {
     let ttl = options?.ttl ?? 0;
     if (!Number.isFinite(ttl) || ttl <= 0) {
       this.#entries.delete(key);

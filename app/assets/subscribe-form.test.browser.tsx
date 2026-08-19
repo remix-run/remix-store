@@ -40,7 +40,7 @@ describe("subscribe form", () => {
       "fetch",
       async (input: RequestInfo | URL, init?: RequestInit) => {
         requests.push({
-          body: init?.body as URLSearchParams,
+          body: parseUrlEncodedBody(init?.body),
           input: String(input),
         });
         return deferred.promise;
@@ -94,7 +94,9 @@ describe("subscribe form", () => {
     await flushAsync(view.act);
 
     assert.equal(view.$('[role="status"]')?.textContent, "Already subscribed");
-    assert.equal((view.$("button") as HTMLButtonElement).disabled, true);
+    let button = view.$("button");
+    assert.ok(button instanceof HTMLButtonElement);
+    assert.equal(button.disabled, true);
     await view.act(() => submit(view.$));
     assert.equal(calls, 0);
   });
@@ -128,7 +130,9 @@ describe("subscribe form", () => {
       email.value = "other@example.com";
       email.dispatchEvent(new Event("input", { bubbles: true }));
     });
-    assert.equal((view.$("button") as HTMLButtonElement).disabled, false);
+    let button = view.$("button");
+    assert.ok(button instanceof HTMLButtonElement);
+    assert.equal(button.disabled, false);
   });
 
   it("renders server and network failures and restores controls", async (t) => {
@@ -155,7 +159,9 @@ describe("subscribe form", () => {
       () => view.$('[role="alert"]')?.textContent === "Please try later.",
       view.act,
     );
-    assert.equal((view.$("button") as HTMLButtonElement).disabled, false);
+    let button = view.$("button");
+    assert.ok(button instanceof HTMLButtonElement);
+    assert.equal(button.disabled, false);
 
     await view.act(() => submit(view.$));
     await waitFor(
@@ -169,12 +175,21 @@ describe("subscribe form", () => {
       view.$('[role="alert"]')?.textContent ?? "",
       /network detail/,
     );
-    assert.equal((view.$("button") as HTMLButtonElement).disabled, false);
+    button = view.$("button");
+    assert.ok(button instanceof HTMLButtonElement);
+    assert.equal(button.disabled, false);
   });
 });
 
 type Query = ReturnType<typeof render>["$"];
 type Act = ReturnType<typeof render>["act"];
+
+function parseUrlEncodedBody(
+  body: BodyInit | null | undefined,
+): URLSearchParams {
+  if (body instanceof URLSearchParams) return body;
+  throw new Error("Expected a URL-encoded subscription request body");
+}
 
 function fillForm($: Query) {
   let email = $('input[name="email"]');

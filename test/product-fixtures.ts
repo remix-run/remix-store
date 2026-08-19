@@ -3,8 +3,12 @@ import type { ProductData } from "../app/data/storefront.ts";
 export const RED_VARIANT_ID = "gid://shopify/ProductVariant/111";
 export const BLUE_VARIANT_ID = "gid://shopify/ProductVariant/222";
 
+type ProductVariant = NonNullable<
+  ProductData["selectedOrFirstAvailableVariant"]
+>;
+
 export function createProduct(redVariantId = RED_VARIANT_ID): ProductData {
-  let redVariant = {
+  let redVariant: ProductVariant = {
     id: redVariantId,
     title: "Red",
     availableForSale: true,
@@ -15,7 +19,7 @@ export function createProduct(redVariantId = RED_VARIANT_ID): ProductData {
     product: { title: "Test Product", handle: "test-product" },
     sku: "RED-SKU",
   };
-  let blueVariant = {
+  let blueVariant: ProductVariant = {
     id: BLUE_VARIANT_ID,
     title: "Blue",
     availableForSale: false,
@@ -26,7 +30,7 @@ export function createProduct(redVariantId = RED_VARIANT_ID): ProductData {
     product: { title: "Test Product", handle: "test-product" },
     sku: "BLUE-SKU",
   };
-  let greenVariant = {
+  let greenVariant: ProductVariant = {
     id: "gid://shopify/ProductVariant/333",
     title: "Green",
     availableForSale: true,
@@ -69,7 +73,7 @@ export function createProduct(redVariantId = RED_VARIANT_ID): ProductData {
     selectedOrFirstAvailableVariant: redVariant,
     adjacentVariants: [redVariant, blueVariant, greenVariant],
     images: { nodes: [image("product", "Test product")] },
-  } as ProductData;
+  };
 }
 
 function image(name: string, altText: string) {
