@@ -7,11 +7,12 @@ import {
   createStorefrontFetch,
   createTestApp,
   navigationData,
+  type StorefrontRequestBody,
 } from "../../testing/storefront.ts";
 
 describe("policy routes", () => {
   it("renders sanitized Shopify policy content in the branded document", async () => {
-    let variables: Record<string, unknown> | undefined;
+    let variables: StorefrontRequestBody["variables"] | undefined;
     let app = createTestApp(
       createStorefrontFetch({
         RemixAnalyticsShop: analyticsShopData,
@@ -95,7 +96,7 @@ describe("policy routes", () => {
   });
 
   it("maps contact information to Shopify's contact page with market-separated context and cache entries", async () => {
-    let variables: Record<string, unknown>[] = [];
+    let variables: StorefrontRequestBody["variables"][] = [];
     let app = createTestApp(
       createStorefrontFetch({
         RemixAnalyticsShop: analyticsShopData,

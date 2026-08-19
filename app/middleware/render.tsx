@@ -1,4 +1,5 @@
 import { renderWith } from "remix/middleware/render";
+import type { RequestContext } from "remix/router";
 import { createHtmlResponse } from "remix/response/html";
 import type { RemixNode } from "remix/ui";
 import { renderToStream, type RenderToStreamOptions } from "remix/ui/server";
@@ -6,12 +7,8 @@ import { renderToStream, type RenderToStreamOptions } from "remix/ui/server";
 import {
   FALLBACK_FOOTER_MENU,
   FALLBACK_NAVIGATION_MENU,
-  type AnalyticsShop,
-  type NavigationMenuData,
-  type StoreWideSaleData,
 } from "../data/storefront.ts";
-import type { CartInitialData } from "../data/cart.ts";
-import { US_MARKET, type ActiveMarket } from "../lib/public/market.ts";
+import { US_MARKET } from "../lib/public/market.ts";
 import { MarketConfig } from "./market.tsx";
 import {
   AnalyticsShopConfig,
@@ -31,32 +28,33 @@ export interface RenderOptions {
   resolveClientEntry: NonNullable<RenderToStreamOptions["resolveClientEntry"]>;
 }
 
+interface ContextValueKey<Value> {
+  defaultValue?: Value;
+}
+
+function getContextValue<Value>(
+  context: RequestContext,
+  key: ContextValueKey<Value>,
+): Value | undefined {
+  return context.get(key);
+}
+
 export function render(options: RenderOptions) {
   return renderWith((context) => {
     let { request } = context;
 
     return function renderPage(node: RemixNode, init?: ResponseInit) {
       let navigationMenu =
-        (context.get(NavigationMenuConfig) as NavigationMenuData | undefined) ??
+        getContextValue(context, NavigationMenuConfig) ??
         FALLBACK_NAVIGATION_MENU;
       let footerMenu =
-        (context.get(FooterMenuConfig) as NavigationMenuData | undefined) ??
-        FALLBACK_FOOTER_MENU;
-      let storeWideSale =
-        (context.get(StoreWideSaleConfig) as
-          | StoreWideSaleData
-          | null
-          | undefined) ?? null;
-      let cartInitialData = (context.get(CartInitialDataConfig) as
-        | CartInitialData
-        | undefined) ?? { cart: null };
-      let analyticsShop =
-        (context.get(AnalyticsShopConfig) as
-          | AnalyticsShop
-          | null
-          | undefined) ?? null;
-      let market =
-        (context.get(MarketConfig) as ActiveMarket | undefined) ?? US_MARKET;
+        getContextValue(context, FooterMenuConfig) ?? FALLBACK_FOOTER_MENU;
+      let storeWideSale = getContextValue(context, StoreWideSaleConfig) ?? null;
+      let cartInitialData = getContextValue(context, CartInitialDataConfig) ?? {
+        cart: null,
+      };
+      let analyticsShop = getContextValue(context, AnalyticsShopConfig) ?? null;
+      let market = getContextValue(context, MarketConfig) ?? US_MARKET;
       let stream = renderToStream(
         <DocumentAssetsProvider {...options.documentAssets}>
           <ShellDataProvider

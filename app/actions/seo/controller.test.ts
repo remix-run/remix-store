@@ -7,6 +7,8 @@ import {
   createStorefrontFetch,
   createTestApp,
   navigationData,
+  type StorefrontHandler,
+  type StorefrontRequestBody,
 } from "../../testing/storefront.ts";
 
 describe("SEO resource routes", () => {
@@ -79,7 +81,7 @@ describe("SEO resource routes", () => {
   it("keeps prefixed sitemap requests canonical while querying distinct fixed US and CA contexts", async () => {
     let contexts: Array<{
       operation: string;
-      variables: Record<string, unknown>;
+      variables: StorefrontRequestBody["variables"];
     }> = [];
     let resource = (handle: string) => ({
       sitemap: {
@@ -181,7 +183,7 @@ describe("SEO resource routes", () => {
   });
 
   it("renders canonical product URLs and image metadata from Shopify", async () => {
-    let variables: Record<string, unknown> | undefined;
+    let variables: StorefrontRequestBody["variables"] | undefined;
     let app = seoApp((body) => {
       variables = body.variables;
       return {
@@ -322,9 +324,7 @@ describe("SEO resource routes", () => {
 });
 
 function seoApp(
-  resourceHandler: Parameters<
-    typeof createStorefrontFetch
-  >[0][string] = () => ({
+  resourceHandler: StorefrontHandler = () => ({
     sitemap: { resources: { hasNextPage: false, items: [] } },
   }),
   onShellQuery: () => void = () => {},

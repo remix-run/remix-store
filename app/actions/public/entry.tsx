@@ -53,8 +53,13 @@ await Promise.all([
 ]);
 
 publishPageViewed();
-let pathPrefix = (document.documentElement.dataset.marketPrefix ||
-  "") as MarketPathPrefix;
+let pathPrefix = marketPathPrefix(
+  document.documentElement.dataset.marketPrefix,
+);
 let cartStore = getBrowserCartStore(undefined, pathPrefix);
 if (cartStore) trackCartAnalytics(cartStore);
 configureOpenCartAction();
+
+function marketPathPrefix(value: string | undefined): MarketPathPrefix {
+  return value === "/en-ca" ? value : "";
+}

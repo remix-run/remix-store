@@ -54,10 +54,9 @@ function productHref(
 }
 
 function openCartDrawer() {
-  if (typeof document === "undefined") return;
+  if (!globalThis.document) return;
   if (window.matchMedia("(max-width: 809px)").matches) {
-    let prefix = (document.documentElement.dataset.marketPrefix ||
-      "") as MarketPathPrefix;
+    let prefix = documentMarketPathPrefix();
     window.location.assign(marketPath("/cart", prefix));
     return;
   }
@@ -66,19 +65,23 @@ function openCartDrawer() {
     if (drawer.dataset.cartEmpty === "true") return;
     drawer.showModal();
     setCartTriggerExpanded(true);
-    let prefix = (document.documentElement.dataset.marketPrefix ||
-      "") as MarketPathPrefix;
+    let prefix = documentMarketPathPrefix();
     publishCartViewedWhenSettled(getBrowserCartStore(undefined, prefix));
   }
 }
 
 function closeCartDrawer() {
-  if (typeof document === "undefined") return;
+  if (!globalThis.document) return;
   let drawer = document.getElementById(CART_DRAWER_ID);
   if (drawer instanceof HTMLDialogElement) {
     drawer.close();
     setCartTriggerExpanded(false);
   }
+}
+
+function documentMarketPathPrefix(): MarketPathPrefix {
+  let value = document.documentElement.dataset.marketPrefix;
+  return value === "/en-ca" ? value : "";
 }
 
 function setCartTriggerExpanded(expanded: boolean) {
@@ -93,7 +96,7 @@ function setCartTriggerExpanded(expanded: boolean) {
  * delegates to the stable DOM helper instead of closing over component state.
  */
 export function configureOpenCartAction(): boolean {
-  if (typeof document === "undefined") return false;
+  if (!globalThis.document) return false;
   if (openCartActionConfigured) return true;
 
   let openCart = window.Shopify?.actions?.openCart;
@@ -737,16 +740,18 @@ type CartDiscountAllocationData = {
   discountedAmount: MoneyV2;
 };
 
+type CartLineWithDiscountAllocations = CartData["lines"]["nodes"][number] & {
+  discountAllocations?: CartDiscountAllocationData[];
+};
+
 function getCartDiscountAllocation(cart: CartData): MoneyV2 | null {
   let allocations = cart.lines.nodes
-    .flatMap(
-      (line) =>
-        (
-          line as typeof line & {
-            discountAllocations?: CartDiscountAllocationData[];
-          }
-        ).discountAllocations ?? [],
-    )
+    .flatMap((line) => {
+      // SAFETY: The app cart fragment selects `discountAllocations`; Hydrogen's
+      // open cart line type does not retain custom fragment extension fields.
+      let lineWithAllocations = line as CartLineWithDiscountAllocations;
+      return lineWithAllocations.discountAllocations ?? [];
+    })
     .filter(
       (allocation) =>
         allocation.__typename === "CartAutomaticDiscountAllocation",
@@ -891,11 +896,8 @@ function getBannerMessages(
   return Array.from(new Set(messages));
 }
 
-function money(
-  value: { amount: string; currencyCode: string },
-  locale: MarketLocale,
-): string {
-  return formatMoney(value as MoneyV2, { locale }).toString();
+function money(value: MoneyV2, locale: MarketLocale): string {
+  return formatMoney(value, { locale }).toString();
 }
 
 const triggerBaseStyle = css({
