@@ -139,6 +139,39 @@ describe("product form", () => {
     assert.equal(getShopPayLink($)?.hasAttribute("href"), true);
   });
 
+  it("preserves the Shop Pay height when changing available variants", async (t) => {
+    let product = createProduct();
+    let blueVariant = product.options[0]?.optionValues.find(
+      (value) => value.name === "Blue",
+    )?.firstSelectableVariant;
+    assert.ok(blueVariant);
+    blueVariant.availableForSale = true;
+    t.after(resetBrowserCartStore);
+    t.mock.method(window.navigation, "navigate", () => ({
+      committed: Promise.resolve(),
+      finished: Promise.resolve(),
+    }));
+
+    let { $, act, cleanup } = render(
+      <ProductDetails
+        product={product}
+        search=""
+        shopPayStoreUrl={shopPayStoreUrl}
+      />,
+    );
+    t.after(cleanup);
+    await flushAsync(act);
+
+    let blueButton = $('a[href*="Color=Blue"]');
+    assert.ok(blueButton instanceof HTMLAnchorElement);
+    await act(() => blueButton.click());
+
+    let shopPayLink = getShopPayLink($);
+    assert.ok(shopPayLink);
+    assert.equal(new URL(shopPayLink.href).pathname, "/cart/222:1");
+    assert.equal(getComputedStyle(shopPayLink).height, "64px");
+  });
+
   it("hydrates and submits only verified identifiers for the selected sold-out variant", async (t) => {
     let product = createProduct();
     let requestBody: URLSearchParams | undefined;
