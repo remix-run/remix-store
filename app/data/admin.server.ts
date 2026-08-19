@@ -1,3 +1,14 @@
+import {
+  any,
+  array,
+  nullable,
+  object,
+  optional,
+  parseSafe,
+  string,
+  type Schema,
+} from "remix/data-schema";
+
 // Stable Shopify Admin version verified through publicApiVersions on 2026-08-13.
 // `pnpm typecheck` validates every document below against its pinned schema.
 export const ADMIN_API_VERSION = "2026-07";
@@ -28,10 +39,54 @@ interface CustomerRecord {
   marketingOptInLevel: string | null;
 }
 
-interface GraphqlEnvelope {
-  data?: Record<string, unknown> | null;
-  errors?: unknown[];
+type JsonValue = boolean | number | string | null | JsonValue[] | JsonObject;
+
+interface JsonObject {
+  [key: string]: JsonValue;
 }
+
+const GraphqlEnvelopeSchema = object({
+  // Passthrough retains operation fields for the operation-specific schema
+  // supplied to request(); data-schema types an empty object shape as `{}`.
+  data: optional(nullable(object({}, { unknownKeys: "passthrough" }))),
+  errors: optional(array(any())),
+});
+const MarketingConsentSchema = nullable(
+  object({ marketingOptInLevel: string() }),
+).transform((consent) => consent?.marketingOptInLevel ?? null);
+const CustomerByEmailSchema = object({
+  customerByIdentifier: optional(
+    nullable(
+      object({
+        id: string(),
+        emailMarketingConsent: optional(MarketingConsentSchema),
+      }),
+    ),
+  ),
+});
+const AdminNodeSchema = object({ id: string() });
+const AdminUserErrorSchema = object({
+  field: optional(nullable(array(string()))),
+  message: string(),
+});
+const CustomerCreateSchema = object({
+  customerCreate: object({
+    customer: optional(nullable(AdminNodeSchema)),
+    userErrors: array(AdminUserErrorSchema),
+  }),
+});
+const TagsAddSchema = object({
+  tagsAdd: object({
+    node: optional(nullable(AdminNodeSchema)),
+    userErrors: array(AdminUserErrorSchema),
+  }),
+});
+const CustomerConsentUpdateSchema = object({
+  customerEmailMarketingConsentUpdate: object({
+    customer: optional(nullable(AdminNodeSchema)),
+    userErrors: array(AdminUserErrorSchema),
+  }),
+});
 
 /** Server-only, fetch-injected Shopify Admin GraphQL customer boundary. */
 export function createAdminCustomerClient(options: AdminClientOptions) {
@@ -42,10 +97,11 @@ export function createAdminCustomerClient(options: AdminClientOptions) {
   let requestFetch = options.fetch ?? globalThis.fetch;
   let endpoint = `https://${storeDomain}/admin/api/${ADMIN_API_VERSION}/graphql.json`;
 
-  async function request(
+  async function request<Output>(
     query: string,
-    variables: Record<string, unknown>,
-  ): Promise<Record<string, unknown>> {
+    variables: JsonObject,
+    dataSchema: Schema<unknown, Output>,
+  ): Promise<Output> {
     let response: Response;
     try {
       response = await requestFetch(endpoint, {
@@ -64,35 +120,25 @@ export function createAdminCustomerClient(options: AdminClientOptions) {
     }
     if (!response.ok) throw new AdminApiError("response");
 
-    let envelope: GraphqlEnvelope;
-    try {
-      envelope = (await response.json()) as GraphqlEnvelope;
-    } catch {
-      throw new AdminApiError("response");
-    }
+    let envelope = await parseGraphqlEnvelope(response);
     if (envelope.errors?.length) throw new AdminApiError("graphql");
-    if (!envelope.data || typeof envelope.data !== "object") {
-      throw new AdminApiError("response");
-    }
-    return envelope.data;
+    if (!envelope.data) throw new AdminApiError("response");
+    return parseAdminResponse(dataSchema, envelope.data);
   }
 
   async function getCustomerByEmail(
     email: string,
   ): Promise<CustomerRecord | null> {
-    let data = await request(CUSTOMER_BY_EMAIL, { email });
+    let data = await request(
+      CUSTOMER_BY_EMAIL,
+      { email },
+      CustomerByEmailSchema,
+    );
     let customer = data.customerByIdentifier;
-    if (customer === null || customer === undefined) return null;
-    if (!isRecord(customer) || typeof customer.id !== "string") {
-      throw new AdminApiError("response");
-    }
-    let consent = customer.emailMarketingConsent;
+    if (!customer) return null;
     return {
       id: customer.id,
-      marketingOptInLevel:
-        isRecord(consent) && typeof consent.marketingOptInLevel === "string"
-          ? consent.marketingOptInLevel
-          : null,
+      marketingOptInLevel: customer.emailMarketingConsent ?? null,
     };
   }
 
@@ -101,33 +147,54 @@ export function createAdminCustomerClient(options: AdminClientOptions) {
     email: string;
     tags: string[];
   }): Promise<void> {
-    let data = await request(CUSTOMER_CREATE, {
-      input: {
-        email: input.email,
-        tags: input.tags,
-        emailMarketingConsent: consentInput(input.consentUpdatedAt),
+    let data = await request(
+      CUSTOMER_CREATE,
+      {
+        input: {
+          email: input.email,
+          tags: input.tags,
+          emailMarketingConsent: consentInput(input.consentUpdatedAt),
+        },
       },
-    });
-    assertMutation(data.customerCreate, "customer");
+      CustomerCreateSchema,
+    );
+    if (data.customerCreate.userErrors.length) {
+      throw new AdminApiError("user");
+    }
+    if (!data.customerCreate.customer) throw new AdminApiError("response");
   }
 
   async function addTags(customerId: string, tags: string[]): Promise<void> {
     if (!tags.length) return;
-    let data = await request(CUSTOMER_TAGS_ADD, { id: customerId, tags });
-    assertMutation(data.tagsAdd, "node");
+    let data = await request(
+      CUSTOMER_TAGS_ADD,
+      { id: customerId, tags },
+      TagsAddSchema,
+    );
+    if (data.tagsAdd.userErrors.length) throw new AdminApiError("user");
+    if (!data.tagsAdd.node) throw new AdminApiError("response");
   }
 
   async function updateConsent(
     customerId: string,
     consentUpdatedAt: string,
   ): Promise<void> {
-    let data = await request(CUSTOMER_CONSENT_UPDATE, {
-      input: {
-        customerId,
-        emailMarketingConsent: consentInput(consentUpdatedAt),
+    let data = await request(
+      CUSTOMER_CONSENT_UPDATE,
+      {
+        input: {
+          customerId,
+          emailMarketingConsent: consentInput(consentUpdatedAt),
+        },
       },
-    });
-    assertMutation(data.customerEmailMarketingConsentUpdate, "customer");
+      CustomerConsentUpdateSchema,
+    );
+    if (data.customerEmailMarketingConsentUpdate.userErrors.length) {
+      throw new AdminApiError("user");
+    }
+    if (!data.customerEmailMarketingConsentUpdate.customer) {
+      throw new AdminApiError("response");
+    }
   }
 
   return { addTags, createCustomer, getCustomerByEmail, updateConsent };
@@ -169,14 +236,6 @@ function consentInput(consentUpdatedAt: string) {
   };
 }
 
-function assertMutation(value: unknown, resultField: string): void {
-  if (!isRecord(value)) throw new AdminApiError("response");
-  let errors = value.userErrors;
-  if (!Array.isArray(errors)) throw new AdminApiError("response");
-  if (errors.length) throw new AdminApiError("user");
-  if (!value[resultField]) throw new AdminApiError("response");
-}
-
 function normalizeAdminDomain(value: string | undefined): string | null {
   if (!value) return null;
   try {
@@ -196,8 +255,23 @@ function normalizeAdminDomain(value: string | undefined): string | null {
   }
 }
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
+async function parseGraphqlEnvelope(response: Response) {
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(await response.text());
+  } catch {
+    throw new AdminApiError("response");
+  }
+  return parseAdminResponse(GraphqlEnvelopeSchema, parsed);
+}
+
+function parseAdminResponse<Input, Output>(
+  schema: Schema<Input, Output>,
+  value: Input,
+): Output {
+  let result = parseSafe(schema, value);
+  if (!result.success) throw new AdminApiError("response");
+  return result.value;
 }
 
 const CUSTOMER_BY_EMAIL = `#graphql

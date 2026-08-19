@@ -1,4 +1,5 @@
 import * as assert from "remix/assert";
+import * as s from "remix/data-schema";
 import { describe, it } from "remix/test";
 
 import {
@@ -16,7 +17,7 @@ describe("Shopify Admin customer client", () => {
       accessToken: "server-secret",
       storeDomain: "example.myshopify.com",
       fetch: async (input, init) => {
-        let body = JSON.parse(String(init?.body)) as AdminBody;
+        let body = parseAdminBody(init?.body);
         requests.push({
           body,
           headers: new Headers(init?.headers),
@@ -65,7 +66,7 @@ describe("Shopify Admin customer client", () => {
       accessToken: "server-secret",
       storeDomain: "example.myshopify.com",
       fetch: async (_input, init) => {
-        let body = JSON.parse(String(init?.body)) as AdminBody;
+        let body = parseAdminBody(init?.body);
         operations.push(body.query);
         if (body.query.includes("RemixCustomerByEmail")) {
           return response({
@@ -98,13 +99,37 @@ describe("Shopify Admin customer client", () => {
     assert.equal(operations.length, 2);
   });
 
+  it("rejects malformed consent instead of risking an opt-in downgrade", async () => {
+    let client = createAdminCustomerClient({
+      accessToken: "server-secret",
+      storeDomain: "example.myshopify.com",
+      fetch: async () =>
+        response({
+          customerByIdentifier: {
+            id: "customer-1",
+            emailMarketingConsent: { marketingOptInLevel: 123 },
+          },
+        }),
+    });
+
+    let error = await rejectedAdminError(
+      subscribeCustomer(client, {
+        consentUpdatedAt: "2026-08-13T12:00:00.000Z",
+        email: "member@example.com",
+        tags: [],
+      }),
+    );
+
+    assert.equal(error.code, "response");
+  });
+
   it("sends the validated tag and consent operation shapes for existing customers", async () => {
     let requests: AdminBody[] = [];
     let client = createAdminCustomerClient({
       accessToken: "server-secret",
       storeDomain: "example.myshopify.com",
       fetch: async (_input, init) => {
-        let body = JSON.parse(String(init?.body)) as AdminBody;
+        let body = parseAdminBody(init?.body);
         requests.push(body);
         if (body.query.includes("RemixCustomerByEmail")) {
           return response({
@@ -168,19 +193,17 @@ describe("Shopify Admin customer client", () => {
 
   it("refuses to send credentials to a non-myshopify Admin host", async () => {
     let called = false;
-    assert.throws(
-      () =>
-        createAdminCustomerClient({
-          accessToken: "server-secret",
-          storeDomain: "shop.example.com",
-          fetch: async () => {
-            called = true;
-            return response({});
-          },
-        }),
-      (error: unknown) =>
-        error instanceof AdminApiError && error.code === "configuration",
+    let error = thrownAdminError(() =>
+      createAdminCustomerClient({
+        accessToken: "server-secret",
+        storeDomain: "shop.example.com",
+        fetch: async () => {
+          called = true;
+          return response({});
+        },
+      }),
     );
+    assert.equal(error.code, "configuration");
     assert.equal(called, false);
   });
 
@@ -191,23 +214,48 @@ describe("Shopify Admin customer client", () => {
       fetch: async () =>
         new Response(JSON.stringify({ errors: [{ message: "contains PII" }] })),
     });
-    await assert.rejects(
-      () => client.getCustomerByEmail("member@example.com"),
-      (error: unknown) =>
-        error instanceof AdminApiError &&
-        error.code === "graphql" &&
-        !error.message.includes("member@example.com") &&
-        !error.message.includes("contains PII"),
+    let error = await rejectedAdminError(
+      client.getCustomerByEmail("member@example.com"),
     );
+    assert.equal(error.code, "graphql");
+    assert.equal(error.message, "Shopify Admin request failed");
   });
 });
 
-interface AdminBody {
-  query: string;
-  variables: Record<string, unknown>;
+const AdminBodySchema = s.object({
+  query: s.string(),
+  variables: s.record(s.string(), s.any()),
+});
+
+type AdminBody = s.InferOutput<typeof AdminBodySchema>;
+
+function parseAdminBody(body: BodyInit | null | undefined): AdminBody {
+  return s.parse(AdminBodySchema, JSON.parse(String(body)));
 }
 
-function response(data: unknown) {
+function thrownAdminError(run: () => object): AdminApiError {
+  try {
+    run();
+  } catch (error) {
+    assert.ok(error instanceof AdminApiError);
+    return error;
+  }
+  return assert.fail("Expected an AdminApiError to be thrown");
+}
+
+async function rejectedAdminError<Result>(
+  request: Promise<Result>,
+): Promise<AdminApiError> {
+  try {
+    await request;
+  } catch (error) {
+    assert.ok(error instanceof AdminApiError);
+    return error;
+  }
+  return assert.fail("Expected the request to reject with AdminApiError");
+}
+
+function response<Data>(data: Data) {
   return new Response(JSON.stringify({ data }), {
     headers: { "Content-Type": "application/json" },
   });

@@ -1,9 +1,6 @@
-import {
-  AnalyticsEvent,
-  type ShopifyGlobal,
-  type StorefrontAnalytics,
-} from "@shopify/hydrogen";
+import { AnalyticsEvent } from "@shopify/hydrogen";
 import * as assert from "remix/assert";
+import * as s from "remix/data-schema";
 import { describe, it, type TestContext } from "remix/test";
 import { render } from "remix/ui/test";
 
@@ -22,15 +19,21 @@ import {
 } from "./public/cart.tsx";
 import { ProductAddToCart } from "./public/product-add-to-cart.tsx";
 
-type CartUpdatePayload = {
-  discountCodes?: string[];
-  lines?: Array<{
-    id?: string;
-    merchandiseId?: string;
-    quantity: number;
-  }>;
-  note?: string;
-};
+const CartUpdatePayloadSchema = s.object({
+  discountCodes: s.optional(s.array(s.string())),
+  lines: s.optional(
+    s.array(
+      s.object({
+        id: s.optional(s.string()),
+        merchandiseId: s.optional(s.string()),
+        quantity: s.number(),
+      }),
+    ),
+  ),
+  note: s.optional(s.string()),
+});
+
+type CartUpdatePayload = s.InferOutput<typeof CartUpdatePayloadSchema>;
 
 type CartEndpointResult = {
   cart: SerializedCartData | null;
@@ -38,11 +41,15 @@ type CartEndpointResult = {
   warnings?: Array<{ code?: string; message: string; target?: string }>;
 };
 
+type CartEventDetail = {
+  source?: string;
+};
+
 type UpdateCartOptions = {
   signal?: AbortSignal;
   event?: {
     context?: "product" | "cart" | "dialog" | "standard-action";
-    detail?: Record<string, unknown>;
+    detail?: CartEventDetail;
   };
 };
 
@@ -142,7 +149,7 @@ Object.defineProperty(window, "Shopify", {
       openCart,
       updateCart,
     },
-  } as unknown as ShopifyGlobal,
+  },
 });
 
 describe("cart interactions", () => {
@@ -170,7 +177,7 @@ describe("cart interactions", () => {
       [AnalyticsEvent.CART_VIEWED, AnalyticsEvent.CART_VIEWED],
     );
     assert.equal(
-      (events[0]?.payload.cart as { updatedAt?: string })?.updatedAt,
+      events[0]?.payload.cart?.updatedAt,
       initialData.cart?.updatedAt,
     );
   });
@@ -216,7 +223,7 @@ describe("cart interactions", () => {
     await waitFor(() => cartViews().length === 2, act);
 
     assert.equal(
-      (cartViews()[1]?.payload.cart as { updatedAt?: string })?.updatedAt,
+      cartViews()[1]?.payload.cart?.updatedAt,
       settledCart.updatedAt,
     );
   });
@@ -234,7 +241,7 @@ describe("cart interactions", () => {
 
     assert.equal(events[0]?.event, AnalyticsEvent.CART_VIEWED);
     assert.equal(
-      (events[0]?.payload.cart as { updatedAt?: string })?.updatedAt,
+      events[0]?.payload.cart?.updatedAt,
       initialData.cart?.updatedAt,
     );
   });
@@ -661,13 +668,20 @@ describe("cart interactions", () => {
   });
 });
 
-function useAnalyticsSpy(
-  t: TestContext,
-): Array<{ event: string; payload: Record<string, unknown> }> {
-  let events: Array<{ event: string; payload: Record<string, unknown> }> = [];
-  let shopify = window.Shopify!;
+type PublishedCartView = {
+  event: string;
+  payload: {
+    cart: { updatedAt: string } | null;
+  };
+};
+
+function useAnalyticsSpy(t: TestContext): PublishedCartView[] {
+  let events: PublishedCartView[] = [];
+  let shopify = window.Shopify;
+  assert.ok(shopify);
+  let originalAnalytics = shopify.analytics;
   let analytics = {
-    publish(event: string, payload: Record<string, unknown> = {}) {
+    publish(event: string, payload: PublishedCartView["payload"]) {
       events.push({ event, payload });
     },
     subscribe() {
@@ -680,17 +694,29 @@ function useAnalyticsSpy(
     getConfig() {
       return {
         shop: {
-          channel: "hydrogen" as const,
+          channel: "hydrogen",
           shopId: "gid://shopify/Shop/test",
           storefrontId: "0",
         },
-        consent: { mode: "default-banner" as const },
+        consent: { mode: "default-banner" },
       };
     },
-  } as StorefrontAnalytics;
-  shopify.analytics = analytics;
+  };
+  Object.defineProperty(shopify, "analytics", {
+    configurable: true,
+    value: analytics,
+    writable: true,
+  });
   t.after(() => {
-    if (shopify.analytics === analytics) delete shopify.analytics;
+    if (originalAnalytics) {
+      Object.defineProperty(shopify, "analytics", {
+        configurable: true,
+        value: originalAnalytics,
+        writable: true,
+      });
+    } else {
+      delete shopify.analytics;
+    }
   });
   return events;
 }
@@ -702,12 +728,16 @@ function useDesktopCartViewport(t: TestContext): void {
     value: (query: string) => {
       let result = matchMedia.call(window, query);
       if (query !== "(max-width: 809px)") return result;
-      return new Proxy(result, {
-        get(target, property, receiver) {
-          if (property === "matches") return false;
-          return Reflect.get(target, property, receiver);
-        },
-      });
+      return {
+        matches: false,
+        media: result.media,
+        onchange: result.onchange,
+        addEventListener: result.addEventListener.bind(result),
+        addListener: result.addListener.bind(result),
+        dispatchEvent: result.dispatchEvent.bind(result),
+        removeEventListener: result.removeEventListener.bind(result),
+        removeListener: result.removeListener.bind(result),
+      };
     },
   });
   t.after(() => {
@@ -740,7 +770,10 @@ function createCartApiMock(t: TestContext) {
       let deferred = queued.shift();
       if (!deferred) throw new Error("Unexpected cart API request");
 
-      let body = JSON.parse(String(init?.body)) as CartUpdatePayload;
+      let body = s.parse(
+        CartUpdatePayloadSchema,
+        JSON.parse(String(init?.body)),
+      );
       let signal = init?.signal ?? undefined;
       deferred.signal = signal;
       requests.push({ body, signal });
@@ -772,12 +805,10 @@ function createCartApiMock(t: TestContext) {
 
 function createDeferred<T>() {
   let resolve!: (value: T) => void;
-  let reject!: (error: unknown) => void;
-  let promise = new Promise<T>((resolvePromise, rejectPromise) => {
+  let promise = new Promise<T>((resolvePromise) => {
     resolve = resolvePromise;
-    reject = rejectPromise;
   });
-  return { promise, reject, resolve };
+  return { promise, resolve };
 }
 
 function toStandardCart(cart: SerializedCartData) {

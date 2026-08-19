@@ -1,3 +1,4 @@
+import { boolean, object, optional, parse, string } from "remix/data-schema";
 import {
   clientEntry,
   css,
@@ -5,6 +6,12 @@ import {
   type Handle,
   type SerializableObject,
 } from "remix/ui";
+
+const SubscribeResponseSchema = object({
+  error: optional(string()),
+  message: optional(string()),
+  success: boolean(),
+});
 
 export interface SubscribeFormProps extends SerializableObject {
   action: string;
@@ -17,7 +24,7 @@ export interface SubscribeFormProps extends SerializableObject {
 export interface SubscribeResponse extends SerializableObject {
   error?: string;
   message?: string;
-  success?: boolean;
+  success: boolean;
 }
 
 export const SubscribeForm = clientEntry(
@@ -62,10 +69,10 @@ export function SubscribeFormComponent(handle: Handle<SubscribeFormProps>) {
                   headers: { Accept: "application/json" },
                   signal,
                 });
-                let next = (await response.json()) as SubscribeResponse;
-                if (!isSubscribeResponse(next)) {
-                  throw new Error("Invalid subscription response");
-                }
+                let next = parse(
+                  SubscribeResponseSchema,
+                  await response.json(),
+                );
                 if (current === submission) result = next;
               } catch {
                 if (!signal.aborted && current === submission) {
@@ -173,18 +180,9 @@ export function SubscribeFormComponent(handle: Handle<SubscribeFormProps>) {
 function urlEncodedForm(form: HTMLFormElement): URLSearchParams {
   let body = new URLSearchParams();
   for (let [name, value] of new FormData(form)) {
-    if (typeof value === "string") body.append(name, value);
+    if (!(value instanceof File)) body.append(name, value);
   }
   return body;
-}
-
-function isSubscribeResponse(value: unknown): value is SubscribeResponse {
-  return (
-    typeof value === "object" &&
-    value !== null &&
-    "success" in value &&
-    typeof value.success === "boolean"
-  );
 }
 
 function Icon(handle: Handle<{ name: string }>) {
