@@ -28,9 +28,6 @@ importers:
       '@hiogawa/vite-plugin-fullstack':
         specifier: 0.0.11
         version: 0.0.11(vite@8.2.0(@types/node@24.12.4)(esbuild@0.28.1)(jiti@2.7.0)(tsx@4.23.1)(yaml@2.9.0))
-      '@oxlint/plugins':
-        specifier: 1.78.0
-        version: 1.78.0
       '@shopify/cli':
         specifier: 4.5.2
         version: 4.5.2
@@ -1434,10 +1431,6 @@ packages:
     engines: {node: ^20.19.0 || >=22.12.0}
     cpu: [x64]
     os: [win32]
-
-  '@oxlint/plugins@1.78.0':
-    resolution: {integrity: sha512-Ypt8KeRYw+4jUtlPirfcHWMrn5ms12VrrFPD+Mds477/7tJxG1Kcz2Yrg2nVcTQEUx/GdlhS+BUg1kmxNm04Ug==}
-    engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
 
   '@remix-run/assert@0.3.0':
     resolution: {integrity: sha512-GBA9klvJdG5YSTwRNur54LQcfqDOtir+x1TDbv3dzB9FS2Li9CEiRLp1EpBcaYrj4ByO03WJCWFBiY8bTMy4vQ==}
@@ -3304,8 +3297,6 @@ snapshots:
 
   '@oxlint/binding-win32-x64-msvc@1.78.0':
     optional: true
-
-  '@oxlint/plugins@1.78.0': {}
 
   '@remix-run/assert@0.3.0': {}
 

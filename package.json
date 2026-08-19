@@ -27,7 +27,6 @@
   },
   "devDependencies": {
     "@hiogawa/vite-plugin-fullstack": "0.0.11",
-    "@oxlint/plugins": "1.78.0",
     "@shopify/cli": "4.5.2",
     "@shopify/mini-oxygen": "4.2.1",
     "@shopify/oxygen-workers-types": "4.2.0",

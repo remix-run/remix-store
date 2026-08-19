@@ -18,7 +18,6 @@
     ".windsurf/**",
     "dist",
     "node_modules",
-    "tools/oxlint/anti-slop/**",
     "package-lock.json",
     "pnpm-lock.yaml",
     "admin-*.schema.json",
