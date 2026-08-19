@@ -27,6 +27,7 @@
   },
   "devDependencies": {
     "@hiogawa/vite-plugin-fullstack": "0.0.11",
+    "@oxlint/plugins": "1.78.0",
     "@shopify/cli": "4.5.2",
     "@shopify/mini-oxygen": "4.2.1",
     "@shopify/oxygen-workers-types": "4.2.0",
@@ -36,7 +37,7 @@
     "magic-string": "0.30.21",
     "oxc-parser": "0.141.0",
     "oxfmt": "0.61.0",
-    "oxlint": "1.76.0",
+    "oxlint": "1.78.0",
     "playwright": "1.62.1",
     "typescript": "6.0.3",
     "vite": "8.2.0"
