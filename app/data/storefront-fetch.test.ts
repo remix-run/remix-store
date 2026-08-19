@@ -87,7 +87,7 @@ describe("Storefront API fetch", () => {
     let reason = new DOMException("Aborted", "AbortError");
     controller.abort(reason);
 
-    await assert.rejects(request, (error: unknown) => error === reason);
+    assert.equal(await rejectedError(request), reason);
     assert.equal(calls, 1);
   });
 
@@ -110,6 +110,19 @@ describe("Storefront API fetch", () => {
     assert.equal(calls, 1);
   });
 });
+
+async function rejectedError(request: Promise<Response>): Promise<Error> {
+  try {
+    await request;
+  } catch (error) {
+    assert.ok(
+      error instanceof Error,
+      "Expected the request to reject with Error",
+    );
+    return error;
+  }
+  return assert.fail("Expected the request to reject");
+}
 
 function graphqlRequest(query: string): RequestInit {
   return {

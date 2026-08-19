@@ -139,8 +139,8 @@ export const SnowField = clientEntry(import.meta.url, function SnowField() {
               if (!context) return;
               active = true;
               window.addEventListener("resize", resize, { passive: true });
-              if (typeof ResizeObserver !== "undefined") {
-                resizeObserver = new ResizeObserver(resize);
+              if (globalThis.ResizeObserver) {
+                resizeObserver = new globalThis.ResizeObserver(resize);
                 resizeObserver.observe(element);
               }
               resize();

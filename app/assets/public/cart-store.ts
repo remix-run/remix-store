@@ -1,12 +1,10 @@
 import {
   configureCartEndpoint,
   createCartStore,
-  type CartData,
   type CartStore,
-  type CreateCartStoreOptions,
 } from "@shopify/hydrogen";
 
-import type { CartInitialData } from "../../data/cart.ts";
+import type { CartInitialData, SerializedCartData } from "../../data/cart.ts";
 import { getCartApiPath } from "../../lib/public/cart-routes.ts";
 import type { MarketPathPrefix } from "../../lib/public/market.ts";
 
@@ -26,20 +24,18 @@ export function getBrowserCartStore(
   initialData?: CartInitialData,
   pathPrefix: MarketPathPrefix = "",
 ): CartStore | undefined {
-  if (typeof document === "undefined") return undefined;
+  if (!globalThis.document) return undefined;
 
   if (!browserCartStore) {
     configureCartEndpoint(getCartApiPath(pathPrefix));
-    browserCartStore = createCartStore({
-      initialData: initialData as CreateCartStoreOptions["initialData"],
-    });
+    browserCartStore = createCartStore<SerializedCartData>({ initialData });
   } else if (
     initialData?.cart &&
     browserCartStore.getState().data.id === null
   ) {
     // Another island may have created the singleton before the cart shell.
     // Seed it once when server cart data arrives, then trust the live store.
-    browserCartStore.hydrate(initialData.cart as CartData);
+    browserCartStore.hydrate(initialData.cart);
   }
 
   browserCartStore.connect();

@@ -123,7 +123,9 @@ export async function querySitemapPageCounts(
       products: productCount,
     };
   } catch (error) {
-    throw sitemapError(error);
+    throw error instanceof Error
+      ? sitemapError(error)
+      : new Error("Sitemap request failed.");
   }
 }
 
@@ -157,11 +159,13 @@ export async function querySitemapResources(
       })),
     };
   } catch (error) {
-    throw sitemapError(error);
+    throw error instanceof Error
+      ? sitemapError(error)
+      : new Error("Sitemap request failed.");
   }
 }
 
-function sitemapError(error: unknown): Error {
+function sitemapError(error: Error): Error {
   if (
     error instanceof StorefrontApiError ||
     error instanceof StorefrontTimeoutError
@@ -170,5 +174,5 @@ function sitemapError(error: unknown): Error {
       cause: error,
     });
   }
-  return error instanceof Error ? error : new Error("Sitemap request failed.");
+  return error;
 }

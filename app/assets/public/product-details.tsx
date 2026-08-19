@@ -51,7 +51,7 @@ export const ProductDetails = clientEntry(
     let store = cartStore
       ? createProductFormStore(handle.props.product, cartStore)
       : undefined;
-    let state = store?.getState() as ProductState | undefined;
+    let state: ProductState | undefined = store?.getState();
     let hydrated = false;
     let hydratedIdentity = productIdentity(handle.props.product);
     let queuedIdentity: string | undefined;
@@ -63,7 +63,7 @@ export const ProductDetails = clientEntry(
 
     if (store) {
       let unsubscribe = store.subscribe((nextState) => {
-        state = nextState as ProductState;
+        state = nextState;
         if (hydrated) handle.update();
       });
       handle.signal.addEventListener(
@@ -77,7 +77,7 @@ export const ProductDetails = clientEntry(
       handle.queueTask((signal) => {
         if (signal.aborted) return;
         hydrated = true;
-        state = store.getState() as ProductState;
+        state = store.getState();
         handle.update();
       });
     }
@@ -448,9 +448,13 @@ export const ProductDetails = clientEntry(
                                   }
                                   mix={on("click", (event) => {
                                     event.preventDefault();
-                                    (event.currentTarget as HTMLElement)
-                                      .closest("details")
-                                      ?.removeAttribute("open");
+                                    if (
+                                      event.currentTarget instanceof HTMLElement
+                                    ) {
+                                      event.currentTarget
+                                        .closest("details")
+                                        ?.removeAttribute("open");
+                                    }
                                     optionRegistration.onClick();
                                   })}
                                 >
@@ -589,10 +593,12 @@ function productOptionMenuBehavior() {
       if (restoreFocus) element.querySelector("summary")?.focus();
     }
     function onPointerDown(event: PointerEvent) {
-      if (!element.contains(event.target as Node)) close();
+      let target = event.target instanceof Node ? event.target : null;
+      if (!element.contains(target)) close();
     }
     function onFocusIn(event: FocusEvent) {
-      if (!element.contains(event.target as Node)) close();
+      let target = event.target instanceof Node ? event.target : null;
+      if (!element.contains(target)) close();
     }
     function onKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") close(true);
@@ -826,10 +832,7 @@ function canAddServerVariant(product: ProductData): boolean {
 const ADD_TO_CART_CHECK_MS = 600;
 
 function waitForAddToCartCheck(startedAt: number) {
-  if (
-    typeof matchMedia === "function" &&
-    matchMedia("(prefers-reduced-motion: reduce)").matches
-  ) {
+  if (globalThis.matchMedia?.("(prefers-reduced-motion: reduce)").matches) {
     return;
   }
   let remaining = ADD_TO_CART_CHECK_MS - (Date.now() - startedAt);

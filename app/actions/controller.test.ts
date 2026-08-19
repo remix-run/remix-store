@@ -7,6 +7,7 @@ import {
   createStorefrontFetch,
   createTestApp,
   testEnv,
+  type StorefrontRequestBody,
 } from "../testing/storefront.ts";
 
 const shellMenuFetch = createStorefrontFetch({
@@ -55,10 +56,10 @@ describe("platform skeleton", () => {
       RemixHomeEditorial: homeData,
       RemixNavigation: navigationData,
     });
-    let storefrontFetch = (async (input, init) => {
+    let storefrontFetch: typeof globalThis.fetch = async (input, init) => {
       headers.push(new Headers(init?.headers));
       return upstreamFetch(input, init);
-    }) as typeof globalThis.fetch;
+    };
     let app = createTestApp(storefrontFetch);
 
     let response = await app.fetch(new Request("https://example.com/"));
@@ -74,7 +75,7 @@ describe("platform skeleton", () => {
   });
 
   it("renders Canadian pages with localized links, scripts, canonical, and context", async () => {
-    let productVariables: Record<string, unknown> | undefined;
+    let productVariables: StorefrontRequestBody["variables"] | undefined;
     let app = createTestApp(
       createStorefrontFetch({
         RemixAnalyticsShop: () => ({
@@ -154,14 +155,14 @@ describe("platform skeleton", () => {
   });
 
   it("renders a branded 500 when the Storefront API returns errors", async (t) => {
-    let mockFetch = (async () =>
+    let mockFetch: typeof globalThis.fetch = async () =>
       new Response(
         JSON.stringify({
           data: null,
           errors: [{ message: "Upstream failure" }],
         }),
         { headers: { "Content-Type": "application/json" } },
-      )) as typeof globalThis.fetch;
+      );
     let app = createTestApp(mockFetch);
     t.mock.method(console, "error", () => {});
 

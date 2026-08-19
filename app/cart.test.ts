@@ -16,9 +16,9 @@ const origin = "https://storefront.example";
 
 describe("cart routes", () => {
   it("serves an empty cart API response before app routing", async (t) => {
-    let mockFetch = (async () => {
+    let mockFetch: typeof globalThis.fetch = async () => {
       throw new Error("The empty cart API must not query Shopify");
-    }) as typeof globalThis.fetch;
+    };
     t.mock.method(globalThis, "fetch", mockFetch);
     let app = createTestApp(mockFetch);
 

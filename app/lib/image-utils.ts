@@ -3,17 +3,26 @@ export interface FocalPoint {
   y: number;
 }
 
-/** Extracts normalized focal-point coordinates from Shopify image presentation data. */
-export function getFocalPoint(presentation: unknown): FocalPoint | undefined {
-  if (typeof presentation !== "object" || presentation === null) {
-    return undefined;
-  }
+type PresentationJson =
+  | boolean
+  | number
+  | string
+  | null
+  | PresentationJson[]
+  | PresentationJsonObject;
 
-  if (!("focalPoint" in presentation)) return undefined;
+interface PresentationJsonObject {
+  [key: string]: PresentationJson;
+}
+
+/** Extracts normalized focal-point coordinates from Shopify image presentation data. */
+export function getFocalPoint(
+  presentation: PresentationJson | undefined,
+): FocalPoint | undefined {
+  if (!isPresentationObject(presentation)) return undefined;
 
   let focalPoint = presentation.focalPoint;
-  if (typeof focalPoint !== "object" || focalPoint === null) return undefined;
-  if (!("x" in focalPoint) || !("y" in focalPoint)) return undefined;
+  if (!isPresentationObject(focalPoint)) return undefined;
 
   let x = Number(focalPoint.x);
   let y = Number(focalPoint.y);
@@ -36,4 +45,10 @@ export function focalPointPosition(
 ): string | undefined {
   if (!focalPoint) return undefined;
   return `${focalPoint.x * 100}% ${focalPoint.y * 100}%`;
+}
+
+function isPresentationObject(
+  value: PresentationJson | undefined,
+): value is PresentationJsonObject {
+  return value !== null && !Array.isArray(value) && Object(value) === value;
 }

@@ -105,10 +105,12 @@ export const MobileMenu = clientEntry(
             detailsElement = element;
 
             function onPointerDown(event: PointerEvent) {
-              if (!element.contains(event.target as Node)) closeMenu();
+              let target = event.target instanceof Node ? event.target : null;
+              if (!element.contains(target)) closeMenu();
             }
             function onFocusIn(event: FocusEvent) {
-              if (!element.contains(event.target as Node)) closeMenu();
+              let target = event.target instanceof Node ? event.target : null;
+              if (!element.contains(target)) closeMenu();
             }
             function onKeyDown(event: KeyboardEvent) {
               if (event.key === "Escape") closeMenu({ restoreFocus: true });
