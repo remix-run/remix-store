@@ -67,7 +67,11 @@ export const HomeHero = clientEntry(
 
       try {
         // Preload only frames after index zero (frame zero already loaded via SSR)
-        await Promise.all(handle.props.assetImages.slice(1).map(preloadImage));
+        await Promise.all(
+          handle.props.assetImages
+            .slice(1)
+            .map((image) => preloadImage(image, handle.signal)),
+        );
         if (handle.signal.aborted) return;
         loadingState = "loaded";
         await handle.update();
@@ -239,28 +243,49 @@ const heroLinkStyle = css({
   },
 });
 
-function preloadImage(image: ImageData): Promise<void> {
+function preloadImage(image: ImageData, signal: AbortSignal): Promise<void> {
   return new Promise((resolve, reject) => {
     let preload = new Image();
-    preload.addEventListener(
-      "load",
-      async () => {
-        try {
-          await preload.decode();
-        } catch {
-          // A completed load is still usable when decode() is unavailable or rejects.
-        }
-        resolve();
-      },
-      { once: true },
-    );
-    preload.addEventListener(
-      "error",
-      () => reject(new Error(`Unable to load ${image.url}`)),
-      {
-        once: true,
-      },
-    );
+    let settled = false;
+
+    function finish(error?: Error) {
+      if (settled) return;
+      settled = true;
+      preload.removeEventListener("load", onLoad);
+      preload.removeEventListener("error", onError);
+      signal.removeEventListener("abort", onAbort);
+      if (error) reject(error);
+      else resolve();
+    }
+
+    async function onLoad() {
+      try {
+        await preload.decode();
+      } catch {
+        // A completed load is still usable when decode() is unavailable or rejects.
+      }
+      finish();
+    }
+
+    function onError() {
+      finish(new Error(`Unable to load ${image.url}`));
+    }
+
+    function onAbort() {
+      finish(new DOMException("Image preload aborted", "AbortError"));
+      // Removing src asks the browser to abort the image request instead of
+      // continuing the download after this component leaves the page.
+      preload.removeAttribute("src");
+    }
+
+    if (signal.aborted) {
+      onAbort();
+      return;
+    }
+
+    preload.addEventListener("load", onLoad, { once: true });
+    preload.addEventListener("error", onError, { once: true });
+    signal.addEventListener("abort", onAbort, { once: true });
     preload.src = image.url;
   });
 }
