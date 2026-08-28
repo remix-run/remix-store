@@ -1,0 +1,72 @@
+import { type Handle } from "remix/ui";
+
+import { ProductViewed } from "../../assets/public/analytics.tsx";
+import { ProductDetails } from "../../assets/public/product-details.tsx";
+import type { NavigationMenuData, ProductData } from "../../data/storefront.ts";
+import type { ActiveMarket } from "../../lib/public/market.ts";
+import { Document } from "../../ui/document.tsx";
+
+export function ProductPage(
+  handle: Handle<{
+    canonicalUrl: string;
+    market: ActiveMarket;
+    menu: NavigationMenuData;
+    product: ProductData;
+    search: string;
+    shopPayStoreUrl: string;
+  }>,
+) {
+  return () => {
+    let { product } = handle.props;
+    let socialImage = product.images.nodes[0]?.url
+      ? productSocialImage(product.images.nodes[0].url)
+      : undefined;
+
+    return (
+      <Document
+        canonicalUrl={handle.props.canonicalUrl}
+        title={product.seo.title ?? product.title}
+        description={product.seo.description ?? product.description}
+        socialImage={socialImage}
+        socialType="product"
+      >
+        <main>
+          <ProductViewed key={product.id} product={analyticsProduct(product)} />
+          <ProductDetails
+            market={handle.props.market}
+            menu={handle.props.menu}
+            product={product}
+            search={handle.props.search}
+            shopPayStoreUrl={handle.props.shopPayStoreUrl}
+          />
+        </main>
+      </Document>
+    );
+  };
+}
+
+function analyticsProduct(product: ProductData) {
+  let variant = product.selectedOrFirstAvailableVariant;
+  return {
+    id: product.id,
+    title: product.title,
+    price: variant?.price.amount ?? product.priceRange.minVariantPrice.amount,
+    vendor: product.vendor,
+    variantId: variant?.id ?? product.id,
+    variantTitle: variant?.title ?? product.title,
+    quantity: 1,
+    sku: variant?.sku,
+  };
+}
+
+function productSocialImage(source: string): string {
+  try {
+    let url = new URL(source);
+    url.searchParams.set("width", "1200");
+    url.searchParams.set("height", "630");
+    url.searchParams.set("pad_color", "000000");
+    return url.toString();
+  } catch {
+    return source;
+  }
+}

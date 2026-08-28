@@ -25,8 +25,11 @@ jobs:
       - name: 📥 Install deps
         run: pnpm install --frozen-lockfile
 
+      - name: 🎭 Install Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
       - name: 🧪 Run tests
-        run: pnpm test -- --run
+        run: pnpm test
 
   e2e:
     name: 🎭 End-to-end

@@ -1,32 +1,54 @@
-/**
- * Extracts focal point coordinates from image presentation data
- */
+export interface FocalPoint {
+  x: number;
+  y: number;
+}
+
+type PresentationJson =
+  | boolean
+  | number
+  | string
+  | null
+  | PresentationJson[]
+  | PresentationJsonObject;
+
+interface PresentationJsonObject {
+  [key: string]: PresentationJson;
+}
+
+/** Extracts normalized focal-point coordinates from Shopify image presentation data. */
 export function getFocalPoint(
-  presentation: unknown,
-): { x: number; y: number } | undefined {
-  if (typeof presentation !== "object" || presentation === null) {
-    return undefined;
-  }
+  presentation: PresentationJson | undefined,
+): FocalPoint | undefined {
+  if (!isPresentationObject(presentation)) return undefined;
 
-  if (!("focalPoint" in presentation)) {
-    return undefined;
-  }
+  let focalPoint = presentation.focalPoint;
+  if (!isPresentationObject(focalPoint)) return undefined;
 
-  const focalPoint = presentation.focalPoint;
-  if (typeof focalPoint !== "object" || focalPoint === null) {
-    return undefined;
-  }
-
-  if (!("x" in focalPoint) || !("y" in focalPoint)) {
-    return undefined;
-  }
-
-  const x = Number(focalPoint.x);
-  const y = Number(focalPoint.y);
-
-  if (isNaN(x) || isNaN(y)) {
+  let x = Number(focalPoint.x);
+  let y = Number(focalPoint.y);
+  if (
+    !Number.isFinite(x) ||
+    !Number.isFinite(y) ||
+    x < 0 ||
+    x > 1 ||
+    y < 0 ||
+    y > 1
+  ) {
     return undefined;
   }
 
   return { x, y };
+}
+
+export function focalPointPosition(
+  focalPoint: FocalPoint | undefined,
+): string | undefined {
+  if (!focalPoint) return undefined;
+  return `${focalPoint.x * 100}% ${focalPoint.y * 100}%`;
+}
+
+function isPresentationObject(
+  value: PresentationJson | undefined,
+): value is PresentationJsonObject {
+  return value !== null && !Array.isArray(value) && Object(value) === value;
 }

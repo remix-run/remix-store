@@ -1,0 +1,186 @@
+import { css, type Handle, type RemixNode } from "remix/ui";
+
+import {
+  localizeInternalUrl,
+  type MarketPathPrefix,
+} from "../../lib/public/market.ts";
+
+interface RichTextProps {
+  pathPrefix?: MarketPathPrefix;
+  variant?: "product-description";
+  value: string;
+}
+
+type RichTextJson =
+  | boolean
+  | number
+  | string
+  | null
+  | RichTextJson[]
+  | RichTextJsonObject;
+
+interface RichTextJsonObject {
+  [key: string]: RichTextJson;
+}
+
+type RichTextNode = {
+  bold?: boolean;
+  children?: RichTextNode[];
+  italic?: boolean;
+  level?: number;
+  listType?: string;
+  type?: string;
+  underline?: boolean;
+  url?: string;
+  value?: string;
+};
+
+export function RichText(handle: Handle<RichTextProps>) {
+  let root = parseRichText(handle.props.value);
+  return () => (
+    <div
+      data-rich-text="true"
+      mix={[
+        richTextStyle,
+        handle.props.variant === "product-description"
+          ? productDescriptionStyle
+          : undefined,
+      ]}
+    >
+      {renderNodes(root.children ?? [], handle.props.pathPrefix ?? "")}
+    </div>
+  );
+}
+
+function parseRichText(value: string): RichTextNode {
+  try {
+    let parsed: RichTextJson = JSON.parse(value);
+    return parseRichTextNode(parsed) ?? { children: [] };
+  } catch {
+    return {
+      children: [{ type: "paragraph", children: [{ type: "text", value }] }],
+    };
+  }
+}
+
+function parseRichTextNode(value: RichTextJson): RichTextNode | null {
+  if (!isRichTextObject(value)) return null;
+
+  let node: RichTextNode = {};
+  if (value.bold === true) node.bold = true;
+  if (value.italic === true) node.italic = true;
+  if (value.underline === true) node.underline = true;
+  if (value.level === 3) node.level = 3;
+  if (isRichTextString(value.listType)) node.listType = value.listType;
+  if (isRichTextString(value.type)) node.type = value.type;
+  if (isRichTextString(value.url)) node.url = value.url;
+  if (isRichTextString(value.value)) node.value = value.value;
+  if (Array.isArray(value.children)) {
+    node.children = value.children.flatMap((child) => {
+      let parsedChild = parseRichTextNode(child);
+      return parsedChild ? [parsedChild] : [];
+    });
+  }
+  return node;
+}
+
+function renderNodes(
+  nodes: RichTextNode[],
+  pathPrefix: MarketPathPrefix,
+): RemixNode[] {
+  return nodes.map((node, index) => renderNode(node, index, pathPrefix));
+}
+
+function renderNode(
+  node: RichTextNode,
+  key: number,
+  pathPrefix: MarketPathPrefix,
+): RemixNode {
+  let children = renderNodes(node.children ?? [], pathPrefix);
+  switch (node.type) {
+    case "text": {
+      let content: RemixNode = node.value ?? "";
+      if (node.bold) content = <strong>{content}</strong>;
+      if (node.italic) content = <em>{content}</em>;
+      if (node.underline) content = <u>{content}</u>;
+      return <span key={key}>{content}</span>;
+    }
+    case "paragraph":
+      return <p key={key}>{children.length ? children : <br />}</p>;
+    case "heading":
+      return node.level === 3 ? (
+        <h3 key={key}>{children}</h3>
+      ) : (
+        <h2 key={key}>{children}</h2>
+      );
+    case "list":
+    case "unordered-list":
+      return <ul key={key}>{children}</ul>;
+    case "ordered-list":
+      return <ol key={key}>{children}</ol>;
+    case "list-item":
+      return <li key={key}>{children}</li>;
+    case "link": {
+      let href = safeHref(node.url, pathPrefix);
+      return href ? (
+        <a
+          key={key}
+          href={href}
+          rel={href.startsWith("http") ? "noreferrer" : undefined}
+        >
+          {children}
+        </a>
+      ) : (
+        <span key={key}>{children}</span>
+      );
+    }
+    default:
+      return <span key={key}>{children}</span>;
+  }
+}
+
+function safeHref(
+  value: string | undefined,
+  pathPrefix: MarketPathPrefix,
+): string | undefined {
+  if (!value) return undefined;
+  if (value.startsWith("/")) return localizeInternalUrl(value, pathPrefix);
+  if (value.startsWith("#")) return value;
+  try {
+    let url = new URL(value);
+    return url.protocol === "http:" || url.protocol === "https:"
+      ? url.href
+      : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+function isRichTextObject(
+  value: RichTextJson | undefined,
+): value is RichTextJsonObject {
+  return value !== null && !Array.isArray(value) && Object(value) === value;
+}
+
+function isRichTextString(value: RichTextJson | undefined): value is string {
+  return Object.prototype.toString.call(value) === "[object String]";
+}
+
+const richTextStyle = css({
+  fontSize: "1rem",
+  lineHeight: 1.5,
+  "& h2, & h3, & ol, & p, & ul": { margin: "0 0 12px" },
+  "& ul li": {
+    lineHeight: "1.6em",
+    paddingLeft: "1em",
+    position: "relative",
+  },
+  "& ul li::before": { content: '"•"', left: 0, position: "absolute" },
+  "& a": { color: "var(--color-blue-brand)" },
+});
+
+const productDescriptionStyle = css({
+  fontSize: ".75rem",
+  lineHeight: "16px",
+  "@media (min-width: 1400px)": { fontSize: "1rem", lineHeight: 1.4 },
+});

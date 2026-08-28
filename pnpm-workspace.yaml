@@ -2,11 +2,11 @@ saveExact: true
 packageManagerStrict: true
 minimumReleaseAge: 10800
 minimumReleaseAgeExclude:
-  - react-router
-  - "@react-router/*"
+  - remix
+  - "@remix-run/*"
   - "@shopify/*"
 minimumReleaseAgeStrict: true
+# Remix's git-hosted preview already contains built dist files, but its package
+# lifecycle scripts otherwise try to prepare the fetched monorepo package.
+ignoreScripts: true
 trustPolicy: no-downgrade
-trustPolicyExclude:
-  - chokidar@4.0.3
-  - semver@6.3.1

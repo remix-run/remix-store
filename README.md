@@ -1,95 +1,69 @@
 # Remix Store
 
-Welcome to the Remix Store built with Shopify, React Router, and Hydrogen!
+The storefront behind [shop.remix.run](https://shop.remix.run).
 
-This is the codebase behind **[shop.remix.run](https://shop.remix.run)**. Run it locally to explore how to build a production headless Shopify store with modern web technologies.
+The storefront runs on Remix 3 and framework-neutral Hydrogen across native Node/Fly and Oxygen runtimes.
 
-## Getting Started
+## Requirements
 
-### Install dependencies
-
-```sh
-pnpm install
-```
+- Node.js 24
+- pnpm 10.33.4
 
 ## Local development
 
-### Environment setup
-
-Copy the example environment file to create your local environment:
-
-```bash
+```sh
+pnpm install
 cp .env.example .env
-```
-
-⚠️ **Important:** This connects to the live production store. Any purchases will charge real money and ship actual Remix merch.
-
-```bash
+# Populate PRIVATE_STOREFRONT_API_TOKEN from the configured Hydrogen environment.
 pnpm dev
 ```
 
-You'll have a local version of the Remix Store running with real product data, inventory, and checkout functionality.
+The private Storefront token remains server-only and enables request-aware cart,
+checkout, and Shopify redirect handling. Oxygen supplies `oxygen-buyer-ip`; Fly
+supplies `fly-client-ip`. Other Node runtimes use the client address resolved by
+Remix's HTTP adapter from the socket or, when explicitly configured behind a
+trusted proxy with `TRUST_PROXY=true`, overwritten proxy headers. Never forward
+platform buyer-IP headers outside their runtime. `PUBLIC_CHECKOUT_DOMAIN` is not
+a runtime input; checkout uses Shopify's
+authoritative `cart.checkoutUrl`. The app does not use durable application
+sessions or require `SESSION_SECRET`.
 
-## Building for production
+`pnpm dev` runs the framework-native Node server with `remix/assets`. For UI-heavy work, use `pnpm hmr` to preserve browser state while hot-updating client and server modules. Use `pnpm dev:oxygen` when testing the same application under MiniOxygen's Worker runtime.
 
-```bash
-pnpm build
-```
+The example environment points at the live production store. Purchases create real orders and charge real money.
 
-## Testing
+## Validation
 
-```bash
+```sh
+pnpm lint
+pnpm typecheck
 pnpm test
 pnpm test:e2e
+pnpm build:oxygen
+pnpm preview:oxygen
 ```
 
-The end-to-end suite starts the local storefront and covers the catalog, product, cart, SEO resources, 404 handling, and the no-JavaScript add-to-cart flow. It creates Shopify carts but never enters checkout. Set `BASE_URL` to test an existing deployment instead of starting the local server.
+The end-to-end suite starts the native Node app with a deterministic local Storefront fixture by default. Set `BASE_URL` to run it against an existing Oxygen or Fly deployment.
 
-### Connecting to the Shopify Store
+The Oxygen build produces a self-contained Worker at `dist/ssr/index.js` and browser assets in `dist/client/`. The Node server compiles browser modules through `remix/assets` for Fly.
 
-If you've never setup the Hydrogen CLI, run the following command
+## Deployments
 
-```sh
-npx shopify hydrogen shortcut
-```
+Oxygen preview deployments use `.github/workflows/oxygen-deployment.yml`. Fly setup, secrets, local image verification, and continuous deployment are documented in [`FLY_DEPLOYMENT.md`](./FLY_DEPLOYMENT.md).
 
-If you have access to the Shopify store, go ahead and link via hydrogen
+## Architecture
 
-```sh
-h2 link
-```
-
-```sh
-h2 pull
-```
-
-## Shopify Admin data
-
-The GraphQL queries are the source of truth for Shopify-side contracts. This table records the identifiers that must also be configured in Shopify Admin.
-
-| Surface         | Shopify configuration                                                                                                                        | Source                                                             |
-| --------------- | -------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
-| Home hero       | Metaobject type `hero`, handle `remix-3-drop-playground`; `asset_images` media references and a `collection` reference                       | [`hero.server.ts`](app/lib/data/hero.server.ts)                    |
-| Lookbook        | Metaobject type `lookbook`, handle `lookbook-remix-racing`; `lookbook` entries with a media image and optional product                       | [`lookbook.server.ts`](app/lib/data/lookbook.server.ts)            |
-| Navigation      | Menus named `main-menu`, `footer`, and `product-sidebar-menu`                                                                                | [`root.tsx`](app/root.tsx), [`fragments.ts`](app/lib/fragments.ts) |
-| Product content | `custom.description`, `custom.technical_description`, and `custom.subscribe_if_back_in_stock` metafields                                     | [`product.server.ts`](app/lib/data/product.server.ts)              |
-| Store-wide sale | `custom.storewide_sale` shop metafield referencing `title`, `description`, and `end_date_and_time`; paired with a Shopify automatic discount | [`header.server.ts`](app/lib/data/header.server.ts)                |
-
-## Contributing
-
-This is the production codebase for shop.remix.run. We welcome feedback and bug reports via GitHub issues.
-
-See an issue you'd like to fix? Please open a PR!
+- `app/routes.ts` defines the typed route contract.
+- `app/router.ts` owns the shared Fetch app, routes, middleware, and runtime boundary.
+- `app/node.ts` composes Node static files, Remix Assets, rendering, and routing.
+- `app/middleware/storefront.ts` creates a request-scoped Hydrogen Storefront client.
+- `app/middleware/render.tsx` contains runtime-neutral streaming SSR.
+- `app/runtime.ts` binds environment, cache, and `waitUntil` values to each request.
+- `server.node.ts` owns the Node/Fly-compatible HTTP lifecycle.
+- `app/entry.oxygen.ts` composes and serves the Oxygen Worker runtime.
+- `app/actions/public/entry.tsx` hydrates browser components on both targets.
+- `vite/remix-oxygen.ts` owns the temporary Remix 3/Oxygen build integration.
 
 ## License
 
-MIT License - see [LICENSE.md](LICENSE.md) for details.
-
-## Related Resources
-
-- [Hydrogen Documentation](https://shopify.dev/docs/api/hydrogen)
-- [React Router Documentation](https://reactrouter.com/)
-
----
-
-Built with ❤️ by the [Remix](https://remix.run) team
+MIT License — see [`LICENSE.md`](./LICENSE.md).
