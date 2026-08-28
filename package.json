@@ -47,7 +47,6 @@
   "packageManager": "pnpm@10.33.3",
   "pnpm": {
     "overrides": {
-      "@remix-run/static-middleware>@remix-run/fetch-router": "0.21.0",
       "undici": "7.29.0",
       "qs": "6.15.3",
       "ws": "8.21.1",
