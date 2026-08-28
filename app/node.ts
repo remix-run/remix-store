@@ -16,11 +16,10 @@ const isHmr = Boolean(isDevelopment && process.env.REMIX_NODE_HMR);
 const assetServerOptions: Parameters<typeof createAssetServer>[0] = {
   basePath: "/assets",
   rootDir: process.cwd(),
-  fileMap: {
-    "/app/*path": "app/*path",
-    "/node_modules/*path": "node_modules/*path",
+  mounts: {
+    app: "app",
+    node_modules: "node_modules",
   },
-
   allowFiles: ["app/**/public/**"],
   allowPackages: ["remix", "@shopify/hydrogen"],
   denyFiles: ["app/**/*.test.*", "app/**/*.spec.*"],
