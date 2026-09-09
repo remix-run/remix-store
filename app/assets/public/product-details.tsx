@@ -1,5 +1,6 @@
 import {
   SHOP_PAY_BUTTON_TAG_NAME,
+  buildProductSelectionSearchParams,
   canAddToCart,
   createProductFormRegister,
   createProductFormStore,
@@ -752,9 +753,11 @@ export function variantHref(
   currentSearch = "",
   pathPrefix: ActiveMarket["pathPrefix"] = "",
 ): string {
-  let search = new URLSearchParams(currentSearch);
-  for (let option of options) search.delete(option.name);
-  for (let option of selectedOptions) search.set(option.name, option.value);
+  let search = buildProductSelectionSearchParams({
+    selectedOptions,
+    optionNames: options.map((option) => option.name),
+    base: new URLSearchParams(currentSearch),
+  });
   let query = search.toString();
   return marketPath(
     `/products/${encodeURIComponent(handle)}${query ? `?${query}` : ""}`,

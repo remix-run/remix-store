@@ -15,8 +15,8 @@ importers:
   .:
     dependencies:
       '@shopify/hydrogen':
-        specifier: 2026.10.0-preview.1
-        version: 2026.10.0-preview.1(graphql@16.14.0)(react@19.2.8)(typescript@6.0.3)(vite@8.2.0(@types/node@24.12.4)(esbuild@0.28.1)(jiti@2.7.0)(tsx@4.23.1)(yaml@2.9.0))
+        specifier: 2026.10.0-preview.2
+        version: 2026.10.0-preview.2(graphql@16.14.0)(react@19.2.8)(typescript@6.0.3)(vite@8.2.0(@types/node@24.12.4)(esbuild@0.28.1)(jiti@2.7.0)(tsx@4.23.1)(yaml@2.9.0))
       remix:
         specifier: 3.0.0-rc.2
         version: 3.0.0-rc.2(@emnapi/core@2.0.0-alpha.3)(@emnapi/runtime@2.0.0-alpha.3)(playwright@1.62.1)
@@ -1704,8 +1704,8 @@ packages:
     os: [darwin, linux, win32]
     hasBin: true
 
-  '@shopify/hydrogen@2026.10.0-preview.1':
-    resolution: {integrity: sha512-wiE5j/NdoriojKRNAcysCl2geLdC2eI+B4nJTH0YAN1aQCsrWCJok8Wti6GuzGPs0fem5mADypnLitvTbICcVg==}
+  '@shopify/hydrogen@2026.10.0-preview.2':
+    resolution: {integrity: sha512-iiC2BFBgdk8RQncC3wK+uDBVq/sVEv3T3mtFPBIhy7TuD5c8BaulIgh3IZ0WxbBayUIy4O1okqLtC89fNJyC/A==}
     hasBin: true
     peerDependencies:
       react: ^18.0.0 || ^19.0.0
@@ -3626,7 +3626,7 @@ snapshots:
       esbuild: 0.28.1
       global-agent: 3.0.0
 
-  '@shopify/hydrogen@2026.10.0-preview.1(graphql@16.14.0)(react@19.2.8)(typescript@6.0.3)(vite@8.2.0(@types/node@24.12.4)(esbuild@0.28.1)(jiti@2.7.0)(tsx@4.23.1)(yaml@2.9.0))':
+  '@shopify/hydrogen@2026.10.0-preview.2(graphql@16.14.0)(react@19.2.8)(typescript@6.0.3)(vite@8.2.0(@types/node@24.12.4)(esbuild@0.28.1)(jiti@2.7.0)(tsx@4.23.1)(yaml@2.9.0))':
     dependencies:
       gql.tada: 1.9.2(graphql@16.14.0)(typescript@6.0.3)
     optionalDependencies:
