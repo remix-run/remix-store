@@ -194,6 +194,7 @@ export function storefront(options: StorefrontOptions = {}): Middleware<
       sessionManager:
         createEphemeralHydrogenRouteSessionManager(routingRequest),
       storefrontClient,
+      routeTemplates,
       handlers: [cartHandlers],
     });
     if (shopifyResponse) {

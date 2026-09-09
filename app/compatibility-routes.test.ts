@@ -106,6 +106,41 @@ describe("Shopify compatibility routes", () => {
     );
   });
 
+  it("accepts localized Liquid variant links and canonicalizes their options", async () => {
+    let requestBody: StorefrontRequestBody | undefined;
+    let app = createTestApp(
+      createStorefrontFetch({
+        VariantSelectedOptions(body) {
+          requestBody = body;
+          return {
+            node: {
+              selectedOptions: [{ name: "Color", value: "Blue" }],
+              product: { handle: "combined-product" },
+            },
+          };
+        },
+      }),
+    );
+
+    let response = await app.fetch(
+      new Request(
+        `${origin}/en-ca/products/source-product?variant=123&ref=campaign&Color=Red`,
+      ),
+    );
+
+    assert.equal(response.status, 302);
+    assert.equal(
+      response.headers.get("Location"),
+      "/en-ca/products/combined-product?ref=campaign&Color=Blue",
+    );
+    assert.deepEqual(requestBody?.variables, {
+      country: "CA",
+      id: "gid://shopify/ProductVariant/123",
+      language: "EN",
+    });
+    assert.equal(response.headers.get("Cache-Control"), "private, no-store");
+  });
+
   it("proxies Shopify AJAX cart requests before app routing", async (t) => {
     let upstreamUrl: string | undefined;
     let upstreamFetch: typeof globalThis.fetch = async (input) => {

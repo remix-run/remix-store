@@ -337,7 +337,7 @@ describe("product form", () => {
           { name: "Color", value: "Green" },
         ],
         [{ name: "Color" }, { name: "Size" }],
-        "?Color=Red&ref=campaign&Size=Small",
+        "?Color=Red&ref=campaign&Size=Small&variant=123",
       ),
       "/products/other-product?ref=campaign&Size=Large&Color=Green",
     );

@@ -247,6 +247,7 @@ function testCartStore(
     getState,
     subscribe,
     fetch: () => Promise.resolve(),
+    refresh() {},
     reset() {},
     handleFormSubmit: () => Promise.resolve(),
   };
