@@ -2,6 +2,11 @@ import {
   initializeShopifyScripts,
   trackCartAnalytics,
 } from "@shopify/hydrogen";
+import {
+  detectMultipleImportMapSupport,
+  importModule,
+  preloadShim,
+} from "remix/multiple-import-maps-polyfill";
 import { navigate as remixNavigate, run } from "remix/ui";
 
 import { createPageViewPublisher } from "../../assets/public/analytics.tsx";
@@ -13,8 +18,18 @@ import { routeTemplates } from "../../lib/public/route-templates.ts";
 
 let app = run({
   async loadModule(moduleUrl, exportName) {
-    let module = await import(/* @vite-ignore */ moduleUrl);
-    return module[exportName];
+    let module = await importModule(moduleUrl);
+    let component = module[exportName];
+    if (typeof component !== "function") {
+      throw new Error(`Unknown component: ${moduleUrl}#${exportName}`);
+    }
+    return component;
+  },
+  async processClientEntryPreloads(preloads) {
+    if (await detectMultipleImportMapSupport()) return preloads;
+
+    preloadShim(preloads);
+    return [];
   },
   async resolveFrame(src, options) {
     return resolveFrameResponse(new URL(src, window.location.href), options);

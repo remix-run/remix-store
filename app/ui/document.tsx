@@ -4,6 +4,7 @@ import {
   type ShopifyScriptTagDescriptors,
 } from "@shopify/hydrogen";
 import { css, type Handle, type RemixNode } from "remix/ui";
+import { ImportMap } from "remix/ui/server";
 
 import { Footer } from "../assets/public/footer.tsx";
 import {
@@ -141,10 +142,11 @@ export function Document(handle: Handle<DocumentProps>) {
           {assets.css.map((attributes) => (
             <link {...attributes} rel="stylesheet" />
           ))}
-          <script src={assets.entry} type="module"></script>
+          <ImportMap value={assets.importMap} />
           {assets.js.map((attributes) => (
             <link {...attributes} rel="modulepreload" />
           ))}
+          <script src={assets.entry} type="module"></script>
           {shopifyScripts.links.map((descriptor) => (
             <ShopifyTag descriptor={descriptor} />
           ))}

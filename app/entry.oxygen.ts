@@ -13,6 +13,7 @@ const app = createApp({
     documentAssets: {
       css: assets.css,
       entry: clientAssets.entry,
+      importMap: {},
       js: assets.js,
     },
     resolveClientEntry(entryId, component) {
