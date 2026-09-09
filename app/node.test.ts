@@ -4,6 +4,7 @@ import { after, describe, it } from "remix/test";
 import {
   app,
   browserEntryHref,
+  browserEntryImportMap,
   closeNodeApp,
   productDetailsEntryHref,
   snowFieldEntryHref,
@@ -33,7 +34,15 @@ describe("node platform", () => {
 
     assert.equal(response.status, 200);
     assert.match(response.headers.get("Content-Type") ?? "", /javascript/);
-    assert.match(source, /remix\/dist\/ui\.js/);
+    assert.match(source, /from["']remix\/ui["']/);
+    assert.match(
+      findImportMapAddress("remix/ui") ?? "",
+      /\/remix\/dist\/ui\.js$/,
+    );
+    assert.match(
+      findImportMapAddress("remix/multiple-import-maps-polyfill") ?? "",
+      /\/remix\/dist\/multiple-import-maps-polyfill\.js$/,
+    );
   });
 
   it("compiles the product hydration graph from allowed public modules", async () => {
@@ -77,3 +86,11 @@ describe("node platform", () => {
     assert.match(response.headers.get("Content-Type") ?? "", /image\/svg\+xml/);
   });
 });
+
+function findImportMapAddress(specifier: string): string | null | undefined {
+  let maps = [
+    browserEntryImportMap.imports,
+    ...Object.values(browserEntryImportMap.scopes ?? {}),
+  ];
+  return maps.find((imports) => specifier in (imports ?? {}))?.[specifier];
+}

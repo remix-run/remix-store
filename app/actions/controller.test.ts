@@ -23,6 +23,10 @@ describe("platform skeleton", () => {
     assert.equal(response.status, 200);
     assert.match(
       html,
+      /<script data-rmx-import-map type="importmap">\{"imports":\{"remix\/ui":"\/assets\/remix-ui\.js"\}\}<\/script>/,
+    );
+    assert.match(
+      html,
       /<script src="\/assets\/entry\.js" type="module"><\/script>/,
     );
     assert.match(html, /<title>Home \| The Remix Store<\/title>/);

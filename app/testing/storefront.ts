@@ -33,7 +33,12 @@ export function createTestApp(
 ) {
   let app = createApp({
     renderer: render({
-      documentAssets: { css: [], entry: "/assets/entry.js", js: [] },
+      documentAssets: {
+        css: [],
+        entry: "/assets/entry.js",
+        importMap: { imports: { "remix/ui": "/assets/remix-ui.js" } },
+        js: [],
+      },
       resolveClientEntry(_entryId, component) {
         return { href: "/assets/component.js", exportName: component.name };
       },

@@ -1,4 +1,5 @@
 import type { Handle, RemixNode } from "remix/ui";
+import type { ImportMapData } from "remix/ui/server";
 
 export interface AssetAttributes {
   [name: string]: boolean | string | undefined;
@@ -7,6 +8,7 @@ export interface AssetAttributes {
 export interface DocumentAssets {
   css: AssetAttributes[];
   entry: string;
+  importMap: ImportMapData;
   js: AssetAttributes[];
 }
 
@@ -20,6 +22,7 @@ export function DocumentAssetsProvider(
   handle.context.set({
     css: handle.props.css,
     entry: handle.props.entry,
+    importMap: handle.props.importMap,
     js: handle.props.js,
   });
 

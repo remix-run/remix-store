@@ -29,8 +29,11 @@ const assetServerOptions: Parameters<typeof createAssetServer>[0] = {
     ? { ignore: ["dist/**", "node_modules/**", "test-results/**"] }
     : false,
   hmr: isHmr
-    ? async () =>
-        (await import("remix/node-hmr/runtime")).createBrowserHmrChannel()
+    ? {
+        channel: async () =>
+          (await import("remix/node-hmr/runtime")).createBrowserHmrChannel(),
+        moduleImporter: "remix/multiple-import-maps-polyfill",
+      }
     : undefined,
   scripts: {
     define: {
@@ -41,13 +44,14 @@ const assetServerOptions: Parameters<typeof createAssetServer>[0] = {
       : undefined,
   },
 };
-if (buildId) assetServerOptions.fingerprint = { buildId };
+if (buildId) assetServerOptions.fingerprint = true;
 
 const assetServer = createAssetServer(assetServerOptions);
 
 const browserEntry = "app/actions/public/entry.tsx";
-export const browserEntryHref = await assetServer.getHref(browserEntry);
-const browserEntryPreloads = await assetServer.getPreloads(browserEntry);
+const browserScriptEntry = await assetServer.getScriptEntry(browserEntry);
+export const browserEntryHref = browserScriptEntry.href;
+export const browserEntryImportMap = browserScriptEntry.importMap;
 export const productDetailsEntryHref = await assetServer.getHref(
   "app/assets/public/product-details.tsx",
 );
@@ -60,8 +64,9 @@ export const app = createApp({
   renderer: render({
     documentAssets: {
       css: [],
-      entry: browserEntryHref,
-      js: browserEntryPreloads.map((href) => ({ href })),
+      entry: browserScriptEntry.href,
+      importMap: browserScriptEntry.importMap,
+      js: browserScriptEntry.preloads.map((href) => ({ href })),
     },
     async resolveClientEntry(entryId, component) {
       if (!entryId.startsWith("file://")) {
@@ -70,13 +75,12 @@ export const app = createApp({
         );
       }
 
-      let [href, preloads] = await Promise.all([
-        assetServer.getHref(entryId),
-        assetServer.getPreloads(entryId),
-      ]);
+      let { href, importMap, preloads } =
+        await assetServer.getScriptEntry(entryId);
 
       return {
         href,
+        importMap,
         exportName:
           entryId.split("#")[1] || component.name || titleCaseFileName(entryId),
         preloads,
