@@ -9,7 +9,15 @@ import {
   type ProductFormStoreState,
   type SelectedOption,
 } from "@shopify/hydrogen";
-import { clientEntry, css, navigate, on, ref, type Handle } from "remix/ui";
+import {
+  clientEntry,
+  css,
+  navigate,
+  on,
+  ref,
+  unsafeHTML,
+  type Handle,
+} from "remix/ui";
 
 import type {
   ImageData,
@@ -813,7 +821,7 @@ function ExpressShopPayButton(
 
     return (
       <div
-        innerHTML={html}
+        innerHTML={unsafeHTML(html)}
         mix={[
           shopPayStyle,
           ref((element) => {

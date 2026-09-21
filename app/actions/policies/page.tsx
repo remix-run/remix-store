@@ -1,4 +1,4 @@
-import { css, type Handle } from "remix/ui";
+import { css, unsafeHTML, type Handle } from "remix/ui";
 
 import { PageTitle } from "../../assets/public/page-title.tsx";
 import type { PolicyData } from "../../data/policies.ts";
@@ -22,9 +22,11 @@ export function PolicyPage(
         <PageTitle title={handle.props.policy.title} />
         <article
           mix={policyContentStyle}
-          innerHTML={sanitizePolicyHtml(
-            handle.props.policy.body,
-            handle.props.market.pathPrefix,
+          innerHTML={unsafeHTML(
+            sanitizePolicyHtml(
+              handle.props.policy.body,
+              handle.props.market.pathPrefix,
+            ),
           )}
         />
       </main>
