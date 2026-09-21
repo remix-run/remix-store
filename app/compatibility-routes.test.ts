@@ -165,6 +165,56 @@ describe("Shopify compatibility routes", () => {
     assert.equal(response.headers.get("Cache-Control"), "private, no-store");
   });
 
+  it("proxies caller-authenticated UCP MCP requests to Shopify", async (t) => {
+    let upstreamUrl: string | undefined;
+    let upstreamMethod: string | undefined;
+    let upstreamAuthorization: string | null | undefined;
+    let upstreamBody: unknown;
+    let upstreamFetch: typeof globalThis.fetch = async (input, init) => {
+      upstreamUrl = String(input);
+      upstreamMethod = init?.method;
+      upstreamAuthorization = new Headers(init?.headers).get("Authorization");
+      upstreamBody = JSON.parse(await new Response(init?.body).text());
+      return Response.json({
+        jsonrpc: "2.0",
+        id: 1,
+        result: { tools: [] },
+      });
+    };
+    t.mock.method(globalThis, "fetch", upstreamFetch);
+    let app = createTestApp(unexpectedStorefrontFetch());
+    let requestBody = {
+      jsonrpc: "2.0",
+      id: 1,
+      method: "tools/list",
+      params: {},
+    };
+    let authorization = ["Bearer", ["caller", "token"].join("-")].join(" ");
+
+    let response = await app.fetch(
+      new Request(`${origin}/api/ucp/mcp`, {
+        method: "POST",
+        headers: {
+          Authorization: authorization,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestBody),
+      }),
+    );
+
+    assert.equal(response.status, 200);
+    assert.equal(upstreamUrl, "https://example.myshopify.com/api/ucp/mcp");
+    assert.equal(upstreamMethod, "POST");
+    assert.equal(upstreamAuthorization, authorization);
+    assert.deepEqual(upstreamBody, requestBody);
+    assert.deepEqual(await response.json(), {
+      jsonrpc: "2.0",
+      id: 1,
+      result: { tools: [] },
+    });
+    assert.equal(response.headers.get("Cache-Control"), "private, no-store");
+  });
+
   it("handles admin, standard resource, and merchant URL redirects after 404", async () => {
     let app = createTestApp(
       createStorefrontFetch({

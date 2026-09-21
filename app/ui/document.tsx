@@ -3,7 +3,7 @@ import {
   type ShopifyScriptTagDescriptor,
   type ShopifyScriptTagDescriptors,
 } from "@shopify/hydrogen";
-import { css, type Handle, type RemixNode } from "remix/ui";
+import { css, unsafeHTML, type Handle, type RemixNode } from "remix/ui";
 import { ImportMap } from "remix/ui/server";
 
 import { Footer } from "../assets/public/footer.tsx";
@@ -138,7 +138,7 @@ export function Document(handle: Handle<DocumentProps>) {
             type="font/woff2"
             crossOrigin="anonymous"
           />
-          <style innerHTML={globalStyles}></style>
+          <style innerHTML={unsafeHTML(globalStyles)}></style>
           {assets.css.map((attributes) => (
             <link {...attributes} rel="stylesheet" />
           ))}
@@ -217,7 +217,11 @@ function ShopifyTag(
       <script
         {...attributes}
         crossOrigin={crossorigin || undefined}
-        innerHTML={descriptor.innerHTML}
+        innerHTML={
+          descriptor.innerHTML === undefined
+            ? undefined
+            : unsafeHTML(descriptor.innerHTML)
+        }
       />
     );
   };
