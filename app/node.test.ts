@@ -4,7 +4,6 @@ import { after, describe, it } from "remix/test";
 import {
   app,
   browserEntryHref,
-  browserEntryImportMap,
   closeNodeApp,
   productDetailsEntryHref,
   snowFieldEntryHref,
@@ -34,15 +33,18 @@ describe("node platform", () => {
 
     assert.equal(response.status, 200);
     assert.match(response.headers.get("Content-Type") ?? "", /javascript/);
-    assert.match(source, /from["']remix\/ui["']/);
+    // Remix Assets rewrites named imports through side-effect-free barrels,
+    // so `remix/*` imports resolve to served implementation modules rather
+    // than bare specifiers that need import map entries.
     assert.match(
-      findImportMapAddress("remix/ui") ?? "",
-      /\/remix\/dist\/ui\.js$/,
+      source,
+      /from\s*["']\/assets\/[^"']*\/%40remix-run\/ui\/dist\//,
     );
     assert.match(
-      findImportMapAddress("remix/multiple-import-maps-polyfill") ?? "",
-      /\/remix\/dist\/multiple-import-maps-polyfill\.js$/,
+      source,
+      /from\s*["']\/assets\/[^"']*\/%40remix-run\/multiple-import-maps-polyfill\/dist\//,
     );
+    assert.doesNotMatch(source, /from\s*["']remix\//);
   });
 
   it("compiles the product hydration graph from allowed public modules", async () => {
@@ -86,11 +88,3 @@ describe("node platform", () => {
     assert.match(response.headers.get("Content-Type") ?? "", /image\/svg\+xml/);
   });
 });
-
-function findImportMapAddress(specifier: string): string | null | undefined {
-  let maps = [
-    browserEntryImportMap.imports,
-    ...Object.values(browserEntryImportMap.scopes ?? {}),
-  ];
-  return maps.find((imports) => specifier in (imports ?? {}))?.[specifier];
-}

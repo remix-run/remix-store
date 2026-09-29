@@ -85,7 +85,7 @@ function createAppRouter(options: AppOptions) {
 
 type AppContext = RouterContext<ReturnType<typeof createAppRouter>>;
 
-declare module "remix/router" {
+declare module "remix" {
   interface RouterTypes {
     context: AppContext;
   }

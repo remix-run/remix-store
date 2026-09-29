@@ -1,6 +1,7 @@
 import * as http from "node:http";
 
 import { createRequestListener } from "remix/node-fetch-server";
+import type { FetchHandler } from "remix/node-fetch-server";
 
 import { resolveNodeBuyerIp } from "./app/buyer-ip.ts";
 import { app, closeNodeApp } from "./app/node.ts";
@@ -13,17 +14,16 @@ const hmrProxyPort = process.env.HMR_PROXY_PORT
   : null;
 const port = parsePort("PORT", process.env.PORT ?? "44100");
 
+const handler: FetchHandler = (request, client) =>
+  app.fetch(request, {
+    buyerIp: resolveNodeBuyerIp(request, process.env, client.address),
+    env: process.env,
+  });
+
 const server = http.createServer(
-  createRequestListener(
-    (request, client) =>
-      app.fetch(request, {
-        buyerIp: resolveNodeBuyerIp(request, process.env, client.address),
-        env: process.env,
-      }),
-    {
-      trustProxy: isHmr || process.env.TRUST_PROXY === "true",
-    },
-  ),
+  createRequestListener(handler, {
+    trustProxy: isHmr || process.env.TRUST_PROXY === "true",
+  }),
 );
 
 server.listen(port, () => {
