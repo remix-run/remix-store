@@ -51,7 +51,6 @@ const assetServer = createAssetServer(assetServerOptions);
 const browserEntry = "app/actions/public/entry.tsx";
 const browserScriptEntry = await assetServer.getScriptEntry(browserEntry);
 export const browserEntryHref = browserScriptEntry.href;
-export const browserEntryImportMap = browserScriptEntry.importMap;
 export const productDetailsEntryHref = await assetServer.getHref(
   "app/assets/public/product-details.tsx",
 );
