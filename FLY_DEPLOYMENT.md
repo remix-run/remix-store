@@ -33,7 +33,7 @@ only when enabling their consuming subscription features.
 
 ## Fastly CDN
 
-`https://remix-store.global.ssl.fastly.net` is a Fastly CDN (VCL) service in
+`https://remix-store.freetls.fastly.net` is a Fastly CDN (VCL) service in
 front of the Fly app.
 
 | Fastly setting       | Value                                   |
