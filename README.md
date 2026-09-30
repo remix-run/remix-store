@@ -50,10 +50,10 @@ The Oxygen build produces a self-contained Worker at `dist/ssr/index.js` and bro
 
 ## Deployments
 
-| URL                                                                            | What it is                                              |
-| ------------------------------------------------------------------------------ | ------------------------------------------------------- |
-| [remix-store.global.ssl.fastly.net](https://remix-store.global.ssl.fastly.net) | **Use this one.** Fly app behind the Fastly CDN         |
-| [remix-store.fly.dev](https://remix-store.fly.dev)                             | Fly origin, bypasses the CDN (debugging, health checks) |
+| URL                                                                      | What it is                                              |
+| ------------------------------------------------------------------------ | ------------------------------------------------------- |
+| [remix-store.freetls.fastly.net](https://remix-store.freetls.fastly.net) | **Use this one.** Fly app behind the Fastly CDN         |
+| [remix-store.fly.dev](https://remix-store.fly.dev)                       | Fly origin, bypasses the CDN (debugging, health checks) |
 
 Fastly caches fingerprinted `/assets/*` files and short-lived root `public/`
 files; HTML is `private, no-store` and always reaches Fly. Responses served
