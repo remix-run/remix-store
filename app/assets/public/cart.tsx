@@ -29,6 +29,7 @@ import {
   getCartApiPath,
   type CartInitialData,
 } from "./cart-store.ts";
+import { Icon } from "../../ui/public/icon.tsx";
 
 const CART_DRAWER_ID = "cart-drawer";
 const STANDARD_ACTIONS_READY_EVENT = "DOMContentLoaded";
@@ -194,7 +195,7 @@ export const CartShell = clientEntry(
                 aria-label="Close cart"
                 mix={on("click", closeCartDrawer)}
               >
-                <SpriteIcon name="x" />
+                <Icon name="x" />
               </button>
             </header>
             <div mix={drawerBodyStyle}>
@@ -321,15 +322,7 @@ function CartTrigger(
 }
 
 function CartIcon() {
-  return () => <SpriteIcon name="cart" />;
-}
-
-function SpriteIcon(handle: Handle<{ name: string }>) {
-  return () => (
-    <svg aria-hidden="true" viewBox="0 0 24 24">
-      <use href={`/sprites.svg#${handle.props.name}`} />
-    </svg>
-  );
+  return () => <Icon name="cart" />;
 }
 
 function cartDialogTitle(viewState: CartViewState): string {
@@ -597,7 +590,7 @@ function CartView(handle: Handle<CartViewProps>) {
                           : "Decrease quantity"
                       }
                     >
-                      <SpriteIcon name="circle-minus" />
+                      <Icon name="circle-minus" />
                     </button>
                     <input
                       {...register("quantity", {
@@ -616,7 +609,7 @@ function CartView(handle: Handle<CartViewProps>) {
                       {...register("increase")}
                       aria-label="Increase quantity"
                     >
-                      <SpriteIcon name="circle-plus" />
+                      <Icon name="circle-plus" />
                     </button>
                   </form>
                   {lineMessages.length ? (
@@ -681,7 +674,7 @@ function CartView(handle: Handle<CartViewProps>) {
               {cart.checkoutUrl ? (
                 <a href={cart.checkoutUrl} mix={drawerCheckoutStyle}>
                   <span>{cartPending ? "Updating cart…" : "Check out"}</span>
-                  {cartPending ? null : <SpriteIcon name="fast-forward" />}
+                  {cartPending ? null : <Icon name="fast-forward" />}
                 </a>
               ) : null}
             </>
@@ -724,7 +717,7 @@ function CartView(handle: Handle<CartViewProps>) {
               {cart.checkoutUrl ? (
                 <a href={cart.checkoutUrl} mix={checkoutStyle}>
                   <span>{cartPending ? "Updating cart…" : "Check out"}</span>
-                  {cartPending ? null : <SpriteIcon name="fast-forward" />}
+                  {cartPending ? null : <Icon name="fast-forward" />}
                 </a>
               ) : null}
             </>

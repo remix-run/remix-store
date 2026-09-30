@@ -1,5 +1,7 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="0" height="0">
+// Inlined once per document by `Document` so `<use href="#name">` resolves
+// without a separate request or per-deploy asset URL plumbing. Keep this module
+// server-only; browser icons reference symbols already present in the page.
+export const spritesSvg = `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="0" height="0">
 <defs>
 <symbol viewBox="0 0 24 24" fill="none" id="bag">
 <path d="M15.5999 8.3998V5.39981C15.5999 3.41158 13.9881 1.7998 11.9999 1.7998C10.0117 1.7998 8.3999 3.41158 8.3999 5.3998V8.3998M4.72717 22.1998H19.2726C20.5579 22.1998 21.5999 21.1772 21.5999 19.9158L20.109 7.79977C20.109 6.53835 19.067 5.51576 17.7817 5.51576H5.92717C4.64186 5.51576 3.5999 6.53835 3.5999 7.79977L2.3999 19.9158C2.3999 21.1772 3.44186 22.1998 4.72717 22.1998Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
@@ -65,4 +67,4 @@
 </symbol>
 <symbol viewBox="0 0 24 24" id="youtube"><path d="M10 15l5.19-3L10 9v6m11.56-7.83c.13.47.22 1.1.28 1.9.07.8.1 1.49.1 2.09L22 12c0 2.19-.16 3.8-.44 4.83-.25.9-.83 1.48-1.73 1.73-.47.13-1.33.22-2.65.28-1.3.07-2.49.1-3.59.1L12 19c-4.19 0-6.8-.16-7.83-.44-.9-.25-1.48-.83-1.73-1.73-.13-.47-.22-1.1-.28-1.9-.07-.8-.1-1.49-.1-2.09L2 12c0-2.19.16-3.8.44-4.83.25-.9.83-1.48 1.73-1.73.47-.13 1.33-.22 2.65-.28 1.3-.07 2.49-.1 3.59-.1L12 5c4.19 0 6.8.16 7.83.44.9.25 1.48.83 1.73 1.73z"></path></symbol>
 </defs>
-</svg>
+</svg>`;

@@ -13,9 +13,13 @@ import {
   FALLBACK_NAVIGATION_MENU,
 } from "../data/storefront.ts";
 import { US_MARKET, type ActiveMarket } from "../lib/public/market.ts";
-import { DocumentAssetsProvider } from "./document-assets.tsx";
+import {
+  DocumentAssetsProvider,
+  type DocumentFonts,
+} from "./document-assets.tsx";
 import { Navbar } from "./navbar.tsx";
 import { ShellDataProvider } from "./shell-data.tsx";
+import { spritesSvg } from "./sprites.ts";
 
 const SITE_NAME = "The Remix Store";
 
@@ -77,7 +81,9 @@ export function Document(handle: Handle<DocumentProps>) {
           />
           <meta name="theme-color" content="#000000" />
           <meta name="color-scheme" content="dark" />
-          <link rel="stylesheet" href="/preflight.css" />
+          {assets.css.map((attributes) => (
+            <link {...attributes} rel="stylesheet" />
+          ))}
           <meta property="og:type" content={socialType} />
           <meta property="og:title" content={title} />
           <meta property="og:site_name" content={SITE_NAME} />
@@ -112,36 +118,33 @@ export function Document(handle: Handle<DocumentProps>) {
           />
           <link
             rel="preload"
-            href="/font/inter-roman-latin-var.woff2"
+            href={assets.fonts.interRoman}
             as="font"
             type="font/woff2"
             crossOrigin="anonymous"
           />
           <link
             rel="preload"
-            href="/font/inter-italic-latin-var.woff2"
+            href={assets.fonts.interItalic}
             as="font"
             type="font/woff2"
             crossOrigin="anonymous"
           />
           <link
             rel="preload"
-            href="/font/jet-brains-mono.woff2"
+            href={assets.fonts.jetBrainsMono}
             as="font"
             type="font/woff2"
             crossOrigin="anonymous"
           />
           <link
             rel="preload"
-            href="/font/lexend-zetta-black.woff2"
+            href={assets.fonts.lexendZetta}
             as="font"
             type="font/woff2"
             crossOrigin="anonymous"
           />
-          <style innerHTML={unsafeHTML(globalStyles)}></style>
-          {assets.css.map((attributes) => (
-            <link {...attributes} rel="stylesheet" />
-          ))}
+          <style innerHTML={unsafeHTML(globalStyles(assets.fonts))}></style>
           <ImportMap value={assets.importMap} />
           {assets.js.map((attributes) => (
             <link {...attributes} rel="modulepreload" />
@@ -153,6 +156,8 @@ export function Document(handle: Handle<DocumentProps>) {
           <title>{documentTitle}</title>
         </head>
         <body mix={bodyStyle}>
+          {/* Inline once so every `<use href="#name">` resolves without a request. */}
+          <div hidden innerHTML={unsafeHTML(spritesSvg)} />
           <Navbar
             cartInitialData={shellData.cartInitialData}
             market={shellData.market}
@@ -242,34 +247,35 @@ const bodyStyle = css({
   "& button": { cursor: "pointer" },
 });
 
-const globalStyles = `
+function globalStyles(fonts: DocumentFonts): string {
+  return `
   @font-face {
     font-family: "Inter";
     font-style: normal;
     font-weight: 100 900;
     font-display: swap;
-    src: url("/font/inter-roman-latin-var.woff2") format("woff2");
+    src: url("${fonts.interRoman}") format("woff2");
   }
   @font-face {
     font-family: "Inter";
     font-style: italic;
     font-weight: 100 900;
     font-display: swap;
-    src: url("/font/inter-italic-latin-var.woff2") format("woff2");
+    src: url("${fonts.interItalic}") format("woff2");
   }
   @font-face {
     font-family: "JetBrains Mono";
     font-style: normal;
     font-weight: 100 900;
     font-display: swap;
-    src: url("/font/jet-brains-mono.woff2") format("woff2");
+    src: url("${fonts.jetBrainsMono}") format("woff2");
   }
   @font-face {
     font-family: "Lexend Zetta";
     font-style: normal;
     font-weight: 900;
     font-display: swap;
-    src: url("/font/lexend-zetta-black.woff2") format("woff2");
+    src: url("${fonts.lexendZetta}") format("woff2");
   }
   :root {
     --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
@@ -352,3 +358,4 @@ const globalStyles = `
     }
   }
 `;
+}

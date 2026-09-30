@@ -34,7 +34,7 @@ export function BrandedState(
                 : undefined,
             }}
           >
-            <use href={`/sprites.svg#${handle.props.icon}`} />
+            <use href={`#${handle.props.icon}`} />
           </svg>
           <span>{handle.props.linkLabel}</span>
         </a>

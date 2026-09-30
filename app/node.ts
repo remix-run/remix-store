@@ -6,6 +6,7 @@ import { staticFiles } from "remix/middleware/static";
 import type { Middleware } from "remix/router";
 
 import { render } from "./middleware/render.tsx";
+import type { DocumentFonts } from "./ui/document-assets.tsx";
 import { createApp } from "./router.ts";
 
 const nodeEnv = process.env.NODE_ENV ?? "development";
@@ -23,6 +24,7 @@ const assetServerOptions: Parameters<typeof createAssetServer>[0] = {
   allowFiles: ["app/**/public/**"],
   allowPackages: ["remix", "@shopify/hydrogen"],
   denyFiles: ["app/**/*.test.*", "app/**/*.spec.*"],
+  files: { extensions: [".woff2"] },
   sourceMaps: isDevelopment ? "external" : undefined,
   minify: !isDevelopment,
   watch: isDevelopment
@@ -54,6 +56,20 @@ export const browserEntryHref = browserScriptEntry.href;
 export const productDetailsEntryHref = await assetServer.getHref(
   "app/assets/public/product-details.tsx",
 );
+const preflightHref = await assetServer.getHref(
+  "app/assets/public/preflight.css",
+);
+const fontDir = "app/assets/public/font";
+export const fonts: DocumentFonts = {
+  interItalic: await assetServer.getHref(
+    `${fontDir}/inter-italic-latin-var.woff2`,
+  ),
+  interRoman: await assetServer.getHref(
+    `${fontDir}/inter-roman-latin-var.woff2`,
+  ),
+  jetBrainsMono: await assetServer.getHref(`${fontDir}/jet-brains-mono.woff2`),
+  lexendZetta: await assetServer.getHref(`${fontDir}/lexend-zetta-black.woff2`),
+};
 export const snowFieldEntryHref = await assetServer.getHref(
   "app/assets/public/snow-field.tsx",
 );
@@ -62,8 +78,9 @@ export const app = createApp({
   platform: nodePlatform(),
   renderer: render({
     documentAssets: {
-      css: [],
+      css: [{ href: preflightHref }],
       entry: browserScriptEntry.href,
+      fonts,
       importMap: browserScriptEntry.importMap,
       js: browserScriptEntry.preloads.map((href) => ({ href })),
     },
@@ -94,7 +111,12 @@ export function closeNodeApp() {
 
 function nodePlatform(): Middleware {
   let compress = compression();
-  let servePublicFiles = staticFiles("./public", { index: false });
+  // Root public files keep stable, unfingerprinted URLs, so cache them briefly.
+  // Fingerprinted `/assets/*` responses set their own immutable headers.
+  let servePublicFiles = staticFiles("./public", {
+    cacheControl: "public, max-age=86400",
+    index: false,
+  });
 
   return (context, next) => {
     if (context.url.pathname === "/health") {
@@ -113,10 +135,16 @@ function nodePlatform(): Middleware {
           return next();
         }
 
-        return (
-          (await assetServer.fetch(context.request)) ??
-          new Response("Not Found", { status: 404 })
-        );
+        let response = await assetServer.fetch(context.request);
+        if (response && response.status < 400) return response;
+
+        // A stale fingerprint during a deploy must not be cached by a CDN.
+        let headers = new Headers(response?.headers);
+        headers.set("Cache-Control", "no-store");
+        return new Response(response ? response.body : "Not Found", {
+          headers,
+          status: response?.status ?? 404,
+        });
       }),
     );
   };

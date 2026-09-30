@@ -130,7 +130,7 @@ export const MobileMenu = clientEntry(
       >
         <summary aria-label="Navigation menu" mix={menuSummaryStyle}>
           <svg aria-hidden="true" viewBox="0 0 36 36">
-            <use href="/sprites.svg#menu" />
+            <use href="#menu" />
           </svg>
         </summary>
         <nav aria-label="Mobile navigation" mix={mobileNavStyle}>

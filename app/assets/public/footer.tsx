@@ -8,6 +8,7 @@ import {
 
 import type { NavigationMenuData } from "../../data/storefront.ts";
 import { marketPath, type MarketPathPrefix } from "../../lib/public/market.ts";
+import { Icon } from "../../ui/public/icon.tsx";
 
 const FOOTER_GRADIENT_STRIP_COUNT = 33;
 const FOOTER_GRADIENT_STAGGER_MS = 80;
@@ -94,7 +95,7 @@ export const Footer = clientEntry(
                 viewBox="0 0 1280 126"
                 mix={brandLogoStyle}
               >
-                <use href="/sprites.svg#remix-logo" />
+                <use href="#remix-logo" />
               </svg>
 
               <div mix={brandGlyphGroupStyle}>
@@ -120,7 +121,7 @@ export const Footer = clientEntry(
                   />
                 </div>
                 <svg aria-hidden="true" viewBox="0 0 146 70" mix={glyphsStyle}>
-                  <use href="/sprites.svg#remix-glyphs" />
+                  <use href="#remix-glyphs" />
                 </svg>
               </div>
             </div>
@@ -228,11 +229,7 @@ function FooterIcon(
           ? "0 0 1200 1227"
           : "0 0 24 24";
 
-    return (
-      <svg aria-hidden="true" viewBox={viewBox}>
-        <use href={`/sprites.svg#${handle.props.name}`} />
-      </svg>
-    );
+    return <Icon name={handle.props.name} viewBox={viewBox} />;
   };
 }
 

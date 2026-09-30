@@ -22,7 +22,7 @@ describe("shared storefront primitives", () => {
     assert.match(html, /Shop/);
     assert.match(html, /All/);
     assert.match(html, /aria-hidden="true"/);
-    assert.match(html, /href="\/sprites.svg#fast-forward"/);
+    assert.match(html, /href="#fast-forward"/);
     assert.match(html, /data-icon-always-visible/);
     assert.match(html, /data-expanded-text="All"/);
   });
@@ -42,7 +42,7 @@ describe("shared storefront primitives", () => {
     assert.match(html, /<h1[^>]*>Your cart is empty<\/h1>/);
     assert.doesNotMatch(html, /src="\/brand\/matrix\/empty.png"/);
     assert.match(html, /href="\/collections\/all"/);
-    assert.match(html, /href="\/sprites.svg#cart"/);
+    assert.match(html, /href="#cart"/);
     assert.match(html, /Shop all/);
   });
 });
