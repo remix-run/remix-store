@@ -19,6 +19,7 @@ const port = parsePort("PORT", process.env.PORT ?? "44100");
 
 const handler: FetchHandler = (request, client) => {
   let buyerIp = resolveNodeBuyerIp(request, process.env, client.address);
+  logBuyerIpSource(request, buyerIp); // TEMP: remove after verifying Fastly.
   // Shopify's generic API proxy forwards most request headers upstream.
   request.headers.delete(CDN_ORIGIN_SECRET_HEADER);
   return app.fetch(request, { buyerIp, env: process.env });
@@ -39,6 +40,22 @@ server.listen(port, () => {
 
   console.log(`Server listening on http://localhost:${hmrProxyPort ?? port}`);
 });
+
+// TEMP: logs which header supplied the buyer IP, never the IP or secret.
+function logBuyerIpSource(request: Request, buyerIp: string | undefined) {
+  if (new URL(request.url).pathname === "/health") return;
+  let cdnIp = request.headers.get("x-cdn-client-ip")?.trim();
+  let source = !buyerIp
+    ? "none"
+    : buyerIp === cdnIp
+      ? "cdn"
+      : buyerIp === request.headers.get("fly-client-ip")?.trim()
+        ? "fly"
+        : "socket";
+  console.log(
+    `[buyer-ip] source=${source} cdnIpHeader=${Boolean(cdnIp)} secretHeader=${request.headers.has(CDN_ORIGIN_SECRET_HEADER)}`,
+  );
+}
 
 function parsePort(name: string, value: string): number {
   let port = Number(value);
