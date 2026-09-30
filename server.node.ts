@@ -3,7 +3,10 @@ import * as http from "node:http";
 import { createRequestListener } from "remix/node-fetch-server";
 import type { FetchHandler } from "remix/node-fetch-server";
 
-import { resolveNodeBuyerIp } from "./app/buyer-ip.ts";
+import {
+  CDN_ORIGIN_SECRET_HEADER,
+  resolveNodeBuyerIp,
+} from "./app/buyer-ip.ts";
 import { app, closeNodeApp } from "./app/node.ts";
 
 const isHmr = Boolean(
@@ -14,11 +17,12 @@ const hmrProxyPort = process.env.HMR_PROXY_PORT
   : null;
 const port = parsePort("PORT", process.env.PORT ?? "44100");
 
-const handler: FetchHandler = (request, client) =>
-  app.fetch(request, {
-    buyerIp: resolveNodeBuyerIp(request, process.env, client.address),
-    env: process.env,
-  });
+const handler: FetchHandler = (request, client) => {
+  let buyerIp = resolveNodeBuyerIp(request, process.env, client.address);
+  // Shopify's generic API proxy forwards most request headers upstream.
+  request.headers.delete(CDN_ORIGIN_SECRET_HEADER);
+  return app.fetch(request, { buyerIp, env: process.env });
+};
 
 const server = http.createServer(
   createRequestListener(handler, {

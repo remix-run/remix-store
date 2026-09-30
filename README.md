@@ -20,7 +20,8 @@ pnpm dev
 
 The private Storefront token remains server-only and enables request-aware cart,
 checkout, and Shopify redirect handling. Oxygen supplies `oxygen-buyer-ip`; Fly
-supplies `fly-client-ip`. Other Node runtimes use the client address resolved by
+supplies `fly-client-ip`, or behind Fastly, `x-cdn-client-ip` authenticated by
+`CDN_ORIGIN_SECRET` (see [`FLY_DEPLOYMENT.md`](./FLY_DEPLOYMENT.md#fastly-cdn)). Other Node runtimes use the client address resolved by
 Remix's HTTP adapter from the socket or, when explicitly configured behind a
 trusted proxy with `TRUST_PROXY=true`, overwritten proxy headers. Never forward
 platform buyer-IP headers outside their runtime. `PUBLIC_CHECKOUT_DOMAIN` is not

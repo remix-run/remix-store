@@ -31,6 +31,28 @@ buttons and `/checkout` resolve Shopify's authoritative `cart.checkoutUrl`.
 Fly does not need `SESSION_SECRET`. Add the server-only Admin API credentials
 only when enabling their consuming subscription features.
 
+## Fastly CDN
+
+`https://remix-store.global.ssl.fastly.net` is a Fastly CDN (VCL) service in
+front of the Fly app.
+
+| Fastly setting       | Value                                   |
+| -------------------- | --------------------------------------- |
+| Host (origin)        | `remix-store.fly.dev`, port 443, TLS on |
+| Override host        | `remix-store.fly.dev`                   |
+| SNI / cert hostname  | `remix-store.fly.dev`                   |
+| Fallback TTL         | `0`                                     |
+| Request header (set) | `X-CDN-Client-IP` = `client.ip`         |
+| Request header (set) | `X-CDN-Origin-Secret` = `"<secret>"`    |
+
+Fly routes by `Host`, so the override host is required. Behind Fastly,
+`fly-client-ip` is a Fastly address; the app instead trusts `X-CDN-Client-IP`
+only when `X-CDN-Origin-Secret` matches the `CDN_ORIGIN_SECRET` Fly secret, then
+strips the secret before Shopify proxies can forward it. Both headers must use
+Fastly's **set** action so client-supplied values are overwritten. Without the
+secret, requests fall back to `fly-client-ip`, so either side can be configured
+first.
+
 ## Deployment behavior
 
 `.github/workflows/fly-deployment.yml` deploys every branch push, then verifies `/health` and the server-rendered home page. Global concurrency cancels an older in-progress deployment when a newer push arrives.
