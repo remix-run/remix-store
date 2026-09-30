@@ -1,0 +1,286 @@
+import * as assert from "remix/assert";
+import { describe, it } from "remix/test";
+
+import { routes } from "../../routes.ts";
+import {
+  analyticsShopData,
+  createStorefrontFetch,
+  createTestApp,
+  navigationData,
+  type StorefrontRequestBody,
+} from "../../testing/storefront.ts";
+
+describe("product routes", () => {
+  it("resolves URL options and renders safe, no-JS variant and cart controls", async () => {
+    let variables: StorefrontRequestBody["variables"] | undefined;
+    let app = createTestApp(
+      createStorefrontFetch({
+        RemixAnalyticsShop: analyticsShopData,
+        RemixNavigation: navigationData,
+        RemixProductNavigation: () => ({
+          menu: {
+            items: [
+              {
+                id: "all-products",
+                title: "All products",
+                url: "https://example.com/collections/all",
+              },
+            ],
+          },
+          shop: { primaryDomain: { url: "https://example.com" } },
+        }),
+        RemixProduct(body) {
+          variables = body.variables;
+          return { product: productData() };
+        },
+      }),
+    );
+    let href = `${routes.products.show.href({ handle: "test-product" })}?Color=Red&ref=campaign`;
+
+    let response = await app.fetch(new Request(`https://example.com${href}`));
+    let html = await response.text();
+
+    assert.equal(response.status, 200);
+    assert.deepEqual(variables?.selectedOptions, [
+      { name: "Color", value: "Red" },
+      { name: "ref", value: "campaign" },
+    ]);
+    assert.match(html, /<title>Test Product \| The Remix Store<\/title>/);
+    assert.match(html, /<meta property="og:type" content="product"/);
+    assert.match(
+      html,
+      /rel="canonical" href="https:\/\/example\.com\/products\/test-product"/,
+    );
+    assert.match(html, /<h1[^>]*>Test Product<\/h1>/);
+    assert.match(html, /aria-label="Product collections"/);
+    assert.match(html, /href="\/collections\/all">All products<\/a>/);
+    let shopPayTag = html.match(
+      /<a [^>]*aria-label="Buy with Shop Pay"[^>]*>/,
+    )?.[0];
+    assert.ok(shopPayTag);
+    let shopPayHref = shopPayTag.match(/href="([^"]+)"/)?.[1];
+    assert.ok(shopPayHref);
+    let shopPayUrl = new URL(shopPayHref.replaceAll("&amp;", "&"));
+    assert.equal(shopPayUrl.origin, "https://checkout.example.com");
+    assert.equal(shopPayUrl.pathname, "/cart/111:1");
+    assert.equal(shopPayUrl.searchParams.get("payment"), "shop_pay");
+    assert.match(
+      html,
+      /href="\/products\/test-product\?ref=campaign&amp;Color=Blue"/,
+    );
+    assert.match(html, /Blue — Sold out/);
+    assert.match(html, /Technical Description/);
+    assert.match(html, /Technical detail/);
+    assert.match(
+      html,
+      /\[data-product-image\] \+ \[data-product-image\] \{\s*opacity: 0\.2;/,
+    );
+    assert.match(html, /action="\/api\/cart" method="post"/);
+    assert.match(html, /name="merchandiseId"/);
+    assert.match(html, /name="quantity" value="1"/);
+    assert.match(html, />Add to cart<\/button>/);
+    assert.doesNotMatch(html, /aria-label="Previous image"/);
+    assert.doesNotMatch(html, /aria-label="Next image"/);
+    assert.doesNotMatch(html, /href="javascript:/);
+  });
+
+  it("keeps Canadian product navigation, money, cart, and subscribe actions localized", async () => {
+    let variables: StorefrontRequestBody["variables"] | undefined;
+    let data = productData();
+    data.selectedOrFirstAvailableVariant = data.adjacentVariants[0]!;
+    data.selectedOrFirstAvailableVariant.price = {
+      amount: "20.00",
+      currencyCode: "CAD",
+    };
+    let app = createTestApp(
+      createStorefrontFetch({
+        RemixAnalyticsShop: () => ({
+          shop: { id: "gid://shopify/Shop/test" },
+          localization: { country: { currency: { isoCode: "CAD" } } },
+        }),
+        RemixNavigation: navigationData,
+        RemixProductNavigation: () => ({ menu: null, shop: null }),
+        RemixProduct(body) {
+          variables = body.variables;
+          return { product: data };
+        },
+      }),
+    );
+
+    let response = await app.fetch(
+      new Request("https://example.com/en-ca/products/test-product?Color=Blue"),
+    );
+    let html = await response.text();
+
+    assert.equal(response.status, 200);
+    assert.equal(variables?.country, "CA");
+    assert.equal(variables?.language, "EN");
+    assert.match(
+      html,
+      /rel="canonical" href="https:\/\/example\.com\/en-ca\/products\/test-product"/,
+    );
+    assert.match(html, /action="\/en-ca\/api\/cart" method="post"/);
+    assert.match(html, /action="\/en-ca\/subscribe" method="post"/);
+    assert.match(html, /href="\/en-ca\/products\/test-product\?/);
+    assert.match(html, /currencyCode.{0,20}CAD/);
+  });
+
+  it("server-renders a verified-input back-in-stock form for an enabled sold-out variant", async () => {
+    let data = productData();
+    data.selectedOrFirstAvailableVariant = data.adjacentVariants[0]!;
+    let app = createTestApp(
+      createStorefrontFetch({
+        RemixAnalyticsShop: analyticsShopData,
+        RemixNavigation: navigationData,
+        RemixProductNavigation: () => ({ menu: null, shop: null }),
+        RemixProduct: () => ({ product: data }),
+      }),
+    );
+
+    let response = await app.fetch(
+      new Request("https://example.com/products/test-product?Color=Blue"),
+    );
+    let html = await response.text();
+    assert.equal(response.status, 200);
+    assert.match(html, /aria-label="Notify me when it’s back"/);
+    assert.match(html, /Notify me/);
+    assert.match(
+      html,
+      /This size is currently out of stock\. Sign up to be notified by\s+email when restock this size\./,
+    );
+    assert.match(html, /action="\/subscribe" method="post"/);
+    assert.match(html, /name="product-handle" value="test-product"/);
+    assert.match(
+      html,
+      /name="variant-id" value="gid:\/\/shopify\/ProductVariant\/222"/,
+    );
+    assert.doesNotMatch(html, /name="variant-title"|name="tags"/);
+  });
+
+  it("renders the branded 404 when a product is missing", async () => {
+    let app = createTestApp(
+      createStorefrontFetch({
+        RemixAnalyticsShop: analyticsShopData,
+        RemixNavigation: navigationData,
+        RemixProductNavigation: () => ({ menu: null, shop: null }),
+        RemixProduct: () => ({ product: null }),
+      }),
+    );
+
+    let response = await app.fetch(
+      new Request("https://example.com/products/not-a-product"),
+    );
+
+    assert.equal(response.status, 404);
+    assert.match(await response.text(), /Page not found/);
+  });
+});
+
+function productData() {
+  let red = variant({
+    availableForSale: true,
+    id: "gid://shopify/ProductVariant/111",
+    image: image("red"),
+    selectedOptions: [{ name: "Color", value: "Red" }],
+  });
+  let blue = variant({
+    availableForSale: false,
+    id: "gid://shopify/ProductVariant/222",
+    image: image("blue"),
+    selectedOptions: [{ name: "Color", value: "Blue" }],
+  });
+
+  return {
+    adjacentVariants: [blue],
+    category: { name: "Test category" },
+    customDescription: {
+      value: JSON.stringify({
+        children: [
+          {
+            children: [{ type: "text", value: "A structured test product." }],
+            type: "paragraph",
+          },
+          {
+            children: [{ type: "text", value: "Unsafe link" }],
+            type: "link",
+            url: "javascript:alert('nope')",
+          },
+        ],
+      }),
+    },
+    description: "Fallback description",
+    encodedVariantAvailability: "v1_0",
+    encodedVariantExistence: "v1_0",
+    handle: "test-product",
+    id: "gid://shopify/Product/test",
+    images: { nodes: [image("red"), image("blue")] },
+    options: [
+      {
+        name: "Color",
+        optionValues: [
+          { firstSelectableVariant: red, name: "Red" },
+          { firstSelectableVariant: blue, name: "Blue" },
+        ],
+      },
+    ],
+    priceRange: { minVariantPrice: red.price },
+    requiresSellingPlan: false,
+    selectedOrFirstAvailableVariant: red,
+    seo: { description: "A test product", title: "Test Product" },
+    vendor: "Test Vendor",
+    subscribeIfBackInStock: { value: "true" },
+    technicalDescription: {
+      value: JSON.stringify({
+        children: [
+          {
+            children: [{ type: "text", value: "Technical detail" }],
+            type: "paragraph",
+          },
+        ],
+      }),
+    },
+    title: "Test Product",
+  };
+}
+
+type ProductImageFixture = {
+  altText: string;
+  height: number;
+  id: string;
+  url: string;
+  width: number;
+};
+
+function image(name: string): ProductImageFixture {
+  return {
+    altText: `${name} product image`,
+    height: 800,
+    id: `gid://shopify/Image/${name}`,
+    url: `https://cdn.shopify.com/${name}.jpg`,
+    width: 800,
+  };
+}
+
+function variant({
+  availableForSale,
+  id,
+  image,
+  selectedOptions,
+}: {
+  availableForSale: boolean;
+  id: string;
+  image: ProductImageFixture;
+  selectedOptions: Array<{ name: string; value: string }>;
+}) {
+  return {
+    availableForSale,
+    compareAtPrice: null,
+    id,
+    image,
+    price: { amount: "20.00", currencyCode: "USD" },
+    product: { handle: "test-product", title: "Test Product" },
+    sku: `SKU-${id.split("/").at(-1)}`,
+    selectedOptions,
+    title: selectedOptions[0]?.value ?? "Default Title",
+  };
+}
