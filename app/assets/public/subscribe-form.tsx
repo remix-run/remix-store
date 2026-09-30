@@ -6,6 +6,7 @@ import {
   type Handle,
   type SerializableObject,
 } from "remix/ui";
+import { Icon } from "../../ui/public/icon.tsx";
 
 const SubscribeResponseSchema = object({
   error: optional(string()),
@@ -183,14 +184,6 @@ function urlEncodedForm(form: HTMLFormElement): URLSearchParams {
     if (!(value instanceof File)) body.append(name, value);
   }
   return body;
-}
-
-function Icon(handle: Handle<{ name: string }>) {
-  return () => (
-    <svg aria-hidden="true" viewBox="0 0 24 24">
-      <use href={`/sprites.svg#${handle.props.name}`} />
-    </svg>
-  );
 }
 
 const formSectionStyle = css({

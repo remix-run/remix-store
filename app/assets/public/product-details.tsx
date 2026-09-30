@@ -38,6 +38,7 @@ import {
 } from "../../ui/public/shopify-image.tsx";
 import { getBrowserCartStore } from "./cart-store.ts";
 import { SubscribeForm } from "./subscribe-form.tsx";
+import { Icon } from "../../ui/public/icon.tsx";
 
 type ProductDetailsProps = {
   market?: ActiveMarket;
@@ -678,14 +679,6 @@ function ProductImageFrame(
       </div>
     );
   };
-}
-
-function Icon(handle: Handle<{ name: string }>) {
-  return () => (
-    <svg aria-hidden="true" viewBox="0 0 24 24">
-      <use href={`/sprites.svg#${handle.props.name}`} />
-    </svg>
-  );
 }
 
 function orderedProductImages(

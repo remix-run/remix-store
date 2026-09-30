@@ -5,6 +5,7 @@ import {
   app,
   browserEntryHref,
   closeNodeApp,
+  fonts,
   productDetailsEntryHref,
   snowFieldEntryHref,
 } from "./node.ts";
@@ -76,7 +77,26 @@ describe("node platform", () => {
     );
 
     assert.equal(response.status, 404);
+    assert.equal(response.headers.get("Cache-Control"), "no-store");
     assert.equal(await response.text(), "Not Found");
+  });
+
+  it("keeps stale asset fingerprints out of shared caches", async () => {
+    let response = await app.fetch(
+      new Request("http://localhost/assets/app/assets/public/cart.@stale0.tsx"),
+    );
+
+    assert.equal(response.status, 404);
+    assert.equal(response.headers.get("Cache-Control"), "no-store");
+  });
+
+  it("serves webfonts through Remix Assets", async () => {
+    let response = await app.fetch(
+      new Request(`http://localhost${fonts.interRoman}`),
+    );
+
+    assert.equal(response.status, 200);
+    assert.match(response.headers.get("Content-Type") ?? "", /font\/woff2/);
   });
 
   it("serves public files before application routes", async () => {
@@ -86,5 +106,10 @@ describe("node platform", () => {
 
     assert.equal(response.status, 200);
     assert.match(response.headers.get("Content-Type") ?? "", /image\/svg\+xml/);
+    // Unfingerprinted URLs stay shared-cacheable without being immutable.
+    assert.equal(
+      response.headers.get("Cache-Control"),
+      "public, max-age=86400",
+    );
   });
 });

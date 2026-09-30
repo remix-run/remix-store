@@ -1,4 +1,5 @@
 import { css, type Handle, type RemixNode } from "remix/ui";
+import { Icon } from "./icon.tsx";
 
 type PillLinkIcon = "cart" | "fast-forward" | "mail";
 
@@ -42,11 +43,7 @@ export function PillLink(handle: Handle<PillLinkProps>) {
 }
 
 export function PillIcon(handle: Handle<{ name: PillLinkIcon }>) {
-  return () => (
-    <svg aria-hidden="true" viewBox="0 0 24 24">
-      <use href={`/sprites.svg#${handle.props.name}`} />
-    </svg>
-  );
+  return () => <Icon name={handle.props.name} />;
 }
 
 export const pillLinkStyle = css({

@@ -52,6 +52,19 @@ describe("platform skeleton", () => {
     assert.equal(response.headers.get("Cache-Control"), "private, no-store");
   });
 
+  it("inlines every sprite symbol the page references", async () => {
+    let html = await (await fetchHome()).text();
+    let symbols = new Set(
+      [...html.matchAll(/<symbol[^>]*\sid="([^"]+)"/g)].map((m) => m[1]),
+    );
+    let references = [...html.matchAll(/<use href="#([^"]+)"/g)].map(
+      (m) => m[1],
+    );
+
+    assert.ok(references.length > 0);
+    for (let name of references) assert.ok(symbols.has(name), name);
+  });
+
   it("attributes Storefront API requests to the configured storefront", async () => {
     let headers: Headers[] = [];
     let upstreamFetch = createStorefrontFetch({
