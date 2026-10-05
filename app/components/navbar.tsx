@@ -29,7 +29,7 @@ import {
   CartHeader,
   CartLineItem,
   CheckoutLink,
-  FreeShippingProgress,
+  FreeShippingNotice,
   useCartDiscounts,
 } from "./cart";
 import { StoreWideSaleMarquee, useStoreWideSale } from "./store-wide-sale";
@@ -160,10 +160,6 @@ function CartButton({ cart: originalCart }: Pick<NavbarProps, "cart">) {
     e.currentTarget.dispatchEvent(event);
   };
 
-  let subtotal =
-    Number(cartDiscounts?.discountedSubtotalAmount?.amount) ||
-    Number(subtotalAmount?.amount);
-
   return (
     <>
       <CartCTALink quantity={totalQuantity} className="flex md:hidden" />
@@ -243,7 +239,12 @@ function CartButton({ cart: originalCart }: Pick<NavbarProps, "cart">) {
                     />
                   </div>
                 )}
-              <FreeShippingProgress amount={subtotal} />
+              <FreeShippingNotice
+                countryCode={cart.buyerIdentity?.countryCode}
+                subtotalAmount={
+                  cartDiscounts?.discountedSubtotalAmount ?? subtotalAmount
+                }
+              />
             </div>
             <CheckoutLink
               to={checkoutUrl ?? ""}

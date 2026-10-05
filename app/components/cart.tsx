@@ -10,7 +10,10 @@ import { cn } from "~/lib/cn";
 
 import type { CartApiQueryFragment } from "storefrontapi.generated";
 import { AnimatedLinkSpread } from "./ui/animated-link";
-import type { MoneyV2 } from "@shopify/hydrogen/storefront-api-types";
+import type {
+  CountryCode,
+  MoneyV2,
+} from "@shopify/hydrogen/storefront-api-types";
 import { useStoreWideSale } from "./store-wide-sale";
 
 export function CartHeader({
@@ -66,51 +69,59 @@ export function CheckoutLink({
 
 type CartLine = OptimisticCartLine<CartApiQueryFragment["lines"]["nodes"][0]>;
 
-export function FreeShippingProgress({
-  amount,
-  threshold = 75,
+export function FreeShippingNotice({
+  subtotalAmount,
+  countryCode,
 }: {
-  amount: number | null | undefined;
-  threshold?: number;
+  subtotalAmount: Partial<MoneyV2> | null | undefined;
+  countryCode: CountryCode | null | undefined;
 }) {
-  let safeAmount = Number(amount) || 0;
-  let progress = Math.min(Math.max(safeAmount / threshold, 0), 1);
-  let remaining = Math.max(threshold - safeAmount, 0);
-  let achieved = progress >= 1;
-  let percentage = Math.round(progress * 100);
+  const threshold = 75;
+  const amount = Number(subtotalAmount?.amount);
+  // Only calculate progress when the subtotal and minimum are both in USD.
+  const showProgress =
+    subtotalAmount?.currencyCode === "USD" &&
+    Boolean(subtotalAmount.amount?.trim()) &&
+    Number.isFinite(amount) &&
+    amount >= 0;
+  const achieved = amount >= threshold;
+  const percentage = Math.min(Math.floor((amount / threshold) * 100), 100);
 
   return (
-    <div
-      className="w-full space-y-2"
-      role="group"
-      aria-label="Free shipping progress"
-    >
-      <p className="text-sm font-medium text-white">
-        {achieved
-          ? "Your shipping is free!"
-          : `Add $${remaining.toFixed(2)} more for free shipping`}
-      </p>
-      <div
-        className="h-2 w-full overflow-hidden rounded-full bg-white/15"
-        role="presentation"
-      >
-        <div
-          className={cn(
-            "h-full rounded-full transition-[width,background-color] duration-300 ease-in-out",
-            achieved ? "bg-green-brand" : "bg-white",
-          )}
-          style={{ width: `${percentage}%` }}
-          role="progressbar"
-          aria-valuemin={0}
-          aria-valuemax={100}
-          aria-valuenow={percentage}
-          aria-label={
-            achieved
-              ? "Free shipping unlocked"
-              : `Free shipping progress ${percentage} percent`
-          }
-        />
-      </div>
+    <div className="w-full space-y-2">
+      {showProgress && (
+        <>
+          <p className="text-sm font-medium text-white">
+            {achieved
+              ? "You've reached the US$75 free shipping minimum."
+              : `Add $${(threshold - amount).toFixed(2)} more for free shipping`}
+          </p>
+          <div className="h-2 w-full overflow-hidden rounded-full bg-white/15">
+            <div
+              className={cn(
+                "h-full rounded-full transition-[width,background-color] duration-300 ease-in-out",
+                achieved ? "bg-green-brand" : "bg-white",
+              )}
+              style={{ width: `${percentage}%` }}
+              role="progressbar"
+              aria-label="Free shipping progress"
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={percentage}
+            />
+          </div>
+        </>
+      )}
+      {countryCode === "US" ? (
+        <p className="text-xs text-white/70">
+          Shipping options confirmed at checkout.
+        </p>
+      ) : (
+        <p className="text-sm font-medium text-white">
+          Free shipping with a US$75 minimum. See your shipping options at
+          checkout.
+        </p>
+      )}
     </div>
   );
 }
