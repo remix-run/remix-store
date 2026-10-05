@@ -1,7 +1,6 @@
 import { mergeAssets } from "@hiogawa/vite-plugin-fullstack/runtime";
 
-// Vite emits imported CSS as a hashed client asset listed in `assets.css`.
-import "./assets/public/preflight.css";
+import "./assets/public/site.css";
 import interItalic from "./assets/public/font/inter-italic-latin-var.woff2?url";
 import interRoman from "./assets/public/font/inter-roman-latin-var.woff2?url";
 import jetBrainsMono from "./assets/public/font/jet-brains-mono.woff2?url";

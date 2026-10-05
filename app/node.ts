@@ -56,9 +56,7 @@ export const browserEntryHref = browserScriptEntry.href;
 export const productDetailsEntryHref = await assetServer.getHref(
   "app/assets/public/product-details.tsx",
 );
-const preflightHref = await assetServer.getHref(
-  "app/assets/public/preflight.css",
-);
+const siteStylesHref = await assetServer.getHref("app/assets/public/site.css");
 const fontDir = "app/assets/public/font";
 export const fonts: DocumentFonts = {
   interItalic: await assetServer.getHref(
@@ -78,7 +76,7 @@ export const app = createApp({
   platform: nodePlatform(),
   renderer: render({
     documentAssets: {
-      css: [{ href: preflightHref }],
+      css: [{ href: siteStylesHref }],
       entry: browserScriptEntry.href,
       fonts,
       importMap: browserScriptEntry.importMap,
