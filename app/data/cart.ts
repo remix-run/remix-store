@@ -1,5 +1,8 @@
 import type { CartDataFromHandlers, CartGetData } from "@shopify/hydrogen";
-import type { SerializableObject, SerializablePrimitive } from "remix/ui";
+import type {
+  SerializableObject,
+  SerializablePrimitive,
+} from "remix/component";
 
 import type { cartHandlers } from "./cart.server.ts";
 

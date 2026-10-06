@@ -6,7 +6,7 @@ description: >
   ranges, Shop Pay prices, or any MoneyV2 amount/currencyCode values.
 metadata:
   source: "@shopify/hydrogen"
-  version: "2026.10.0-preview.3"
+  version: "2026.10.0-preview.4"
   hash: "sha256:29ee799521e4c16a023036150902749ce41bc227f7cca6e39a190c7d31d0dd16"
 ---
 

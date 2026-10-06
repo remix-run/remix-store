@@ -39,7 +39,7 @@ describe("node platform", () => {
     // than bare specifiers that need import map entries.
     assert.match(
       source,
-      /from\s*["']\/assets\/[^"']*\/%40remix-run\/ui\/dist\//,
+      /from\s*["']\/assets\/[^"']*\/%40remix-run\/component\/dist\//,
     );
     assert.match(
       source,

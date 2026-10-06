@@ -14,7 +14,12 @@ const hmrRunner = run("server.node.ts", {
     PORT: String(appPort),
     HMR_PROXY_PORT: String(hmrProxyPort),
   },
-  nodeArgs: ["--import", "remix/node-tsx", "--import", "remix/ui-hmr/node"],
+  nodeArgs: [
+    "--import",
+    "remix/node-tsx",
+    "--import",
+    "remix/component-hmr/node",
+  ],
   browserHmrChannel: { port: hmrEventPort },
 });
 

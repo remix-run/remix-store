@@ -7,8 +7,8 @@ description: >
   GraphQL queries.
 metadata:
   source: "@shopify/hydrogen"
-  version: "2026.10.0-preview.3"
-  hash: "sha256:dc6076f781af3f72ea99f6cf96fa3537f0d8a42fb3f8397166b01e0facaeb0d2"
+  version: "2026.10.0-preview.4"
+  hash: "sha256:36f0a7b29a93a167cb0b6e4e521bfc339bc4838012583ed9330cf5d310cc1c69"
 ---
 
 # Customer Account API
@@ -75,7 +75,7 @@ The Customer Account handlers own:
 - `GET /account/refresh`
 - `POST /account/logout`
 
-Do not reimplement login, authorize, refresh, or logout unless the app needs custom behavior that preserves the same safeguards: sanitized `return_to`, same-origin logout POST checks, `cache-control: no-store`, committed session cookies on the returned response, and request-context response headers.
+Do not reimplement login, authorize, refresh, or logout unless the app needs custom behavior that preserves the same safeguards: `return_to` limited to the same origin, same-origin logout POST checks, `cache-control: no-store`, committed session cookies on the returned response, and request-context response headers.
 
 ## Server Rendering
 
@@ -85,7 +85,7 @@ Server-rendered account UI must keep session reads and token refresh separate:
 - Use `customerSession.getAccessToken()` before Customer Account GraphQL calls. It returns only a currently usable access token.
 - If `isLoggedIn()` is true but `getAccessToken()` returns `undefined`, redirect once to `/account/refresh?return_to=...` from a dynamic server route, then retry the account page after the refresh route commits cookies.
 - If `isLoggedIn()` is false, show login UI or redirect to `/account/login` instead of sending the user to `/account/refresh`.
-- Include a one-shot refresh guard in `return_to`; if the refreshed page still has no usable access token, fall back to login or an account error state.
+- Include a one-shot refresh guard in the `return_to` path, such as `/account?refreshed=1`; if the refreshed page still has no usable access token, fall back to login or an account error state.
 - Server Components and layouts should only receive `ReadonlyCustomerSessionManager`, so they cannot call `getOrRefreshAccessToken()`.
 
 Wrap header/account-link UI in the framework's streaming primitive when possible so the shell can render before session state resolves.
@@ -108,4 +108,4 @@ The same `@shopify/hydrogen/ts-plugin` and `hydrogen gql check` setup from the `
 
 ## Local OAuth
 
-Customer Account OAuth needs a public HTTPS callback origin. For local examples, use a trusted local HTTPS hostname and register the exact `/account/authorize` callback URL in the Customer Account app configuration.
+Customer Account OAuth needs a public HTTPS origin. For local development, follow the `hydrogen-local-https` skill; its Vite plugin provisions a trusted certificate and pushes the callback, JavaScript origin, and logout URLs through Shopify CLI outside CI.

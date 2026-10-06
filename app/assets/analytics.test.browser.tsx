@@ -4,7 +4,7 @@ import {
   type CartData,
   type CartState,
   type CartStore,
-  type EventPayloads,
+  type PayloadFor,
   type StorefrontAnalytics,
 } from "@shopify/hydrogen";
 import * as assert from "remix/assert";
@@ -25,7 +25,7 @@ import {
 
 interface PublishedEvent {
   event: AnalyticsEventName;
-  payload: EventPayloads;
+  payload: PayloadFor<AnalyticsEventName>;
 }
 
 describe("storefront analytics", () => {
@@ -260,13 +260,9 @@ function installAnalytics(t: TestContext): PublishedEvent[] {
     publish(event, ...[payload = {}]) {
       events.push({ event, payload });
     },
-    subscribe() {
-      return () => {};
-    },
     addDestination() {
       return () => {};
     },
-    destroy() {},
     getConfig() {
       return {
         shop: {

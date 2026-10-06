@@ -18,7 +18,7 @@
     "isolatedModules": true,
     "skipLibCheck": true,
     "jsx": "react-jsx",
-    "jsxImportSource": "remix/ui",
+    "jsxImportSource": "remix/component",
     "plugins": [
       {
         "name": "@shopify/hydrogen/ts-plugin"

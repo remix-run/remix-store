@@ -17,7 +17,7 @@ import {
   ref,
   unsafeHTML,
   type Handle,
-} from "remix/ui";
+} from "remix/component";
 
 import type {
   ImageData,

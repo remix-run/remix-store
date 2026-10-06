@@ -1,4 +1,4 @@
-import type { Handle, RemixNode } from "remix/ui";
+import type { Handle, RemixNode } from "remix/component";
 
 /**
  * Mounts a client entry component outside the real reconciler so prop-diff

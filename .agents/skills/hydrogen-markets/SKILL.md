@@ -7,7 +7,7 @@ description: >
   or Storefront API @inContext wiring.
 metadata:
   source: "@shopify/hydrogen"
-  version: "2026.10.0-preview.3"
+  version: "2026.10.0-preview.4"
   hash: "sha256:ee0dfb62e65ca62e096e2dbbfbe5ba7949adbb61c78c09bde4eb8824e538d1a6"
 ---
 

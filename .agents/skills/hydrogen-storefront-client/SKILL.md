@@ -7,8 +7,8 @@ description: >
   or wires up storefront data fetching in any framework.
 metadata:
   source: "@shopify/hydrogen"
-  version: "2026.10.0-preview.3"
-  hash: "sha256:af755b1daded06f898c98c92c92cd7419e9b26a9c24e83a40d6fa6f0f5ae3f8f"
+  version: "2026.10.0-preview.4"
+  hash: "sha256:14d5005ae1b152fc680841584efa7bcaad5dad8dc066fcdcf5cb54a6434d2422"
 ---
 
 # `@shopify/hydrogen`
@@ -287,8 +287,6 @@ try {
 Every successful result includes `headers` (the raw `Headers` object from the response) — useful for forwarding `Set-Cookie` headers in SSR or reading rate-limit metadata.
 
 A 200 response with GraphQL `errors` does NOT throw — partial success is valid in GraphQL. Non-200 responses, timeouts, network failures, and JSON parse errors all throw `StorefrontApiError` (or the `StorefrontTimeoutError` subclass).
-
-`StorefrontApiError` carries GraphQL error context (`locations`, `path`, `extensions`) when available. `extensions.code` enables programmatic branching (e.g. retry on `"THROTTLED"`). `toJSON()` strips dev-only fields (`queryText`, `variables`, `stack`) — safe for error reporters.
 
 ---
 

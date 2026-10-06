@@ -3,8 +3,8 @@ import {
   type ShopifyScriptTagDescriptor,
   type ShopifyScriptTagDescriptors,
 } from "@shopify/hydrogen";
-import { css, unsafeHTML, type Handle, type RemixNode } from "remix/ui";
-import { ImportMap } from "remix/ui/server";
+import { css, unsafeHTML, type Handle, type RemixNode } from "remix/component";
+import { ImportMap } from "remix/component/server";
 
 import { Footer } from "../assets/public/footer.tsx";
 import {

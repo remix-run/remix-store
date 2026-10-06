@@ -9,7 +9,7 @@ description: >
 
 # Build and Review Remix Store
 
-This repository uses **Remix 3 RC**, not React Router framework mode, and the
+This repository uses **stable Remix 3**, not React Router framework mode, and the
 **framework-agnostic `@shopify/hydrogen` preview**, not Hydrogen React. Preserve
 those choices.
 
@@ -119,8 +119,8 @@ state between renders; event handlers change that state and call
 `handle.update()` to request another render:
 
 ```tsx
-import { on } from 'remix/ui'
-import type { Handle } from 'remix/ui'
+import { on } from 'remix/component'
+import type { Handle } from 'remix/component'
 
 function Counter(handle: Handle) {
   let count = 0
@@ -188,7 +188,7 @@ carefully and always run an Oxygen production build.
 - Do not add `react-router`, `@react-router/dev`, `@shopify/hydrogen-react`, or
   `@shopify/remix-oxygen` patterns. Do not create React Router route modules,
   loaders, actions, `<Form>`, fetchers, or generated `+types` files.
-- Keep exact prerelease versions in `package.json` unless the user requests an
+- Keep exact versions in `package.json` unless the user requests an
   upgrade. Do not run `hydrogen setup` on this existing app; use
   `hydrogen skills sync` when only the packaged skills need updating.
 - Put hydratable browser components under `app/assets/` and export them with
@@ -199,8 +199,10 @@ carefully and always run an Oxygen production build.
   filename suffix, defines the boundary.
 - Add request values through typed router context keys and middleware; avoid
   module-global request state.
-- Prefer Web APIs, native links, buttons, and forms, plus existing first-party
-  Remix primitives, over custom abstractions.
+- Prefer Web APIs, native links, buttons, and forms over custom abstractions.
+  The runtime lives in `remix/component`; headless primitives and animations
+  require the separate, unstable `@remix-run/ui` package, which this app does
+  not currently use.
 - Raw HTML rendered by JSX must be explicitly authorized with `unsafeHTML()`.
   Sanitize untrusted HTML first; `unsafeHTML()` preserves input and does not
   sanitize it. Direct DOM properties such as `template.innerHTML` are not JSX

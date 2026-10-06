@@ -8,7 +8,7 @@ description: >
   mutation forms. Framework agnostic.
 metadata:
   source: "@shopify/hydrogen"
-  version: "2026.10.0-preview.3"
+  version: "2026.10.0-preview.4"
   hash: "sha256:e640c0e641e8a1c7de64bf044681783bda105e46226ea2f0da48cf6b1d767446"
 ---
 

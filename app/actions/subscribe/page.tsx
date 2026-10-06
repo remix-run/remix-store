@@ -1,4 +1,4 @@
-import { css, type Handle } from "remix/ui";
+import { css, type Handle } from "remix/component";
 
 import { PageTitle } from "../../assets/public/page-title.tsx";
 import {

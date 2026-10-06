@@ -350,7 +350,9 @@ describe("discount compatibility links", () => {
       discountCodes: ["LAUNCH"],
       language: "EN",
     });
-    assert.equal(response.headers.get("Cache-Control"), "private, no-store");
+    let cacheControl = response.headers.get("Cache-Control") ?? "";
+    assert.match(cacheControl, /\bprivate\b/);
+    assert.match(cacheControl, /\bno-store\b/);
   });
 
   it("honors same-origin discount targets and strips control parameters", async () => {

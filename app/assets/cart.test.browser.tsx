@@ -2,7 +2,7 @@ import { AnalyticsEvent } from "@shopify/hydrogen";
 import * as assert from "remix/assert";
 import * as s from "remix/data-schema";
 import { describe, it, type TestContext } from "remix/test";
-import { render } from "remix/ui/test";
+import { render } from "remix/component/test";
 
 import type { SerializedCartData } from "../data/cart.ts";
 import { CA_MARKET } from "../lib/public/market.ts";
@@ -819,13 +819,9 @@ function useAnalyticsSpy(t: TestContext): PublishedCartView[] {
     publish(event: string, payload: PublishedCartView["payload"]) {
       events.push({ event, payload });
     },
-    subscribe() {
-      return () => {};
-    },
     addDestination() {
       return () => {};
     },
-    destroy() {},
     getConfig() {
       return {
         shop: {

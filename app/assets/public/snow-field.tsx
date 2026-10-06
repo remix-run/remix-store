@@ -1,4 +1,4 @@
-import { clientEntry, css, ref } from "remix/ui";
+import { clientEntry, css, ref } from "remix/component";
 
 type Particle = {
   alpha: number;

@@ -1,6 +1,6 @@
 import { createController } from "remix/router";
 import { redirect } from "remix/response/redirect";
-import type { RemixNode, SerializableObject } from "remix/ui";
+import type { RemixNode, SerializableObject } from "remix/component";
 
 import {
   createAdminCustomerClient,

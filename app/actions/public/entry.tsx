@@ -7,7 +7,7 @@ import {
   importModule,
   preloadShim,
 } from "remix/multiple-import-maps-polyfill";
-import { navigate as remixNavigate, run } from "remix/ui";
+import { navigate as remixNavigate, run } from "remix/component";
 
 import { createPageViewPublisher } from "../../assets/public/analytics.tsx";
 import { getBrowserCartStore } from "../../assets/public/cart-store.ts";

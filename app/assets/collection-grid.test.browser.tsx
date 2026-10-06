@@ -1,6 +1,6 @@
 import * as assert from "remix/assert";
 import { describe, it } from "remix/test";
-import { render } from "remix/ui/test";
+import { render } from "remix/component/test";
 
 import type { ProductCardData } from "../data/storefront.ts";
 import { CollectionProductGrid } from "./public/collection-grid.tsx";

@@ -1,5 +1,5 @@
 import { Renderer } from "remix/middleware/render";
-import { createElement, type RemixNode } from "remix/ui";
+import { createElement, type RemixNode } from "remix/component";
 import {
   createMiddleware,
   createRouter,

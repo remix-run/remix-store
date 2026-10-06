@@ -7,7 +7,11 @@ import {
   type ProductPayload,
   type StorefrontAnalytics,
 } from "@shopify/hydrogen";
-import { clientEntry, type Handle, type SerializableObject } from "remix/ui";
+import {
+  clientEntry,
+  type Handle,
+  type SerializableObject,
+} from "remix/component";
 
 let analytics: StorefrontAnalytics | null = null;
 

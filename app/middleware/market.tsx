@@ -1,7 +1,7 @@
 import { Renderer } from "remix/middleware/render";
 import { createContextKey, type Middleware } from "remix/router";
 import { redirect } from "remix/response/redirect";
-import { createElement, type RemixNode } from "remix/ui";
+import { createElement, type RemixNode } from "remix/component";
 
 import { NotFoundPage } from "../actions/pages.tsx";
 import {

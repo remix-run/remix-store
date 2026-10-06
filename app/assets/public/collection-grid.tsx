@@ -14,7 +14,7 @@ import {
   on,
   type Handle,
   type SerializableObject,
-} from "remix/ui";
+} from "remix/component";
 
 import type {
   ProductCardData,

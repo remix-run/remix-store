@@ -7,8 +7,8 @@ description: >
   Shop Pay, or framework middleware integration.
 metadata:
   source: "@shopify/hydrogen"
-  version: "2026.10.0-preview.3"
-  hash: "sha256:171011f6a50702bba625aac6ef6780734833a6703f24fb0def1702af80f08bcf"
+  version: "2026.10.0-preview.4"
+  hash: "sha256:1145c52f9e45fdbab86b8a6e381d82215c297416479e61845d82b17094f63dc5"
 ---
 
 # Hydrogen Storefront Smoke Tests
@@ -72,7 +72,7 @@ Collection and search:
 Analytics:
 - [ ] Page view fires on initial load and client navigations
 - [ ] Product/collection/search/cart view events fire once per route data change
-- [ ] Cart tracking is wired once via trackCartAnalytics(cartStore) (React/Vue: useCartAnalytics()), delta events fire on confirmed cart data changes, and the cart query includes updatedAt
+- [ ] Cart tracking is wired once via trackCartAnalytics(cartStore) (React/Vue: useCartAnalytics()), and delta events fire on confirmed cart data changes
 - [ ] No browser module reads private env variables
 - [ ] Production does not bypass Customer Privacy consent gating (no forced-always-true consent checks)
 
@@ -194,7 +194,7 @@ Expected: a redirect whose `location` header points at Shopify's hosted login, n
 
 - Page view fires on initial load and client navigations.
 - Product/collection/search/cart view events fire once per route data change.
-- Cart tracking is wired once per cart store lifecycle via `trackCartAnalytics(cartStore)` (React/Vue: `useCartAnalytics()`), cart delta events fire on confirmed cart data changes, and the cart query includes `updatedAt`.
+- Cart tracking is wired once per cart store lifecycle via `trackCartAnalytics(cartStore)` (React/Vue: `useCartAnalytics()`), and cart delta events fire on confirmed cart data changes.
 - No browser module reads private env variables.
 - Analytics destinations only receive events after Shopify Customer Privacy allows analytics processing.
 

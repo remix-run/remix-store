@@ -1,4 +1,4 @@
-import { css, type Handle } from "remix/ui";
+import { css, type Handle } from "remix/component";
 
 import type { ProductCardData } from "../../data/storefront.ts";
 import type { MarketPathPrefix } from "../../lib/public/market.ts";

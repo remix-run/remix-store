@@ -1,4 +1,4 @@
-import { css, type Handle } from "remix/ui";
+import { css, type Handle } from "remix/component";
 
 import { CartPageContent } from "../assets/public/cart.tsx";
 import { CollectionProductGrid } from "../assets/public/collection-grid.tsx";

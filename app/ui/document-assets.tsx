@@ -1,5 +1,5 @@
-import type { Handle, RemixNode } from "remix/ui";
-import type { ImportMapData } from "remix/ui/server";
+import type { Handle, RemixNode } from "remix/component";
+import type { ImportMapData } from "remix/component/server";
 
 export interface AssetAttributes {
   [name: string]: boolean | string | undefined;

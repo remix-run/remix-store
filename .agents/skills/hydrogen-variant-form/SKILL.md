@@ -7,7 +7,7 @@ description: >
   Framework agnostic.
 metadata:
   source: "@shopify/hydrogen"
-  version: "2026.10.0-preview.3"
+  version: "2026.10.0-preview.4"
   hash: "sha256:0fef00d18d95c533b2068b630b029146070c82a8d431866210d4f4c757f2291a"
 ---
 

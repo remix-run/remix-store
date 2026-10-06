@@ -5,7 +5,7 @@ import {
   StorefrontTimeoutError,
   type StorefrontApi,
 } from "@shopify/hydrogen";
-import type { SerializableObject } from "remix/ui";
+import type { SerializableObject } from "remix/component";
 
 import type {
   AppStorefrontClient,

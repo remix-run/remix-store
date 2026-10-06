@@ -5,8 +5,8 @@ description: >
   Vite-based frameworks or Next.js.
 metadata:
   source: "@shopify/hydrogen"
-  version: "2026.10.0-preview.3"
-  hash: "sha256:fb07f58bc2be5937dd848d5c23305d019afcadeb31f1b9d55485a852bf42aa79"
+  version: "2026.10.0-preview.4"
+  hash: "sha256:81b4072b849b7eb135b7af20bf9cfa5cd5290c35a299f5658d14c3f6ecf1f07b"
 ---
 
 # Local HTTPS
@@ -34,7 +34,7 @@ import { localHttps } from "@shopify/hydrogen/vite";
 import { defineConfig } from "vite";
 
 const httpsOptions = {
-  enabled: process.env.npm_lifecycle_event === "dev:https" || process.env.VITE_LOCAL_HTTPS === "1",
+  enabled: process.env.npm_lifecycle_event === "dev:https",
 };
 
 export default defineConfig({
@@ -61,7 +61,7 @@ Astro needs its own host and port in addition to the Vite plugin:
 import { LOCAL_HTTPS_DEFAULTS, localHttps } from "@shopify/hydrogen/vite";
 import { defineConfig } from "astro/config";
 
-const enabled = process.env.npm_lifecycle_event === "dev:https" || process.env.VITE_LOCAL_HTTPS === "1";
+const enabled = process.env.npm_lifecycle_event === "dev:https";
 const httpsOptions = { enabled };
 
 export default defineConfig({
@@ -83,7 +83,7 @@ import type { NuxtConfig } from "nuxt/schema";
 type VitePlugin = NonNullable<NonNullable<NuxtConfig["vite"]>["plugins"]>[number];
 
 const httpsOptions = {
-  enabled: process.env.npm_lifecycle_event === "dev:https" || process.env.VITE_LOCAL_HTTPS === "1",
+  enabled: process.env.npm_lifecycle_event === "dev:https",
 };
 const httpsPlugin = localHttps(httpsOptions);
 
@@ -104,10 +104,18 @@ import { defineConfig } from "@solidjs/start/config";
 import { localHttps } from "@shopify/hydrogen/vite";
 
 const httpsOptions = {
-  enabled: process.env.npm_lifecycle_event === "dev:https" || process.env.VITE_LOCAL_HTTPS === "1",
+  enabled: process.env.npm_lifecycle_event === "dev:https",
 };
 const httpsPlugin = localHttps(httpsOptions);
 const devServer = httpsPlugin.api.getDevServerConfig();
+
+// Vinxi reads its bind target from HOST/PORT when the listener starts, after
+// this config has loaded. Setting them here works on every OS; a `HOST=...`
+// prefix in the package script fails on Windows shells.
+if (devServer) {
+  process.env.HOST = devServer.host;
+  process.env.PORT = String(devServer.port);
+}
 
 export default defineConfig({
   server: { https: devServer?.https },
@@ -115,12 +123,11 @@ export default defineConfig({
 });
 ```
 
-Vinxi also needs its bind target and port on startup:
-
 ```json
 {
   "scripts": {
-    "dev:https": "vinxi dev --host local.tryhydrogen.dev --port 5173"
+    "dev": "vinxi dev",
+    "dev:https": "vinxi dev"
   }
 }
 ```
@@ -134,6 +141,14 @@ next dev --experimental-https --hostname local.tryhydrogen.dev --port 5173
 ```
 
 ## Shopify Admin
+
+Outside CI, the `localHttps` Vite plugin uses the installed Shopify CLI to update Customer Account API settings when the server starts. Shopify CLI must include `@shopify/cli-hydrogen` 13.0.4 or later. If the project is not linked to a Hydrogen storefront, Shopify CLI starts the interactive linking flow before it pushes the callback, JavaScript origin, and logout URLs.
+
+The plugin skips Shopify CLI in CI. It also falls back without stopping the development server when Shopify CLI is missing or outdated, linking is cancelled, or the settings cannot be pushed. In these cases, configure the values printed in the terminal manually.
+
+Next.js does not use the Vite plugin, so configure its values manually too.
+
+### Manual Configuration
 
 In the Hydrogen or Headless sales channel, open the storefront's **Customer Account API settings** and configure:
 

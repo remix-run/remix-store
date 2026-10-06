@@ -1,4 +1,4 @@
-import type { Handle, Props } from "remix/ui";
+import type { Handle, Props } from "remix/component";
 
 /** Symbol IDs defined by the sprite sheet inlined in `Document`. */
 export type IconName =

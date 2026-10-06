@@ -1,4 +1,4 @@
-import type { ResolveFrameOptions } from "remix/ui";
+import type { ResolveFrameOptions } from "remix/component";
 
 export async function resolveFrameResponse(
   url: URL,

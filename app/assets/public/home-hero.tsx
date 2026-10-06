@@ -4,7 +4,7 @@ import {
   ref,
   type Handle,
   type SerializableObject,
-} from "remix/ui";
+} from "remix/component";
 
 import type { ImageData } from "../../data/storefront.ts";
 import { PillIcon, pillLinkStyle } from "../../ui/public/pill-link.tsx";

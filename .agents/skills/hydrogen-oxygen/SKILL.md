@@ -7,7 +7,7 @@ description: >
   behavior.
 metadata:
   source: "@shopify/hydrogen"
-  version: "2026.10.0-preview.3"
+  version: "2026.10.0-preview.4"
   hash: "sha256:d93a69671cbf09bd1c5e9edd38a265d01b5123f34a648c94e9971b36322ca963"
 ---
 

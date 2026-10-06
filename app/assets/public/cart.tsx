@@ -8,7 +8,7 @@ import {
   type CartStore,
   type MoneyV2,
 } from "@shopify/hydrogen";
-import { clientEntry, css, on, type Handle } from "remix/ui";
+import { clientEntry, css, on, type Handle } from "remix/component";
 
 import {
   marketPath,

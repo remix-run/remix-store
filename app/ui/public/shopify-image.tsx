@@ -1,4 +1,4 @@
-import { type Handle, type SerializableObject } from "remix/ui";
+import { type Handle, type SerializableObject } from "remix/component";
 
 export interface ShopifyImageData extends SerializableObject {
   altText?: string | null;

@@ -5,7 +5,7 @@ import {
   on,
   type Handle,
   type SerializableObject,
-} from "remix/ui";
+} from "remix/component";
 import { Icon } from "../../ui/public/icon.tsx";
 
 const SubscribeResponseSchema = object({

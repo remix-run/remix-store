@@ -4,7 +4,7 @@ import {
   ref,
   type Handle,
   type SerializableObject,
-} from "remix/ui";
+} from "remix/component";
 
 const MATRIX_SOURCES = {
   "404": "/brand/matrix/error-404.png",

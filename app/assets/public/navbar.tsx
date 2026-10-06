@@ -5,7 +5,7 @@ import {
   ref,
   type Handle,
   type SerializableObject,
-} from "remix/ui";
+} from "remix/component";
 
 import type { NavigationMenuData } from "../../data/storefront.ts";
 

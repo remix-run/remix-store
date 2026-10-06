@@ -1,5 +1,5 @@
 import type { CartErrorState } from "@shopify/hydrogen";
-import { clientEntry, css, on, type Handle } from "remix/ui";
+import { clientEntry, css, on, type Handle } from "remix/component";
 
 import { getBrowserCartStore, getCartApiPath } from "./cart-store.ts";
 import type { MarketPathPrefix } from "../../lib/public/market.ts";

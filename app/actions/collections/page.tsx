@@ -1,4 +1,4 @@
-import { type Handle } from "remix/ui";
+import { type Handle } from "remix/component";
 
 import { CollectionViewed } from "../../assets/public/analytics.tsx";
 import { CollectionProductGrid } from "../../assets/public/collection-grid.tsx";

@@ -12,7 +12,7 @@ import {
   type Schema,
 } from "remix/data-schema";
 import { lazy } from "remix/data-schema/lazy";
-import type { SerializableObject } from "remix/ui";
+import type { SerializableObject } from "remix/component";
 
 import { MemoryStorefrontCache } from "../data/storefront-cache.ts";
 import { render } from "../middleware/render.tsx";
@@ -42,7 +42,9 @@ export function createTestApp(
           jetBrainsMono: "/assets/jet-brains-mono.woff2",
           lexendZetta: "/assets/lexend-zetta.woff2",
         },
-        importMap: { imports: { "remix/ui": "/assets/remix-ui.js" } },
+        importMap: {
+          imports: { "remix/component": "/assets/remix-component.js" },
+        },
         js: [],
       },
       resolveClientEntry(_entryId, component) {

@@ -1,4 +1,4 @@
-import type { SerializableObject } from "remix/ui";
+import type { SerializableObject } from "remix/component";
 
 export type MarketCountry = "US" | "CA";
 export type MarketLocale = "en-US" | "en-CA";

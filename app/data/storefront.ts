@@ -10,7 +10,7 @@ import {
   type StorefrontApi,
   type StorefrontClient,
 } from "@shopify/hydrogen";
-import type { SerializableObject } from "remix/ui";
+import type { SerializableObject } from "remix/component";
 
 import { getFocalPoint, type FocalPoint } from "../lib/image-utils.ts";
 import {

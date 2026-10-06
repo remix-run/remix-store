@@ -1,6 +1,6 @@
 import * as assert from "remix/assert";
 import { describe, it, type TestContext } from "remix/test";
-import { render } from "remix/ui/test";
+import { render } from "remix/component/test";
 
 import { SnowField } from "./public/snow-field.tsx";
 

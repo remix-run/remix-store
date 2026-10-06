@@ -1,4 +1,4 @@
-import { css, unsafeHTML, type Handle } from "remix/ui";
+import { css, unsafeHTML, type Handle } from "remix/component";
 
 import { PageTitle } from "../../assets/public/page-title.tsx";
 import type { PolicyData } from "../../data/policies.ts";

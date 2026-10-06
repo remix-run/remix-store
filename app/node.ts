@@ -42,7 +42,7 @@ const assetServerOptions: Parameters<typeof createAssetServer>[0] = {
       "process.env.NODE_ENV": JSON.stringify(nodeEnv),
     },
     loaders: isHmr
-      ? [(await import("remix/ui-hmr/assets")).uiHmr()]
+      ? [(await import("remix/component-hmr/assets")).componentHmr()]
       : undefined,
   },
 };
