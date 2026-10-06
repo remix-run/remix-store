@@ -666,8 +666,8 @@ function CartView(handle: Handle<CartViewProps>) {
                     </span>
                   </div>
                 ) : null}
-                <FreeShippingProgress
-                  locale={handle.props.market.locale}
+                <FreeShippingNotice
+                  market={handle.props.market}
                   subtotal={cart.cost.subtotalAmount}
                 />
               </div>
@@ -706,8 +706,8 @@ function CartView(handle: Handle<CartViewProps>) {
                     </span>
                   </div>
                 ) : null}
-                <FreeShippingProgress
-                  locale={handle.props.market.locale}
+                <FreeShippingNotice
+                  market={handle.props.market}
                   subtotal={cart.cost.subtotalAmount}
                 />
                 <p mix={taxNoteStyle}>
@@ -775,59 +775,63 @@ function getLineCompareAtPrice(
   return compareAtPrice;
 }
 
-function FreeShippingProgress(
+function FreeShippingNotice(
   handle: Handle<{
-    locale: MarketLocale;
+    market: ActiveMarket;
     subtotal: { amount: string; currencyCode: string };
   }>,
 ) {
   return () => {
-    let { subtotal } = handle.props;
-    if (subtotal.currencyCode !== "USD") return null;
-
+    let { market, subtotal } = handle.props;
     let threshold = 75;
     let amount = Number(subtotal.amount);
-    if (!Number.isFinite(amount)) return null;
-
-    let remaining = Math.max(0, threshold - amount);
-    let percentage = Math.round(
-      Math.min(1, Math.max(0, amount / threshold)) * 100,
-    );
-    let achieved = remaining === 0;
-    let remainingPrice = money(
-      {
-        amount: remaining.toFixed(2),
-        currencyCode: subtotal.currencyCode,
-      },
-      handle.props.locale,
-    );
+    // Only compare the subtotal with the minimum when both are in USD.
+    let showProgress =
+      subtotal.currencyCode === "USD" &&
+      Boolean(subtotal.amount.trim()) &&
+      Number.isFinite(amount) &&
+      amount >= 0;
+    let achieved = amount >= threshold;
+    let percentage = Math.min(Math.floor((amount / threshold) * 100), 100);
 
     return (
-      <div
-        role="group"
-        aria-label="Free shipping progress"
-        mix={freeShippingStyle}
-      >
-        <p>
-          {achieved
-            ? "Your shipping is free!"
-            : `Add ${remainingPrice} more for free shipping`}
-        </p>
-        <div data-progress-track="true">
-          <span
-            role="progressbar"
-            aria-label={
-              achieved
-                ? "Free shipping unlocked"
-                : `${percentage}% toward free shipping`
-            }
-            aria-valuemin={0}
-            aria-valuemax={100}
-            aria-valuenow={percentage}
-            data-complete={achieved || undefined}
-            style={{ width: `${percentage}%` }}
-          />
-        </div>
+      <div mix={freeShippingStyle}>
+        {showProgress ? (
+          <>
+            <p>
+              {achieved
+                ? "You've reached the US$75 free shipping minimum."
+                : `Add ${money(
+                    {
+                      amount: (threshold - amount).toFixed(2),
+                      currencyCode: "USD",
+                    },
+                    market.locale,
+                  )} more for free shipping`}
+            </p>
+            <div data-progress-track="true">
+              <span
+                role="progressbar"
+                aria-label="Free shipping progress"
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-valuenow={percentage}
+                data-complete={achieved || undefined}
+                style={{ width: `${percentage}%` }}
+              />
+            </div>
+          </>
+        ) : null}
+        {market.country === "US" ? (
+          <p mix={shippingConfirmationStyle}>
+            Shipping options confirmed at checkout.
+          </p>
+        ) : (
+          <p>
+            Free shipping with a US$75 minimum. See your shipping options at
+            checkout.
+          </p>
+        )}
       </div>
     );
   };
@@ -1286,13 +1290,19 @@ const drawerSubtotalStyle = css({
   },
   "& span": { fontSize: ".875rem" },
 });
+const shippingConfirmationStyle = css({
+  color: "rgba(255,255,255,.7)",
+  fontSize: ".75rem !important",
+});
 const freeShippingStyle = css({
+  display: "flex",
+  flexDirection: "column",
+  gap: "8px",
   "& p": { fontSize: ".875rem", lineHeight: "20px", margin: 0 },
   "& [data-progress-track]": {
     background: "rgba(255,255,255,.18)",
     borderRadius: "999px",
     height: "8px",
-    marginTop: "8px",
     overflow: "hidden",
   },
   '& [role="progressbar"]': {

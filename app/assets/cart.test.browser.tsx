@@ -361,6 +361,141 @@ describe("cart interactions", () => {
     assert.match(container.textContent, /US\$10\.00/);
   });
 
+  it("updates USD shipping progress in the drawer and page without promising free shipping", async (t) => {
+    let api = createCartApiMock(t);
+    let cart = createCart();
+    cart.cost.subtotalAmount.amount = "50";
+    let initialData = { cart };
+    t.after(resetBrowserCartStore);
+
+    let { $$, act, container, cleanup } = render(
+      <>
+        <CartShell initialData={initialData} />
+        <CartPageContent initialData={initialData} />
+      </>,
+    );
+    t.after(cleanup);
+    await flushAsync(act);
+
+    for (let progress of $$('[role="progressbar"]')) {
+      assert.equal(progress.getAttribute("aria-valuenow"), "66");
+    }
+    assert.equal($$('[role="progressbar"]').length, 2);
+    assert.match(container.textContent, /Add \$25\.00 more/);
+    assert.match(
+      container.textContent,
+      /Shipping options confirmed at checkout/,
+    );
+    assert.doesNotMatch(container.textContent, /Free shipping with a US\$75/);
+
+    let quantity = 1;
+    for (let [amount, percentage] of [
+      ["74.99", "99"],
+      ["75", "100"],
+      ["150", "100"],
+      ["0", "0"],
+    ] as const) {
+      let mutation = api.enqueue();
+      let increase = $$('button[aria-label="Increase quantity"]')[1];
+      assert.ok(increase instanceof HTMLButtonElement);
+      await act(() => increase.click());
+      await waitFor(() => api.requests.length === quantity, act);
+
+      let settledCart = createCart(++quantity);
+      settledCart.cost.subtotalAmount.amount = amount;
+      settledCart.cost.totalAmount.amount = amount;
+      mutation.resolve({ cart: settledCart, userErrors: [], warnings: [] });
+      await waitFor(
+        () =>
+          increase.closest("li")?.hasAttribute("aria-busy") === false &&
+          $$('[role="progressbar"]').length === 2 &&
+          Array.from($$('[role="progressbar"]')).every(
+            (progress) => progress.getAttribute("aria-valuenow") === percentage,
+          ),
+        act,
+      );
+
+      assert.doesNotMatch(
+        container.textContent,
+        /Your shipping is free|Free shipping unlocked/,
+      );
+      if (Number(amount) >= 75) {
+        assert.match(
+          container.textContent,
+          /You've reached the US\$75 free shipping minimum/,
+        );
+      } else {
+        assert.match(
+          container.textContent,
+          /Add \$[\d.]+ more for free shipping/,
+        );
+        assert.doesNotMatch(container.textContent, /You've reached/);
+      }
+    }
+  });
+
+  it("keeps the USD minimum explanation when Canadian cart money changes to CAD", async (t) => {
+    let api = createCartApiMock(t);
+    let cart = createCart();
+    cart.cost.subtotalAmount.amount = "50";
+    let initialData = { cart };
+    t.after(resetBrowserCartStore);
+
+    let { $$, act, container, cleanup } = render(
+      <>
+        <CartShell initialData={initialData} market={CA_MARKET} />
+        <CartPageContent initialData={initialData} market={CA_MARKET} />
+      </>,
+    );
+    t.after(cleanup);
+    await flushAsync(act);
+
+    assert.equal($$('[role="progressbar"]').length, 2);
+    for (let progress of $$('[role="progressbar"]')) {
+      assert.equal(progress.getAttribute("aria-valuenow"), "66");
+    }
+    assert.match(container.textContent, /Add US\$25\.00 more/);
+    assert.equal(
+      (
+        container.textContent.match(/Free shipping with a US\$75 minimum/g) ??
+        []
+      ).length,
+      2,
+    );
+    assert.doesNotMatch(
+      container.textContent,
+      /Shipping options confirmed at checkout/,
+    );
+
+    let mutation = api.enqueue();
+    let increase = $$('button[aria-label="Increase quantity"]')[1];
+    assert.ok(increase instanceof HTMLButtonElement);
+    await act(() => increase.click());
+    await waitFor(() => api.requests.length === 1, act);
+
+    let settledCart = createCart(2);
+    settledCart.cost.subtotalAmount = { amount: "106", currencyCode: "CAD" };
+    settledCart.cost.totalAmount = { amount: "106", currencyCode: "CAD" };
+    mutation.resolve({ cart: settledCart, userErrors: [], warnings: [] });
+    await waitFor(() => $$('[role="progressbar"]').length === 0, act);
+
+    assert.equal(
+      (
+        container.textContent.match(/Free shipping with a US\$75 minimum/g) ??
+        []
+      ).length,
+      2,
+    );
+    assert.match(
+      container.textContent,
+      /See your shipping options at checkout/,
+    );
+    assert.doesNotMatch(
+      container.textContent,
+      /more for free shipping|You've reached|Your shipping is free/,
+    );
+  });
+
   it("closes after removing the final line without rendering an empty dialog", async (t) => {
     useDesktopCartViewport(t);
     let api = createCartApiMock(t);
