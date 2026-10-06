@@ -81,8 +81,8 @@ export function Document(handle: Handle<DocumentProps>) {
           />
           <meta name="theme-color" content="#000000" />
           <meta name="color-scheme" content="dark" />
-          {assets.css.map((attributes) => (
-            <link {...attributes} rel="stylesheet" />
+          {assets.stylesheets.map((href) => (
+            <link href={href} rel="stylesheet" />
           ))}
           <meta property="og:type" content={socialType} />
           <meta property="og:title" content={title} />
@@ -145,11 +145,11 @@ export function Document(handle: Handle<DocumentProps>) {
             crossOrigin="anonymous"
           />
           <style innerHTML={unsafeHTML(globalStyles(assets.fonts))}></style>
-          <ImportMap value={assets.importMap} />
-          {assets.js.map((attributes) => (
-            <link {...attributes} rel="modulepreload" />
+          <ImportMap value={assets.scriptEntry.importMap} />
+          {assets.scriptEntry.preloads.map((href) => (
+            <link href={href} rel="modulepreload" />
           ))}
-          <script src={assets.entry} type="module"></script>
+          <script src={assets.scriptEntry.href} type="module"></script>
           {shopifyScripts.links.map((descriptor) => (
             <ShopifyTag descriptor={descriptor} />
           ))}

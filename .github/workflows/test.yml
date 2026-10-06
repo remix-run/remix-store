@@ -32,9 +32,13 @@ jobs:
         run: pnpm test
 
   e2e:
-    name: 🎭 End-to-end
+    name: 🎭 End-to-end (${{ matrix.runtime }})
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        runtime: [node, oxygen-dev, oxygen-preview]
     steps:
       - name: ⬇️ Checkout repo
         uses: actions/checkout@v4
@@ -57,5 +61,11 @@ jobs:
       - name: 🔐 Configure local environment
         run: cp .env.example .env
 
+      - name: 🏗️ Build Oxygen Worker
+        if: matrix.runtime == 'oxygen-preview'
+        run: pnpm build:oxygen
+
       - name: 🎭 Run end-to-end tests
         run: pnpm test:e2e
+        env:
+          E2E_RUNTIME: ${{ matrix.runtime }}

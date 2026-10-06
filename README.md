@@ -40,11 +40,13 @@ pnpm lint
 pnpm typecheck
 pnpm test
 pnpm test:e2e
+pnpm test:e2e:oxygen:dev
+pnpm test:e2e:oxygen
 pnpm build:oxygen
 pnpm preview:oxygen
 ```
 
-The end-to-end suite starts the native Node app with a deterministic local Storefront fixture by default. Set `BASE_URL` to run it against an existing Oxygen or Fly deployment.
+The end-to-end suites use a deterministic local Storefront fixture: `test:e2e` runs native Node, `test:e2e:oxygen:dev` runs MiniOxygen development, and `test:e2e:oxygen` builds and runs the production Worker. Pull requests exercise all three runtimes. Set `BASE_URL` to target an existing deployment instead.
 
 The Oxygen build produces a self-contained Worker at `dist/ssr/index.js` and browser assets in `dist/client/`. The Node server compiles browser modules through `remix/assets` for Fly.
 
@@ -65,6 +67,8 @@ Oxygen preview deployments use `.github/workflows/oxygen-deployment.yml`. Fly se
 
 - `app/routes.ts` defines the typed route contract.
 - `app/router.ts` owns the shared Fetch app, routes, middleware, and runtime boundary.
+- `app/assets.ts` defines the shared metadata contract and document asset factory.
+- `app/assets.node.ts` constructs the native Remix asset server; `app/assets.oxygen.ts` supplies the Worker-safe manifest resolver.
 - `app/node.ts` composes Node static files, Remix Assets, rendering, and routing.
 - `app/middleware/storefront.ts` creates a request-scoped Hydrogen Storefront client.
 - `app/middleware/render.tsx` contains runtime-neutral streaming SSR.
@@ -72,7 +76,9 @@ Oxygen preview deployments use `.github/workflows/oxygen-deployment.yml`. Fly se
 - `server.node.ts` owns the Node/Fly-compatible HTTP lifecycle.
 - `app/entry.oxygen.ts` composes and serves the Oxygen Worker runtime.
 - `app/actions/public/entry.tsx` hydrates browser components on both targets.
-- `vite/remix-oxygen.ts` owns the temporary Remix 3/Oxygen build integration.
+- `vite/assets.ts` discovers asset roots and creates dev/build manifests; development discovery has its own graph so it cannot consume MiniOxygen cache invalidations.
+- `vite/client-entry.ts` rewrites Vite island identities to portable `file:app/…#Export` keys.
+- `vite/remix-oxygen.ts` completes the manifest and bundles one deployable Worker. This integration is local; no Pitlane or fullstack plugin dependency is required.
 
 ## License
 

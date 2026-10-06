@@ -18,7 +18,9 @@
     "typecheck": "tsc --noEmit && hydrogen gql check --fail-on-warn && node scripts/check-admin-graphql.mjs",
     "format": "oxfmt .",
     "test": "remix test",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "test:e2e:oxygen": "pnpm build:oxygen && E2E_RUNTIME=oxygen-preview playwright test",
+    "test:e2e:oxygen:dev": "E2E_RUNTIME=oxygen-dev playwright test"
   },
   "dependencies": {
     "@shopify/hydrogen": "2026.10.0-preview.4",
@@ -26,7 +28,6 @@
     "sanitize-html": "2.17.6"
   },
   "devDependencies": {
-    "@hiogawa/vite-plugin-fullstack": "0.0.11",
     "@shopify/cli": "4.5.2",
     "@shopify/mini-oxygen": "4.2.1",
     "@shopify/oxygen-workers-types": "4.2.0",
@@ -34,10 +35,10 @@
     "@types/sanitize-html": "2.16.1",
     "graphql": "16.14.0",
     "magic-string": "0.30.21",
-    "oxc-parser": "0.141.0",
     "oxfmt": "0.61.0",
     "oxlint": "1.76.0",
     "playwright": "1.62.1",
+    "postcss-value-parser": "4.2.0",
     "typescript": "6.0.3",
     "vite": "8.2.0"
   },
@@ -51,11 +52,6 @@
       "qs": "6.15.3",
       "ws": "8.21.1",
       "cookie": "1.0.2"
-    },
-    "peerDependencyRules": {
-      "allowedVersions": {
-        "@hiogawa/vite-plugin-fullstack>vite": "8"
-      }
     }
   }
 }

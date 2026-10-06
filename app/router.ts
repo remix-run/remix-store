@@ -39,7 +39,7 @@ const passThrough: Middleware = (_context, next) => next();
 function createAppMiddleware(options: AppOptions) {
   return createMiddleware(
     options.platform ?? passThrough,
-    options.renderer,
+    ...options.renderer,
     errorPages(),
     market(),
     storefront(options.storefront),

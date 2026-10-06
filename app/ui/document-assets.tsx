@@ -1,11 +1,7 @@
+import type { ScriptEntry } from "remix/assets";
 import type { Handle, RemixNode } from "remix/component";
-import type { ImportMapData } from "remix/component/server";
 
-export interface AssetAttributes {
-  [name: string]: boolean | string | undefined;
-}
-
-/** Resolved webfont URLs, shared by `@font-face` rules and preload links. */
+/** Resolved webfont URLs, shared by @font-face and preload links. */
 export interface DocumentFonts {
   interItalic: string;
   interRoman: string;
@@ -14,11 +10,9 @@ export interface DocumentFonts {
 }
 
 export interface DocumentAssets {
-  css: AssetAttributes[];
-  entry: string;
+  scriptEntry: ScriptEntry;
+  stylesheets: string[];
   fonts: DocumentFonts;
-  importMap: ImportMapData;
-  js: AssetAttributes[];
 }
 
 interface DocumentAssetsProviderProps extends DocumentAssets {
@@ -29,12 +23,9 @@ export function DocumentAssetsProvider(
   handle: Handle<DocumentAssetsProviderProps, DocumentAssets>,
 ) {
   handle.context.set({
-    css: handle.props.css,
-    entry: handle.props.entry,
+    scriptEntry: handle.props.scriptEntry,
+    stylesheets: handle.props.stylesheets,
     fonts: handle.props.fonts,
-    importMap: handle.props.importMap,
-    js: handle.props.js,
   });
-
   return () => <>{handle.props.children}</>;
 }

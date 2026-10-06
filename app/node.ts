@@ -1,110 +1,29 @@
-import * as path from "node:path";
-
-import { createAssetServer } from "remix/assets";
 import { compression } from "remix/middleware/compression";
 import { staticFiles } from "remix/middleware/static";
 import type { Middleware } from "remix/router";
 
+import { getDocumentAssets } from "./assets.ts";
+import { assets } from "./assets.node.ts";
 import { render } from "./middleware/render.tsx";
-import type { DocumentFonts } from "./ui/document-assets.tsx";
 import { createApp } from "./router.ts";
 
-const nodeEnv = process.env.NODE_ENV ?? "development";
-const isDevelopment = nodeEnv === "development";
-const buildId = process.env.ASSET_BUILD_ID;
-const isHmr = Boolean(isDevelopment && process.env.REMIX_NODE_HMR);
-
-const assetServerOptions: Parameters<typeof createAssetServer>[0] = {
-  basePath: "/assets",
-  rootDir: process.cwd(),
-  mounts: {
-    app: "app",
-    node_modules: "node_modules",
-  },
-  allowFiles: ["app/**/public/**"],
-  allowPackages: ["remix", "@shopify/hydrogen"],
-  denyFiles: ["app/**/*.test.*", "app/**/*.spec.*"],
-  files: { extensions: [".woff2"] },
-  sourceMaps: isDevelopment ? "external" : undefined,
-  minify: !isDevelopment,
-  watch: isDevelopment
-    ? { ignore: ["dist/**", "node_modules/**", "test-results/**"] }
-    : false,
-  hmr: isHmr
-    ? {
-        channel: async () =>
-          (await import("remix/node-hmr/runtime")).createBrowserHmrChannel(),
-        moduleImporter: "remix/multiple-import-maps-polyfill",
-      }
-    : undefined,
-  scripts: {
-    define: {
-      "process.env.NODE_ENV": JSON.stringify(nodeEnv),
-    },
-    loaders: isHmr
-      ? [(await import("remix/component-hmr/assets")).componentHmr()]
-      : undefined,
-  },
-};
-if (buildId) assetServerOptions.fingerprint = true;
-
-const assetServer = createAssetServer(assetServerOptions);
-
-const browserEntry = "app/actions/public/entry.tsx";
-const browserScriptEntry = await assetServer.getScriptEntry(browserEntry);
-export const browserEntryHref = browserScriptEntry.href;
-export const productDetailsEntryHref = await assetServer.getHref(
+const documentAssets = await getDocumentAssets(assets);
+export const browserEntryHref = documentAssets.scriptEntry.href;
+export const fonts = documentAssets.fonts;
+export const productDetailsEntryHref = await assets.getHref(
   "app/assets/public/product-details.tsx",
 );
-const siteStylesHref = await assetServer.getHref("app/assets/public/site.css");
-const fontDir = "app/assets/public/font";
-export const fonts: DocumentFonts = {
-  interItalic: await assetServer.getHref(
-    `${fontDir}/inter-italic-latin-var.woff2`,
-  ),
-  interRoman: await assetServer.getHref(
-    `${fontDir}/inter-roman-latin-var.woff2`,
-  ),
-  jetBrainsMono: await assetServer.getHref(`${fontDir}/jet-brains-mono.woff2`),
-  lexendZetta: await assetServer.getHref(`${fontDir}/lexend-zetta-black.woff2`),
-};
-export const snowFieldEntryHref = await assetServer.getHref(
+export const snowFieldEntryHref = await assets.getHref(
   "app/assets/public/snow-field.tsx",
 );
 
 export const app = createApp({
   platform: nodePlatform(),
-  renderer: render({
-    documentAssets: {
-      css: [{ href: siteStylesHref }],
-      entry: browserScriptEntry.href,
-      fonts,
-      importMap: browserScriptEntry.importMap,
-      js: browserScriptEntry.preloads.map((href) => ({ href })),
-    },
-    async resolveClientEntry(entryId, component) {
-      if (!entryId.startsWith("file://")) {
-        throw new Error(
-          `Expected \`import.meta.url\` for clientEntry ID, received '${entryId}'`,
-        );
-      }
-
-      let { href, importMap, preloads } =
-        await assetServer.getScriptEntry(entryId);
-
-      return {
-        href,
-        importMap,
-        exportName:
-          entryId.split("#")[1] || component.name || titleCaseFileName(entryId),
-        preloads,
-      };
-    },
-  }),
+  renderer: render({ assets, documentAssets }),
 });
 
 export function closeNodeApp() {
-  return assetServer.close();
+  return assets.close();
 }
 
 function nodePlatform(): Middleware {
@@ -133,7 +52,7 @@ function nodePlatform(): Middleware {
           return next();
         }
 
-        let response = await assetServer.fetch(context.request);
+        let response = await assets.fetch(context.request);
         if (response && response.status < 400) return response;
 
         // A stale fingerprint during a deploy must not be cached by a CDN.
@@ -146,14 +65,4 @@ function nodePlatform(): Middleware {
       }),
     );
   };
-}
-
-function titleCaseFileName(fileUrl: string): string {
-  let url = new URL(fileUrl);
-  let fileName = path.basename(url.pathname, path.extname(url.pathname));
-  return fileName
-    .split(/[^A-Za-z0-9]+/)
-    .filter(Boolean)
-    .map((segment) => segment[0]!.toUpperCase() + segment.slice(1))
-    .join("");
 }

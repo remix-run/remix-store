@@ -6,7 +6,6 @@
       "node",
       "remix/assets/types/hmr",
       "vite/client",
-      "@hiogawa/vite-plugin-fullstack/types",
       "@shopify/oxygen-workers-types"
     ],
     "module": "NodeNext",

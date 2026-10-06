@@ -3,7 +3,10 @@ import * as http from "node:http";
 import { object, optional, parse, string } from "remix/data-schema";
 import { createRequestListener } from "remix/node-fetch-server";
 
-import { app, closeNodeApp } from "../app/node.ts";
+import { oxygen } from "@shopify/mini-oxygen/vite";
+import { createServer, preview } from "vite";
+
+import { remixOxygen } from "../vite/remix-oxygen.ts";
 import { createCart } from "../test/cart-fixtures.ts";
 
 const appPort = 44_110;
@@ -42,27 +45,57 @@ const storefrontServer = http.createServer(async (request, response) => {
   }
 });
 
-const appServer = http.createServer(
-  createRequestListener((request) =>
-    app.fetch(request, { buyerIp: "127.0.0.1", env }),
-  ),
-);
+await listen(storefrontServer, storefrontPort);
 
-await Promise.all([
-  listen(storefrontServer, storefrontPort),
-  listen(appServer, appPort),
-]);
+const runtime = process.env.E2E_RUNTIME ?? "node";
+let closeApp: () => Promise<void>;
+if (runtime === "node") {
+  let { app, closeNodeApp } = await import("../app/node.ts");
+  let appServer = http.createServer(
+    createRequestListener((request) =>
+      app.fetch(request, { buyerIp: "127.0.0.1", env }),
+    ),
+  );
+  await listen(appServer, appPort);
+  closeApp = async () => {
+    await close(appServer);
+    await closeNodeApp();
+  };
+} else if (runtime === "oxygen-preview" || runtime === "oxygen-dev") {
+  let config = {
+    configFile: false as const,
+    plugins: [
+      oxygen({
+        entry: "./app/entry.oxygen.ts",
+        previewEntry: "./dist/ssr/index.js",
+        env,
+      }),
+      remixOxygen({ compatibilityDate: "2026-04-01" }),
+    ],
+    server: { host: "localhost", port: appPort, strictPort: true },
+    preview: { host: "localhost", port: appPort, strictPort: true },
+  };
+  if (runtime === "oxygen-dev") {
+    let server = await createServer(config);
+    await server.listen();
+    closeApp = () => server.close();
+  } else {
+    let server = await preview(config);
+    closeApp = () =>
+      new Promise<void>((resolve, reject) => {
+        server.httpServer.close((error) => (error ? reject(error) : resolve()));
+      });
+  }
+} else {
+  throw new Error(`Unknown E2E_RUNTIME: ${runtime}`);
+}
 console.log(`E2E fixture server listening on http://localhost:${appPort}`);
 
 let shuttingDown = false;
 async function shutdown() {
   if (shuttingDown) return;
   shuttingDown = true;
-  await Promise.all([
-    close(appServer),
-    close(storefrontServer),
-    closeNodeApp(),
-  ]);
+  await Promise.all([closeApp(), close(storefrontServer)]);
 }
 
 process.on("SIGINT", () => void shutdown().then(() => process.exit(0)));

@@ -34,21 +34,29 @@ export function createTestApp(
   let app = createApp({
     renderer: render({
       documentAssets: {
-        css: [],
-        entry: "/assets/entry.js",
+        stylesheets: [],
+        scriptEntry: {
+          href: "/assets/entry.js",
+          preloads: [],
+          importMap: {
+            imports: { "remix/component": "/assets/remix-component.js" },
+          },
+        },
         fonts: {
           interItalic: "/assets/inter-italic.woff2",
           interRoman: "/assets/inter-roman.woff2",
           jetBrainsMono: "/assets/jet-brains-mono.woff2",
           lexendZetta: "/assets/lexend-zetta.woff2",
         },
-        importMap: {
-          imports: { "remix/component": "/assets/remix-component.js" },
-        },
-        js: [],
       },
-      resolveClientEntry(_entryId, component) {
-        return { href: "/assets/component.js", exportName: component.name };
+      assets: {
+        async getScriptEntry() {
+          return {
+            href: "/assets/component.js",
+            preloads: [],
+            importMap: { imports: {} },
+          };
+        },
       },
     }),
     seasonalSnow: options.seasonalSnow,

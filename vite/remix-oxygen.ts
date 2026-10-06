@@ -1,66 +1,32 @@
-import { existsSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { mkdir, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 
-import fullstack from "@hiogawa/vite-plugin-fullstack";
-import MagicString from "magic-string";
-import { parseSync } from "oxc-parser";
-import {
-  object,
-  optional,
-  parseSafe,
-  record,
-  string,
-  type InferOutput,
-} from "remix/data-schema";
-import type { Plugin, PluginOption } from "vite";
+import { build, type Plugin, type PluginOption } from "vite";
 
-const CLIENT_ENTRY = "app/actions/public/entry";
-const SERVER_ENTRY = "app/entry.oxygen";
-const SERVER_ENVIRONMENT = "ssr";
-const WORKER_PATH = "dist/ssr/index.js";
-const OXYGEN_CONFIG_PATH = "dist/ssr/oxygen.json";
-const ASSETS_MANIFEST_PATH = "dist/ssr/__fullstack_assets_manifest.js";
-const ASSETS_MANIFEST_IMPORT =
-  /import\s+(\w+)\s+from\s*["']\.\/__fullstack_assets_manifest\.js["'];?/;
+import { createAssetsPlugin } from "./assets.ts";
+import { clientEntries } from "./client-entry.ts";
+import { fetchServer } from "./fetch-server.ts";
 
 interface RemixOxygenOptions {
   compatibilityDate?: string;
   serverHandler?: boolean;
+  serverEntry?: string;
+  clientEntry?: string;
+  manifestModule?: string;
+  include?: string[];
 }
 
-const FULLSTACK_ASSET_MANIFEST_SCHEMA = object(
-  {
-    client: record(
-      string(),
-      object({ entry: optional(string()) }, { unknownKeys: "passthrough" }),
-    ),
-  },
-  { unknownKeys: "passthrough" },
-);
-
-type ClientAssets = InferOutput<
-  typeof FULLSTACK_ASSET_MANIFEST_SCHEMA
->["client"];
-
-/**
- * The Remix 3 build adapter for this Oxygen-only app.
- *
- * It owns the client/Worker build order, clientEntry() URL transforms, and the
- * final inlining that keeps the deployed Worker self-contained.
- */
+/** Local Remix asset integration; MiniOxygen remains the Worker runtime adapter. */
 export function remixOxygen({
   compatibilityDate,
   serverHandler = false,
+  serverEntry = "app/entry.oxygen.ts",
+  clientEntry = "app/actions/public/entry.tsx",
+  manifestModule,
+  include,
 }: RemixOxygenOptions = {}): PluginOption {
-  return [
-    fullstack({ serverEnvironments: [SERVER_ENVIRONMENT], serverHandler }),
-    build(compatibilityDate),
-    clientEntryTransform(),
-  ];
-}
-
-function build(compatibilityDate?: string): Plugin {
-  return {
+  let assets = createAssetsPlugin({ serverEntry, manifestModule, include });
+  const buildPlugin: Plugin = {
     name: "remix-oxygen:build",
     config() {
       return {
@@ -70,240 +36,139 @@ function build(compatibilityDate?: string): Plugin {
           client: {
             build: {
               outDir: "dist/client",
-              rollupOptions: {
-                input: CLIENT_ENTRY,
-                output: { minifyInternalExports: false },
-              },
+              rolldownOptions: { input: clientEntry },
             },
           },
-          [SERVER_ENVIRONMENT]: {
+          ssr: {
+            optimizeDeps: { include: ["sanitize-html"] },
             build: {
+              write: false,
               copyPublicDir: false,
               outDir: "dist/ssr",
-              rollupOptions: { input: { index: SERVER_ENTRY } },
+              rolldownOptions: {
+                input: { index: serverEntry },
+                output: { codeSplitting: false },
+              },
             },
           },
         },
       };
     },
     async buildApp(builder) {
-      let ssr = builder.environments[SERVER_ENVIRONMENT];
+      let ssr = builder.environments.ssr;
       let client = builder.environments.client;
       if (!ssr || !client)
-        throw new Error("Expected Vite client and ssr build environments.");
-
-      // Keep this order: the fullstack manifest connects the server render to
-      // the browser assets emitted by the following client build.
+        throw new Error("Expected client and ssr build environments.");
+      // Discover browser roots without evaluating application code or writing
+      // an incomplete Worker. Client emission completes the manifest.
       await builder.build(ssr);
       await builder.build(client);
+      let manifest = assets.manifest();
+      let serverOutput = assets.serverOutput();
+      let worker = Object.values(serverOutput).find(
+        (output) => output.type === "chunk" && output.isEntry,
+      );
+      if (!worker || worker.type !== "chunk")
+        throw new Error("Missing Oxygen Worker output.");
+      let manifestImport = "./__remix_asset_manifest.js";
+      if (worker.imports.some((id) => id !== manifestImport))
+        throw new Error(
+          "The Oxygen discovery build contains unexpected external imports.",
+        );
 
-      await builder.writeAssetsManifest();
-      finalizeWorker(builder.config.root, compatibilityDate);
-    },
-  };
-}
-
-function clientEntryTransform(): Plugin {
-  return {
-    name: "remix-oxygen:client-entry",
-    transform: {
-      filter: { code: { include: /\bclientEntry\b/ } },
-      handler(code, id) {
-        if (!code.includes("import.meta.url")) return;
-
-        let program: Program;
-        try {
-          program = parseSync(id, code).program;
-        } catch (error) {
-          throw new Error(`Unable to parse clientEntry module: ${id}`, {
-            cause: error,
-          });
-        }
-
-        let calls = findClientEntryCalls(program);
-        if (calls.length === 0) return;
-
-        let output = new MagicString(code);
-        if (this.environment.name === SERVER_ENVIRONMENT) {
-          output.prepend(
-            `import ___clientEntryAssets from "${id}?assets=client";\n`,
-          );
-          for (let call of calls) {
-            output.overwrite(
-              call.metaUrlStart,
-              call.metaUrlEnd,
-              `___clientEntryAssets.entry + "#${call.exportName}"`,
-            );
-          }
-        } else {
-          for (let call of calls) {
-            output.overwrite(
-              call.metaUrlStart,
-              call.metaUrlEnd,
-              `import.meta.url + "#${call.exportName}"`,
-            );
-          }
-        }
-
-        return {
-          code: output.toString(),
-          map: output.generateMap({ hires: "boundary", source: id }),
-        };
-      },
-    },
-  };
-}
-
-type Program = ReturnType<typeof parseSync>["program"];
-
-function findClientEntryCalls(program: Program) {
-  let calls: Array<{
-    exportName: string;
-    metaUrlStart: number;
-    metaUrlEnd: number;
-  }> = [];
-
-  for (let node of program.body) {
-    if (node.type !== "ExportNamedDeclaration") continue;
-    if (node.declaration?.type !== "VariableDeclaration") continue;
-
-    for (let declarator of node.declaration.declarations) {
-      if (declarator.id.type !== "Identifier") continue;
-      if (declarator.init?.type !== "CallExpression") continue;
-      let call = declarator.init;
-      if (
-        call.callee.type !== "Identifier" ||
-        call.callee.name !== "clientEntry"
-      )
-        continue;
-      if (call.arguments.length < 2) continue;
-
-      let firstArgument = call.arguments[0];
-      if (
-        firstArgument?.type !== "MemberExpression" ||
-        firstArgument.object.type !== "MetaProperty" ||
-        firstArgument.property.type !== "Identifier" ||
-        firstArgument.property.name !== "url"
-      ) {
-        continue;
-      }
-
-      calls.push({
-        exportName: declarator.id.name,
-        metaUrlStart: firstArgument.start,
-        metaUrlEnd: firstArgument.end,
+      let compiledEntry = resolve(
+        builder.config.root,
+        ssr.config.build.outDir,
+        "__worker_entry.js",
+      );
+      let compiledManifest = resolve(
+        builder.config.root,
+        ssr.config.build.outDir,
+        "__remix_asset_manifest.js",
+      );
+      // A real bundler pass, not text substitution, makes the completed manifest
+      // and compiled server code one deployable module.
+      await build({
+        configFile: false,
+        root: builder.config.root,
+        logLevel: builder.config.logLevel,
+        ssr: { noExternal: true, target: "webworker" },
+        build: {
+          ssr: true,
+          outDir: ssr.config.build.outDir,
+          emptyOutDir: true,
+          copyPublicDir: false,
+          target: "esnext",
+          minify: ssr.config.build.minify,
+          sourcemap: ssr.config.build.sourcemap,
+          rolldownOptions: {
+            input: "virtual:oxygen-worker",
+            output: { entryFileNames: "index.js", codeSplitting: false },
+          },
+        },
+        plugins: [
+          {
+            name: "remix-oxygen:finalize",
+            resolveId(id) {
+              // Non-virtual synthetic filenames let Rolldown retain the
+              // discovery sourcemap through finalization (no files are written).
+              if (id === "virtual:oxygen-worker") return compiledEntry;
+              if (id === manifestImport) return compiledManifest;
+            },
+            load(id) {
+              if (id === compiledEntry)
+                return { code: worker.code, map: worker.map };
+              if (id === compiledManifest)
+                return `export default ${JSON.stringify(manifest)};`;
+            },
+          },
+        ],
       });
-    }
-  }
-
-  return calls;
-}
-
-function finalizeWorker(
-  root: string,
-  compatibilityDate: string | undefined,
-): void {
-  let workerPath = resolve(root, WORKER_PATH);
-  let manifestPath = resolve(root, ASSETS_MANIFEST_PATH);
-  if (!existsSync(workerPath))
-    throw new Error(`Missing Oxygen worker: ${WORKER_PATH}`);
-  if (!existsSync(manifestPath))
-    throw new Error(`Missing asset manifest: ${ASSETS_MANIFEST_PATH}`);
-
-  let worker = readFileSync(workerPath, "utf8");
-  let match = worker.match(ASSETS_MANIFEST_IMPORT);
-  if (!match)
-    throw new Error(`Missing asset manifest import in ${WORKER_PATH}`);
-
-  let manifest = readFileSync(manifestPath, "utf8")
-    .trim()
-    .replace(/^export\s+default\s*/, "")
-    .replace(/;$/, "");
-  let assets: unknown;
-  try {
-    assets = JSON.parse(manifest);
-  } catch (error) {
-    throw new Error(`Invalid JSON in ${ASSETS_MANIFEST_PATH}`, {
-      cause: error,
-    });
-  }
-  let result = parseSafe(FULLSTACK_ASSET_MANIFEST_SCHEMA, assets, {
-    abortEarly: true,
-  });
-  if (!result.success) {
-    let path = result.issues[0]?.path;
-    if (!path || path.length === 0 || path[0] !== "client") {
-      throw new Error(
-        `Invalid asset manifest structure in ${ASSETS_MANIFEST_PATH}`,
-      );
-    }
-    if (path.length === 1) {
-      throw new Error(`Missing client assets in ${ASSETS_MANIFEST_PATH}`);
-    }
-    if (path[2] === "entry") {
-      throw new Error(`Invalid client asset entry in ${ASSETS_MANIFEST_PATH}`);
-    }
-    throw new Error(`Invalid client assets in ${ASSETS_MANIFEST_PATH}`);
-  }
-
-  validateHydrationEntries(root, result.value.client);
-  writeFileSync(
-    workerPath,
-    worker.replace(
-      ASSETS_MANIFEST_IMPORT,
-      `const ${match[1]} = ${JSON.stringify(assets)};`,
-    ),
-  );
-  rmSync(manifestPath);
-
-  if (compatibilityDate) {
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(compatibilityDate)) {
-      throw new Error(
-        `Invalid Oxygen compatibility date: ${compatibilityDate}`,
-      );
-    }
-    writeFileSync(
-      resolve(root, OXYGEN_CONFIG_PATH),
-      JSON.stringify(
-        { version: 1, compatibility_date: compatibilityDate },
-        null,
-        2,
-      ),
-    );
-  }
-}
-
-function validateHydrationEntries(
-  root: string,
-  clientAssets: ClientAssets,
-): void {
-  for (let [sourcePath, assets] of Object.entries(clientAssets)) {
-    let sourceFile = resolve(root, sourcePath);
-    if (!existsSync(sourceFile) || !assets.entry) continue;
-
-    let source = readFileSync(sourceFile, "utf8");
-    let expectedExports = [
-      ...source.matchAll(/export\s+const\s+(\w+)\s*=\s*clientEntry\s*\(/g),
-    ].map((match) => match[1]);
-    if (expectedExports.length === 0) continue;
-
-    let entryPath = resolve(root, `dist/client${assets.entry}`);
-    let entry = readFileSync(entryPath, "utf8");
-    let actualExports = new Set(
-      [...entry.matchAll(/export\s*\{([^}]*)\}/g)].flatMap((match) =>
-        match[1].split(",").map((value) =>
-          value
-            .trim()
-            .split(/\s+as\s+/)
-            .at(-1),
-        ),
-      ),
-    );
-    let missing = expectedExports.filter((name) => !actualExports.has(name));
-    if (missing.length > 0) {
-      throw new Error(
-        `${entryPath} is missing hydration exports: ${missing.join(", ")}`,
-      );
-    }
-  }
+      // Only browser-referenced resources are public, never server sidecars.
+      let browserFiles = new Set<string>();
+      for (let output of Object.values(serverOutput)) {
+        if (output.type !== "chunk") continue;
+        for (let file of output.viteMetadata?.importedCss ?? [])
+          browserFiles.add(file);
+        for (let file of output.viteMetadata?.importedAssets ?? [])
+          browserFiles.add(file);
+      }
+      for (let output of Object.values(serverOutput)) {
+        if (
+          output.type !== "asset" ||
+          !browserFiles.has(output.fileName) ||
+          output.fileName.endsWith(".map") ||
+          output.fileName === "oxygen.json"
+        )
+          continue;
+        let path = resolve(
+          builder.config.root,
+          client.config.build.outDir,
+          output.fileName,
+        );
+        await mkdir(resolve(path, ".."), { recursive: true });
+        await writeFile(path, output.source);
+      }
+      if (compatibilityDate) {
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(compatibilityDate))
+          throw new Error(
+            `Invalid Oxygen compatibility date: ${compatibilityDate}`,
+          );
+        await writeFile(
+          resolve(builder.config.root, ssr.config.build.outDir, "oxygen.json"),
+          JSON.stringify(
+            { version: 1, compatibility_date: compatibilityDate },
+            null,
+            2,
+          ),
+        );
+      }
+    },
+  };
+  return [
+    assets.plugin,
+    clientEntries(assets.registerScript),
+    buildPlugin,
+    serverHandler ? fetchServer(serverEntry) : [],
+  ];
 }

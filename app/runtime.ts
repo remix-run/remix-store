@@ -1,3 +1,5 @@
+import type { Middleware } from "remix/router";
+
 export type Env = Record<string, string | undefined>;
 
 export interface ExecutionContext {
@@ -34,4 +36,35 @@ export async function fetchWithRuntime(
 
 export function getRuntime(request: Request): Runtime {
   return runtimes.get(request) ?? {};
+}
+
+/** Give framework-owned internal dispatch the same request-scoped bindings. */
+export function runtimeDispatch(): Middleware {
+  return (context, next) => {
+    let runtime = runtimes.get(context.request);
+    if (runtime) {
+      let router = context.router;
+      let origin = context.url.origin;
+      // Scope the facade to this context; never mutate the shared router. Its
+      // closure survives streaming and concurrent requests retain distinct envs.
+      context.router = new Proxy(router, {
+        get(target, key) {
+          if (key === "fetch")
+            return (input: Request | URL | string, init?: RequestInit) => {
+              let request =
+                input instanceof Request && !init
+                  ? input
+                  : new Request(input, init);
+              // Cross-origin frames/redirects must not inherit trusted bindings.
+              if (new URL(request.url).origin === origin)
+                runtimes.set(request, runtime);
+              return target.fetch(request);
+            };
+          let value = Reflect.get(target, key, target);
+          return typeof value === "function" ? value.bind(target) : value;
+        },
+      });
+    }
+    return next();
+  };
 }
