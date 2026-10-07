@@ -18,7 +18,9 @@ export default defineConfig({
         command: "node --import remix/node-tsx e2e/server.ts",
         reuseExistingServer: false,
         timeout: 120_000,
-        url: localBaseUrl,
+        // Static readiness leaves the first SSR request to the tests instead
+        // of hiding startup failures behind Playwright's readiness retries.
+        url: `${localBaseUrl}/remix-favicon.svg`,
       },
   use: {
     baseURL: externalBaseUrl ?? localBaseUrl,

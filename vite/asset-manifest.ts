@@ -15,9 +15,11 @@ export function createBuildManifest(
   root: string,
   base: string,
   entries: Map<string, RegisteredEntry>,
+  emittedFiles: ReadonlyMap<string, string>,
   client: Rollup.OutputBundle,
   server: Rollup.OutputBundle,
-): AssetsManifest {
+) {
+  let stylesheetAliases = sharedStylesheets(client, server);
   let href = (file: string) => `${base}${file}`;
   let result: AssetsManifest = {
     mode: "build",
@@ -26,9 +28,6 @@ export function createBuildManifest(
     importMap: { imports: {} },
   };
   let key = (id: string) => normalizePath(relative(root, id.split("?", 1)[0]!));
-  let chunks = Object.values(client).filter(
-    (output) => output.type === "chunk",
-  );
 
   function dependencies(bundle: Rollup.OutputBundle, roots: string[]) {
     let seen = new Set<string>();
@@ -46,7 +45,9 @@ export function createBuildManifest(
       for (let css of output.viteMetadata?.importedCss ?? []) {
         if (!bundle[css] && !client[css])
           throw new Error(`Missing stylesheet '${css}'.`);
-        styles.add(href(css));
+        styles.add(
+          href(bundle === server ? (stylesheetAliases.get(css) ?? css) : css),
+        );
       }
       queue.push(...output.imports);
     }
@@ -54,38 +55,39 @@ export function createBuildManifest(
   }
 
   for (let [source, entry] of entries) {
+    let output =
+      entry.kind === "style"
+        ? Object.values(client).find(
+            (output) =>
+              output.type === "asset" &&
+              output.originalFileNames.some(
+                (id) => id === source || key(id) === source,
+              ),
+          )
+        : client[emittedFiles.get(source) ?? ""];
     if (entry.kind === "script") {
-      let chunk = chunks.find(
-        (chunk) => chunk.facadeModuleId && key(chunk.facadeModuleId) === source,
-      );
-      if (!chunk) throw new Error(`Missing emitted script entry '${source}'.`);
+      if (output?.type !== "chunk")
+        throw new Error(`Missing emitted script entry '${source}'.`);
       for (let name of entry.exports ?? []) {
-        if (!chunk.exports.includes(name))
+        if (!output.exports.includes(name))
           throw new Error(`'${source}' is missing hydration export '${name}'.`);
       }
-      let deps = dependencies(client, [chunk.fileName]);
+      let deps = dependencies(client, [output.fileName]);
       result.entries[source] = {
         kind: "script",
-        href: href(chunk.fileName),
+        href: href(output.fileName),
         preloads: deps.preloads,
       };
     } else {
-      let asset = Object.values(client).find(
-        (output) =>
-          output.type === "asset" &&
-          output.originalFileNames.some(
-            (id) => id === source || key(id) === source,
-          ),
-      );
-      if (!asset)
+      if (output?.type !== "asset")
         throw new Error(`Missing emitted ${entry.kind} asset '${source}'.`);
       result.entries[source] = {
         kind: entry.kind,
-        href: href(asset.fileName),
+        href: href(output.fileName),
         preloads: [],
       };
       result.stylesheets[source] =
-        entry.kind === "style" ? [href(asset.fileName)] : [];
+        entry.kind === "style" ? [href(output.fileName)] : [];
     }
   }
 
@@ -104,5 +106,30 @@ export function createBuildManifest(
       }
     }
   }
-  return result;
+  return { manifest: result, stylesheetAliases };
+}
+
+/** Prefer the client's URL when both builds emit exactly the same CSS bytes. */
+function sharedStylesheets(
+  client: Rollup.OutputBundle,
+  server: Rollup.OutputBundle,
+) {
+  let clientStyles = new Map<string, string>();
+  let aliases = new Map<string, string>();
+  for (let output of Object.values(client)) {
+    if (output.type === "asset" && output.fileName.endsWith(".css")) {
+      clientStyles.set(
+        Buffer.from(output.source).toString("base64"),
+        output.fileName,
+      );
+    }
+  }
+  for (let output of Object.values(server)) {
+    if (output.type !== "asset" || !output.fileName.endsWith(".css")) continue;
+    let clientFile = clientStyles.get(
+      Buffer.from(output.source).toString("base64"),
+    );
+    if (clientFile) aliases.set(output.fileName, clientFile);
+  }
+  return aliases;
 }

@@ -33,7 +33,26 @@ describe("local Vite assets", () => {
         base: "/store/",
         logLevel: "silent",
         oxc: { jsx: { development: false } },
-        plugins: app.plugins(),
+        plugins: [
+          app.plugins(),
+          {
+            name: "strip-client-source-metadata",
+            enforce: "post",
+            generateBundle: {
+              order: "post",
+              handler(_options, bundle) {
+                if (this.environment.name !== "client") return;
+                // Output plugins can discard advisory source metadata without
+                // changing the emitted files or their registered references.
+                for (let output of Object.values(bundle)) {
+                  if (output.type === "chunk") output.facadeModuleId = null;
+                  else if (!output.fileName.endsWith(".css"))
+                    output.originalFileNames = [];
+                }
+              },
+            },
+          },
+        ],
       });
       await builder.buildApp();
       let workerPath = resolve(app.root, "dist/server/index.js");
@@ -70,6 +89,14 @@ describe("local Vite assets", () => {
       ]);
       let preloads = linkHrefs(html, "modulepreload");
       let client = resolve(app.root, "dist/client");
+      let fontHref = linkHrefs(html, "preload")[0]!;
+      assert.equal(
+        await readFile(
+          resolve(client, fontHref.replace(/^\/store\//, "")),
+          "utf8",
+        ),
+        "fixture-font",
+      );
       let publicHref = (url: string) =>
         "/store/" + relative(client, fileURLToPath(url)).replaceAll("\\", "/");
       for (let record of records) {
@@ -97,6 +124,76 @@ describe("local Vite assets", () => {
       }
     } finally {
       await app.cleanup();
+    }
+  });
+
+  it("deduplicates shared styles without dropping server-only styles or URL resources", async () => {
+    for (let variant of ["shared", "server-only", "url"]) {
+      let app = await fixture({
+        "app/public/entry.ts": 'import "./shared.css"; export const boot=true;',
+        "app/public/shared.css": "main{display:grid}",
+        "app/public/server-only.css": "body{--server-only:1}",
+        "app/server.tsx": `import {createAssetResolver} from ${JSON.stringify(resolve("app/asset-resolver.ts"))};
+import manifest from "./asset-manifest.ts";
+import "./public/shared.css";
+${variant === "server-only" ? 'import "./public/server-only.css";' : ""}
+${variant === "url" ? 'import stylesheetHref from "./public/shared.css?url";' : "const stylesheetHref=null;"}
+const assets=createAssetResolver(manifest);
+const entry=await assets.getScriptEntry("app/public/entry.ts");
+const serverStyles=await assets.getStylesheets("app/server.tsx");
+const clientStyles=await assets.getStylesheets("app/public/entry.ts");
+const styles=await assets.getStylesheets(["app/server.tsx","app/public/entry.ts"]);
+export default {fetch(){return Response.json({entry,serverStyles,clientStyles,styles,stylesheetHref});}};`,
+      });
+      try {
+        let builder = await createBuilder({
+          configFile: false,
+          root: app.root,
+          base: "/store/",
+          logLevel: "silent",
+          plugins: app.plugins(),
+        });
+        await builder.buildApp();
+        let worker = await import(
+          pathToFileURL(resolve(app.root, "dist/server/index.js")).href
+        );
+        let { serverStyles, clientStyles, styles, stylesheetHref } = (await (
+          await worker.default.fetch(new Request("https://store.test/"))
+        ).json()) as {
+          serverStyles: string[];
+          clientStyles: string[];
+          styles: string[];
+          stylesheetHref: string | null;
+        };
+        let client = resolve(app.root, "dist/client");
+        let css = await Promise.all(
+          styles.map((href) =>
+            readFile(resolve(client, href.replace(/^\/store\//, "")), "utf8"),
+          ),
+        );
+
+        assert.equal(styles.length, variant === "server-only" ? 2 : 1);
+        assert.match(css.join("\n"), /display:grid/);
+        if (variant === "server-only")
+          assert.match(css.join("\n"), /--server-only:1/);
+        else assert.deepEqual(serverStyles, clientStyles);
+        if (variant === "url") {
+          assert.ok(stylesheetHref);
+          assert.match(
+            await readFile(
+              resolve(client, stylesheetHref.replace(/^\/store\//, "")),
+              "utf8",
+            ),
+            /display:grid/,
+          );
+        }
+        let emittedCss = (await readdir(resolve(client, "assets"))).filter(
+          (file) => file.endsWith(".css"),
+        );
+        assert.equal(emittedCss.length, variant === "shared" ? 1 : 2);
+      } finally {
+        await app.cleanup();
+      }
     }
   });
 

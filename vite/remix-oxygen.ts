@@ -60,8 +60,7 @@ export function remixOxygen({
       // an incomplete Worker. Client emission completes the manifest.
       await builder.build(ssr);
       await builder.build(client);
-      let manifest = assets.manifest();
-      let serverOutput = assets.serverOutput();
+      let { manifest, serverOutput, stylesheetAliases } = assets.buildOutput();
       let worker = Object.values(serverOutput).find(
         (output) => output.type === "chunk" && output.isEntry,
       );
@@ -126,7 +125,9 @@ export function remixOxygen({
       for (let output of Object.values(serverOutput)) {
         if (output.type !== "chunk") continue;
         for (let file of output.viteMetadata?.importedCss ?? [])
-          browserFiles.add(file);
+          if (!stylesheetAliases.has(file)) browserFiles.add(file);
+        // Explicit URL imports must keep their original file even when its CSS
+        // is identical: the compiled Worker may already contain that URL.
         for (let file of output.viteMetadata?.importedAssets ?? [])
           browserFiles.add(file);
       }

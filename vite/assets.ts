@@ -36,6 +36,8 @@ export function createAssetsPlugin(options: AssetsOptions) {
   let server: ViteDevServer;
   let entries = new Map<string, RegisteredEntry>();
   let references = new Map<string, Map<string, RegisteredEntry>>();
+  let emittedReferences = new Map<string, string>();
+  let emittedFiles = new Map<string, string>();
   let clientBundle: Rollup.OutputBundle;
   let serverBundle: Rollup.OutputBundle;
   let inspected = new Set<string>();
@@ -384,21 +386,26 @@ export function createAssetsPlugin(options: AssetsOptions) {
       // plugin is shared. Bind fresh CSS guards to the shared access policy.
       initializeCSS(this.environment.getTopLevelConfig());
       if (this.environment.name !== "client") return;
+      emittedReferences.clear();
       for (let [key, entry] of entries) {
         let id = resolve(root, key);
         if (entry.kind === "file") {
-          this.emitFile({
+          let reference = this.emitFile({
             type: "asset",
             name: key.split("/").at(-1),
             originalFileName: id,
             source: await readFile(id),
           });
+          emittedReferences.set(key, reference);
         } else {
-          this.emitFile({
+          let reference = this.emitFile({
             type: "chunk",
             id,
             preserveSignature: "exports-only",
           });
+          // Vite removes the JS placeholder of CSS-only entries. Their emitted
+          // stylesheet is resolved from CSS asset metadata instead.
+          if (entry.kind === "script") emittedReferences.set(key, reference);
         }
       }
     },
@@ -421,7 +428,15 @@ export function createAssetsPlugin(options: AssetsOptions) {
           for (let file of output.originalFileNames)
             access.assertFile(resolve(root, file));
         }
-        if (this.environment.name === "client") clientBundle = bundle;
+        if (this.environment.name === "client") {
+          clientBundle = bundle;
+          emittedFiles = new Map(
+            [...emittedReferences].map(([key, reference]) => [
+              key,
+              this.getFileName(reference),
+            ]),
+          );
+        }
         if (this.environment.name === "ssr") serverBundle = bundle;
       },
     },
@@ -443,17 +458,18 @@ export function createAssetsPlugin(options: AssetsOptions) {
   return {
     plugin,
     registerScript,
-    manifest() {
-      return createBuildManifest(
-        root,
-        base,
-        entries,
-        clientBundle,
-        serverBundle,
-      );
-    },
-    serverOutput() {
-      return serverBundle;
+    buildOutput() {
+      return {
+        ...createBuildManifest(
+          root,
+          base,
+          entries,
+          emittedFiles,
+          clientBundle,
+          serverBundle,
+        ),
+        serverOutput: serverBundle,
+      };
     },
   };
 }

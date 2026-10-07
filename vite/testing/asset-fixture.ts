@@ -18,6 +18,10 @@ export async function fixture(overrides: Record<string, string> = {}) {
   let root = await mkdtemp(resolve(".cache/remix-assets-"));
   let resolver = resolve("app/asset-resolver.ts");
   let files: Record<string, string> = {
+    // Vite locates its optimizer cache beside the nearest package.json. Give
+    // each fixture its own package boundary so it cannot overwrite the app's
+    // cache or another fixture's while tests run concurrently.
+    "package.json": JSON.stringify({ private: true, type: "module" }),
     "tsconfig.json": JSON.stringify({
       compilerOptions: {
         jsx: "react-jsx",

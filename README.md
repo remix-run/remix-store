@@ -78,7 +78,8 @@ Fly setup, secrets, local image verification, and continuous deployment are docu
 - `server.node.ts` owns the Node/Fly-compatible HTTP lifecycle.
 - `app/entry.oxygen.ts` composes and serves the Oxygen Worker runtime.
 - `app/actions/public/entry.tsx` hydrates browser components on both targets.
-- `vite/assets.ts` discovers asset roots and creates dev/build manifests; development discovery has its own graph so it cannot consume MiniOxygen cache invalidations.
+- `vite/assets.ts` discovers asset roots and creates dev/build manifests; development discovery has its own graph so it cannot consume MiniOxygen cache invalidations. Builds track emitted scripts and files by Vite reference.
+- `vite/asset-manifest.ts` resolves output metadata and aliases byte-identical server CSS to the client's stylesheet URL.
 - `vite/client-entry.ts` rewrites Vite island identities to portable `file:app/…#Export` keys.
 - `vite/remix-oxygen.ts` completes the manifest and bundles one deployable Worker. This integration is local; no Pitlane or fullstack plugin dependency is required.
 
