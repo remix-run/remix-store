@@ -125,7 +125,7 @@ if(import.meta.hot)import.meta.hot.accept();`,
       });
       await builder.buildApp();
       let worker = await import(
-        pathToFileURL(resolve(app.root, "dist/ssr/index.js")).href
+        pathToFileURL(resolve(app.root, "dist/server/index.js")).href
       );
       let builtResponse = await worker.default.fetch(
         new Request("https://store.test/"),

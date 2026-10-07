@@ -5,11 +5,9 @@ import { build, type Plugin, type PluginOption } from "vite";
 
 import { createAssetsPlugin } from "./assets.ts";
 import { clientEntries } from "./client-entry.ts";
-import { fetchServer } from "./fetch-server.ts";
 
 interface RemixOxygenOptions {
   compatibilityDate?: string;
-  serverHandler?: boolean;
   serverEntry?: string;
   clientEntry?: string;
   manifestModule?: string;
@@ -19,7 +17,6 @@ interface RemixOxygenOptions {
 /** Local Remix asset integration; MiniOxygen remains the Worker runtime adapter. */
 export function remixOxygen({
   compatibilityDate,
-  serverHandler = false,
   serverEntry = "app/entry.oxygen.ts",
   clientEntry = "app/actions/public/entry.tsx",
   manifestModule,
@@ -44,7 +41,7 @@ export function remixOxygen({
             build: {
               write: false,
               copyPublicDir: false,
-              outDir: "dist/ssr",
+              outDir: "dist/server",
               rolldownOptions: {
                 input: { index: serverEntry },
                 output: { codeSplitting: false },
@@ -165,10 +162,5 @@ export function remixOxygen({
       }
     },
   };
-  return [
-    assets.plugin,
-    clientEntries(assets.registerScript),
-    buildPlugin,
-    serverHandler ? fetchServer(serverEntry) : [],
-  ];
+  return [assets.plugin, clientEntries(assets.registerScript), buildPlugin];
 }

@@ -67,7 +67,6 @@ if (runtime === "node") {
     plugins: [
       oxygen({
         entry: "./app/entry.oxygen.ts",
-        previewEntry: "./dist/ssr/index.js",
         env,
       }),
       remixOxygen({ compatibilityDate: "2026-04-01" }),

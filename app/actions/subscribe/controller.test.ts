@@ -158,6 +158,45 @@ describe("subscribe routes", () => {
     assert.equal(adminCalls, 0);
   });
 
+  it(
+    "cancels oversized localized uploads without waiting for the rest of the body",
+    { timeout: 2_000 },
+    async () => {
+      let cancelled = false;
+      let app = createTestApp(async () => {
+        throw new Error("Invalid subscriptions must not query Shopify");
+      });
+      let init: RequestInit & { duplex: "half" } = {
+        method: "POST",
+        headers: {
+          Origin: "https://example.com",
+          Accept: "application/json",
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        duplex: "half",
+        body: new ReadableStream<Uint8Array>({
+          start(controller) {
+            controller.enqueue(
+              new TextEncoder().encode(`email=${"a".repeat(5000)}`),
+            );
+            // Leave the upload open: rejecting it must cancel the source stream.
+          },
+          cancel() {
+            cancelled = true;
+          },
+        }),
+      };
+
+      let response = await app.fetch(
+        new Request("https://example.com/en-ca/subscribe", init),
+      );
+
+      assert.equal(response.status, 400);
+      assert.equal(cancelled, true);
+      assert.match(await response.text(), /Invalid form submission/);
+    },
+  );
+
   it("renders validation errors as HTML without JavaScript", async () => {
     let app = createTestApp(createStorefrontFetch(shellHandlers), {
       subscribe: { rateLimiter: allowAll() },

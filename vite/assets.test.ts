@@ -36,14 +36,14 @@ describe("local Vite assets", () => {
         plugins: app.plugins(),
       });
       await builder.buildApp();
-      let workerPath = resolve(app.root, "dist/ssr/index.js");
+      let workerPath = resolve(app.root, "dist/server/index.js");
       assert.equal(
         (await readFile(workerPath, "utf8")).includes(app.root),
         false,
         "Worker must not depend on checkout paths",
       );
       assert.deepEqual(
-        (await readdir(resolve(app.root, "dist/ssr"))).filter((file) =>
+        (await readdir(resolve(app.root, "dist/server"))).filter((file) =>
           file.endsWith(".js"),
         ),
         ["index.js"],

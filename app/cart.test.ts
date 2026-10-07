@@ -225,15 +225,20 @@ describe("cart routes", () => {
     formData.set("quantity", "1");
     let referer = `${origin}/en-ca/products/test-product`;
 
-    let response = await app.fetch(
-      new Request(`${origin}/en-ca/api/cart`, {
-        method: "POST",
-        headers: { Referer: referer },
-        body: formData,
-      }),
-    );
+    let request = new Request(`${origin}/en-ca/api/cart`, {
+      method: "POST",
+      headers: { Referer: referer },
+      body: formData,
+    });
+    let response = await app.fetch(request);
 
     assert.equal(response.status, 303);
+    assert.equal(
+      request.bodyUsed,
+      true,
+      "The cart handler must consume the incoming body, not leave an unread clone branch",
+    );
+    assert.match(response.headers.get("Set-Cookie") ?? "", /cart=/);
     assert.equal(
       response.headers.get("Location"),
       "/en-ca/products/test-product",

@@ -112,7 +112,7 @@ export default {oxc:{jsx:{development:false}},build:{sourcemap:true},plugins:[
         /ENOENT/,
       );
       let serverMap = await readFile(
-        resolve(app.root, "dist/ssr/index.js.map"),
+        resolve(app.root, "dist/server/index.js.map"),
         "utf8",
       );
       assert.ok(
@@ -129,7 +129,7 @@ export default {oxc:{jsx:{development:false}},build:{sourcemap:true},plugins:[
         );
       }
       let worker = await import(
-        pathToFileURL(resolve(app.root, "dist/ssr/index.js")).href
+        pathToFileURL(resolve(app.root, "dist/server/index.js")).href
       );
       let html = await (
         await worker.default.fetch(new Request("https://store.test/"))

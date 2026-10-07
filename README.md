@@ -48,7 +48,7 @@ pnpm preview:oxygen
 
 The end-to-end suites use a deterministic local Storefront fixture: `test:e2e` runs native Node, `test:e2e:oxygen:dev` runs MiniOxygen development, and `test:e2e:oxygen` builds and runs the production Worker. Pull requests exercise all three runtimes. Set `BASE_URL` to target an existing deployment instead.
 
-The Oxygen build produces a self-contained Worker at `dist/ssr/index.js` and browser assets in `dist/client/`. The Node server compiles browser modules through `remix/assets` for Fly.
+The Oxygen build produces a self-contained Worker at `dist/server/index.js` and browser assets in `dist/client/`. MiniOxygen preview and Shopify CLI discover these standard output directories automatically. The Node server compiles browser modules through `remix/assets` for Fly.
 
 ## Deployments
 
@@ -61,7 +61,9 @@ Fastly caches fingerprinted `/assets/*` files and short-lived root `public/`
 files; HTML is `private, no-store` and always reaches Fly. Responses served
 through Fastly include `X-Cache` and `X-Served-By` headers.
 
-Oxygen preview deployments use `.github/workflows/oxygen-deployment.yml`. Fly setup, secrets, local image verification, and continuous deployment are documented in [`FLY_DEPLOYMENT.md`](./FLY_DEPLOYMENT.md).
+Oxygen deployments use `.github/workflows/oxygen-deployment.yml`; `pnpm deploy:oxygen` deploys a preview locally. Both pass `--build-command 'pnpm build:oxygen'` so Shopify CLI runs this app's Vite build. The build writes the pinned compatibility date to `dist/server/oxygen.json` alongside the Worker.
+
+Fly setup, secrets, local image verification, and continuous deployment are documented in [`FLY_DEPLOYMENT.md`](./FLY_DEPLOYMENT.md).
 
 ## Architecture
 
@@ -79,6 +81,8 @@ Oxygen preview deployments use `.github/workflows/oxygen-deployment.yml`. Fly se
 - `vite/assets.ts` discovers asset roots and creates dev/build manifests; development discovery has its own graph so it cannot consume MiniOxygen cache invalidations.
 - `vite/client-entry.ts` rewrites Vite island identities to portable `file:app/…#Export` keys.
 - `vite/remix-oxygen.ts` completes the manifest and bundles one deployable Worker. This integration is local; no Pitlane or fullstack plugin dependency is required.
+
+The Oxygen asset adapter implements the metadata interface consumed by Remix's `render({ assets })` middleware. Remix owns streaming, frames, and hydration; Vite resolves `clientEntry(import.meta.url, ...)` source identities to built browser modules. The installed Remix asset server compiles from the filesystem in Node, so Oxygen needs this build-time bridge.
 
 ## License
 

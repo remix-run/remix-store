@@ -188,7 +188,7 @@ export function storefront(options: StorefrontOptions = {}): Middleware<
     // run before the app router. Match them against the prefix-free app path
     // while retaining the active market on the request-scoped client.
     let routingRequest = requestWithUrl(context.request, context.url);
-    let shopifyResponse = await handleShopifyRoutes({
+    let shopifyRoute = handleShopifyRoutes({
       request: routingRequest,
       requestContext,
       sessionManager:
@@ -197,9 +197,9 @@ export function storefront(options: StorefrontOptions = {}): Middleware<
       routeTemplates,
       handlers: [cartHandlers],
     });
-    if (shopifyResponse) {
+    if (shopifyRoute) {
       return noStore(
-        localizeRedirect(shopifyResponse, activeMarket, context.url),
+        localizeRedirect(await shopifyRoute, activeMarket, context.url),
       );
     }
 
@@ -304,9 +304,9 @@ export function storefront(options: StorefrontOptions = {}): Middleware<
 
 function requestWithUrl(request: Request, url: URL): Request {
   if (request.url === url.href) return request;
-  // Compatibility routing may inspect a localized POST before an app-owned
-  // controller consumes it. Clone so the original body remains readable.
-  return new Request(url, request.clone());
+  // Share the body: Hydrogen consumes it only when a route matches; otherwise
+  // the app controller reads it. Cloning would leave an unread stream branch.
+  return new Request(url, request);
 }
 
 function localizeRedirect(
