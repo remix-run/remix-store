@@ -25,22 +25,23 @@
   "dependencies": {
     "@shopify/hydrogen": "2026.10.0-preview.4",
     "remix": "3.0.0",
-    "sanitize-html": "2.17.6"
+    "sanitize-html": "2.18.0"
   },
   "devDependencies": {
-    "@shopify/cli": "4.5.2",
-    "@shopify/mini-oxygen": "4.2.1",
+    "@shopify/cli": "4.9.0",
+    "@shopify/mini-oxygen": "4.2.3",
     "@shopify/oxygen-workers-types": "4.2.0",
-    "@types/node": "24.12.4",
-    "@types/sanitize-html": "2.16.1",
-    "graphql": "16.14.0",
-    "magic-string": "0.30.21",
-    "oxfmt": "0.61.0",
-    "oxlint": "1.76.0",
-    "playwright": "1.62.1",
+    "@types/node": "24.19.0",
+    "@types/sanitize-html": "2.16.2",
+    "@typescript/native": "npm:typescript@7.0.2",
+    "graphql": "16.14.2",
+    "magic-string": "1.4.2",
+    "oxfmt": "0.71.0",
+    "oxlint": "1.86.0",
+    "playwright": "1.63.0",
     "postcss-value-parser": "4.2.0",
-    "typescript": "6.0.3",
-    "vite": "8.2.0"
+    "typescript": "npm:@typescript/typescript6@6.0.2",
+    "vite": "8.3.1"
   },
   "engines": {
     "node": ">=24.3.0"
@@ -48,10 +49,10 @@
   "packageManager": "pnpm@10.33.3",
   "pnpm": {
     "overrides": {
-      "undici": "7.29.0",
-      "qs": "6.15.3",
-      "ws": "8.21.1",
-      "cookie": "1.0.2"
+      "undici": "7.30.0",
+      "qs": "6.16.0",
+      "ws": "8.22.0",
+      "cookie": "1.1.1"
     }
   }
 }

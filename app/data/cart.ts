@@ -12,11 +12,13 @@ type SerializableCartValue<Value> = Value extends SerializablePrimitive
     ? SerializableCartValue<Item>[]
     : Value extends object
       ? SerializableObject & {
-          [Key in keyof Value as string extends Key
-            ? never
-            : number extends Key
+          [
+            Key in keyof Value as string extends Key
               ? never
-              : Key]: SerializableCartValue<Value[Key]>;
+              : number extends Key
+                ? never
+                : Key
+          ]: SerializableCartValue<Value[Key]>;
         }
       : never;
 
