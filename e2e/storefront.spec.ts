@@ -1,4 +1,4 @@
-import { expect, test } from "playwright/test";
+import { expect, test, type Page } from "playwright/test";
 
 test("renders the current storefront skeleton", async ({ page }) => {
   let response = await page.goto("/");
@@ -200,6 +200,98 @@ test("loads the next page of products in place and retries failures", async ({
   await expect(page).toHaveURL(/\/collections\/all$/);
   expect(await page.evaluate(() => history.length)).toBe(historyLength);
 });
+
+test.describe("mobile menu", () => {
+  test.use({ viewport: { width: 390, height: 844 } });
+
+  test("opens as a native popover and dismisses like a menu", async ({
+    page,
+  }) => {
+    await page.goto("/collections/all");
+    await page.waitForFunction(() => !document.getElementById("rmx-data"));
+    await page.evaluate(() => {
+      (window as { documentMarker?: boolean }).documentMarker = true;
+    });
+
+    let toggle = page.getByRole("button", { name: "Navigation menu" });
+    let nav = page.getByRole("navigation", { name: "Mobile navigation" });
+    let links = nav.getByRole("link");
+
+    expect(await accessibleExpanded(page, "Navigation menu")).toBe(false);
+    await toggle.click();
+    await expect(nav).toBeVisible();
+    // The popover invoker exposes its state natively, without aria-expanded.
+    expect(await accessibleExpanded(page, "Navigation menu")).toBe(true);
+
+    // Escape returns focus to the toggle.
+    await page.keyboard.press("Tab");
+    await expect(links.first()).toBeFocused();
+    await page.keyboard.press("Escape");
+    await expect(nav).toBeHidden();
+    await expect(toggle).toBeFocused();
+
+    // An outside click dismisses it.
+    await toggle.click();
+    await expect(nav).toBeVisible();
+    await page.mouse.click(20, 600);
+    await expect(nav).toBeHidden();
+
+    // Tabbing past the last link closes it.
+    await toggle.click();
+    for (let index = 0; index <= (await links.count()); index++) {
+      await page.keyboard.press("Tab");
+    }
+    await expect(nav).toBeHidden();
+
+    // Following a link closes it during client navigation.
+    await toggle.click();
+    await nav.getByRole("link", { name: "Apparel" }).click();
+    await expect(page).toHaveURL(/\/collections\/apparel$/);
+    await expect(nav).toBeHidden();
+    expect(
+      await page.evaluate(
+        () => (window as { documentMarker?: boolean }).documentMarker,
+      ),
+    ).toBe(true);
+  });
+});
+
+test.describe("mobile menu dismissal", () => {
+  test.use({ viewport: { width: 390, height: 844 }, hasTouch: true });
+
+  test("a tap outside closes the menu without following a link", async ({
+    page,
+  }) => {
+    await page.goto("/collections/all");
+    await page.waitForFunction(() => !document.getElementById("rmx-data"));
+
+    let toggle = page.getByRole("button", { name: "Navigation menu" });
+    let nav = page.getByRole("navigation", { name: "Mobile navigation" });
+    let product = page
+      .getByRole("region", { name: "Collection products" })
+      .getByRole("link")
+      .first();
+
+    await toggle.tap();
+    await expect(nav).toBeVisible();
+    await product.tap();
+    await expect(nav).toBeHidden();
+    await expect(page).toHaveURL(/\/collections\/all$/);
+
+    await product.tap();
+    await expect(page).toHaveURL(/\/products\/test-product$/);
+  });
+});
+
+// Playwright's role engine does not derive popover invoker state, so read
+// Chromium's accessibility tree instead.
+async function accessibleExpanded(page: Page, name: string) {
+  let cdp = await page.context().newCDPSession(page);
+  let { nodes } = await cdp.send("Accessibility.getFullAXTree");
+  let node = nodes.find((candidate) => candidate.name?.value === name);
+  return node?.properties?.find((property) => property.name === "expanded")
+    ?.value.value;
+}
 
 test("returns a real branded 404 response and navigates home", async ({
   page,

@@ -29,6 +29,25 @@ test("localized catalog navigation and add-to-cart work without JavaScript", asy
   ).toBeVisible();
 });
 
+test.describe("mobile menu without JavaScript", () => {
+  test.use({ viewport: { width: 390, height: 844 } });
+
+  test("opens, dismisses, and navigates", async ({ page }) => {
+    await page.goto("/collections/all");
+    let toggle = page.getByRole("button", { name: "Navigation menu" });
+    let nav = page.getByRole("navigation", { name: "Mobile navigation" });
+
+    await toggle.click();
+    await expect(nav).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(nav).toBeHidden();
+
+    await toggle.click();
+    await nav.getByRole("link", { name: "Apparel" }).click();
+    await expect(page).toHaveURL(/\/collections\/apparel$/);
+  });
+});
+
 test("load more opens the next page of products without JavaScript", async ({
   page,
 }) => {
