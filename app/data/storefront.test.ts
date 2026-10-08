@@ -180,6 +180,7 @@ describe("Storefront data", () => {
           handle: "racing",
           title: "Racing",
           description: "Racing apparel",
+          seo: { title: null },
           products: {
             nodes: [
               {

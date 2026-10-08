@@ -8,6 +8,7 @@ import {
 } from "remix/component";
 
 import type { NavigationMenuData } from "../../data/storefront.ts";
+import { isCurrentPage } from "../../lib/public/navigation.ts";
 
 export const RemixLogo = clientEntry(
   import.meta.url,
@@ -83,6 +84,7 @@ export const RemixLogo = clientEntry(
 );
 
 interface MobileMenuProps extends SerializableObject {
+  currentPath?: string;
   menu: NavigationMenuData;
 }
 
@@ -170,7 +172,17 @@ export const MobileMenu = clientEntry(
           <ul>
             {handle.props.menu.items.map((item) => (
               <li key={item.id}>
-                <a href={item.url}>{item.title}</a>
+                <a
+                  href={item.url}
+                  aria-current={
+                    handle.props.currentPath &&
+                    isCurrentPage(item.url, handle.props.currentPath)
+                      ? "page"
+                      : undefined
+                  }
+                >
+                  {item.title}
+                </a>
               </li>
             ))}
           </ul>
@@ -225,7 +237,9 @@ const menuButtonStyle = css({
   justifyContent: "center",
   padding: "8px 12px",
   userSelect: "none",
-  "&:hover": { background: "var(--color-gray-100)" },
+  "@media (hover: hover)": {
+    "&:hover": { background: "var(--color-gray-100)" },
+  },
   "& svg": { height: "20px", width: "20px" },
 });
 
@@ -263,8 +277,10 @@ const mobileNavStyle = css({
     padding: "12px 16px",
     textDecoration: "none",
   },
-  "& li a:hover": {
-    background: "rgba(255,255,255,.06)",
-    color: "var(--color-blue-brand)",
+  "@media (hover: hover)": {
+    "& li a:hover": {
+      background: "rgba(255,255,255,.06)",
+      color: "var(--color-blue-brand)",
+    },
   },
 });

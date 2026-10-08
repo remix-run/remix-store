@@ -19,13 +19,15 @@ export function CollectionPage(
     market: ActiveMarket;
     pageInfo: ProductPageInfoData;
     products: ProductCardData[];
+    /** The document title, when it differs from the visible heading. */
+    seoTitle?: string | null;
     title: string;
   }>,
 ) {
   return () => (
     <Document
       canonicalUrl={handle.props.canonicalUrl}
-      title={handle.props.title}
+      title={handle.props.seoTitle || handle.props.title}
       description={handle.props.description}
       socialImage="/social-collections.jpg"
     >

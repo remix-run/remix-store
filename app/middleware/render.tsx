@@ -78,6 +78,7 @@ export function render(options: RenderOptions) {
             <ShellDataProvider
               analyticsShop={analyticsShop}
               cartInitialData={cartInitialData}
+              currentPath={new URL(context.request.url).pathname}
               footerMenu={footerMenu}
               market={market}
               navigationMenu={navigationMenu}

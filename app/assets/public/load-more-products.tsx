@@ -98,10 +98,7 @@ export const LoadMoreProducts = clientEntry(
 );
 
 // Spans the grid and sits flush below the last row, like a footer.
-const controlStyle = css({
-  gridColumn: "1 / -1",
-  marginTop: "calc(-1 * var(--product-grid-row-gap, 0px))",
-});
+const controlStyle = css({ gridColumn: "1 / -1" });
 
 const buttonStyle = css({
   background: "var(--color-blue-brand)",
@@ -117,9 +114,11 @@ const buttonStyle = css({
   textAlign: "center",
   transition: "background 180ms ease, color 180ms ease",
   width: "100%",
-  "&:hover": {
-    background: "var(--color-white)",
-    color: "var(--color-blue-brand)",
+  "@media (hover: hover)": {
+    "&:hover": {
+      background: "var(--color-white)",
+      color: "var(--color-blue-brand)",
+    },
   },
   "&:disabled": {
     background: "rgba(255,255,255,.8)",

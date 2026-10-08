@@ -12,6 +12,7 @@ interface ShellDataProviderProps {
   analyticsShop?: AnalyticsShop | null;
   cartInitialData?: CartInitialData;
   children?: RemixNode;
+  currentPath: string;
   footerMenu: NavigationMenuData;
   market: ActiveMarket;
   navigationMenu: NavigationMenuData;
@@ -21,6 +22,8 @@ interface ShellDataProviderProps {
 export interface ShellData {
   analyticsShop?: AnalyticsShop | null;
   cartInitialData?: CartInitialData;
+  /** The requested pathname, including any market prefix. */
+  currentPath: string;
   footerMenu: NavigationMenuData;
   market: ActiveMarket;
   navigationMenu: NavigationMenuData;
@@ -33,6 +36,7 @@ export function ShellDataProvider(
   handle.context.set({
     analyticsShop: handle.props.analyticsShop,
     cartInitialData: handle.props.cartInitialData,
+    currentPath: handle.props.currentPath,
     footerMenu: handle.props.footerMenu,
     market: handle.props.market,
     navigationMenu: handle.props.navigationMenu,

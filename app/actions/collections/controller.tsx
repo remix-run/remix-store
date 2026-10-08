@@ -54,6 +54,7 @@ export default createController(routes.collections, {
           id={collection.data.id}
           handle={collection.data.handle}
           title={collection.data.title}
+          seoTitle={collection.data.seoTitle}
           description={collection.data.description}
           products={collection.data.products.nodes}
           pageInfo={collection.data.products.pageInfo}

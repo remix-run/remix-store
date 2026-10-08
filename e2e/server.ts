@@ -163,6 +163,7 @@ function storefrontData(
             handle: "apparel",
             title: "Apparel",
             description: "Racing apparel",
+            seo: { title: null },
             products: {
               nodes: [
                 {
@@ -183,6 +184,7 @@ function storefrontData(
           handle: "all",
           title: "All products",
           description: "The complete catalog",
+          seo: { title: "Shop All" },
           products:
             after === "next-page"
               ? {

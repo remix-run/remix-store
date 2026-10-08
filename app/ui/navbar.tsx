@@ -4,6 +4,7 @@ import { CartShell } from "../assets/public/cart.tsx";
 import { MobileMenu, RemixLogo } from "../assets/public/navbar.tsx";
 import type { CartInitialData } from "../data/cart.ts";
 import { marketPath, type ActiveMarket } from "../lib/public/market.ts";
+import { isCurrentPage } from "../lib/public/navigation.ts";
 import type {
   NavigationMenuData,
   StoreWideSaleData,
@@ -12,6 +13,7 @@ import { StoreWideSaleMarquee } from "./store-wide-sale.tsx";
 
 interface NavbarProps {
   cartInitialData?: CartInitialData;
+  currentPath: string;
   market: ActiveMarket;
   menu: NavigationMenuData;
   storeWideSale: StoreWideSaleData | null;
@@ -39,14 +41,26 @@ export function Navbar(handle: Handle<NavbarProps>) {
           <ul>
             {handle.props.menu.items.map((item) => (
               <li key={item.id}>
-                <a href={item.url}>{item.title}</a>
+                <a
+                  href={item.url}
+                  aria-current={
+                    isCurrentPage(item.url, handle.props.currentPath)
+                      ? "page"
+                      : undefined
+                  }
+                >
+                  {item.title}
+                </a>
               </li>
             ))}
           </ul>
         </nav>
 
         <div mix={actionsStyle}>
-          <MobileMenu menu={handle.props.menu} />
+          <MobileMenu
+            currentPath={handle.props.currentPath}
+            menu={handle.props.menu}
+          />
           <CartShell
             initialData={handle.props.cartInitialData}
             automaticDiscountLabel={handle.props.storeWideSale?.title}

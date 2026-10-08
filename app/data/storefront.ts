@@ -91,6 +91,7 @@ export type CollectionData = SerializableObject & {
     nodes: ProductCardData[];
     pageInfo: ProductPageInfoData;
   };
+  seoTitle: string | null;
   title: string;
 };
 
@@ -366,6 +367,9 @@ const COLLECTION_QUERY = gql(
         handle
         title
         description
+        seo {
+          title
+        }
         products(first: $first, after: $after) {
           nodes {
             ...RemixProductCard
@@ -695,6 +699,7 @@ export async function queryCollection(
         handle: collection.handle,
         title: collection.title,
         description: collection.description,
+        seoTitle: collection.seo.title ?? null,
         products: {
           nodes: collection.products.nodes.map((product) =>
             toProductCardData(product, storefrontLocale(storefront)),

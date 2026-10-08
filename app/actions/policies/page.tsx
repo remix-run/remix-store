@@ -59,7 +59,9 @@ const policyContentStyle = css({
     textDecoration: "none",
     transition: "none",
   },
-  "& a:hover": { textDecoration: "underline" },
+  "@media (hover: hover)": {
+    "& a:hover": { textDecoration: "underline" },
+  },
   "& blockquote": {
     background: "var(--color-gray-800)",
     margin: "24px 0 0",

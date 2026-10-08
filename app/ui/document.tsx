@@ -53,6 +53,7 @@ export function Document(handle: Handle<DocumentProps>) {
     let shellData = handle.context.get(ShellDataProvider) ?? {
       analyticsShop: null,
       cartInitialData: undefined,
+      currentPath: "",
       footerMenu: FALLBACK_FOOTER_MENU,
       market: US_MARKET,
       navigationMenu: FALLBACK_NAVIGATION_MENU,
@@ -160,6 +161,7 @@ export function Document(handle: Handle<DocumentProps>) {
           <div hidden innerHTML={unsafeHTML(spritesSvg)} />
           <Navbar
             cartInitialData={shellData.cartInitialData}
+            currentPath={shellData.currentPath}
             market={shellData.market}
             menu={shellData.navigationMenu}
             storeWideSale={shellData.storeWideSale}
@@ -239,7 +241,9 @@ const bodyStyle = css({
   overflowX: "hidden",
   "&:has(dialog#cart-drawer[open])": { overflow: "hidden" },
   "& a": { color: "inherit", transition: "color 180ms ease" },
-  "& a:hover": { color: "var(--color-blue-brand)" },
+  "@media (hover: hover)": {
+    "& a:hover": { color: "var(--color-blue-brand)" },
+  },
   "& :focus-visible": {
     outline: "3px solid var(--color-yellow-brand)",
     outlineOffset: "4px",

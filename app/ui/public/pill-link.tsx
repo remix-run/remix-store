@@ -46,6 +46,14 @@ export function PillIcon(handle: Handle<{ name: PillLinkIcon }>) {
   return () => <Icon name={handle.props.name} />;
 }
 
+const revealedIconStyle = {
+  marginLeft: 0,
+  maxWidth: "24px",
+  opacity: 1,
+  transform: "scale(1)",
+};
+const expandedLabelStyle = { maxWidth: "12ch", paddingRight: "4px" };
+
 export const pillLinkStyle = css({
   alignItems: "center",
   background: "var(--color-white)",
@@ -75,11 +83,10 @@ export const pillLinkStyle = css({
       "margin 300ms var(--ease-snap), max-width 300ms var(--ease-snap), opacity 300ms ease, transform 300ms var(--ease-snap)",
     width: "24px",
   },
-  "&:hover > svg, &:focus-visible > svg": {
-    marginLeft: 0,
-    maxWidth: "24px",
-    opacity: 1,
-    transform: "scale(1)",
+  "&:focus-visible > svg": revealedIconStyle,
+  "@media (hover: hover)": {
+    "&:hover > svg": revealedIconStyle,
+    "&:hover [data-expanded]": expandedLabelStyle,
   },
   "& [data-expanded]": {
     maxWidth: 0,
@@ -88,10 +95,7 @@ export const pillLinkStyle = css({
     transition: "max-width 300ms ease-in-out, padding-right 300ms ease-in-out",
     whiteSpace: "nowrap",
   },
-  "&:hover [data-expanded], &:focus-visible [data-expanded]": {
-    maxWidth: "12ch",
-    paddingRight: "4px",
-  },
+  "&:focus-visible [data-expanded]": expandedLabelStyle,
   "&[data-expanded-text]": { paddingLeft: "20px", paddingRight: "16px" },
   "&[data-icon-always-visible] > svg": {
     marginLeft: 0,
@@ -106,9 +110,12 @@ export const pillLinkStyle = css({
     padding: "16px 24px",
     "&[data-expanded-text]": { paddingLeft: "24px", paddingRight: "20px" },
     "& > svg": { height: "32px", marginLeft: "-10px", width: "32px" },
-    "&:hover > svg, &:focus-visible > svg, &[data-icon-always-visible] > svg": {
+    "&:focus-visible > svg, &[data-icon-always-visible] > svg": {
       maxWidth: "32px",
     },
+  },
+  "@media (min-width: 810px) and (hover: hover)": {
+    "&:hover > svg": { maxWidth: "32px" },
   },
   "@media (prefers-reduced-motion: reduce)": {
     "& > svg": { transition: "none" },

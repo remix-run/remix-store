@@ -241,7 +241,9 @@ const footerStyle = css({
   position: "relative",
   "& p": { margin: 0 },
   "& a": { color: "inherit", textDecoration: "none" },
-  "& a:hover, & a:focus-visible": { color: "inherit" },
+  "@media (hover: hover)": {
+    "& a:hover": { color: "var(--color-blue-brand)" },
+  },
   "&:not([data-visible]) [data-footer-content]": { opacity: 0.3 },
   "&:not([data-visible]) [data-gradient-strip]": {
     animationName: "none",
@@ -374,9 +376,8 @@ const socialNavStyle = css({
     opacity: 0.5,
     transition: "opacity 300ms ease",
   },
-  "& [data-social-link]:hover, & [data-social-link]:focus-visible": {
-    opacity: 1,
-  },
+  "& [data-social-link]:focus-visible": { opacity: 1 },
+  "@media (hover: hover)": { "& [data-social-link]:hover": { opacity: 1 } },
   "& svg": {
     color: "var(--color-white)",
     display: "block",
@@ -386,15 +387,18 @@ const socialNavStyle = css({
   },
 });
 
+const remixLinkActiveStyle = {
+  background: "var(--color-white)",
+  color: "var(--color-black) !important",
+};
+
 const remixLinkStyle = css({
   border: "1px solid var(--color-white)",
   borderRadius: "24px",
   padding: "4px 8px",
   transition: "background-color 300ms ease, color 300ms ease",
-  "&:hover, &:focus-visible": {
-    background: "var(--color-white)",
-    color: "var(--color-black) !important",
-  },
+  "&:focus-visible": remixLinkActiveStyle,
+  "@media (hover: hover)": { "&:hover": remixLinkActiveStyle },
 });
 
 const policyNavStyle = css({

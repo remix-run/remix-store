@@ -105,14 +105,16 @@ const linkStyle = css({
   textDecoration: "none",
   "&:hover": { color: "var(--color-white)" },
   "& > div:first-child > img + img": { opacity: 0 },
-  "&:hover > div:first-child": {
-    animation: "product-image-bounce 520ms var(--ease-snap)",
-  },
-  "&:hover > div:first-child > img:first-child:not(:last-child)": {
-    opacity: 0,
-  },
-  "&:hover > div:first-child > img:last-child:not(:first-child)": {
-    opacity: 1,
+  "@media (hover: hover)": {
+    "&:hover > div:first-child": {
+      animation: "product-image-bounce 520ms var(--ease-snap)",
+    },
+    "&:hover > div:first-child > img:first-child:not(:last-child)": {
+      opacity: 0,
+    },
+    "&:hover > div:first-child > img:last-child:not(:first-child)": {
+      opacity: 1,
+    },
   },
 });
 const imageRegionStyle = css({

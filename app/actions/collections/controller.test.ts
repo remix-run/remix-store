@@ -168,6 +168,25 @@ describe("collection routes", () => {
       html,
       /<meta property="og:image" content="https:\/\/example\.com\/social-collections\.jpg"/,
     );
+    assert.match(html, /<title>Racing collection \| The Remix Store<\/title>/);
+  });
+
+  it("titles the document with the collection's SEO title but keeps its heading", async () => {
+    let app = createTestApp(
+      storefrontFetch(() => {
+        let data = collectionData({ hasNextPage: false, endCursor: null });
+        data.collection.seo = { title: "Shop Racing" };
+        return data;
+      }),
+    );
+
+    let response = await app.fetch(
+      new Request("https://example.com/collections/racing"),
+    );
+    let html = await response.text();
+
+    assert.match(html, /<title>Shop Racing \| The Remix Store<\/title>/);
+    assert.match(html, /<h1>Racing collection<\/h1>/);
   });
 
   it("renders a branded 404 when the collection is missing", async () => {
@@ -224,6 +243,7 @@ function collectionData(pageInfo: {
       handle: "racing",
       title: "Racing collection",
       description: "Racing apparel",
+      seo: { title: null as string | null },
       products: {
         nodes: [
           {

@@ -64,14 +64,15 @@ export function collectionPageHref(
 
 const productGridStyle = css({
   background: "linear-gradient(in oklab, #2d2d38 0%, var(--color-black) 100%)",
-  "--product-grid-row-gap": "36px",
   display: "grid",
-  gap: "var(--product-grid-row-gap) 0",
+  gap: "36px 0",
   gridTemplateColumns: "minmax(0, 1fr)",
   listStyle: "none",
   margin: 0,
   padding: 0,
   "& > li": { minWidth: 0 },
+  // Production ends the last page with one more row gap before the footer.
+  "&:has(> li:last-child > article)": { paddingBottom: "36px" },
   "@media (min-width: 810px)": {
     gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
   },

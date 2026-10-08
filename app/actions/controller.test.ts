@@ -65,6 +65,33 @@ describe("platform skeleton", () => {
     for (let name of references) assert.ok(symbols.has(name), name);
   });
 
+  it("marks the current page in the desktop and mobile navigation", async () => {
+    let app = createTestApp(
+      createStorefrontFetch({
+        RemixAnalyticsShop: analyticsShopData,
+        RemixCollection: collectionData,
+        RemixHomeEditorial: homeData,
+        RemixNavigation: navigationData,
+      }),
+    );
+    let currentLinks = async (url: string) => {
+      let html = await (await app.fetch(new Request(url))).text();
+      return [...html.matchAll(/<a\b[^>]*\baria-current="page"[^>]*>/g)].map(
+        ([tag]) => tag.match(/href="([^"]*)"/)?.[1],
+      );
+    };
+
+    assert.deepEqual(
+      await currentLinks("https://example.com/collections/all"),
+      ["/collections/all", "/collections/all"],
+    );
+    assert.deepEqual(
+      await currentLinks("https://example.com/en-ca/collections/all"),
+      ["/en-ca/collections/all", "/en-ca/collections/all"],
+    );
+    assert.deepEqual(await currentLinks("https://example.com/"), []);
+  });
+
   it("attributes Storefront API requests to the configured storefront", async () => {
     let headers: Headers[] = [];
     let upstreamFetch = createStorefrontFetch({
@@ -321,6 +348,7 @@ function collectionData() {
       handle: "all",
       title: "All products",
       description: "The complete catalog",
+      seo: { title: "Shop All" },
       products: {
         nodes: [
           {
