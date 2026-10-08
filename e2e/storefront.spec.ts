@@ -168,6 +168,39 @@ test("updates the product grid when navigating between collections", async ({
   ).toBe(true);
 });
 
+test("loads the next page of products in place and retries failures", async ({
+  page,
+}) => {
+  await page.goto("/collections/all");
+  await page.waitForFunction(() => !document.getElementById("rmx-data"));
+  let historyLength = await page.evaluate(() => history.length);
+
+  let failedOnce = false;
+  await page.route("**/collections/all/products?*", (route) => {
+    if (failedOnce) return route.continue();
+    failedOnce = true;
+    return route.abort();
+  });
+
+  let grid = page.getByRole("region", { name: "Collection products" });
+  let loadMore = grid.getByRole("button", { name: "Load more" });
+  await loadMore.click();
+  await expect(grid.getByRole("alert")).toHaveText(
+    "Products could not be loaded. Please try again.",
+  );
+
+  await loadMore.click();
+  let nextProduct = grid.locator('a[href="/products/second-page-product"]');
+  await expect(nextProduct).toBeVisible();
+  await expect(nextProduct).toBeFocused();
+  await expect(grid.locator('a[href="/products/test-product"]')).toBeVisible();
+  await expect(grid.getByRole("alert")).toHaveCount(0);
+  // The last page ends the grid.
+  await expect(loadMore).toHaveCount(0);
+  await expect(page).toHaveURL(/\/collections\/all$/);
+  expect(await page.evaluate(() => history.length)).toBe(historyLength);
+});
+
 test("returns a real branded 404 response and navigates home", async ({
   page,
 }) => {

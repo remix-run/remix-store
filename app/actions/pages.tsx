@@ -1,7 +1,7 @@
 import { css, type Handle } from "remix/component";
 
 import { CartPageContent } from "../assets/public/cart.tsx";
-import { CollectionProductGrid } from "../assets/public/collection-grid.tsx";
+import { CollectionProducts } from "../ui/collection-products.tsx";
 import { HomeHero } from "../assets/public/home-hero.tsx";
 import { SnowField } from "../assets/public/snow-field.tsx";
 import type { CartInitialData } from "../data/cart.ts";
@@ -69,11 +69,8 @@ export function HomePage(
             ))}
             {handle.props.products.length ? (
               <div data-home-catalog="true" mix={homeCatalogStyle}>
-                <CollectionProductGrid
-                  action={marketPath(
-                    routes.collections.show.href({ handle: "all" }),
-                    handle.props.market.pathPrefix,
-                  )}
+                <CollectionProducts
+                  collectionHandle="all"
                   pathPrefix={handle.props.market.pathPrefix}
                   products={handle.props.products}
                   pageInfo={handle.props.pageInfo}

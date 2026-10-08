@@ -240,10 +240,12 @@ export function storefront(options: StorefrontOptions = {}): Middleware<
     }
 
     // Subscription POSTs need the request-scoped Storefront client for fresh
-    // variant verification, but never need shell/cart network requests.
+    // variant verification, and product grid fragments render only cards, so
+    // neither needs shell/cart network requests.
     if (
-      context.request.method === "POST" &&
-      context.url.pathname === routes.subscribe.action.href()
+      (context.request.method === "POST" &&
+        context.url.pathname === routes.subscribe.action.href()) ||
+      isProductGridFragment(context.url)
     ) {
       context.set(
         NavigationMenuConfig,
@@ -425,6 +427,14 @@ for (let route of Object.values(routes.seo)) {
 
 function matchSeoRoute(url: URL): SeoRoute | null {
   return seoRouteMatcher.match(url)?.data ?? null;
+}
+
+const productGridFragmentMatcher = createMultiMatcher<true>();
+productGridFragmentMatcher.add(routes.collections.products.pattern, true);
+productGridFragmentMatcher.add(routes.collections.loadMore.pattern, true);
+
+function isProductGridFragment(url: URL): boolean {
+  return productGridFragmentMatcher.match(url) != null;
 }
 
 type EphemeralHydrogenRouteSessionManager = Parameters<

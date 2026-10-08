@@ -22,22 +22,28 @@ const storefrontRequestSchema = object({
     object({
       country: optional(string()),
       handle: optional(string()),
+      after: optional(string()),
     }),
   ),
 });
 
-type StorefrontRequest = { query: string; country?: string; handle?: string };
+type StorefrontVariables = {
+  after?: string;
+  country?: string;
+  handle?: string;
+};
+type StorefrontRequest = { query: string; variables: StorefrontVariables };
 
 const storefrontServer = http.createServer(async (request, response) => {
   let body = "";
   for await (let chunk of request) body += chunk;
 
   try {
-    let { query, country, handle } = parseStorefrontRequest(body);
+    let { query, variables } = parseStorefrontRequest(body);
     let operation = query.match(
       /\b(?:query|mutation)\s+([A-Za-z_][A-Za-z0-9_]*)/,
     )?.[1];
-    let data = storefrontData(operation, country, handle);
+    let data = storefrontData(operation, variables);
     response.writeHead(200, { "Content-Type": "application/json" });
     response.end(JSON.stringify({ data }));
   } catch (error) {
@@ -106,14 +112,12 @@ function parseStorefrontRequest(body: string): StorefrontRequest {
     storefrontRequestSchema,
     JSON.parse(body),
   );
-  let variables: { country?: string; handle?: string } = parsedVariables ?? {};
-  return { query, country: variables.country, handle: variables.handle };
+  return { query, variables: parsedVariables ?? {} };
 }
 
 function storefrontData(
   operation: string | undefined,
-  country?: string,
-  handle?: string,
+  { after, country, handle }: StorefrontVariables,
 ) {
   switch (operation) {
     case "RemixNavigation":
@@ -179,10 +183,23 @@ function storefrontData(
           handle: "all",
           title: "All products",
           description: "The complete catalog",
-          products: {
-            nodes: [productCard(country)],
-            pageInfo: { hasNextPage: true, endCursor: "next-page" },
-          },
+          products:
+            after === "next-page"
+              ? {
+                  nodes: [
+                    {
+                      ...productCard(country),
+                      id: "second-page-product",
+                      handle: "second-page-product",
+                      title: "Second page product",
+                    },
+                  ],
+                  pageInfo: { hasNextPage: false, endCursor: null },
+                }
+              : {
+                  nodes: [productCard(country)],
+                  pageInfo: { hasNextPage: true, endCursor: "next-page" },
+                },
         },
       };
     case "RemixCanadianSitemapResources":

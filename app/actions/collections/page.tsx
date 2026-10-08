@@ -1,14 +1,13 @@
 import { type Handle } from "remix/component";
 
 import { CollectionViewed } from "../../assets/public/analytics.tsx";
-import { CollectionProductGrid } from "../../assets/public/collection-grid.tsx";
+import { CollectionProducts } from "../../ui/collection-products.tsx";
 import type {
   ProductCardData,
   ProductPageInfoData,
 } from "../../data/storefront.ts";
 import { PageTitle } from "../../assets/public/page-title.tsx";
-import { marketPath, type ActiveMarket } from "../../lib/public/market.ts";
-import { routes } from "../../routes.ts";
+import type { ActiveMarket } from "../../lib/public/market.ts";
 import { Document } from "../../ui/document.tsx";
 
 export function CollectionPage(
@@ -37,11 +36,8 @@ export function CollectionPage(
         />
         <PageTitle title={handle.props.title} />
         {handle.props.products.length ? (
-          <CollectionProductGrid
-            action={marketPath(
-              routes.collections.show.href({ handle: handle.props.handle }),
-              handle.props.market.pathPrefix,
-            )}
+          <CollectionProducts
+            collectionHandle={handle.props.handle}
             pathPrefix={handle.props.market.pathPrefix}
             products={handle.props.products}
             pageInfo={handle.props.pageInfo}

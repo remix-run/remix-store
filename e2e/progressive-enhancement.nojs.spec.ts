@@ -29,6 +29,19 @@ test("localized catalog navigation and add-to-cart work without JavaScript", asy
   ).toBeVisible();
 });
 
+test("load more opens the next page of products without JavaScript", async ({
+  page,
+}) => {
+  await page.goto("/collections/all");
+  await page.getByRole("button", { name: "Load more" }).click();
+
+  await expect(page).toHaveURL(/\/collections\/all\?cursor=next-page$/);
+  await expect(
+    page.locator('main a[href="/products/second-page-product"]'),
+  ).toBeVisible();
+  await expect(page.getByRole("button", { name: "Load more" })).toHaveCount(0);
+});
+
 test("catalog navigation and add-to-cart work without JavaScript", async ({
   page,
 }) => {
