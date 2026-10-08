@@ -9,11 +9,23 @@ export type Assets = Pick<AssetServer, "getScriptEntry" | "getHref"> & {
   getStylesheets?: (paths: string | string[]) => Promise<string[]>;
 };
 
+/** Browser files every document links. The Vite config registers these too. */
+export const documentAssetSources = {
+  scriptEntry: "app/actions/public/entry.tsx",
+  stylesheet: "app/assets/public/site.css",
+  fonts: {
+    interItalic: "app/assets/public/font/inter-italic-latin-var.woff2",
+    interRoman: "app/assets/public/font/inter-roman-latin-var.woff2",
+    jetBrainsMono: "app/assets/public/font/jet-brains-mono.woff2",
+    lexendZetta: "app/assets/public/font/lexend-zetta-black.woff2",
+  },
+} as const;
+
 export async function getDocumentAssets(
   assets: Assets,
   additionalStylesheets: string[] = [],
 ): Promise<DocumentAssets> {
-  // Literal source paths let the Vite adapter discover the browser outputs.
+  let { scriptEntry: entry, stylesheet: site, fonts } = documentAssetSources;
   let [
     scriptEntry,
     stylesheet,
@@ -23,13 +35,13 @@ export async function getDocumentAssets(
     lexendZetta,
     browserStylesheets,
   ] = await Promise.all([
-    assets.getScriptEntry("app/actions/public/entry.tsx"),
-    assets.getHref("app/assets/public/site.css"),
-    assets.getHref("app/assets/public/font/inter-italic-latin-var.woff2"),
-    assets.getHref("app/assets/public/font/inter-roman-latin-var.woff2"),
-    assets.getHref("app/assets/public/font/jet-brains-mono.woff2"),
-    assets.getHref("app/assets/public/font/lexend-zetta-black.woff2"),
-    assets.getStylesheets?.("app/actions/public/entry.tsx") ?? [],
+    assets.getScriptEntry(entry),
+    assets.getHref(site),
+    assets.getHref(fonts.interItalic),
+    assets.getHref(fonts.interRoman),
+    assets.getHref(fonts.jetBrainsMono),
+    assets.getHref(fonts.lexendZetta),
+    assets.getStylesheets?.(entry) ?? [],
   ]);
 
   return {

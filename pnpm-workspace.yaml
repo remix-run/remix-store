@@ -5,6 +5,7 @@ minimumReleaseAgeExclude:
   - remix
   - "@remix-run/*"
   - "@shopify/*"
+  - "@pitlane/*"
 minimumReleaseAgeStrict: true
 # Remix's git-hosted preview already contains built dist files, but its package
 # lifecycle scripts otherwise try to prepare the fetched monorepo package.
