@@ -110,7 +110,16 @@ describe("product form", () => {
     assert.equal(optionMenu.open, false);
     assert.equal(document.activeElement, optionSummary);
 
+    await act(() => optionSummary.click());
+    let addToCartButton = $('button[name="add-to-cart"]');
+    assert.ok(addToCartButton instanceof HTMLButtonElement);
+    await act(() => addToCartButton.focus());
+    assert.equal(optionMenu.open, false);
+
+    await act(() => optionSummary.click());
+    assert.equal(optionMenu.open, true);
     await act(() => blueButton.click());
+    assert.equal(optionMenu.open, false);
     let updatedRedButton = $('a[href*="Color=Red"]');
     let updatedBlueButton = $('a[href*="Color=Blue"]');
     assert.ok(updatedRedButton instanceof HTMLAnchorElement);

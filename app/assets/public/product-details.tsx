@@ -31,6 +31,7 @@ import {
   type ActiveMarket,
 } from "../../lib/public/market.ts";
 import { productSubscriptionsEnabled } from "../../lib/public/subscription.ts";
+import { dismissibleDetails } from "../../ui/public/dismissible-details.tsx";
 import { RichText } from "../../ui/public/rich-text.tsx";
 import {
   ShopifyImage,
@@ -388,7 +389,7 @@ export const ProductDetails = clientEntry(
                       return (
                         <details
                           key={option.name}
-                          mix={[optionMenuStyle, productOptionMenuBehavior()]}
+                          mix={[optionMenuStyle, dismissibleDetails()]}
                         >
                           <summary>
                             <span>
@@ -458,13 +459,6 @@ export const ProductDetails = clientEntry(
                                   }
                                   mix={on("click", (event) => {
                                     event.preventDefault();
-                                    if (
-                                      event.currentTarget instanceof HTMLElement
-                                    ) {
-                                      event.currentTarget
-                                        .closest("details")
-                                        ?.removeAttribute("open");
-                                    }
                                     optionRegistration.onClick();
                                   })}
                                 >
@@ -594,36 +588,6 @@ export const ProductDetails = clientEntry(
     };
   },
 );
-
-function productOptionMenuBehavior() {
-  return ref((element: HTMLDetailsElement, signal) => {
-    function close(restoreFocus = false) {
-      if (!element.open) return;
-      element.open = false;
-      if (restoreFocus) element.querySelector("summary")?.focus();
-    }
-    function onPointerDown(event: PointerEvent) {
-      let target = event.target instanceof Node ? event.target : null;
-      if (!element.contains(target)) close();
-    }
-    function onFocusIn(event: FocusEvent) {
-      let target = event.target instanceof Node ? event.target : null;
-      if (!element.contains(target)) close();
-    }
-    function onKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") close(true);
-    }
-
-    document.addEventListener("pointerdown", onPointerDown);
-    document.addEventListener("focusin", onFocusIn);
-    document.addEventListener("keydown", onKeyDown);
-    signal.addEventListener("abort", () => {
-      document.removeEventListener("pointerdown", onPointerDown);
-      document.removeEventListener("focusin", onFocusIn);
-      document.removeEventListener("keydown", onKeyDown);
-    });
-  });
-}
 
 function ProductImageFallback() {
   return () => (
