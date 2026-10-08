@@ -307,7 +307,7 @@ test("returns a real branded 404 response and navigates home", async ({
   ).toBeVisible();
   runtimeErrors.length = 0;
 
-  await page.getByRole("link", { name: "Return home" }).click();
+  await page.getByRole("link", { name: "Back Home" }).click();
 
   await expect(page).toHaveURL("/");
   await expect(

@@ -560,7 +560,33 @@ describe("cart interactions", () => {
     );
     assert.match(container.textContent, /Automatic discount-\$5\.00/);
     assert.match(container.textContent, /Total\$10\.00/);
-    assert.match(container.textContent, /Taxes & shipping details at checkout/);
+    assert.match(container.textContent, /Taxes & Shipping details at checkout/);
+  });
+
+  it("names cart page variants by title and omits Shopify's default title", (t) => {
+    t.after(resetBrowserCartStore);
+    let lineText = (title: string, size: string) => {
+      let cart = createCart();
+      let merchandise = cart.lines.nodes[0]!.merchandise;
+      merchandise.title = title;
+      merchandise.selectedOptions = [{ name: "Size", value: size }];
+      let { container, cleanup } = render(
+        <CartPageContent initialData={{ cart }} />,
+      );
+      let text = container.querySelector("li")?.textContent ?? "";
+      cleanup();
+      resetBrowserCartStore();
+      return text;
+    };
+
+    let sized = lineText("Medium", "Medium");
+    assert.match(sized, /Test ProductMedium/);
+    assert.doesNotMatch(sized, /Size:/);
+
+    assert.doesNotMatch(
+      lineText("Default Title", "Default Title"),
+      /Default Title|Title:/,
+    );
   });
 
   it("labels automatic line allocations with the sale title", (t) => {

@@ -191,6 +191,7 @@ export function CartPage(
             ? `Cart (${handle.props.initialData.cart.totalQuantity})`
             : "Cart"
         }
+        description="View your shopping cart and checkout"
         noIndex
       >
         <main mix={cartMainStyle}>
@@ -214,10 +215,10 @@ export function NotFoundPage(handle: Handle) {
           <BrandedState
             kind="404"
             heading="Page not found"
-            copy="The page you requested does not exist."
+            copy="Please check the URL and try again"
             href={marketPath("/", market?.pathPrefix ?? "")}
             icon="fast-forward"
-            linkLabel="Return home"
+            linkLabel="Back Home"
             reverseIcon
           />
         </main>
@@ -238,7 +239,7 @@ export function ErrorPage(handle: Handle) {
             copy="The storefront could not load. Please try again."
             href={marketPath("/", market?.pathPrefix ?? "")}
             icon="fast-forward"
-            linkLabel="Return home"
+            linkLabel="Back Home"
             reverseIcon
           />
         </main>

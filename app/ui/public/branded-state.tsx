@@ -25,18 +25,20 @@ export function BrandedState(
           <p>{handle.props.copy}</p>
         </div>
         <a href={handle.props.href} mix={spreadLinkStyle}>
-          <svg
-            aria-hidden="true"
-            viewBox="0 0 24 24"
-            style={{
-              transform: handle.props.reverseIcon
-                ? "rotate(180deg)"
-                : undefined,
-            }}
-          >
-            <use href={`#${handle.props.icon}`} />
-          </svg>
-          <span>{handle.props.linkLabel}</span>
+          <span data-spread="true">
+            <svg
+              aria-hidden="true"
+              viewBox="0 0 24 24"
+              style={{
+                transform: handle.props.reverseIcon
+                  ? "rotate(180deg)"
+                  : undefined,
+              }}
+            >
+              <use href={`#${handle.props.icon}`} />
+            </svg>
+            <span>{handle.props.linkLabel}</span>
+          </span>
         </a>
       </div>
     </section>
@@ -61,7 +63,6 @@ const contentStyle = css({
   display: "flex",
   flexDirection: "column",
   gap: "36px",
-  padding: "0 20px",
   "@media (min-width: 810px)": { gap: "48px" },
 });
 
@@ -76,17 +77,31 @@ const copyStyle = css({
     fontSize: "1.875rem",
     fontWeight: 900,
     letterSpacing: "-.2em",
-    lineHeight: 1.05,
+    lineHeight: "2.25rem",
     margin: 0,
     textTransform: "uppercase",
   },
-  "& p": { fontSize: ".875rem", letterSpacing: "-.025em", margin: 0 },
+  "& p": {
+    fontSize: ".875rem",
+    letterSpacing: "-.025em",
+    lineHeight: "1.25rem",
+    margin: 0,
+  },
   "@media (min-width: 810px)": {
     gap: "24px",
-    "& h1": { fontSize: "3rem" },
-    "& p": { fontSize: "1rem" },
+    "& h1": { fontSize: "3rem", lineHeight: 1 },
+    "& p": { fontSize: "1rem", lineHeight: "1.4rem" },
   },
 });
+
+// On hover or focus the link fills with brand blue and its icon and label
+// spread to the edges.
+const spreadActiveStyle = {
+  background: "var(--color-blue-brand)",
+  boxShadow: "inset 0 0 0 1px var(--color-white)",
+  color: "var(--color-white)",
+  "& [data-spread]": { width: "100%" },
+};
 
 const spreadLinkStyle = css({
   alignItems: "center",
@@ -94,23 +109,27 @@ const spreadLinkStyle = css({
   borderRadius: "54px",
   color: "var(--color-black)",
   display: "flex",
-  fontSize: "1rem",
+  fontSize: "1.25rem",
   fontWeight: 600,
-  gap: "10px",
   height: "64px",
   justifyContent: "center",
-  overflow: "hidden",
+  lineHeight: "1.75rem",
   padding: "16px 24px",
-  position: "relative",
   textDecoration: "none",
-  transition: "gap 300ms ease",
+  transition:
+    "background-color 300ms ease, box-shadow 300ms ease, color 300ms ease",
   width: "240px",
-  "&:hover, &:focus-visible": { color: "var(--color-black)" },
-  "& svg": {
-    fill: "currentColor",
+  "& [data-spread]": {
+    alignItems: "center",
+    display: "flex",
+    gap: "10px",
     height: "32px",
-    transition: "transform 300ms ease",
-    width: "32px",
+    justifyContent: "space-between",
+    minWidth: "fit-content",
+    transition: "width 300ms ease-in-out",
+    width: 0,
   },
-  "&:hover svg, &:focus-visible svg": { transform: "translateX(-4px)" },
+  "& svg": { fill: "currentColor", height: "32px", width: "32px" },
+  "&:focus-visible": spreadActiveStyle,
+  "@media (hover: hover)": { "&:hover": spreadActiveStyle },
 });

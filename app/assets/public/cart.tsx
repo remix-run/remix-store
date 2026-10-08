@@ -554,18 +554,10 @@ function CartView(handle: Handle<CartViewProps>) {
                       (merchandise?.product.title ?? "Product")
                     )}
                   </h2>
-                  {drawer ? (
-                    merchandise?.title &&
-                    merchandise.title !== "Default Title" ? (
-                      <p mix={detailStyle}>{merchandise.title}</p>
-                    ) : null
-                  ) : (
-                    merchandise?.selectedOptions?.map((option) => (
-                      <p key={option.name} mix={detailStyle}>
-                        {option.name}: {option.value}
-                      </p>
-                    ))
-                  )}
+                  {merchandise?.title &&
+                  merchandise.title !== "Default Title" ? (
+                    <p mix={detailStyle}>{merchandise.title}</p>
+                  ) : null}
                   <form
                     action={getCartApiPath(handle.props.market.pathPrefix)}
                     method="post"
@@ -711,7 +703,7 @@ function CartView(handle: Handle<CartViewProps>) {
                   subtotal={cart.cost.subtotalAmount}
                 />
                 <p mix={taxNoteStyle}>
-                  Taxes &amp; shipping details at checkout
+                  Taxes &amp; Shipping details at checkout
                 </p>
               </div>
               {cart.checkoutUrl ? (
@@ -916,10 +908,13 @@ const triggerBaseStyle = css({
     overflow: "hidden",
     transition: "max-width 300ms ease-in-out",
   },
-  "&:hover [data-expanded-label], &:focus-visible [data-expanded-label], &[aria-expanded='true'] [data-expanded-label]":
+  "&:focus-visible [data-expanded-label], &[aria-expanded='true'] [data-expanded-label]":
     {
       maxWidth: "10ch",
     },
+  "@media (hover: hover)": {
+    "&:hover [data-expanded-label]": { maxWidth: "10ch" },
+  },
   "& [data-sr-only]": {
     clip: "rect(0, 0, 0, 0)",
     clipPath: "inset(50%)",
@@ -1009,7 +1004,9 @@ const drawerHeaderStyle = css({
     padding: "4px",
     width: "40px",
   },
-  "& button:hover": { background: "rgba(255,255,255,.2)" },
+  "@media (hover: hover)": {
+    "& button:hover": { background: "rgba(255,255,255,.2)" },
+  },
   "& svg": { height: "32px", width: "32px" },
 });
 const drawerBodyStyle = css({
@@ -1173,7 +1170,10 @@ const pageSubtotalStyle = css({
     textTransform: "uppercase",
   },
   "& span": { fontSize: "1rem", fontWeight: 700 },
-  "@media (min-width: 810px)": { "& strong, & span": { fontSize: "1.25rem" } },
+  "& strong, & span": { lineHeight: "1.4rem" },
+  "@media (min-width: 810px)": {
+    "& strong, & span": { fontSize: "1.25rem", lineHeight: "1.75rem" },
+  },
 });
 const allocationStyle = css({
   color: "var(--color-green-brand)",
@@ -1200,8 +1200,8 @@ const finalTotalStyle = css({
 const taxNoteStyle = css({
   color: "rgba(255,255,255,.5)",
   fontSize: ".75rem",
-  margin: "4px 0 0",
-  textAlign: "center",
+  lineHeight: "1rem",
+  margin: 0,
 });
 const checkoutStyle = css({
   alignItems: "center",
@@ -1243,7 +1243,9 @@ const quantityFormStyle = css({
     color: "rgba(255,255,255,.5)",
     padding: 0,
   },
-  "& button:not([data-set-quantity]):hover": { color: "white" },
+  "@media (hover: hover)": {
+    "& button:not([data-set-quantity]):hover": { color: "white" },
+  },
   "& button svg": { height: "20px", width: "20px" },
   '& input[name="quantity"]': {
     appearance: "textfield",
@@ -1293,6 +1295,7 @@ const drawerSubtotalStyle = css({
 const shippingConfirmationStyle = css({
   color: "rgba(255,255,255,.7)",
   fontSize: ".75rem !important",
+  lineHeight: "1rem !important",
 });
 const freeShippingStyle = css({
   display: "flex",

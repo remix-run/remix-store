@@ -204,7 +204,7 @@ describe("platform skeleton", () => {
     assert.match(html, /<title>Not Found<\/title>/);
     assert.match(html, /Page not found/);
     assert.doesNotMatch(html, /\/brand\/matrix\/error-404\.png/);
-    assert.match(html, /Return home/);
+    assert.match(html, /Back Home/);
   });
 });
 
