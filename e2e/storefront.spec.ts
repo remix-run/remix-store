@@ -137,6 +137,37 @@ test("keeps product details when navigating from the home page", async ({
   ).toBeVisible();
 });
 
+test("updates the product grid when navigating between collections", async ({
+  page,
+}) => {
+  await page.goto("/collections/all");
+  // The browser runtime removes the hydration record once it takes over links.
+  await page.waitForFunction(() => !document.getElementById("rmx-data"));
+  await page.evaluate(() => {
+    (window as { documentMarker?: boolean }).documentMarker = true;
+  });
+
+  let grid = page.getByRole("region", { name: "Collection products" });
+  await expect(grid.locator('a[href="/products/test-product"]')).toBeVisible();
+
+  await page
+    .getByRole("navigation", { name: "Main navigation" })
+    .getByRole("link", { name: "Apparel" })
+    .click();
+
+  await expect(page).toHaveURL(/\/collections\/apparel$/);
+  await expect(
+    grid.locator('a[href="/products/apparel-product"]'),
+  ).toBeVisible();
+  await expect(grid.locator('a[href="/products/test-product"]')).toHaveCount(0);
+  // The grid must update through client navigation, not a document reload.
+  expect(
+    await page.evaluate(
+      () => (window as { documentMarker?: boolean }).documentMarker,
+    ),
+  ).toBe(true);
+});
+
 test("returns a real branded 404 response and navigates home", async ({
   page,
 }) => {

@@ -74,6 +74,79 @@ describe("collection grid interactions", () => {
     assert.equal($$('a[href="/products/second"]').length, 1);
   });
 
+  it("starts over when navigation passes another collection", async (t) => {
+    let resolveFetch: ((response: Response) => void) | undefined;
+    let fetchPromise = new Promise<Response>((resolve) => {
+      resolveFetch = resolve;
+    });
+    t.mock.method(globalThis, "fetch", async () => fetchPromise);
+
+    let { $, $$, act, cleanup, root } = render(
+      <CollectionProductGrid
+        action="/collections/racing"
+        products={[firstProduct]}
+        pageInfo={{ hasNextPage: true, endCursor: "next-page" }}
+      />,
+    );
+    t.after(cleanup);
+
+    let form = $("form");
+    assert.ok(form instanceof HTMLFormElement);
+    await act(() =>
+      form.dispatchEvent(
+        new SubmitEvent("submit", { bubbles: true, cancelable: true }),
+      ),
+    );
+
+    // A frame navigation keeps the instance and passes new server props.
+    await act(() =>
+      root.render(
+        <CollectionProductGrid
+          action="/collections/apparel"
+          products={[secondProduct]}
+          pageInfo={{ hasNextPage: false, endCursor: null }}
+        />,
+      ),
+    );
+
+    assert.equal($$('a[href="/products/first"]').length, 0);
+    assert.equal($$('a[href="/products/second"]').length, 1);
+    assert.equal($("form"), null);
+
+    // The previous collection's pending page must not land in this one.
+    assert.ok(resolveFetch);
+    let resolveResponse = resolveFetch;
+    await act(async () => {
+      resolveResponse(
+        Response.json({
+          products: [firstProduct, product("third", "Third product")],
+          pageInfo: { hasNextPage: false, endCursor: null },
+        }),
+      );
+      await fetchPromise;
+      await Promise.resolve();
+    });
+
+    assert.equal($$('a[href="/products/first"]').length, 0);
+    assert.equal($$('a[href="/products/third"]').length, 0);
+    assert.equal($$('a[href="/products/second"]').length, 1);
+
+    // Returning to a collection starts again from its server-rendered page.
+    await act(() =>
+      root.render(
+        <CollectionProductGrid
+          action="/collections/racing"
+          products={[firstProduct]}
+          pageInfo={{ hasNextPage: true, endCursor: "next-page" }}
+        />,
+      ),
+    );
+
+    assert.equal($$('a[href="/products/first"]').length, 1);
+    assert.equal($$('a[href="/products/third"]').length, 0);
+    assert.ok($("form") instanceof HTMLFormElement);
+  });
+
   it("shows a retryable error for invalid responses", async (t) => {
     let fetchPromise = Promise.resolve(Response.error());
     t.mock.method(globalThis, "fetch", async () => fetchPromise);

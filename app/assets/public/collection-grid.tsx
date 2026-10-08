@@ -30,6 +30,13 @@ interface CollectionProductGridProps extends SerializableObject {
   products: ProductCardData[];
 }
 
+interface LoadedPages {
+  action: string;
+  pageInfo: ProductPageInfoData;
+  products: ProductCardData[];
+  status: "idle" | "loading" | "error";
+}
+
 const ProductsPageResponseSchema = object({
   pageInfo: object({
     endCursor: optional(nullable(string())),
@@ -59,85 +66,102 @@ const ProductsPageResponseSchema = object({
 export const CollectionProductGrid = clientEntry(
   import.meta.url,
   function CollectionProductGrid(handle: Handle<CollectionProductGridProps>) {
-    let products = handle.props.products;
-    let pageInfo = handle.props.pageInfo;
-    let status: "idle" | "loading" | "error" = "idle";
+    // Server props stay the source of truth. Only pages loaded here are local,
+    // tagged with their collection: navigation keeps this instance and passes
+    // another collection's props, which discards them.
+    let loadedPages: LoadedPages | undefined;
 
-    return () => (
-      <section aria-label="Collection products">
-        <ProductGrid
-          products={products}
-          pathPrefix={handle.props.pathPrefix}
-          ariaBusy={status === "loading"}
-          loadingProductCount={status === "loading" ? 8 : 0}
-        />
-        {pageInfo.hasNextPage && pageInfo.endCursor ? (
-          <form
-            action={handle.props.action}
-            method="get"
-            mix={on("submit", async (event, signal) => {
-              event.preventDefault();
-              let form = event.currentTarget;
-              let url = new URL(form.action, window.location.href);
-              let data = new FormData(form);
-              for (let [name, value] of data) {
-                if (!(value instanceof File)) url.searchParams.set(name, value);
-              }
+    return () => {
+      if (loadedPages?.action !== handle.props.action) loadedPages = undefined;
+      let loaded = loadedPages;
+      let products = loaded
+        ? uniqueProducts([...handle.props.products, ...loaded.products])
+        : handle.props.products;
+      let pageInfo = loaded?.pageInfo ?? handle.props.pageInfo;
+      let status = loaded?.status ?? "idle";
 
-              status = "loading";
-              await handle.update();
-              try {
-                let response = await fetch(url, {
-                  headers: { Accept: "application/json" },
-                  signal,
-                });
-                if (!response.ok)
-                  throw new Error(`Request failed with ${response.status}`);
+      return (
+        <section aria-label="Collection products">
+          <ProductGrid
+            products={products}
+            pathPrefix={handle.props.pathPrefix}
+            ariaBusy={status === "loading"}
+            loadingProductCount={status === "loading" ? 8 : 0}
+          />
+          {pageInfo.hasNextPage && pageInfo.endCursor ? (
+            <form
+              action={handle.props.action}
+              method="get"
+              mix={on("submit", async (event, signal) => {
+                event.preventDefault();
+                let form = event.currentTarget;
+                let url = new URL(form.action, window.location.href);
+                let data = new FormData(form);
+                for (let [name, value] of data) {
+                  if (!(value instanceof File))
+                    url.searchParams.set(name, value);
+                }
 
-                let nextPage = parse(
-                  ProductsPageResponseSchema,
-                  await response.json(),
-                );
+                let pages: LoadedPages = {
+                  action: handle.props.action,
+                  products: loaded?.products ?? [],
+                  pageInfo,
+                  status: "loading",
+                };
+                loadedPages = pages;
+                await handle.update();
+                try {
+                  let response = await fetch(url, {
+                    headers: { Accept: "application/json" },
+                    signal,
+                  });
+                  if (!response.ok)
+                    throw new Error(`Request failed with ${response.status}`);
 
-                let productsById = new Map(
-                  [...products, ...nextPage.products].map((product) => [
-                    product.id,
-                    product,
-                  ]),
-                );
-                products = [...productsById.values()];
-                pageInfo = nextPage.pageInfo;
-                status = "idle";
-              } catch (error) {
-                if (signal.aborted) return;
-                console.error(
-                  "[collection] Unable to load more products",
-                  error,
-                );
-                status = "error";
-              }
-              await handle.update();
-            })}
-          >
-            <input type="hidden" name="cursor" value={pageInfo.endCursor} />
-            <button
-              type="submit"
-              disabled={status === "loading"}
-              mix={loadMoreStyle}
+                  let nextPage = parse(
+                    ProductsPageResponseSchema,
+                    await response.json(),
+                  );
+                  pages.products = [...pages.products, ...nextPage.products];
+                  pages.pageInfo = nextPage.pageInfo;
+                  pages.status = "idle";
+                } catch (error) {
+                  if (signal.aborted) return;
+                  console.error(
+                    "[collection] Unable to load more products",
+                    error,
+                  );
+                  pages.status = "error";
+                }
+                await handle.update();
+              })}
             >
-              {status === "loading" ? "Loading…" : "Load more"}
-            </button>
-            {status === "error" ? (
-              <p role="alert" mix={errorStyle}>
-                Products could not be loaded. Please try again.
-              </p>
-            ) : null}
-          </form>
-        ) : null}
-      </section>
-    );
+              <input type="hidden" name="cursor" value={pageInfo.endCursor} />
+              <button
+                type="submit"
+                disabled={status === "loading"}
+                mix={loadMoreStyle}
+              >
+                {status === "loading" ? "Loading…" : "Load more"}
+              </button>
+              {status === "error" ? (
+                <p role="alert" mix={errorStyle}>
+                  Products could not be loaded. Please try again.
+                </p>
+              ) : null}
+            </form>
+          ) : null}
+        </section>
+      );
+    };
   },
 );
+
+function uniqueProducts(products: ProductCardData[]) {
+  return [
+    ...new Map(products.map((product) => [product.id, product])).values(),
+  ];
+}
 
 const loadMoreStyle = css({
   background: "var(--color-blue-brand)",

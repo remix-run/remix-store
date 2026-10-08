@@ -21,22 +21,23 @@ const storefrontRequestSchema = object({
   variables: optional(
     object({
       country: optional(string()),
+      handle: optional(string()),
     }),
   ),
 });
 
-type StorefrontRequest = { query: string; country?: string };
+type StorefrontRequest = { query: string; country?: string; handle?: string };
 
 const storefrontServer = http.createServer(async (request, response) => {
   let body = "";
   for await (let chunk of request) body += chunk;
 
   try {
-    let { query, country } = parseStorefrontRequest(body);
+    let { query, country, handle } = parseStorefrontRequest(body);
     let operation = query.match(
       /\b(?:query|mutation)\s+([A-Za-z_][A-Za-z0-9_]*)/,
     )?.[1];
-    let data = storefrontData(operation, country);
+    let data = storefrontData(operation, country, handle);
     response.writeHead(200, { "Content-Type": "application/json" });
     response.end(JSON.stringify({ data }));
   } catch (error) {
@@ -105,11 +106,15 @@ function parseStorefrontRequest(body: string): StorefrontRequest {
     storefrontRequestSchema,
     JSON.parse(body),
   );
-  let variables: { country?: string } = parsedVariables ?? {};
-  return { query, country: variables.country };
+  let variables: { country?: string; handle?: string } = parsedVariables ?? {};
+  return { query, country: variables.country, handle: variables.handle };
 }
 
-function storefrontData(operation: string | undefined, country?: string) {
+function storefrontData(
+  operation: string | undefined,
+  country?: string,
+  handle?: string,
+) {
   switch (operation) {
     case "RemixNavigation":
       return {
@@ -119,6 +124,11 @@ function storefrontData(operation: string | undefined, country?: string) {
               id: "all",
               title: "All Products",
               url: "http://localhost:44110/collections/all",
+            },
+            {
+              id: "apparel",
+              title: "Apparel",
+              url: "http://localhost:44110/collections/apparel",
             },
           ],
         },
@@ -142,6 +152,27 @@ function storefrontData(operation: string | undefined, country?: string) {
         lookbook: null,
       };
     case "RemixCollection":
+      if (handle === "apparel") {
+        return {
+          collection: {
+            id: "apparel",
+            handle: "apparel",
+            title: "Apparel",
+            description: "Racing apparel",
+            products: {
+              nodes: [
+                {
+                  ...productCard(country),
+                  id: "apparel-product",
+                  handle: "apparel-product",
+                  title: "Apparel product",
+                },
+              ],
+              pageInfo: { hasNextPage: false, endCursor: null },
+            },
+          },
+        };
+      }
       return {
         collection: {
           id: "collection",
