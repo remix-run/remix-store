@@ -161,7 +161,7 @@ interactivity guide and this app's browser-entry setup.
 | `server.node.ts` | Node HTTP listener and shutdown lifecycle |
 | `app/entry.oxygen.ts` | Oxygen assets, router composition, and Worker fetch handler |
 | `app/actions/public/entry.tsx` | Browser hydration module loader |
-| `vite/remix-oxygen.ts` | Temporary, load-bearing Oxygen build adapter |
+| `vite/remix-oxygen.ts` | Pitlane's Remix Vite plugin, finished into one Oxygen Worker |
 
 Keep business routes, controllers, data, UI, and middleware runtime-neutral.
 Node-only imports belong behind `app/node.ts` or in build tooling. Oxygen code
@@ -172,13 +172,21 @@ traverse Node imports.
 The two asset pipelines are intentional:
 
 - Node resolves browser modules with `remix/assets`.
-- Oxygen resolves browser modules from Vite's fullstack asset manifests.
+- Oxygen resolves browser modules from the asset manifest that
+  `@pitlane/vite-plugin-remix` produces, read through `@pitlane/assets`.
+
+Pitlane discovers browser entries from literal `getScriptEntry()`/`getHref()`
+calls on its resolver and from `clientEntry()` exports. Document assets are
+read through a function parameter, so `vite/remix-oxygen.ts` registers
+`documentAssetSources` from `app/assets.ts` explicitly; add new document assets
+there. Oxygen uploads only `index.js` and `oxygen.json` from `dist/server`, so
+`vite/remix-oxygen.ts` bundles Pitlane's separate manifest file into the
+Worker. After changing it or upgrading Pitlane, run an Oxygen production build
+and `pnpm test:e2e:oxygen`.
 
 Keep `server.node.ts` separate from `app/node.ts` so tests can import the Node
 app without starting an HTTP listener. Runtime adapters call the app's
 `fetch(request, runtime)` boundary rather than the internal router directly.
-Treat `vite/remix-oxygen.ts` as vendored infrastructure: review changes
-carefully and always run an Oxygen production build.
 
 ## Work Within the App
 

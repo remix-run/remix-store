@@ -23,11 +23,13 @@
     "test:e2e:oxygen:dev": "E2E_RUNTIME=oxygen-dev playwright test"
   },
   "dependencies": {
+    "@pitlane/assets": "0.1.0",
     "@shopify/hydrogen": "2026.10.0-preview.4",
     "remix": "3.0.0",
     "sanitize-html": "2.18.0"
   },
   "devDependencies": {
+    "@pitlane/vite-plugin-remix": "0.8.0",
     "@shopify/cli": "4.9.0",
     "@shopify/mini-oxygen": "4.2.3",
     "@shopify/oxygen-workers-types": "4.2.0",
@@ -35,11 +37,9 @@
     "@types/sanitize-html": "2.16.2",
     "@typescript/native": "npm:typescript@7.0.2",
     "graphql": "16.14.2",
-    "magic-string": "1.4.2",
     "oxfmt": "0.71.0",
     "oxlint": "1.86.0",
     "playwright": "1.63.0",
-    "postcss-value-parser": "4.2.0",
     "typescript": "npm:@typescript/typescript6@6.0.2",
     "vite": "8.3.1"
   },

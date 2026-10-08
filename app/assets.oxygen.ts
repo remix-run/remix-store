@@ -1,4 +1,4 @@
-import manifest from "./asset-manifest.ts";
-import { createAssetResolver } from "./asset-resolver.ts";
+import { createAssetResolver } from "@pitlane/assets";
+import manifest from "@pitlane/assets/manifest";
 
 export const assets = createAssetResolver(manifest);

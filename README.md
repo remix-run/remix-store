@@ -69,8 +69,8 @@ Fly setup, secrets, local image verification, and continuous deployment are docu
 
 - `app/routes.ts` defines the typed route contract.
 - `app/router.ts` owns the shared Fetch app, routes, middleware, and runtime boundary.
-- `app/assets.ts` defines the shared metadata contract and document asset factory.
-- `app/assets.node.ts` constructs the native Remix asset server; `app/assets.oxygen.ts` supplies the Worker-safe manifest resolver.
+- `app/assets.ts` defines the shared metadata contract, document asset sources, and document asset factory.
+- `app/assets.node.ts` constructs the native Remix asset server; `app/assets.oxygen.ts` constructs Pitlane's Worker-safe manifest resolver.
 - `app/node.ts` composes Node static files, Remix Assets, rendering, and routing.
 - `app/middleware/storefront.ts` creates a request-scoped Hydrogen Storefront client.
 - `app/middleware/render.tsx` contains runtime-neutral streaming SSR.
@@ -78,12 +78,9 @@ Fly setup, secrets, local image verification, and continuous deployment are docu
 - `server.node.ts` owns the Node/Fly-compatible HTTP lifecycle.
 - `app/entry.oxygen.ts` composes and serves the Oxygen Worker runtime.
 - `app/actions/public/entry.tsx` hydrates browser components on both targets.
-- `vite/assets.ts` discovers asset roots and creates dev/build manifests; development discovery has its own graph so it cannot consume MiniOxygen cache invalidations. Builds track emitted scripts and files by Vite reference.
-- `vite/asset-manifest.ts` resolves output metadata and aliases byte-identical server CSS to the client's stylesheet URL.
-- `vite/client-entry.ts` rewrites Vite island identities to portable `file:app/…#Export` keys.
-- `vite/remix-oxygen.ts` completes the manifest and bundles one deployable Worker. This integration is local; no Pitlane or fullstack plugin dependency is required.
+- `vite/remix-oxygen.ts` composes [Pitlane's Remix Vite plugin](https://pitlane.tools/guides/vite-plugin) with MiniOxygen, then bundles Pitlane's asset manifest into the single `index.js` Worker that Oxygen deploys.
 
-The Oxygen asset adapter implements the metadata interface consumed by Remix's `render({ assets })` middleware. Remix owns streaming, frames, and hydration; Vite resolves `clientEntry(import.meta.url, ...)` source identities to built browser modules. The installed Remix asset server compiles from the filesystem in Node, so Oxygen needs this build-time bridge.
+Pitlane's resolver implements the metadata interface consumed by Remix's `render({ assets })` middleware. Remix owns streaming, frames, and hydration; Pitlane rewrites `clientEntry(import.meta.url, ...)` to portable `file:app/…#Export` identities and resolves them to built browser modules. The installed Remix asset server compiles from the filesystem in Node, so Oxygen needs this build-time bridge. The Node asset server's allow list defines which sources are public; its tests cover that boundary for both targets.
 
 ## License
 
