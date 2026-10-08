@@ -210,7 +210,10 @@ function storefrontData(
     case "RemixProductNavigation":
       return { menu: null, shop: null };
     case "RemixProduct":
-      return { product: product(country) };
+      return {
+        product:
+          handle === "sized-product" ? sizedProduct(country) : product(country),
+      };
     case "RemixAnalyticsShop":
       return {
         shop: { id: "gid://shopify/Shop/test" },
@@ -314,6 +317,49 @@ function product(country?: string) {
     selectedOrFirstAvailableVariant: selectedVariant,
     adjacentVariants: [],
     images: { nodes: [] },
+  };
+}
+
+/** A product with a real option and several images. */
+function sizedProduct(country?: string) {
+  let currencyCode = country === "CA" ? "CAD" : "USD";
+  let sizeVariant = (id: string, size: string) => ({
+    ...variant(currencyCode),
+    id: `gid://shopify/ProductVariant/${id}`,
+    product: { handle: "sized-product", title: "Sized product" },
+    selectedOptions: [{ name: "Size", value: size }],
+    title: size,
+  });
+  let small = sizeVariant("201", "Small");
+  let medium = sizeVariant("202", "Medium");
+  return {
+    ...product(country),
+    id: "sized-product",
+    handle: "sized-product",
+    title: "Sized product",
+    seo: { title: "Sized product", description: "A sized product" },
+    encodedVariantExistence: "v1_0-1",
+    encodedVariantAvailability: "v1_0-1",
+    options: [
+      {
+        name: "Size",
+        optionValues: [
+          { name: "Small", firstSelectableVariant: small },
+          { name: "Medium", firstSelectableVariant: medium },
+        ],
+      },
+    ],
+    selectedOrFirstAvailableVariant: small,
+    adjacentVariants: [small, medium],
+    images: {
+      nodes: ["social-main", "social-collections"].map((name) => ({
+        id: `gid://shopify/ProductImage/${name}`,
+        url: `http://localhost:${appPort}/${name}.jpg`,
+        altText: "Sized product",
+        width: 1200,
+        height: 630,
+      })),
+    },
   };
 }
 

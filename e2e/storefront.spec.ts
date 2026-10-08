@@ -364,6 +364,43 @@ test("product pages preserve their canonical URL", async ({ page }) => {
   );
 });
 
+test("a bare product URL shows its selected options without a new history entry", async ({
+  page,
+}) => {
+  let hydrated = () =>
+    page.waitForFunction(() => !document.getElementById("rmx-data"));
+
+  await page.goto("/products/sized-product");
+  await expect(page).toHaveURL(/\/products\/sized-product\?Size=Small$/);
+  expect(await page.evaluate(() => history.length)).toBe(2);
+
+  // An existing query is the shopper's choice, and a product without real
+  // options has nothing to show.
+  await page.goto("/products/sized-product?utm_source=test");
+  await hydrated();
+  await expect(page).toHaveURL(/\?utm_source=test$/);
+  await page.goto("/products/test-product");
+  await hydrated();
+  await expect(page).toHaveURL(/\/products\/test-product$/);
+});
+
+test.describe("mobile product gallery", () => {
+  test.use({ viewport: { width: 390, height: 844 }, hasTouch: true });
+
+  test("skips to an image from its dot", async ({ page }) => {
+    await page.goto("/products/sized-product");
+    let gallery = page.getByRole("region", { name: "Product images" });
+    let second = gallery.getByRole("button", { name: "Skip to image 2" });
+    let previous = gallery.getByRole("button", { name: "Previous image" });
+    await expect(previous).toBeDisabled();
+
+    await second.tap();
+
+    await expect(second).toHaveAttribute("aria-current", "true");
+    await expect(previous).toBeEnabled();
+  });
+});
+
 test("adds a product to the cart from the product page", async ({ page }) => {
   await page.goto("/products/test-product");
   await page.evaluate(async () => {
@@ -383,6 +420,11 @@ test("adds a product to the cart from the product page", async ({ page }) => {
     }),
     page.getByRole("button", { name: "Add to cart" }).click(),
   ]);
+  // The check confirms the add before the button is usable again.
+  await expect(
+    page.getByRole("button", { name: "Added to cart" }),
+  ).toBeDisabled();
+  await expect(page.getByRole("button", { name: "Add to cart" })).toBeEnabled();
   await expect(
     page.getByRole("button", { name: "1 Item in cart" }),
   ).toBeVisible();

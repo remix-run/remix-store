@@ -2,9 +2,9 @@ import { createMixin, on } from "remix/component";
 
 /**
  * Makes a `<details>` dropdown dismiss like a menu: it closes when the pointer
- * or focus moves outside it or one of its links is followed, and Escape closes
- * it and returns focus to its summary. Without JavaScript it remains a native
- * disclosure.
+ * or focus moves outside it, and following one of its links or pressing
+ * Escape closes it and returns focus to its summary. Without JavaScript it
+ * remains a native disclosure.
  */
 export const dismissibleDetails = createMixin<HTMLDetailsElement>((handle) => {
   let { signal } = handle;
@@ -34,7 +34,7 @@ export const dismissibleDetails = createMixin<HTMLDetailsElement>((handle) => {
     <handle.element
       mix={on("click", (event) => {
         if (event.target instanceof Element && event.target.closest("a[href]"))
-          close();
+          close(true);
       })}
     />
   );

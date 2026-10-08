@@ -120,6 +120,8 @@ describe("product form", () => {
     assert.equal(optionMenu.open, true);
     await act(() => blueButton.click());
     assert.equal(optionMenu.open, false);
+    // The chosen link is hidden with the menu, so focus returns to the summary.
+    assert.equal(document.activeElement, $("summary"));
     let updatedRedButton = $('a[href*="Color=Red"]');
     let updatedBlueButton = $('a[href*="Color=Blue"]');
     assert.ok(updatedRedButton instanceof HTMLAnchorElement);

@@ -67,6 +67,7 @@ export const ProductDetails = clientEntry(
     let hydratedIdentity = productIdentity(handle.props.product);
     let queuedIdentity: string | undefined;
     let pending = false;
+    let added = false;
     let submission = 0;
     let submissionError = "";
     let mobileImageIndex = 0;
@@ -90,18 +91,39 @@ export const ProductDetails = clientEntry(
         hydrated = true;
         state = store.getState();
         handle.update();
+        showSelectedVariantInUrl();
       });
     }
 
-    function moveMobileGallery(direction: number) {
+    // Like production, a bare product URL gains the selected variant's
+    // options so it can be shared. This replaces the entry without navigating.
+    function showSelectedVariantInUrl() {
+      if (location.search) return;
+      let { product } = handle.props;
+      let variant = product.selectedOrFirstAvailableVariant;
+      let options = serverProductOptions(product).filter(
+        (option) => !isDefaultTitleOption(option),
+      );
+      if (!variant || options.every((option) => option.values.length <= 1)) {
+        return;
+      }
+      let href = variantHref(
+        product.handle,
+        variant.selectedOptions,
+        product.options,
+        "",
+        market.pathPrefix,
+      );
+      if (href !== location.pathname)
+        history.replaceState(history.state, "", href);
+    }
+
+    function showMobileImage(index: number) {
       if (!mobileGallery) return;
       let slides = mobileGallery.querySelectorAll<HTMLElement>(
         "[data-mobile-slide]",
       );
-      let nextIndex = Math.max(
-        0,
-        Math.min(slides.length - 1, mobileImageIndex + direction),
-      );
+      let nextIndex = Math.max(0, Math.min(slides.length - 1, index));
       mobileGallery.scrollTo({
         behavior: matchMedia("(prefers-reduced-motion: reduce)").matches
           ? "instant"
@@ -132,6 +154,7 @@ export const ProductDetails = clientEntry(
           hydratedIdentity = nextIdentity;
           queuedIdentity = undefined;
           store.hydrate(handle.props.product);
+          showSelectedVariantInUrl();
         });
       }
 
@@ -325,17 +348,22 @@ export const ProductDetails = clientEntry(
                     type="button"
                     aria-label="Previous image"
                     disabled={mobileImageIndex === 0}
-                    mix={on("click", () => moveMobileGallery(-1))}
+                    mix={on("click", () =>
+                      showMobileImage(mobileImageIndex - 1),
+                    )}
                   >
                     <Icon name="chevron-left" />
                   </button>
-                  <div
-                    aria-label={`Image ${mobileImageIndex + 1} of ${images.length}`}
-                  >
+                  <div>
                     {images.map((image, index) => (
-                      <span
+                      <button
                         key={image.id || image.url}
-                        data-active={index === mobileImageIndex || undefined}
+                        type="button"
+                        aria-label={`Skip to image ${index + 1}`}
+                        aria-current={
+                          index === mobileImageIndex ? "true" : undefined
+                        }
+                        mix={on("click", () => showMobileImage(index))}
                       />
                     ))}
                   </div>
@@ -343,7 +371,9 @@ export const ProductDetails = clientEntry(
                     type="button"
                     aria-label="Next image"
                     disabled={mobileImageIndex === images.length - 1}
-                    mix={on("click", () => moveMobileGallery(1))}
+                    mix={on("click", () =>
+                      showMobileImage(mobileImageIndex + 1),
+                    )}
                   >
                     <Icon name="chevron-right" />
                   </button>
@@ -501,6 +531,11 @@ export const ProductDetails = clientEntry(
 
                         try {
                           await store.handleFormSubmit(event);
+                          if (currentSubmission === submission) {
+                            added = true;
+                            handle.update();
+                            await waitForAddToCartCheck(startedAt);
+                          }
                         } catch (error) {
                           if (currentSubmission === submission) {
                             submissionError =
@@ -510,8 +545,8 @@ export const ProductDetails = clientEntry(
                           }
                         } finally {
                           if (currentSubmission === submission) {
-                            await waitForAddToCartCheck(startedAt);
                             pending = false;
+                            added = false;
                             handle.update();
                           }
                         }
@@ -526,7 +561,13 @@ export const ProductDetails = clientEntry(
                     <button
                       {...register("addToCart", {})}
                       disabled={!addEnabled || pending}
-                      aria-label={pending ? "Adding to cart" : undefined}
+                      aria-label={
+                        added
+                          ? "Added to cart"
+                          : pending
+                            ? "Adding to cart"
+                            : undefined
+                      }
                     >
                       {pending ? (
                         <Icon name="check" />
@@ -797,12 +838,10 @@ function canAddServerVariant(product: ProductData): boolean {
   );
 }
 
-const ADD_TO_CART_CHECK_MS = 600;
+// The green check is the only confirmation that the item was added.
+const ADD_TO_CART_CHECK_MS = 2000;
 
 function waitForAddToCartCheck(startedAt: number) {
-  if (globalThis.matchMedia?.("(prefers-reduced-motion: reduce)").matches) {
-    return;
-  }
   let remaining = ADD_TO_CART_CHECK_MS - (Date.now() - startedAt);
   if (remaining <= 0) return;
   return new Promise<void>((resolve) => {
@@ -841,28 +880,29 @@ const visuallyHiddenStyle = css({
   whiteSpace: "nowrap",
   width: "1px",
 });
+// A flex row like production: the gallery takes all the room it can (up to
+// 1200px) and the details column shrinks to its minimum width before the
+// gallery gives up more.
 const productPageStyle = css({
-  display: "grid",
+  display: "flex",
+  flexDirection: "column",
   gap: "16px",
   marginTop: "calc(var(--header-height) + var(--store-wide-sale-height))",
   minHeight: "90vh",
   overflowX: "clip",
-  paddingBottom: "64px",
   "@media (min-width: 810px)": {
-    alignItems: "start",
+    alignItems: "flex-start",
+    flexDirection: "row",
     gap: "32px",
-    gridTemplateColumns: "minmax(0, 1fr) clamp(330px, 36vw, 480px)",
-    padding: "0 16px 80px",
+    justifyContent: "space-between",
+    padding: "0 16px",
   },
-  "@media (min-width: 1400px)": {
-    gridTemplateColumns: "152px minmax(0, 1fr) clamp(360px, 33.333vw, 576px)",
-    paddingLeft: "36px",
-    paddingRight: "36px",
-  },
+  "@media (min-width: 1400px)": { padding: "0 36px" },
 });
 
 const sidebarStyle = css({
   display: "none",
+  flexShrink: 0,
   paddingTop: "128px",
   position: "sticky",
   top: "calc(var(--header-height) + var(--store-wide-sale-height))",
@@ -881,11 +921,16 @@ const sidebarStyle = css({
     textDecoration: "none",
     whiteSpace: "nowrap",
   },
-  "& a:hover": { color: "var(--color-blue-brand)" },
+  "@media (hover: hover)": {
+    "& a:hover": { color: "var(--color-blue-brand)" },
+  },
   "@media (min-width: 1400px)": { display: "block" },
 });
 
-const galleryColumnStyle = css({ minWidth: 0 });
+const galleryColumnStyle = css({
+  minWidth: 0,
+  "@media (min-width: 810px)": { maxWidth: "1200px", width: "100%" },
+});
 const desktopGalleryStyle = css({
   display: "none",
   flexDirection: "column",
@@ -975,13 +1020,13 @@ const galleryControlsStyle = css({
   "& button:disabled": { opacity: 0.25 },
   "& svg": { height: "24px", width: "24px" },
   "& div": { display: "flex", gap: "16px" },
-  "& div span": {
+  "& div button": {
     background: "rgba(255,255,255,.5)",
     borderRadius: "999px",
     height: "8px",
     width: "8px",
   },
-  "& div span[data-active]": { background: "white" },
+  "& div button[aria-current]": { background: "white" },
 });
 
 const detailsStyle = css({
@@ -991,12 +1036,18 @@ const detailsStyle = css({
   margin: "0 16px",
   minWidth: 0,
   "@media (min-width: 810px)": {
-    gap: "36px",
+    flexBasis: "33.333%",
     margin: 0,
+    maxWidth: "576px",
+    minWidth: "330px",
     position: "sticky",
     top: "calc(var(--header-height) + var(--store-wide-sale-height))",
   },
-  "@media (min-width: 1400px)": { paddingTop: "128px" },
+  "@media (min-width: 1400px)": {
+    gap: "36px",
+    minWidth: "480px",
+    paddingTop: "128px",
+  },
 });
 const headingStyle = css({
   display: "flex",
@@ -1097,9 +1148,11 @@ const optionMenuStyle = css({
     textDecoration: "none",
     width: "100%",
   },
-  "& > div > a:hover, & > div > button:hover": {
-    background: "rgba(255,255,255,.08)",
-    color: "white",
+  "@media (hover: hover)": {
+    "& > div > a:hover, & > div > button:hover": {
+      background: "rgba(255,255,255,.08)",
+      color: "white",
+    },
   },
   "& > div > button:disabled, & > div > span[aria-disabled]": {
     color: "rgba(255,255,255,.3)",

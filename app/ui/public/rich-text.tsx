@@ -169,7 +169,7 @@ function isRichTextString(value: RichTextJson | undefined): value is string {
 const richTextStyle = css({
   fontSize: "1rem",
   lineHeight: 1.5,
-  "& h2, & h3, & ol, & p, & ul": { margin: "0 0 12px" },
+  "& h2, & h3, & ol, & p, & ul": { margin: 0 },
   "& ul li": {
     lineHeight: "1.6em",
     paddingLeft: "1em",
