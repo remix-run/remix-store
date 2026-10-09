@@ -7,7 +7,7 @@ description: >
   data such as delivery instructions or gift preferences. Framework agnostic.
 metadata:
   source: "@shopify/hydrogen"
-  version: "2026.10.0-preview.4"
+  version: "2026.10.0"
   hash: "sha256:1d18c4c980a679de600bcb1bf696f0fed1bbbbbe793ac4d73a01621f35e3d498"
 ---
 

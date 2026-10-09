@@ -7,7 +7,7 @@ description: >
   Shop Pay, or framework middleware integration.
 metadata:
   source: "@shopify/hydrogen"
-  version: "2026.10.0-preview.4"
+  version: "2026.10.0"
   hash: "sha256:1145c52f9e45fdbab86b8a6e381d82215c297416479e61845d82b17094f63dc5"
 ---
 

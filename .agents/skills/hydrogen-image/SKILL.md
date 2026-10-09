@@ -6,7 +6,7 @@ description: >
   thumbnails, or other img element surfaces.
 metadata:
   source: "@shopify/hydrogen"
-  version: "2026.10.0-preview.4"
+  version: "2026.10.0"
   hash: "sha256:0a6157a4b1cd59669419c0c262ec269223407605f0097927ca0a5d8dacd5960a"
 ---
 

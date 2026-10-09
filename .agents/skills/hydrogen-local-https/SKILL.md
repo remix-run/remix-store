@@ -5,7 +5,7 @@ description: >
   Vite-based frameworks or Next.js.
 metadata:
   source: "@shopify/hydrogen"
-  version: "2026.10.0-preview.4"
+  version: "2026.10.0"
   hash: "sha256:81b4072b849b7eb135b7af20bf9cfa5cd5290c35a299f5658d14c3f6ecf1f07b"
 ---
 

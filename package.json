@@ -24,7 +24,7 @@
   },
   "dependencies": {
     "@pitlane/assets": "0.1.0",
-    "@shopify/hydrogen": "2026.10.0-preview.4",
+    "@shopify/hydrogen": "2026.10.0",
     "remix": "3.0.0",
     "sanitize-html": "2.18.0"
   },

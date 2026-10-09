@@ -184,7 +184,7 @@ function analyticsProduct(productId: string, variantId: string) {
   return {
     id: `gid://shopify/Product/${productId}`,
     title: `Test product ${productId}`,
-    price: "20.00",
+    price: { amount: "20.00", currencyCode: "USD" as const },
     vendor: "Test vendor",
     variantId: `gid://shopify/ProductVariant/${variantId}`,
     variantTitle: `Variant ${variantId}`,

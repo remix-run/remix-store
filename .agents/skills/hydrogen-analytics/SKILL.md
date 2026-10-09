@@ -7,8 +7,8 @@ description: >
   destinations, or framework route-change analytics wiring.
 metadata:
   source: "@shopify/hydrogen"
-  version: "2026.10.0-preview.4"
-  hash: "sha256:55e7e0a384e86713328068c3e9627aa3d25f1c370dc6e47a89b8742c02118c0a"
+  version: "2026.10.0"
+  hash: "sha256:025da1f839e44c3aa83e14df9c5977bd4bb3aa3c0de5dbf5087b2de2cc4a61c9"
 ---
 
 # Storefront Analytics
@@ -62,7 +62,7 @@ Publish these from route/page boundaries:
 - `CART_VIEWED` when the full cart page or cart drawer is viewed.
 - Wire cart tracking once per cart store lifecycle with `trackCartAnalytics(cartStore)` — React apps use the `useCartAnalytics()` hook from `@shopify/hydrogen/react` and Vue apps use the `useCartAnalytics()` composable from `@shopify/hydrogen/vue`; both call it with the provider's cart store and clean up on unmount. The tracker subscribes to the cart store itself, skips pending/revalidating/note updates, publishes cart delta events on confirmed cart changes, and returns an unsubscribe function. Call it from a client-only effect (`useEffect` / `onMounted`), never at cart-store creation time — it throws when `window.Shopify.analytics` is missing (SSR). Do not manually publish cart delta events.
 
-The bus defaults `shop` from the top-level `shop` config passed to ShopifyScripts; pass `shop` in an event payload only when intentionally overriding that configured value. Shopify analytics reads language and currency from `window.Shopify.locale` and `window.Shopify.currency.active`.
+The bus defaults `shop` from the top-level `shop` config passed to ShopifyScripts; pass `shop` in an event payload only when intentionally overriding that configured value. Shopify analytics reads its content language from `window.Shopify.locale`. It reads the currency of product events from the event price's `currencyCode` and falls back to `window.Shopify.currency.active`, which `i18n.currency` sets. Page, collection, and search views take only the global. When it is unset, Shopify analytics sends them without a currency.
 
 Required product analytics fields include Shopify Product GID, ProductVariant GID when available, title, price, vendor, quantity, and variant title.
 

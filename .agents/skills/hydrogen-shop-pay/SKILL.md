@@ -7,7 +7,7 @@ description: >
   source attribution attributes.
 metadata:
   source: "@shopify/hydrogen"
-  version: "2026.10.0-preview.4"
+  version: "2026.10.0"
   hash: "sha256:b489acf0982676e81d70d6246b4c8581ad4ce4615a3fd27838ba7c39e26884ff"
 ---
 

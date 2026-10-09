@@ -4,8 +4,8 @@ description: >
   End-to-end Hydrogen storefront setup orchestrator. Use whenever scaffolding a Hydrogen storefront from scratch into an existing application.
 metadata:
   source: "@shopify/hydrogen"
-  version: "2026.10.0-preview.4"
-  hash: "sha256:33166cc7d03961cff8d17d1bc4cc9c6195c1b0292ab17b71f0d43709db1907ed"
+  version: "2026.10.0"
+  hash: "sha256:0b1c52cec997cfca6a09eddfb3f1039f9f948847be8f65e01bed29ced83e3a03"
 ---
 
 # Setting Up Hydrogen

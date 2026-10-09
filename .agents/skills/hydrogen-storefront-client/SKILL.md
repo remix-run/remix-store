@@ -7,8 +7,8 @@ description: >
   or wires up storefront data fetching in any framework.
 metadata:
   source: "@shopify/hydrogen"
-  version: "2026.10.0-preview.4"
-  hash: "sha256:14d5005ae1b152fc680841584efa7bcaad5dad8dc066fcdcf5cb54a6434d2422"
+  version: "2026.10.0"
+  hash: "sha256:d0e22cf7290886426fd29797c13a3c7d214b2e53ee13410c1ad242045581aa83"
 ---
 
 # `@shopify/hydrogen`
@@ -262,7 +262,7 @@ const { data } = await client.graphql(QUERY);
 const { data } = await client.graphql(QUERY, { signal });
 ```
 
-`requestContext.signal`, per-call `signal`, and the client's timeout signal are raced automatically. At the final response boundary, append committed session headers first, then call `requestContext.applyResponseHeaders(response.headers)`.
+`requestContext.signal`, per-call `signal`, and the client's timeout signal are raced automatically. They are combined with `AbortSignal.any`, which the Next.js edge sandbox does not have, so an edge route or middleware that calls this client needs an `AbortSignal.any` polyfill installed before the first request. At the final response boundary, append committed session headers first, then call `requestContext.applyResponseHeaders(response.headers)`.
 
 Read `references/caching.md` to cache catalog reads across sub-requests on Oxygen-style runtimes.
 

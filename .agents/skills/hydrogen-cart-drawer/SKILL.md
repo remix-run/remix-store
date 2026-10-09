@@ -7,7 +7,7 @@ description: >
   animations, and wiring window.Shopify.actions.openCart().
 metadata:
   source: "@shopify/hydrogen"
-  version: "2026.10.0-preview.4"
+  version: "2026.10.0"
   hash: "sha256:50154a19133210d6e6c4852abf6cf0790d516cff576a2c02b14be652d30eb595"
 ---
 

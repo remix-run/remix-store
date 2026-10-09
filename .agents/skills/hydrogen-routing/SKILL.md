@@ -7,7 +7,7 @@ description: >
   standard route redirects, ShopifyScripts routes, or predictive search result URLs.
 metadata:
   source: "@shopify/hydrogen"
-  version: "2026.10.0-preview.4"
+  version: "2026.10.0"
   hash: "sha256:5380ecf8a0f7f871668dbfb2c3f1fc1fb1b74dc776590714ccf0873fe64a459b"
 ---
 

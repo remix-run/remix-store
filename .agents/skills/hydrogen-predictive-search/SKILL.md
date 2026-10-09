@@ -7,7 +7,7 @@ description: >
   predictive search bindings.
 metadata:
   source: "@shopify/hydrogen"
-  version: "2026.10.0-preview.4"
+  version: "2026.10.0"
   hash: "sha256:0fc0870745982e0964fc4875ae12d16b9956e2cf7ba584340d9b0a9bbbaa88b5"
 ---
 
