@@ -1,7 +1,7 @@
-import { defineConfig, devices } from "@playwright/test";
+import { defineConfig, devices } from "playwright/test";
 
 const externalBaseUrl = process.env.BASE_URL;
-const localBaseUrl = "http://localhost:3000";
+const localBaseUrl = "http://localhost:44110";
 
 export default defineConfig({
   testDir: "./e2e",
@@ -15,10 +15,12 @@ export default defineConfig({
   webServer: externalBaseUrl
     ? undefined
     : {
-        command: "pnpm dev --port 3000",
-        reuseExistingServer: !process.env.CI,
+        command: "node --import remix/node-tsx e2e/server.ts",
+        reuseExistingServer: false,
         timeout: 120_000,
-        url: localBaseUrl,
+        // Static readiness leaves the first SSR request to the tests instead
+        // of hiding startup failures behind Playwright's readiness retries.
+        url: `${localBaseUrl}/remix-favicon.svg`,
       },
   use: {
     baseURL: externalBaseUrl ?? localBaseUrl,

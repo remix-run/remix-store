@@ -1,0 +1,62 @@
+import { type Handle } from "remix/component";
+
+import { CollectionViewed } from "../../assets/public/analytics.tsx";
+import { CollectionProducts } from "../../ui/collection-products.tsx";
+import type {
+  ProductCardData,
+  ProductPageInfoData,
+} from "../../data/storefront.ts";
+import { PageTitle } from "../../assets/public/page-title.tsx";
+import type { ActiveMarket } from "../../lib/public/market.ts";
+import { Document } from "../../ui/document.tsx";
+
+export function CollectionPage(
+  handle: Handle<{
+    canonicalUrl: string;
+    description: string;
+    handle: string;
+    id: string;
+    market: ActiveMarket;
+    pageInfo: ProductPageInfoData;
+    products: ProductCardData[];
+    /** The document title, when it differs from the visible heading. */
+    seoTitle?: string | null;
+    title: string;
+  }>,
+) {
+  return () => (
+    <Document
+      canonicalUrl={handle.props.canonicalUrl}
+      title={handle.props.seoTitle || handle.props.title}
+      description={handle.props.description}
+      socialImage="/social-collections.jpg"
+    >
+      <main>
+        <CollectionViewed
+          key={handle.props.id}
+          collection={{ id: handle.props.id, handle: handle.props.handle }}
+        />
+        <PageTitle title={handle.props.title} />
+        {handle.props.products.length ? (
+          <CollectionProducts
+            collectionHandle={handle.props.handle}
+            pathPrefix={handle.props.market.pathPrefix}
+            products={handle.props.products}
+            pageInfo={handle.props.pageInfo}
+          />
+        ) : (
+          <p
+            style={{
+              margin: 0,
+              minHeight: "45vh",
+              padding: "64px 20px",
+              textAlign: "center",
+            }}
+          >
+            No products found in this collection.
+          </p>
+        )}
+      </main>
+    </Document>
+  );
+}

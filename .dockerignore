@@ -1,0 +1,14 @@
+.agents
+.env*
+.git
+.github
+.shopify
+coverage
+dist
+e2e
+node_modules
+playwright-report
+test-results
+**/*.spec.ts
+**/*.test.ts
+*.md

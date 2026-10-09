@@ -6,9 +6,11 @@ node_modules
 /.mf
 .env
 .shopify
-.DS_STORE
+.DS_Store
 /coverage
 /blob-report
 /playwright-report
 /test-results
 .react-router
+storefront-graphql-env.d.ts
+customer-account-graphql-env.d.ts
