@@ -15,12 +15,14 @@ TRUST_PROXY = "true"
 strategy = "bluegreen"
 wait_timeout = "10m"
 
+# Machines run in dfw and ams; `fly deploy` keeps each region's Machines.
+# min_machines_running only covers the primary region, so keep every region
+# warm instead of cold-starting visitors outside dfw.
 [http_service]
 internal_port = 44100
 force_https = true
-auto_stop_machines = "stop"
+auto_stop_machines = "off"
 auto_start_machines = true
-min_machines_running = 1
 
 [[http_service.checks]]
 grace_period = "20s"

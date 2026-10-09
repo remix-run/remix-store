@@ -1,12 +1,13 @@
 # Fly deployment
 
-| Setting        | Value                                   |
-| -------------- | --------------------------------------- |
-| App            | `remix-store`                           |
-| Organization   | `remix`                                 |
-| Primary region | `dfw`                                   |
-| Machine        | 1 shared CPU, 512 MB, minimum 1 running |
-| Strategy       | Blue-green with `/health` gating        |
+| Setting        | Value                                |
+| -------------- | ------------------------------------ |
+| App            | `remix-store`                        |
+| Organization   | `remix`                              |
+| Primary region | `dfw`                                |
+| Regions        | `dfw`, `ams`, one Machine each       |
+| Machine        | 1 shared CPU, 512 MB, always running |
+| Strategy       | Blue-green with `/health` gating     |
 
 ## One-time setup
 
@@ -18,6 +19,7 @@ grep -E '^(PUBLIC_STORE_DOMAIN|PUBLIC_STOREFRONT_ID|PRIVATE_STOREFRONT_API_TOKEN
   | fly secrets import --app remix-store
 fly tokens create deploy --app remix-store --expiry 8760h \
   | gh secret set FLY_API_TOKEN --repo remix-run/remix-store
+fly scale count 1 --region ams --app remix-store
 ```
 
 The domain, storefront ID, and private Storefront token are current inputs. The
@@ -30,6 +32,20 @@ overwrites forwarding headers. Never proxy a client-supplied buyer-IP header.
 buttons and `/checkout` resolve Shopify's authoritative `cart.checkoutUrl`.
 Fly does not need `SESSION_SECRET`. Add the server-only Admin API credentials
 only when enabling their consuming subscription features.
+
+## Regions
+
+Fly routes each request, including Fastly's origin requests, to the nearest
+region with a Machine. A region exists only while it has a Machine, so regions
+are managed with `fly scale count`, not in `fly.toml`; `fly deploy` keeps
+every region's Machines and replaces them blue-green. `min_machines_running`
+only applies to the primary region, so `auto_stop_machines = "off"` keeps
+every region warm instead of cold-starting visitors outside `dfw`. Check
+placement with `fly scale show`. To add a region, scale it from zero:
+
+```sh
+fly scale count 1 --region <code> --app remix-store
+```
 
 ## Fastly CDN
 
@@ -55,7 +71,7 @@ first.
 
 ## Deployment behavior
 
-`.github/workflows/fly-deployment.yml` deploys every branch push, then verifies `/health` and the server-rendered home page. Global concurrency cancels an older in-progress deployment when a newer push arrives.
+`.github/workflows/fly-deployment.yml` deploys every branch push, then verifies `/health` and the server-rendered home page. Deployments run one at a time and are never canceled midway, since an interrupted blue-green cutover leaves Machines on different images.
 
 The workflow passes the Git commit SHA as `ASSET_BUILD_ID`, giving each release immutable Remix Asset URLs. After migration, restrict the workflow trigger to `main` and move the deploy token into a protected GitHub environment.
 
