@@ -89,7 +89,6 @@ export function remixOxygen({
       serverHandler: false,
       assets: {
         ...browserBoundary,
-        chunkImportMap: false,
         include: [stylesheet, ...Object.values(fonts)],
       },
     }),
