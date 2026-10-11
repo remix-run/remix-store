@@ -23,13 +23,13 @@
     "test:e2e:oxygen:dev": "E2E_RUNTIME=oxygen-dev playwright test"
   },
   "dependencies": {
-    "@pitlane/assets": "0.1.0",
+    "@pitlane/assets": "0.2.0",
     "@shopify/hydrogen": "2026.10.0",
     "remix": "3.0.0",
     "sanitize-html": "2.18.0"
   },
   "devDependencies": {
-    "@pitlane/vite-plugin-remix": "0.8.0",
+    "@pitlane/vite-plugin-remix": "0.9.0",
     "@shopify/cli": "4.9.0",
     "@shopify/mini-oxygen": "4.2.3",
     "@shopify/oxygen-workers-types": "4.2.0",

@@ -203,8 +203,9 @@ app without starting an HTTP listener. Runtime adapters call the app's
   `clientEntry(import.meta.url, component)`. Keep that `import.meta.url` shape;
   both asset pipelines resolve it.
 - Treat browser-reachable modules as public. Keep secrets and trusted server
-  logic outside that graph; the Node asset server's explicit allow list, not a
-  filename suffix, defines the boundary.
+  logic outside that graph; `browserBoundary` in `app/assets.ts`, not a
+  filename suffix, defines the boundary. The Node asset server and the Oxygen
+  Vite build both enforce it.
 - Add request values through typed router context keys and middleware; avoid
   module-global request state.
 - Prefer Web APIs, native links, buttons, and forms over custom abstractions.
