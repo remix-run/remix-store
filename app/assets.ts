@@ -21,6 +21,16 @@ export const documentAssetSources = {
   },
 } as const;
 
+/**
+ * Sources the browser may load. The Node asset server enforces this boundary,
+ * and the Vite config fails Oxygen builds and dev requests that cross it.
+ */
+export const browserBoundary = {
+  allowFiles: ["app/**/public/**"],
+  allowPackages: ["remix", "@shopify/hydrogen"],
+  denyFiles: ["app/**/*.test.*", "app/**/*.spec.*"],
+};
+
 export async function getDocumentAssets(
   assets: Assets,
   additionalStylesheets: string[] = [],

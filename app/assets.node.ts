@@ -1,5 +1,7 @@
 import { createAssetServer } from "remix/assets";
 
+import { browserBoundary } from "./assets.ts";
+
 const nodeEnv = process.env.NODE_ENV ?? "development";
 const isDevelopment = nodeEnv === "development";
 const buildId = process.env.ASSET_BUILD_ID;
@@ -12,9 +14,7 @@ const assetServerOptions: Parameters<typeof createAssetServer>[0] = {
     app: "app",
     node_modules: "node_modules",
   },
-  allowFiles: ["app/**/public/**"],
-  allowPackages: ["remix", "@shopify/hydrogen"],
-  denyFiles: ["app/**/*.test.*", "app/**/*.spec.*"],
+  ...browserBoundary,
   files: { extensions: [".woff2"] },
   sourceMaps: isDevelopment ? "external" : undefined,
   minify: !isDevelopment,

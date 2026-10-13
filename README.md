@@ -80,7 +80,7 @@ Fly setup, secrets, local image verification, and continuous deployment are docu
 - `app/actions/public/entry.tsx` hydrates browser components on both targets.
 - `vite/remix-oxygen.ts` composes [Pitlane's Remix Vite plugin](https://pitlane.tools/guides/vite-plugin) with MiniOxygen, then bundles Pitlane's asset manifest into the single `index.js` Worker that Oxygen deploys.
 
-Pitlane's resolver implements the metadata interface consumed by Remix's `render({ assets })` middleware. Remix owns streaming, frames, and hydration; Pitlane rewrites `clientEntry(import.meta.url, ...)` to portable `file:app/…#Export` identities and resolves them to built browser modules. The installed Remix asset server compiles from the filesystem in Node, so Oxygen needs this build-time bridge. The Node asset server's allow list defines which sources are public; its tests cover that boundary for both targets.
+Pitlane's resolver implements the metadata interface consumed by Remix's `render({ assets })` middleware. Remix owns streaming, frames, and hydration; Pitlane rewrites `clientEntry(import.meta.url, ...)` to portable `file:app/…#Export` identities and resolves them to built browser modules. The installed Remix asset server compiles from the filesystem in Node, so Oxygen needs this build-time bridge. `browserBoundary` in `app/assets.ts` defines which sources are public: the Node asset server refuses to serve anything outside it, and the Oxygen build and dev server fail when a browser module imports something outside it.
 
 ## License
 
