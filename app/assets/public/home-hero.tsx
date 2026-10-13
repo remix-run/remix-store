@@ -1,6 +1,7 @@
 import {
   clientEntry,
   css,
+  on,
   ref,
   type Handle,
   type SerializableObject,
@@ -26,10 +27,11 @@ export const HomeHero = clientEntry(
   function HomeHero(handle: Handle<HomeHeroProps>) {
     // Frames 0..loadedFrames-1 have loaded and are rendered.
     let loadedFrames = 1;
-    let preloading = false;
+    let preload: AbortController | undefined;
     // The URL each later frame was preloaded from, so rendering reuses it.
     let frameUrls: string[] = [];
     let section: HTMLElement | null = null;
+    let reducedMotion: MediaQueryList | undefined;
     let animationFrame = 0;
 
     function showFrame(index: number) {
@@ -44,7 +46,7 @@ export const HomeHero = clientEntry(
     function updateFrame() {
       cancelAnimationFrame(animationFrame);
       animationFrame = requestAnimationFrame(() => {
-        if (!section || loadedFrames < 2) return;
+        if (!section || loadedFrames < 2 || reducedMotion?.matches) return;
         let frames = handle.props.assetImages.length;
         let rect = section.getBoundingClientRect();
         let progress = Math.max(
@@ -56,29 +58,34 @@ export const HomeHero = clientEntry(
       });
     }
 
-    async function preloadFrames() {
-      let images = handle.props.assetImages;
-      if (preloading || images.length < 2 || prefersReducedData()) return;
-      preloading = true;
-
-      await whenPageIsIdle(handle.signal);
-      if (handle.signal.aborted || !section) return;
-      // Later frames use whichever crop the browser chose for the first, so
-      // rendering them reuses the downloads.
-      let chosen = section.querySelector<HTMLImageElement>(
+    function firstFrameSrc() {
+      return section?.querySelector<HTMLImageElement>(
         '[data-home-hero-frame="0"] img',
       )?.currentSrc;
+    }
+
+    async function preloadFrames() {
+      let images = handle.props.assetImages;
+      if (preload || images.length < 2 || prefersReducedData()) return;
+      preload = new AbortController();
+      let signal = AbortSignal.any([handle.signal, preload.signal]);
+
+      await whenPageIsIdle(signal);
+      if (signal.aborted || !section) return;
+      // Later frames use whichever crop the browser chose for the first, so
+      // rendering them reuses the downloads.
+      let chosen = firstFrameSrc();
       frameUrls = images.map((image) => matchingCrop(image.url, chosen));
       let loaded = images.map((_, index) => index === 0);
 
       await Promise.all(
         frameUrls.map(async (url, index) => {
           if (index === 0) return;
-          let ok = await preloadImage(url, handle.signal).then(
+          let ok = await preloadImage(url, signal).then(
             () => true,
             () => false,
           );
-          if (!ok || handle.signal.aborted) return;
+          if (!ok || signal.aborted) return;
           // The animation plays up to the first frame still missing.
           loaded[index] = true;
           let missing = loaded.indexOf(false);
@@ -88,6 +95,22 @@ export const HomeHero = clientEntry(
           handle.update().then(updateFrame);
         }),
       );
+    }
+
+    // A rotation or resize can switch the first frame to another crop. The
+    // later frames then start over at that crop, from the first frame.
+    function onFirstFrameLoad() {
+      let images = handle.props.assetImages;
+      if (!preload || frameUrls.length < 2) return;
+      if (matchingCrop(images[1]!.url, firstFrameSrc()) === frameUrls[1])
+        return;
+      preload.abort();
+      preload = undefined;
+      frameUrls = [];
+      loadedFrames = 1;
+      showFrame(0);
+      handle.update();
+      if (!reducedMotion?.matches) preloadFrames();
     }
 
     return () => {
@@ -101,12 +124,11 @@ export const HomeHero = clientEntry(
             heroStyle,
             ref((element, signal) => {
               section = element;
-              let reducedMotion = matchMedia(
-                "(prefers-reduced-motion: reduce)",
-              );
+              let motion = matchMedia("(prefers-reduced-motion: reduce)");
+              reducedMotion = motion;
 
               let onMotionChange = () => {
-                if (reducedMotion.matches) {
+                if (motion.matches) {
                   showFrame(0);
                 } else {
                   preloadFrames();
@@ -119,15 +141,13 @@ export const HomeHero = clientEntry(
                 signal,
               });
               window.addEventListener("resize", updateFrame, { signal });
-              reducedMotion.addEventListener("change", onMotionChange, {
-                signal,
-              });
+              motion.addEventListener("change", onMotionChange, { signal });
               signal.addEventListener("abort", () => {
                 section = null;
                 cancelAnimationFrame(animationFrame);
               });
 
-              if (!reducedMotion.matches) preloadFrames();
+              if (!motion.matches) preloadFrames();
             }),
           ]}
         >
@@ -135,7 +155,11 @@ export const HomeHero = clientEntry(
             <div aria-hidden="true" mix={heroFramesStyle}>
               {images.map((image, index) =>
                 index === 0 ? (
-                  <FirstFrame image={image} key={image.id ?? image.url} />
+                  <FirstFrame
+                    image={image}
+                    key={image.id ?? image.url}
+                    onLoad={onFirstFrameLoad}
+                  />
                 ) : (
                   <img
                     key={image.id ?? image.url}
@@ -180,7 +204,7 @@ const PORTRAIT_SIZES = "max(100vw, 56.25vh)";
  * Art-directed so the browser picks a crop for the screen. Later frames
  * copy its choice, so they need no art direction of their own.
  */
-function FirstFrame(handle: Handle<{ image: ImageData }>) {
+function FirstFrame(handle: Handle<{ image: ImageData; onLoad: () => void }>) {
   return () => {
     let { image } = handle.props;
     let landscape = centerCrops(image, LANDSCAPE);
@@ -201,6 +225,7 @@ function FirstFrame(handle: Handle<{ image: ImageData }>) {
           loading="eager"
           fetchPriority="high"
           decoding="sync"
+          mix={on("load", () => handle.props.onLoad())}
         />
       </picture>
     );
@@ -216,7 +241,12 @@ function centerCrops(
     Math.min(image.width ?? Infinity, (image.height ?? Infinity) * crop.aspect),
   );
   let widths = crop.widths.filter((width) => width <= largest);
-  if (crop.widths.some((width) => width > largest)) widths.push(largest);
+  if (
+    !widths.includes(largest) &&
+    crop.widths.some((width) => width > largest)
+  ) {
+    widths.push(largest);
+  }
   return widths.map((width) => ({
     url: cropUrl(image.url, width, Math.round(width / crop.aspect)),
     width,
