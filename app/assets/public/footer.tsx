@@ -356,6 +356,7 @@ const footerLinksStyle = css({
   alignItems: "flex-start",
   display: "flex",
   gap: "36px",
+  lineHeight: "16px",
 });
 
 const statementColumnStyle = css({
