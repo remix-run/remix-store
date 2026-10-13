@@ -10,6 +10,9 @@ import { PageTitle } from "../../assets/public/page-title.tsx";
 import type { ActiveMarket } from "../../lib/public/market.ts";
 import { Document } from "../../ui/document.tsx";
 
+// The grid shows up to three columns below 2000px wide.
+const FIRST_ROW_PRODUCTS = 3;
+
 export function CollectionPage(
   handle: Handle<{
     canonicalUrl: string;
@@ -40,6 +43,7 @@ export function CollectionPage(
         {handle.props.products.length ? (
           <CollectionProducts
             collectionHandle={handle.props.handle}
+            eagerImageCount={FIRST_ROW_PRODUCTS}
             pathPrefix={handle.props.market.pathPrefix}
             products={handle.props.products}
             pageInfo={handle.props.pageInfo}

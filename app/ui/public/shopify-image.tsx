@@ -1,4 +1,8 @@
-import { type Handle, type SerializableObject } from "remix/component";
+import {
+  type Handle,
+  type Props,
+  type SerializableObject,
+} from "remix/component";
 
 export interface ShopifyImageData extends SerializableObject {
   altText?: string | null;
@@ -8,12 +12,15 @@ export interface ShopifyImageData extends SerializableObject {
   width?: number | null;
 }
 
-export interface ShopifyImageProps extends SerializableObject {
+type ImgProps = Props<"img">;
+
+export interface ShopifyImageProps
+  extends SerializableObject, Pick<ImgProps, "fetchPriority"> {
   alt: string;
   image: ShopifyImageData;
-  loading?: "eager" | "lazy";
+  loading: NonNullable<ImgProps["loading"]>;
   objectPosition?: string;
-  sizes: string;
+  sizes: NonNullable<ImgProps["sizes"]>;
 }
 
 const RESPONSIVE_WIDTHS = [
@@ -23,7 +30,8 @@ const SHOPIFY_IMAGE_HOSTS = ["cdn.shopify.com", "mock.shop"];
 
 export function ShopifyImage(handle: Handle<ShopifyImageProps>) {
   return () => {
-    let { alt, image, loading = "lazy", objectPosition, sizes } = handle.props;
+    let { alt, fetchPriority, image, loading, objectPosition, sizes } =
+      handle.props;
     let widths = responsiveImageWidths(image.width);
     let isShopifyImage = isShopifyImageSource(image.url);
 
@@ -48,6 +56,7 @@ export function ShopifyImage(handle: Handle<ShopifyImageProps>) {
         height={image.height ?? undefined}
         alt={alt}
         loading={loading}
+        fetchPriority={fetchPriority}
         decoding="async"
         style={objectPosition ? { objectPosition } : undefined}
       />

@@ -16,7 +16,9 @@ describe("product cards", () => {
       price: "$20.00",
       title: "Racing shirt",
     };
-    let { $, cleanup } = render(<ProductCard product={product} />);
+    let { $, cleanup } = render(
+      <ProductCard loading="lazy" product={product} />,
+    );
     t.after(cleanup);
 
     let compareAtPrice = $("s");

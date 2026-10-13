@@ -44,6 +44,7 @@ describe("Shopify images", () => {
           width: 800,
         }}
         alt="Blue Remix shirt"
+        loading="lazy"
         objectPosition="25% 75%"
         sizes="(min-width: 810px) 50vw, 100vw"
       />,
@@ -62,6 +63,7 @@ describe("Shopify images", () => {
       <ShopifyImage
         image={{ url: "https://images.example.com/image.jpg", width: 800 }}
         alt="Third-party image"
+        loading="lazy"
         sizes="100vw"
       />,
     );

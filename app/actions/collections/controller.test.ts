@@ -42,6 +42,47 @@ describe("collection routes", () => {
     assert.match(html, /\/collections\/racing\/products\?cursor=next-page/);
   });
 
+  it("prioritizes the first row of product images on the first page only", async () => {
+    let fiveProducts = () => {
+      let data = collectionData({ hasNextPage: false, endCursor: null });
+      let [node] = data.collection.products.nodes;
+      data.collection.products.nodes = Array.from({ length: 5 }, (_, i) => ({
+        ...node!,
+        id: `gid://shopify/Product/${i + 1}`,
+        handle: `racing-shirt-${i + 1}`,
+      }));
+      return data;
+    };
+    let imageLoading = (html: string) =>
+      [...html.matchAll(/<img\b[^>]*racing-shirt\.jpg[^>]*>/g)].map(([tag]) => [
+        tag.match(/loading="(\w+)"/)?.[1],
+        tag.match(/fetchpriority="(\w+)"/)?.[1],
+      ]);
+
+    let firstPage = await (
+      await createTestApp(storefrontFetch(fiveProducts)).fetch(
+        new Request("https://example.com/collections/racing"),
+      )
+    ).text();
+    let laterPage = await (
+      await createTestApp(storefrontFetch(fiveProducts)).fetch(
+        new Request("https://example.com/collections/racing/products?cursor=c"),
+      )
+    ).text();
+
+    assert.deepEqual(imageLoading(firstPage), [
+      ["eager", "high"],
+      ["eager", undefined],
+      ["eager", undefined],
+      ["lazy", undefined],
+      ["lazy", undefined],
+    ]);
+    assert.deepEqual(
+      imageLoading(laterPage),
+      Array.from({ length: 5 }, () => ["lazy", undefined]),
+    );
+  });
+
   it("renders the next page of cards as frame content without shell data", async () => {
     let variables: StorefrontRequestBody["variables"] | undefined;
     // Only the collection query is mocked: shell, cart, and analytics

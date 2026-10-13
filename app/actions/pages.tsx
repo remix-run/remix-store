@@ -101,6 +101,7 @@ function LookbookEntry(
             image={entry.image}
             alt=""
             sizes="100vw"
+            loading="lazy"
             objectPosition={focalPointPosition(entry.focalPoint ?? undefined)}
           />
         </div>

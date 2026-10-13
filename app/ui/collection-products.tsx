@@ -10,6 +10,8 @@ import { routes } from "../routes.ts";
 
 interface ProductPageProps {
   collectionHandle: string;
+  /** Leading cards whose images load eagerly; the first is fetched first. */
+  eagerImageCount?: number;
   pageInfo: ProductPageInfoData;
   pathPrefix: MarketPathPrefix;
   products: ProductCardData[];
@@ -29,12 +31,25 @@ export function CollectionProducts(handle: Handle<ProductPageProps>) {
 /** Grid items for one page, ending in a frame for the next page's control. */
 export function ProductPage(handle: Handle<ProductPageProps>) {
   return () => {
-    let { collectionHandle, pageInfo, pathPrefix, products } = handle.props;
+    let {
+      collectionHandle,
+      eagerImageCount = 0,
+      pageInfo,
+      pathPrefix,
+      products,
+    } = handle.props;
     return (
       <>
-        {products.map((product) => (
+        {products.map((product, index) => (
           <li key={product.id}>
-            <ProductCard pathPrefix={pathPrefix} product={product} />
+            <ProductCard
+              pathPrefix={pathPrefix}
+              product={product}
+              loading={index < eagerImageCount ? "eager" : "lazy"}
+              fetchPriority={
+                index === 0 && eagerImageCount > 0 ? "high" : undefined
+              }
+            />
           </li>
         ))}
         {pageInfo.hasNextPage && pageInfo.endCursor ? (
