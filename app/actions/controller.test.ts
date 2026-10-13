@@ -163,6 +163,34 @@ describe("platform skeleton", () => {
     assert.match(html, /Now thru Jun\.2/);
   });
 
+  it("preloads the mono font only while the sale banner shows", async () => {
+    let preloadedFonts = (html: string) =>
+      [...html.matchAll(/<link\b[^>]*as="font"[^>]*>/g)].map(
+        ([tag]) => tag.match(/href="([^"]+)"/)?.[1],
+      );
+    let withoutSale = await createTestApp(
+      createStorefrontFetch({
+        RemixAnalyticsShop: analyticsShopData,
+        RemixCollection: collectionData,
+        RemixHomeEditorial: homeData,
+        RemixNavigation: () => {
+          let data = navigationData();
+          return { ...data, shop: { ...data.shop, storeWideSale: null } };
+        },
+      }),
+    ).fetch(new Request("https://example.com/"));
+
+    assert.deepEqual(preloadedFonts(await (await fetchHome()).text()), [
+      "/assets/inter-roman.woff2",
+      "/assets/lexend-zetta.woff2",
+      "/assets/jet-brains-mono.woff2",
+    ]);
+    assert.deepEqual(preloadedFonts(await withoutSale.text()), [
+      "/assets/inter-roman.woff2",
+      "/assets/lexend-zetta.woff2",
+    ]);
+  });
+
   it("server-renders home editorial and catalog data", async () => {
     let response = await fetchHome();
     let html = await response.text();

@@ -59,6 +59,13 @@ export function Document(handle: Handle<DocumentProps>) {
       navigationMenu: FALLBACK_NAVIGATION_MENU,
       storeWideSale: null,
     };
+    // Italic and mono text is rare or below the fold, so those fonts load on
+    // use. The sale banner sets mono above the fold while a sale runs.
+    let preloadedFonts = [
+      assets.fonts.interRoman,
+      assets.fonts.lexendZetta,
+      ...(shellData.storeWideSale ? [assets.fonts.jetBrainsMono] : []),
+    ];
     let socialImageUrl = canonicalUrl
       ? new URL(socialImage, canonicalUrl).href
       : socialImage;
@@ -117,34 +124,15 @@ export function Document(handle: Handle<DocumentProps>) {
             sizes="180x180"
             href="/remix-apple-touch-icon.png"
           />
-          <link
-            rel="preload"
-            href={assets.fonts.interRoman}
-            as="font"
-            type="font/woff2"
-            crossOrigin="anonymous"
-          />
-          <link
-            rel="preload"
-            href={assets.fonts.interItalic}
-            as="font"
-            type="font/woff2"
-            crossOrigin="anonymous"
-          />
-          <link
-            rel="preload"
-            href={assets.fonts.jetBrainsMono}
-            as="font"
-            type="font/woff2"
-            crossOrigin="anonymous"
-          />
-          <link
-            rel="preload"
-            href={assets.fonts.lexendZetta}
-            as="font"
-            type="font/woff2"
-            crossOrigin="anonymous"
-          />
+          {preloadedFonts.map((href) => (
+            <link
+              rel="preload"
+              href={href}
+              as="font"
+              type="font/woff2"
+              crossOrigin="anonymous"
+            />
+          ))}
           <style innerHTML={unsafeHTML(globalStyles(assets.fonts))}></style>
           <ImportMap value={assets.scriptEntry.importMap} />
           {assets.scriptEntry.preloads.map((href) => (
