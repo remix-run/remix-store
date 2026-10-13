@@ -78,7 +78,7 @@ Fly setup, secrets, local image verification, and continuous deployment are docu
 - `server.node.ts` owns the Node/Fly-compatible HTTP lifecycle.
 - `app/entry.oxygen.ts` composes and serves the Oxygen Worker runtime.
 - `app/actions/public/entry.tsx` hydrates browser components on both targets.
-- `vite/remix-oxygen.ts` composes [Pitlane's Remix Vite plugin](https://pitlane.tools/guides/vite-plugin) with MiniOxygen, then bundles Pitlane's asset manifest into the single `index.js` Worker that Oxygen deploys.
+- `vite/remix-oxygen.ts` composes [Pitlane's Remix Vite plugin](https://pitlane.tools/guides/vite-plugin) with MiniOxygen, then bundles Pitlane's asset manifest into the single `index.js` Worker that Oxygen deploys. Deploy builds serve assets from the deployment's CDN prefix (`HYDROGEN_ASSET_BASE_URL`), so they stay reachable after later deployments.
 
 Pitlane's resolver implements the metadata interface consumed by Remix's `render({ assets })` middleware. Remix owns streaming, frames, and hydration; Pitlane rewrites `clientEntry(import.meta.url, ...)` to portable `file:app/…#Export` identities and resolves them to built browser modules. The installed Remix asset server compiles from the filesystem in Node, so Oxygen needs this build-time bridge. `browserBoundary` in `app/assets.ts` defines which sources are public: the Node asset server refuses to serve anything outside it, and the Oxygen build and dev server fail when a browser module imports something outside it.
 

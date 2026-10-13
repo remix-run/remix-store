@@ -21,8 +21,12 @@ export function remixOxygen({
 
   const oxygenWorker: Plugin = {
     name: "remix-oxygen:worker",
-    config() {
+    config(_config, { command }) {
+      // `shopify hydrogen deploy` passes each deployment's CDN prefix, so
+      // assets stay at their own URLs after later deployments replace this one.
+      let assetBase = process.env.HYDROGEN_ASSET_BASE_URL;
       return {
+        base: command === "build" && assetBase ? assetBase : undefined,
         environments: {
           ssr: {
             optimizeDeps: { include: ["sanitize-html"] },
