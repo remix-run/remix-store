@@ -486,6 +486,17 @@ function CartView(handle: Handle<CartViewProps>) {
               : [];
             let lineErrorId = `${handle.id}-line-${index}-errors`;
             let compareAtPrice = getLineCompareAtPrice(line);
+            // The drawer is a closed dialog until opened, so its thumbnails
+            // wait to load until then.
+            let thumbnail = merchandise?.image ? (
+              <img
+                src={shopifyImageUrl(merchandise.image.url, drawer ? 160 : 240)}
+                alt={merchandise.image.altText ?? merchandise.product.title}
+                width={merchandise.image.width ?? undefined}
+                height={merchandise.image.height ?? undefined}
+                loading={drawer ? "lazy" : "eager"}
+              />
+            ) : null;
 
             return (
               <li
@@ -493,7 +504,7 @@ function CartView(handle: Handle<CartViewProps>) {
                 aria-busy={linePending ? "true" : undefined}
                 mix={drawer ? drawerLineStyle : lineStyle}
               >
-                {merchandise?.image ? (
+                {merchandise && thumbnail ? (
                   merchandise.product.handle ? (
                     <a
                       href={productHref(
@@ -506,17 +517,7 @@ function CartView(handle: Handle<CartViewProps>) {
                         drawer ? on("click", closeCartDrawer) : undefined,
                       ]}
                     >
-                      <img
-                        src={shopifyImageUrl(
-                          merchandise.image.url,
-                          drawer ? 160 : 240,
-                        )}
-                        alt={
-                          merchandise.image.altText ?? merchandise.product.title
-                        }
-                        width={merchandise.image.width ?? undefined}
-                        height={merchandise.image.height ?? undefined}
-                      />
+                      {thumbnail}
                     </a>
                   ) : (
                     <span
@@ -524,17 +525,7 @@ function CartView(handle: Handle<CartViewProps>) {
                         drawer ? drawerLineImageLinkStyle : lineImageLinkStyle
                       }
                     >
-                      <img
-                        src={shopifyImageUrl(
-                          merchandise.image.url,
-                          drawer ? 160 : 240,
-                        )}
-                        alt={
-                          merchandise.image.altText ?? merchandise.product.title
-                        }
-                        width={merchandise.image.width ?? undefined}
-                        height={merchandise.image.height ?? undefined}
-                      />
+                      {thumbnail}
                     </span>
                   )
                 ) : null}
