@@ -71,9 +71,9 @@ first.
 
 ## Deployment behavior
 
-`.github/workflows/fly-deployment.yml` deploys every branch push, then verifies `/health` and the server-rendered home page. Deployments run one at a time and are never canceled midway, since an interrupted blue-green cutover leaves Machines on different images.
+`.github/workflows/fly-deployment.yml` deploys every push to `main`, then verifies `/health` and the server-rendered home page. Deployments run one at a time and are never canceled midway, since an interrupted blue-green cutover leaves Machines on different images.
 
-The workflow passes the Git commit SHA as `ASSET_BUILD_ID`, giving each release immutable Remix Asset URLs. After migration, restrict the workflow trigger to `main` and move the deploy token into a protected GitHub environment.
+The workflow passes the Git commit SHA as `ASSET_BUILD_ID`, giving each release immutable Remix Asset URLs. Moving the deploy token into a protected GitHub environment would limit it to `main` as well.
 
 ## Local image verification
 

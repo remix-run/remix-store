@@ -1,5 +1,8 @@
 name: Fly Deploy
-on: push
+# remix-store.fly.dev serves main; other branches deploy only to Oxygen.
+on:
+  push:
+    branches: [main]
 
 permissions:
   contents: read
