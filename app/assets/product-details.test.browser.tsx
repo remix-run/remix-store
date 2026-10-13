@@ -157,6 +157,48 @@ describe("product form", () => {
     assert.equal(getShopPayLink($)?.hasAttribute("href"), true);
   });
 
+  it("loads each gallery's first image first, and nothing for the hidden copy", async (t) => {
+    t.after(resetBrowserCartStore);
+    let { act, cleanup, container } = render(
+      <ProductDetails
+        product={createProduct()}
+        search=""
+        shopPayStoreUrl={shopPayStoreUrl}
+      />,
+    );
+    t.after(cleanup);
+    await flushAsync(act);
+
+    let imagesNamed = (alt: string) => [
+      ...container.querySelectorAll<HTMLImageElement>(`img[alt="${alt}"]`),
+    ];
+    let firstImages = imagesNamed("Red product");
+    let laterImages = imagesNamed("Test product");
+    assert.deepEqual(
+      firstImages.map((image) => [image.loading, image.fetchPriority]),
+      [
+        ["eager", "high"],
+        ["eager", "high"],
+      ],
+    );
+    assert.deepEqual(
+      laterImages.map((image) => [image.loading, image.fetchPriority]),
+      [
+        ["lazy", "auto"],
+        ["lazy", "auto"],
+      ],
+    );
+
+    await Promise.all(
+      firstImages.map((image) => image.decode().catch(() => {})),
+    );
+    let hidden = firstImages.find((image) => !image.checkVisibility());
+    let shown = firstImages.find((image) => image.checkVisibility());
+    assert.ok(hidden && shown);
+    assert.match(hidden.currentSrc, /^data:/);
+    assert.match(shown.currentSrc, /^https:\/\/cdn\.shopify\.com\//);
+  });
+
   it("preserves the Shop Pay height when changing available variants", async (t) => {
     let product = createProduct();
     let blueVariant = product.options[0]?.optionValues.find(

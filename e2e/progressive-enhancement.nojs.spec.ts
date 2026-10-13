@@ -94,3 +94,18 @@ test("catalog navigation and add-to-cart work without JavaScript", async ({
     page.locator("main").getByText(title, { exact: true }).first(),
   ).toBeVisible();
 });
+
+test("product photos are sharp and fully visible without JavaScript", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/products/sized-product");
+  let frames = page.locator("[data-product-image]");
+  await expect(frames).toHaveCount(2);
+
+  for (let frame of await frames.all()) {
+    await expect(frame).toHaveCSS("opacity", "1");
+    await expect(frame.locator("[data-preview-image]")).toBeHidden();
+    await expect(frame.getByRole("img")).toHaveCSS("filter", "none");
+  }
+});

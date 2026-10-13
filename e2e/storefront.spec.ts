@@ -384,6 +384,21 @@ test("a bare product URL shows its selected options without a new history entry"
   await expect(page).toHaveURL(/\/products\/test-product$/);
 });
 
+test("the first product photo sharpens once loaded; later ones are never blurred", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/products/sized-product");
+  let frames = page.locator("[data-product-image]");
+
+  await expect(frames.first().getByRole("img")).toHaveCSS(
+    "filter",
+    "blur(0px)",
+  );
+  await expect(frames.nth(1).locator("[data-preview-image]")).toBeHidden();
+  await expect(frames.nth(1).getByRole("img")).toHaveCSS("filter", "none");
+});
+
 test.describe("mobile product gallery", () => {
   test.use({ viewport: { width: 390, height: 844 }, hasTouch: true });
 
