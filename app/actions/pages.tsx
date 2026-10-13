@@ -140,21 +140,18 @@ function RunnerPanel() {
   return () => (
     <section aria-label="Remix runner" mix={runnerPanelStyle}>
       <div mix={runnerImageContainerStyle}>
-        <img
-          src="/brand/remix-runner.svg"
-          width="326"
-          height="206"
-          alt="Silhouette of a runner made of white circles"
-          mix={runnerStaticStyle}
-        />
-        <img
-          src="/brand/remix-runner-animated.svg"
-          width="326"
-          height="206"
-          alt=""
-          aria-hidden="true"
-          mix={runnerAnimatedStyle}
-        />
+        <picture>
+          <source
+            media="(prefers-reduced-motion: reduce)"
+            srcSet="/brand/remix-runner.svg"
+          />
+          <img
+            src="/brand/remix-runner-animated.svg"
+            width="326"
+            height="206"
+            alt="Silhouette of a runner made of white circles"
+          />
+        </picture>
       </div>
     </section>
   );
@@ -334,14 +331,4 @@ const runnerImageContainerStyle = css({
     transform: "translateX(-50%)",
     width: "100%",
   },
-});
-
-const runnerStaticStyle = css({
-  display: "none",
-  "@media (prefers-reduced-motion: reduce)": { display: "block" },
-});
-
-const runnerAnimatedStyle = css({
-  display: "block",
-  "@media (prefers-reduced-motion: reduce)": { display: "none" },
 });
