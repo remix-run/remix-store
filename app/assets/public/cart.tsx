@@ -8,7 +8,7 @@ import {
   type CartStore,
   type MoneyV2,
 } from "@shopify/hydrogen";
-import { clientEntry, css, on, type Handle } from "remix/component";
+import { clientEntry, css, navigate, on, type Handle } from "remix/component";
 
 import {
   marketPath,
@@ -58,7 +58,7 @@ function openCartDrawer() {
   if (!globalThis.document) return;
   if (window.matchMedia("(max-width: 809px)").matches) {
     let prefix = documentMarketPathPrefix();
-    window.location.assign(marketPath("/cart", prefix));
+    navigate(marketPath("/cart", prefix));
     return;
   }
   let drawer = document.getElementById(CART_DRAWER_ID);
