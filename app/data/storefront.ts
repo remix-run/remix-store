@@ -1037,7 +1037,7 @@ function toHomeHeroData(hero: HomeQueryData["hero"]): HomeHeroData | null {
       return [
         {
           id: node.image.id,
-          url: homeHeroImageUrl(node.image.url),
+          url: node.image.url,
           altText: node.image.altText,
           width: node.image.width,
           height: node.image.height,
@@ -1167,18 +1167,6 @@ function toSerializableFocalPoint(
   point: FocalPoint | undefined,
 ): (SerializableObject & FocalPoint) | null {
   return point ? { x: point.x, y: point.y } : null;
-}
-
-function homeHeroImageUrl(source: string): string {
-  try {
-    let url = new URL(source);
-    url.searchParams.set("width", "1600");
-    url.searchParams.set("height", "900");
-    url.searchParams.set("crop", "center");
-    return url.toString();
-  } catch {
-    return source;
-  }
 }
 
 export function normalizeStoreDomain(value: string): string {

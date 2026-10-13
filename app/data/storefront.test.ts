@@ -129,11 +129,11 @@ describe("Storefront data", () => {
     if (!result.ok) return;
     assert.equal(result.data.hero?.collectionHandle, "racing");
     assert.equal(result.data.hero?.assetImages.length, 1);
-    let heroUrl = new URL(result.data.hero!.assetImages[0]!.url);
-    assert.equal(heroUrl.searchParams.get("foo"), "bar");
-    assert.equal(heroUrl.searchParams.get("width"), "1600");
-    assert.equal(heroUrl.searchParams.get("height"), "900");
-    assert.equal(heroUrl.searchParams.get("crop"), "center");
+    // The hero sizes and crops its frames for each screen.
+    assert.equal(
+      result.data.hero?.assetImages[0]?.url,
+      "https://cdn.shopify.com/frame.jpg?foo=bar",
+    );
     assert.equal(result.data.lookbookEntries.length, 1);
     assert.deepEqual(result.data.lookbookEntries[0]?.focalPoint, {
       x: 0.25,
