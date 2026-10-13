@@ -374,6 +374,20 @@ test("a bare product URL shows its selected options without a new history entry"
   await expect(page).toHaveURL(/\/products\/sized-product\?Size=Small$/);
   expect(await page.evaluate(() => history.length)).toBe(2);
 
+  // Back to the rewritten entry shows the product again, not the next page.
+  await page
+    .getByRole("navigation", { name: "Main navigation" })
+    .getByRole("link", { name: "All Products" })
+    .click();
+  await expect(
+    page.getByRole("heading", { level: 1, name: "All Products" }),
+  ).toBeVisible();
+  await page.goBack();
+  await expect(page).toHaveURL(/\/products\/sized-product\?Size=Small$/);
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Sized product" }),
+  ).toBeVisible();
+
   // An existing query is the shopper's choice, and a product without real
   // options has nothing to show.
   await page.goto("/products/sized-product?utm_source=test");

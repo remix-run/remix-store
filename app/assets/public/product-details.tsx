@@ -119,7 +119,7 @@ export const ProductDetails = clientEntry(
     }
 
     // Like production, a bare product URL gains the selected variant's
-    // options so it can be shared. This replaces the entry without navigating.
+    // options so it can be shared.
     function showSelectedVariantInUrl() {
       if (location.search) return;
       let { product } = handle.props;
@@ -138,7 +138,7 @@ export const ProductDetails = clientEntry(
         market.pathPrefix,
       );
       if (href !== location.pathname) {
-        history.replaceState(history.state, "", href);
+        navigate(href, { history: "replace", resetScroll: false });
       }
     }
 
