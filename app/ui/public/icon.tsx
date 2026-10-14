@@ -2,20 +2,16 @@ import type { Handle, Props } from "remix/component";
 
 /** Symbol IDs defined by the sprite sheet inlined in `Document`. */
 export type IconName =
-  | "bag"
   | "cart"
   | "check"
   | "chevron-down"
   | "chevron-left"
   | "chevron-right"
-  | "chevron-up"
-  | "circle-check"
   | "circle-minus"
   | "circle-plus"
   | "discord"
   | "fast-forward"
   | "github"
-  | "info"
   | "mail"
   | "menu"
   | "remix-glyphs"
