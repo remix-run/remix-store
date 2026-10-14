@@ -719,16 +719,15 @@ const purchaseGroupStyle = css({
 });
 const purchaseStyle = css({
   display: "grid",
-  gap: "16px",
+  gap: "10px",
   "@media (min-width: 1400px)": {
-    gap: "12px",
     gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
   },
 });
 const optionsStyle = css({
   display: "flex",
   flexDirection: "column",
-  gap: "12px",
+  gap: "10px",
   "@media (min-width: 1400px)": { gridColumn: "span 2" },
 });
 const optionMenuStyle = css({
