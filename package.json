@@ -53,6 +53,9 @@
       "qs": "6.16.0",
       "ws": "8.22.0",
       "cookie": "1.1.1"
+    },
+    "patchedDependencies": {
+      "@remix-run/component@1.0.0": "patches/@remix-run__component@1.0.0.patch"
     }
   }
 }

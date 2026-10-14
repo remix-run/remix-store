@@ -10,6 +10,11 @@ overrides:
   ws: 8.22.0
   cookie: 1.1.1
 
+patchedDependencies:
+  '@remix-run/component@1.0.0':
+    hash: 68840cfa22db0c10f75ef5ee747188a5b7b584351b2f2e5f66c261a71473f338
+    path: patches/@remix-run__component@1.0.0.patch
+
 importers:
 
   .:
@@ -3391,7 +3396,7 @@ snapshots:
       - '@emnapi/core'
       - '@emnapi/runtime'
 
-  '@remix-run/component@1.0.0':
+  '@remix-run/component@1.0.0(patch_hash=68840cfa22db0c10f75ef5ee747188a5b7b584351b2f2e5f66c261a71473f338)':
     dependencies:
       '@types/dom-navigation': 1.0.7
 
@@ -3521,7 +3526,7 @@ snapshots:
   '@remix-run/render-middleware@1.0.0(@emnapi/core@2.0.0-alpha.3)(@emnapi/runtime@2.0.0-alpha.3)':
     dependencies:
       '@remix-run/assets': 1.0.0(@emnapi/core@2.0.0-alpha.3)(@emnapi/runtime@2.0.0-alpha.3)
-      '@remix-run/component': 1.0.0
+      '@remix-run/component': 1.0.0(patch_hash=68840cfa22db0c10f75ef5ee747188a5b7b584351b2f2e5f66c261a71473f338)
       '@remix-run/fetch-router': 1.0.0
       '@remix-run/response': 1.0.0
     transitivePeerDependencies:
@@ -3554,7 +3559,7 @@ snapshots:
 
   '@remix-run/spa@1.0.0(@emnapi/core@2.0.0-alpha.3)(@emnapi/runtime@2.0.0-alpha.3)':
     dependencies:
-      '@remix-run/component': 1.0.0
+      '@remix-run/component': 1.0.0(patch_hash=68840cfa22db0c10f75ef5ee747188a5b7b584351b2f2e5f66c261a71473f338)
       '@remix-run/fetch-router': 1.0.0
       '@remix-run/render-middleware': 1.0.0(@emnapi/core@2.0.0-alpha.3)(@emnapi/runtime@2.0.0-alpha.3)
     transitivePeerDependencies:
@@ -4473,7 +4478,7 @@ snapshots:
       '@remix-run/auth': 1.0.0
       '@remix-run/auth-middleware': 1.0.0
       '@remix-run/cli': 1.0.0(@emnapi/core@2.0.0-alpha.3)(@emnapi/runtime@2.0.0-alpha.3)(playwright@1.63.0)
-      '@remix-run/component': 1.0.0
+      '@remix-run/component': 1.0.0(patch_hash=68840cfa22db0c10f75ef5ee747188a5b7b584351b2f2e5f66c261a71473f338)
       '@remix-run/component-hmr': 1.0.0(@emnapi/core@2.0.0-alpha.3)(@emnapi/runtime@2.0.0-alpha.3)
       '@remix-run/compression-middleware': 1.0.0
       '@remix-run/cookie': 1.0.0
