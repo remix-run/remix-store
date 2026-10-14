@@ -24,7 +24,6 @@ function frameRouter() {
           scriptEntry,
           stylesheets: [],
           fonts: {
-            interItalic: "/font",
             interRoman: "/font",
             jetBrainsMono: "/font",
             lexendZetta: "/font",

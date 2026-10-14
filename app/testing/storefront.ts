@@ -43,7 +43,6 @@ export function createTestApp(
           },
         },
         fonts: {
-          interItalic: "/assets/inter-italic.woff2",
           interRoman: "/assets/inter-roman.woff2",
           jetBrainsMono: "/assets/jet-brains-mono.woff2",
           lexendZetta: "/assets/lexend-zetta.woff2",

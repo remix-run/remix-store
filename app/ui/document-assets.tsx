@@ -1,9 +1,8 @@
 import type { ScriptEntry } from "remix/assets";
 import type { Handle, RemixNode } from "remix/component";
 
-/** Resolved webfont URLs, shared by @font-face and preload links. */
+/** Resolved URLs for the webfonts a document may preload. */
 export interface DocumentFonts {
-  interItalic: string;
   interRoman: string;
   jetBrainsMono: string;
   lexendZetta: string;

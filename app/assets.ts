@@ -14,7 +14,6 @@ export const documentAssetSources = {
   scriptEntry: "app/actions/public/entry.tsx",
   stylesheet: "app/assets/public/site.css",
   fonts: {
-    interItalic: "app/assets/public/font/inter-italic-latin-var.woff2",
     interRoman: "app/assets/public/font/inter-roman-latin-var.woff2",
     jetBrainsMono: "app/assets/public/font/jet-brains-mono.woff2",
     lexendZetta: "app/assets/public/font/lexend-zetta-black.woff2",
@@ -39,7 +38,6 @@ export async function getDocumentAssets(
   let [
     scriptEntry,
     stylesheet,
-    interItalic,
     interRoman,
     jetBrainsMono,
     lexendZetta,
@@ -47,7 +45,6 @@ export async function getDocumentAssets(
   ] = await Promise.all([
     assets.getScriptEntry(entry),
     assets.getHref(site),
-    assets.getHref(fonts.interItalic),
     assets.getHref(fonts.interRoman),
     assets.getHref(fonts.jetBrainsMono),
     assets.getHref(fonts.lexendZetta),
@@ -59,6 +56,6 @@ export async function getDocumentAssets(
     stylesheets: [
       ...new Set([stylesheet, ...browserStylesheets, ...additionalStylesheets]),
     ],
-    fonts: { interItalic, interRoman, jetBrainsMono, lexendZetta },
+    fonts: { interRoman, jetBrainsMono, lexendZetta },
   };
 }
