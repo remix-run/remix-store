@@ -33,9 +33,7 @@ export function market(): Middleware<{
       }
       // SAFETY: The app's renderer middleware runs before market resolution;
       // Remix's generic Renderer key erases the concrete RemixNode input type.
-      let renderPage = context.get(Renderer) as
-        | ((node: RemixNode, init?: ResponseInit) => Response)
-        | undefined;
+      let renderPage = context.get(Renderer) as Renderer<RemixNode> | undefined;
       return renderPage
         ? renderPage(createElement(NotFoundPage, {}), { status: 404 })
         : new Response("Not Found", { status: 404 });

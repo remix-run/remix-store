@@ -8,19 +8,14 @@ import type {
   StoreWideSaleData,
 } from "../data/storefront.ts";
 
-interface ShellDataProviderProps {
-  analyticsShop?: AnalyticsShop | null;
-  cartInitialData?: CartInitialData;
-  children?: RemixNode;
-  currentPath: string;
-  footerMenu: NavigationMenuData;
-  market: ActiveMarket;
-  navigationMenu: NavigationMenuData;
-  storeWideSale: StoreWideSaleData | null;
-}
+type ShellDataProviderProps = ShellData & { children?: RemixNode };
 
 export interface ShellData {
   analyticsShop?: AnalyticsShop | null;
+  /**
+   * Seeds the browser cart store on document requests. Undefined on client
+   * navigations, where the hydrated cart store already owns the cart.
+   */
   cartInitialData?: CartInitialData;
   /** The requested pathname, including any market prefix. */
   currentPath: string;

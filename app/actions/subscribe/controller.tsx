@@ -1,3 +1,4 @@
+import type { Renderer } from "remix/middleware/render";
 import { createController } from "remix/router";
 import { redirect } from "remix/response/redirect";
 import type { RemixNode, SerializableObject } from "remix/component";
@@ -258,7 +259,7 @@ async function oneWayDigest(value: string): Promise<string> {
 function subscriptionResponse(
   request: Request,
   url: URL,
-  render: (node: RemixNode, init?: ResponseInit) => Response,
+  render: Renderer<RemixNode>,
   market: ActiveMarket,
   init: {
     body: SubscriptionBody;
@@ -266,7 +267,7 @@ function subscriptionResponse(
     status: number;
     successRedirect?: string;
   },
-): Response {
+): Response | Promise<Response> {
   if (request.headers.get("Accept")?.includes("application/json")) {
     return Response.json(init.body, {
       status: init.status,

@@ -10,7 +10,6 @@ import { createContextKey, type Middleware } from "remix/router";
 import { redirect } from "remix/response/redirect";
 
 import { cartHandlers, getCartData } from "../data/cart.server.ts";
-import type { CartInitialData } from "../data/cart.ts";
 import { applyDiscountCode } from "../data/discount.server.ts";
 import { getStorefrontCache } from "../data/storefront-cache.ts";
 import { createRetryingStorefrontFetch } from "../data/storefront-fetch.ts";
@@ -20,10 +19,7 @@ import {
   normalizeStoreDomain,
   queryAnalyticsShop,
   queryShellMenus,
-  type AnalyticsShop,
   type AppStorefrontClient,
-  type NavigationMenuData,
-  type StoreWideSaleData,
 } from "../data/storefront.ts";
 import {
   localizeInternalUrl,
@@ -32,6 +28,7 @@ import {
 import { routeTemplates } from "../lib/public/route-templates.ts";
 import { routes } from "../routes.ts";
 import { getRuntime, type Env } from "../runtime.ts";
+import type { ShellData } from "../ui/shell-data.tsx";
 import { MarketConfig } from "./market.tsx";
 
 export interface StorefrontOptions {
@@ -40,18 +37,25 @@ export interface StorefrontOptions {
   fetch?: typeof globalThis.fetch;
 }
 
+/** The Storefront part of the page shell: menus, sale, cart, analytics. */
+export type StorefrontShellData = Omit<ShellData, "currentPath" | "market">;
+
+export const FALLBACK_SHELL_DATA: StorefrontShellData = {
+  analyticsShop: null,
+  cartInitialData: { cart: null },
+  footerMenu: FALLBACK_FOOTER_MENU,
+  navigationMenu: FALLBACK_NAVIGATION_MENU,
+  storeWideSale: null,
+};
+
 export const StorefrontClient = createContextKey<AppStorefrontClient>();
-export const NavigationMenuConfig = createContextKey<NavigationMenuData>();
-export const FooterMenuConfig = createContextKey<NavigationMenuData>();
-export const StoreWideSaleConfig = createContextKey<StoreWideSaleData | null>();
-export const CartInitialDataConfig = createContextKey<CartInitialData>();
-export const AnalyticsShopConfig = createContextKey<AnalyticsShop | null>();
+/**
+ * Shell data starts loading before the route runs, so controllers query their
+ * own data in parallel instead of after it. The renderer awaits it.
+ */
+export const ShellDataConfig = createContextKey<Promise<StorefrontShellData>>();
 const storefrontProperty = { property: "storefrontClient" } as const;
-const navigationMenuProperty = { property: "navigationMenu" } as const;
-const footerMenuProperty = { property: "footerMenu" } as const;
-const storeWideSaleProperty = { property: "storeWideSale" } as const;
-const cartInitialDataProperty = { property: "cartInitialData" } as const;
-const analyticsShopProperty = { property: "analyticsShop" } as const;
+const shellDataProperty = { property: "shellData" } as const;
 
 export function storefront(options: StorefrontOptions = {}): Middleware<
   readonly [
@@ -61,29 +65,9 @@ export function storefront(options: StorefrontOptions = {}): Middleware<
       property: "storefrontClient";
     },
     {
-      key: typeof NavigationMenuConfig;
-      value: NavigationMenuData;
-      property: "navigationMenu";
-    },
-    {
-      key: typeof FooterMenuConfig;
-      value: NavigationMenuData;
-      property: "footerMenu";
-    },
-    {
-      key: typeof StoreWideSaleConfig;
-      value: StoreWideSaleData | null;
-      property: "storeWideSale";
-    },
-    {
-      key: typeof CartInitialDataConfig;
-      value: CartInitialData;
-      property: "cartInitialData";
-    },
-    {
-      key: typeof AnalyticsShopConfig;
-      value: AnalyticsShop | null;
-      property: "analyticsShop";
+      key: typeof ShellDataConfig;
+      value: Promise<StorefrontShellData>;
+      property: "shellData";
     },
   ]
 > {
@@ -156,32 +140,22 @@ export function storefront(options: StorefrontOptions = {}): Middleware<
     });
 
     context.set(StorefrontClient, storefrontClient, storefrontProperty);
+    // Responses that render no page shell keep the fallback.
+    let shellData = Promise.resolve(FALLBACK_SHELL_DATA);
+    context.set(ShellDataConfig, shellData, shellDataProperty);
 
     let seoRoute = matchSeoRoute(context.url);
     if (seoRoute) {
-      let analyticsShop =
-        seoRoute === routes.seo.robots
-          ? await queryAnalyticsShop(
-              storefrontClient,
-              storefrontId ?? "0",
-              normalizeStoreDomain(storeDomain),
-            )
-          : null;
-      context.set(
-        NavigationMenuConfig,
-        FALLBACK_NAVIGATION_MENU,
-        navigationMenuProperty,
-      );
-      context.set(FooterMenuConfig, FALLBACK_FOOTER_MENU, footerMenuProperty);
-      context.set(StoreWideSaleConfig, null, storeWideSaleProperty);
-      context.set(
-        CartInitialDataConfig,
-        { cart: null },
-        cartInitialDataProperty,
-      );
-      context.set(AnalyticsShopConfig, analyticsShop, analyticsShopProperty);
-
-      return applyResponseHeaders(requestContext, await next());
+      if (seoRoute === routes.seo.robots) {
+        shellData = queryAnalyticsShop(
+          storefrontClient,
+          storefrontId ?? "0",
+          normalizeStoreDomain(storeDomain),
+        ).then((analyticsShop) => ({ ...FALLBACK_SHELL_DATA, analyticsShop }));
+        context.set(ShellDataConfig, shellData, shellDataProperty);
+      }
+      let [response] = await Promise.all([next(), shellData]);
+      return applyResponseHeaders(requestContext, response);
     }
 
     // Shopify-owned checkout, permalink, AJAX cart, and /api/cart routes must
@@ -247,50 +221,28 @@ export function storefront(options: StorefrontOptions = {}): Middleware<
         context.url.pathname === routes.subscribe.action.href()) ||
       isProductGridFragment(context.url)
     ) {
-      context.set(
-        NavigationMenuConfig,
-        FALLBACK_NAVIGATION_MENU,
-        navigationMenuProperty,
-      );
-      context.set(FooterMenuConfig, FALLBACK_FOOTER_MENU, footerMenuProperty);
-      context.set(StoreWideSaleConfig, null, storeWideSaleProperty);
-      context.set(
-        CartInitialDataConfig,
-        { cart: null },
-        cartInitialDataProperty,
-      );
-      context.set(AnalyticsShopConfig, null, analyticsShopProperty);
       return applyResponseHeaders(requestContext, await next());
     }
 
-    let [shellMenus, cartInitialData, analyticsShop] = await Promise.all([
+    shellData = Promise.all([
       queryShellMenus(storefrontClient, storeDomain),
-      getCartData(context.request, storefrontClient),
+      isClientNavigation(context.request)
+        ? undefined
+        : getCartData(context.request, storefrontClient),
       queryAnalyticsShop(
         storefrontClient,
         storefrontId ?? "0",
         normalizeStoreDomain(storeDomain),
       ),
-    ]);
-    context.set(
-      NavigationMenuConfig,
-      shellMenus.navigationMenu,
-      navigationMenuProperty,
-    );
-    context.set(FooterMenuConfig, shellMenus.footerMenu, footerMenuProperty);
-    context.set(
-      StoreWideSaleConfig,
-      shellMenus.storeWideSale,
-      storeWideSaleProperty,
-    );
-    context.set(
-      CartInitialDataConfig,
+    ]).then(([shellMenus, cartInitialData, analyticsShop]) => ({
+      ...shellMenus,
       cartInitialData,
-      cartInitialDataProperty,
-    );
-    context.set(AnalyticsShopConfig, analyticsShop, analyticsShopProperty);
+      analyticsShop,
+    }));
+    context.set(ShellDataConfig, shellData, shellDataProperty);
 
-    let response = await next();
+    // Apply Shopify's response headers once the route and shell queries finish.
+    let [response] = await Promise.all([next(), shellData]);
     if (response.status === 404) {
       response =
         (await handleShopifyRedirects({
@@ -302,6 +254,14 @@ export function storefront(options: StorefrontOptions = {}): Middleware<
     }
     return applyResponseHeaders(requestContext, noStoreRedirect(response));
   };
+}
+
+/**
+ * Requests from Remix's browser runtime. The page that sends them has already
+ * hydrated, so client-owned state such as the cart is live in the browser.
+ */
+function isClientNavigation(request: Request): boolean {
+  return request.headers.get("X-Remix-Frame") === "true";
 }
 
 function requestWithUrl(request: Request, url: URL): Request {

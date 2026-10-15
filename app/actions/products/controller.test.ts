@@ -202,6 +202,42 @@ describe("product routes", () => {
     assert.equal(halfADayLater.status, 200);
     assert.match(await halfADayLater.text(), /<h1[^>]*>Test Product<\/h1>/);
   });
+
+  it("queries the product while the shell data is still loading", async () => {
+    let events: string[] = [];
+    let releaseShell!: () => void;
+    let shellReleased = new Promise<void>((resolve) => {
+      releaseShell = resolve;
+    });
+    // A sequential implementation never requests the product until the shell
+    // finishes, so release it eventually and let the order fail the test.
+    let fallback = setTimeout(releaseShell, 500);
+    let app = createTestApp(
+      createStorefrontFetch({
+        RemixAnalyticsShop: analyticsShopData,
+        async RemixNavigation() {
+          await shellReleased;
+          events.push("shell loaded");
+          return navigationData();
+        },
+        RemixProductNavigation: () => ({ menu: null, shop: null }),
+        RemixProduct() {
+          events.push("product requested");
+          releaseShell();
+          return { product: productData() };
+        },
+      }),
+    );
+
+    let response = await app.fetch(
+      new Request("https://example.com/products/test-product"),
+    );
+    clearTimeout(fallback);
+
+    assert.deepEqual(events, ["product requested", "shell loaded"]);
+    assert.equal(response.status, 200);
+    assert.match(await response.text(), /<h1[^>]*>Test Product<\/h1>/);
+  });
 });
 
 function productData() {

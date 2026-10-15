@@ -16,7 +16,8 @@ import { routes } from "../../routes.ts";
 
 export default createController(routes.seo, {
   actions: {
-    robots({ analyticsShop, url }) {
+    async robots({ shellData, url }) {
+      let { analyticsShop } = await shellData;
       return robotsResponse({
         origin: url.origin,
         shopId: analyticsShop?.shopId,
