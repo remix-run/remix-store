@@ -43,7 +43,11 @@ export interface StorefrontOptions {
 /** Request-scoped data every page shell renders: menus, sale, cart, analytics. */
 export interface StorefrontShellData {
   analyticsShop: AnalyticsShop | null;
-  cartInitialData: CartInitialData;
+  /**
+   * Seeds the browser cart store on document requests. Undefined on client
+   * navigations, where the hydrated cart store already owns the cart.
+   */
+  cartInitialData: CartInitialData | undefined;
   footerMenu: NavigationMenuData;
   navigationMenu: NavigationMenuData;
   storeWideSale: StoreWideSaleData | null;
@@ -238,7 +242,9 @@ export function storefront(options: StorefrontOptions = {}): Middleware<
 
     let shellData = Promise.all([
       queryShellMenus(storefrontClient, storeDomain),
-      getCartData(context.request, storefrontClient),
+      isClientNavigation(context.request)
+        ? undefined
+        : getCartData(context.request, storefrontClient),
       queryAnalyticsShop(
         storefrontClient,
         storefrontId ?? "0",
@@ -273,6 +279,14 @@ export function storefront(options: StorefrontOptions = {}): Middleware<
     }
     return applyResponseHeaders(requestContext, noStoreRedirect(response));
   };
+}
+
+/**
+ * Requests from Remix's browser runtime. The page that sends them has already
+ * hydrated, so client-owned state such as the cart is live in the browser.
+ */
+function isClientNavigation(request: Request): boolean {
+  return request.headers.get("X-Remix-Frame") === "true";
 }
 
 function requestWithUrl(request: Request, url: URL): Request {

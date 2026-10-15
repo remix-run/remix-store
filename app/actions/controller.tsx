@@ -1,5 +1,6 @@
 import { createController } from "remix/router";
 
+import { getCartData } from "../data/cart.server.ts";
 import { queryHome } from "../data/storefront.ts";
 import { marketPath } from "../lib/public/market.ts";
 import { isUtcDecember, type Clock } from "../lib/seasonal.ts";
@@ -35,8 +36,12 @@ export function createRootController(options: RootControllerOptions = {}) {
           />,
         );
       },
-      async cart({ market, render, request, shellData }) {
-        let { cartInitialData } = await shellData;
+      async cart({ market, render, request, shellData, storefrontClient }) {
+        // The page title and server-rendered lines need the cart even when the
+        // shell leaves it to the browser store on client navigations.
+        let cartInitialData =
+          (await shellData).cartInitialData ??
+          (await getCartData(request, storefrontClient));
         return render(
           <CartPage
             canonicalUrl={

@@ -246,6 +246,49 @@ describe("cart routes", () => {
     assert.equal(storefrontBody?.variables.country, "CA");
     assert.equal(storefrontBody?.variables.language, "EN");
   });
+
+  it("leaves the cart to the browser store on client navigations, except /cart", async (t) => {
+    let cartQueries = 0;
+    let mockFetch = createStorefrontFetch({
+      Cart() {
+        cartQueries++;
+        return { cart: createCart() };
+      },
+      RemixAnalyticsShop: analyticsShopData,
+      RemixNavigation: navigationData,
+    });
+    t.mock.method(globalThis, "fetch", mockFetch);
+    let app = createTestApp(mockFetch);
+    let cookie = createCartCookie(CART_ID).split(";", 1)[0] ?? "";
+    let clientNavigation = { Cookie: cookie, "X-Remix-Frame": "true" };
+
+    let home = await app.fetch(
+      new Request(new URL(routes.home.href(), origin), {
+        headers: clientNavigation,
+      }),
+    );
+    await home.text();
+    assert.equal(cartQueries, 0);
+
+    let cartPage = await app.fetch(
+      new Request(new URL(routes.cart.href(), origin), {
+        headers: clientNavigation,
+      }),
+    );
+    assert.match(
+      await cartPage.text(),
+      /<title>Cart \(1\) \| The Remix Store<\/title>/,
+    );
+    assert.equal(cartQueries, 1);
+
+    let document = await app.fetch(
+      new Request(new URL(routes.cart.href(), origin), {
+        headers: { Cookie: cookie },
+      }),
+    );
+    await document.text();
+    assert.equal(cartQueries, 2);
+  });
 });
 
 function saleNavigationData() {
