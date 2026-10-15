@@ -1,4 +1,5 @@
 import { prefetchFrame } from "./frame-resolver.ts";
+import { remixNavigation } from "./remix-navigation.ts";
 
 /** Hover or focus this long first, so sweeping or tabbing across a grid stays quiet. */
 const INTENT_DELAY_MS = 100;
@@ -12,7 +13,8 @@ const INTENT_DELAY_MS = 100;
  * reach. Mark only links whose pages are safe to request speculatively.
  */
 export function startLinkPrefetching(signal?: AbortSignal): void {
-  if (!canInterceptNavigation() || prefersReducedData()) return;
+  // Without it, clicks load whole documents, which can't reuse a prefetch.
+  if (!remixNavigation() || prefersReducedData()) return;
 
   let resting:
     | { anchor: HTMLAnchorElement; timer: ReturnType<typeof setTimeout> }
@@ -97,15 +99,6 @@ function prefetch(anchor: HTMLAnchorElement): void {
   let isCurrentPage =
     url.pathname === location.pathname && url.search === location.search;
   if (url.origin === location.origin && !isCurrentPage) prefetchFrame(url);
-}
-
-/** Matches the Remix runtime: without these, clicks load whole documents. */
-function canInterceptNavigation(): boolean {
-  return (
-    "navigation" in window &&
-    typeof NavigateEvent !== "undefined" &&
-    "sourceElement" in NavigateEvent.prototype
-  );
 }
 
 function prefersReducedData(): boolean {
