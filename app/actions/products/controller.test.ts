@@ -174,6 +174,34 @@ describe("product routes", () => {
     assert.equal(response.status, 404);
     assert.match(await response.text(), /Page not found/);
   });
+
+  it("serves a cached product for a day while it refreshes in the background", async (t) => {
+    let now = Date.now();
+    t.mock.method(Date, "now", () => now);
+    t.mock.method(console, "error", () => {});
+    let shopifyAvailable = true;
+    let app = createTestApp(
+      createStorefrontFetch({
+        RemixAnalyticsShop: analyticsShopData,
+        RemixNavigation: navigationData,
+        RemixProductNavigation: () => ({ menu: null, shop: null }),
+        RemixProduct() {
+          if (!shopifyAvailable) throw new TypeError("Shopify unavailable");
+          return { product: productData() };
+        },
+      }),
+    );
+    let url = "https://example.com/products/test-product";
+
+    let first = await app.fetch(new Request(url));
+    await first.text();
+    shopifyAvailable = false;
+    now += 12 * 60 * 60 * 1000;
+    let halfADayLater = await app.fetch(new Request(url));
+
+    assert.equal(halfADayLater.status, 200);
+    assert.match(await halfADayLater.text(), /<h1[^>]*>Test Product<\/h1>/);
+  });
 });
 
 function productData() {

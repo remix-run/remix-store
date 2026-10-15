@@ -526,7 +526,17 @@ const PRODUCT_SUBSCRIPTION_QUERY = gql(`
 `);
 
 const STABLE_CACHE = Cache.long({ staleIfError: { days: 7 } });
-const CATALOG_CACHE = Cache.short({ staleIfError: { minutes: 5 } });
+/**
+ * Hydrogen 2026.4's default for queries without a strategy, which the React
+ * Router storefront used for products and collections: fresh for a second,
+ * then served from cache for a day while requests refresh it in the
+ * background. Current Hydrogen has no default; its Skeleton example recreates
+ * this one for catalog reads.
+ */
+const DEFAULT_QUERY_CACHE = Cache.short({
+  staleWhileRevalidate: { hours: 23, minutes: 59, seconds: 59 },
+  staleIfError: { minutes: 5 },
+});
 
 type ShopData = StorefrontApi.ResultOf<typeof SHOP_QUERY>["shop"];
 type HomeQueryData = StorefrontApi.ResultOf<typeof HOME_QUERY>;
@@ -680,7 +690,7 @@ export async function queryCollection(
         first: pagination.first ?? 15,
         handle,
       },
-      cache: CATALOG_CACHE,
+      cache: DEFAULT_QUERY_CACHE,
     });
     if (result.errors || !result.data) {
       return {
@@ -765,7 +775,7 @@ export async function queryProduct(
         handle,
         selectedOptions: getSelectedProductOptions({ searchParams }),
       },
-      cache: CATALOG_CACHE,
+      cache: DEFAULT_QUERY_CACHE,
     });
     if (result.errors || !result.data) {
       return {
