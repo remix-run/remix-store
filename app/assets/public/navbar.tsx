@@ -8,7 +8,7 @@ import {
 } from "remix/component";
 
 import type { NavigationMenuData } from "../../data/storefront.ts";
-import { isCurrentPage } from "../../lib/public/navigation.ts";
+import { isCatalogLink, isCurrentPage } from "../../lib/public/navigation.ts";
 
 export const RemixLogo = clientEntry(
   import.meta.url,
@@ -174,6 +174,7 @@ export const MobileMenu = clientEntry(
               <li key={item.id}>
                 <a
                   href={item.url}
+                  data-prefetch={isCatalogLink(item.url) ? "intent" : undefined}
                   aria-current={
                     handle.props.currentPath &&
                     isCurrentPage(item.url, handle.props.currentPath)

@@ -4,7 +4,7 @@ import { CartShell } from "../assets/public/cart.tsx";
 import { MobileMenu, RemixLogo } from "../assets/public/navbar.tsx";
 import type { CartInitialData } from "../data/cart.ts";
 import { marketPath, type ActiveMarket } from "../lib/public/market.ts";
-import { isCurrentPage } from "../lib/public/navigation.ts";
+import { isCatalogLink, isCurrentPage } from "../lib/public/navigation.ts";
 import type {
   NavigationMenuData,
   StoreWideSaleData,
@@ -32,6 +32,7 @@ export function Navbar(handle: Handle<NavbarProps>) {
         <a
           href={marketPath("/", handle.props.market.pathPrefix)}
           aria-label="Remix Store home"
+          data-prefetch="intent"
           mix={homeLinkStyle}
         >
           <RemixLogo />
@@ -43,6 +44,7 @@ export function Navbar(handle: Handle<NavbarProps>) {
               <li key={item.id}>
                 <a
                   href={item.url}
+                  data-prefetch={isCatalogLink(item.url) ? "intent" : undefined}
                   aria-current={
                     isCurrentPage(item.url, handle.props.currentPath)
                       ? "page"
