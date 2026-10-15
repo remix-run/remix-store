@@ -262,12 +262,13 @@ describe("cart routes", () => {
     let cookie = createCartCookie(CART_ID).split(";", 1)[0] ?? "";
     let clientNavigation = { Cookie: cookie, "X-Remix-Frame": "true" };
 
-    let home = await app.fetch(
-      new Request(new URL(routes.home.href(), origin), {
+    let subscribePage = await app.fetch(
+      new Request(new URL(routes.subscribe.index.href(), origin), {
         headers: clientNavigation,
       }),
     );
-    await home.text();
+    assert.equal(subscribePage.status, 200);
+    await subscribePage.text();
     assert.equal(cartQueries, 0);
 
     let cartPage = await app.fetch(

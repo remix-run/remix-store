@@ -12,7 +12,7 @@ import { runtimeDispatch } from "../runtime.ts";
 
 import { US_MARKET } from "../lib/public/market.ts";
 import { MarketConfig } from "./market.tsx";
-import { EMPTY_SHELL_DATA, ShellDataConfig } from "./storefront.ts";
+import { FALLBACK_SHELL_DATA, ShellDataConfig } from "./storefront.ts";
 import {
   DocumentAssetsProvider,
   type DocumentAssets,
@@ -46,14 +46,9 @@ export function render(options: RenderOptions) {
       return async function renderPage(node: RemixNode, init?: ResponseInit) {
         // Routes rendered before the storefront middleware, such as unsupported
         // market paths, have no shell data and render the fallback shell.
-        let {
-          analyticsShop,
-          cartInitialData,
-          footerMenu,
-          navigationMenu,
-          storeWideSale,
-        } =
-          (await getContextValue(context, ShellDataConfig)) ?? EMPTY_SHELL_DATA;
+        let shellData =
+          (await getContextValue(context, ShellDataConfig)) ??
+          FALLBACK_SHELL_DATA;
         let market = getContextValue(context, MarketConfig) ?? US_MARKET;
         let headers = new Headers(init?.headers);
         // HTML contains request-scoped Storefront data and must not be cached.
@@ -61,13 +56,9 @@ export function render(options: RenderOptions) {
         return renderNode(
           <DocumentAssetsProvider {...options.documentAssets}>
             <ShellDataProvider
-              analyticsShop={analyticsShop}
-              cartInitialData={cartInitialData}
+              {...shellData}
               currentPath={new URL(context.request.url).pathname}
-              footerMenu={footerMenu}
               market={market}
-              navigationMenu={navigationMenu}
-              storeWideSale={storeWideSale}
             >
               {node}
             </ShellDataProvider>

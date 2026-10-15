@@ -10,7 +10,6 @@ import { createContextKey, type Middleware } from "remix/router";
 import { redirect } from "remix/response/redirect";
 
 import { cartHandlers, getCartData } from "../data/cart.server.ts";
-import type { CartInitialData } from "../data/cart.ts";
 import { applyDiscountCode } from "../data/discount.server.ts";
 import { getStorefrontCache } from "../data/storefront-cache.ts";
 import { createRetryingStorefrontFetch } from "../data/storefront-fetch.ts";
@@ -20,10 +19,7 @@ import {
   normalizeStoreDomain,
   queryAnalyticsShop,
   queryShellMenus,
-  type AnalyticsShop,
   type AppStorefrontClient,
-  type NavigationMenuData,
-  type StoreWideSaleData,
 } from "../data/storefront.ts";
 import {
   localizeInternalUrl,
@@ -32,6 +28,7 @@ import {
 import { routeTemplates } from "../lib/public/route-templates.ts";
 import { routes } from "../routes.ts";
 import { getRuntime, type Env } from "../runtime.ts";
+import type { ShellData } from "../ui/shell-data.tsx";
 import { MarketConfig } from "./market.tsx";
 
 export interface StorefrontOptions {
@@ -40,20 +37,10 @@ export interface StorefrontOptions {
   fetch?: typeof globalThis.fetch;
 }
 
-/** Request-scoped data every page shell renders: menus, sale, cart, analytics. */
-export interface StorefrontShellData {
-  analyticsShop: AnalyticsShop | null;
-  /**
-   * Seeds the browser cart store on document requests. Undefined on client
-   * navigations, where the hydrated cart store already owns the cart.
-   */
-  cartInitialData: CartInitialData | undefined;
-  footerMenu: NavigationMenuData;
-  navigationMenu: NavigationMenuData;
-  storeWideSale: StoreWideSaleData | null;
-}
+/** The Storefront part of the page shell: menus, sale, cart, analytics. */
+export type StorefrontShellData = Omit<ShellData, "currentPath" | "market">;
 
-export const EMPTY_SHELL_DATA: StorefrontShellData = {
+export const FALLBACK_SHELL_DATA: StorefrontShellData = {
   analyticsShop: null,
   cartInitialData: { cart: null },
   footerMenu: FALLBACK_FOOTER_MENU,
@@ -153,20 +140,22 @@ export function storefront(options: StorefrontOptions = {}): Middleware<
     });
 
     context.set(StorefrontClient, storefrontClient, storefrontProperty);
+    // Responses that render no page shell keep the fallback.
+    let shellData = Promise.resolve(FALLBACK_SHELL_DATA);
+    context.set(ShellDataConfig, shellData, shellDataProperty);
 
     let seoRoute = matchSeoRoute(context.url);
     if (seoRoute) {
-      let shellData =
-        seoRoute === routes.seo.robots
-          ? queryAnalyticsShop(
-              storefrontClient,
-              storefrontId ?? "0",
-              normalizeStoreDomain(storeDomain),
-            ).then((analyticsShop) => ({ ...EMPTY_SHELL_DATA, analyticsShop }))
-          : Promise.resolve(EMPTY_SHELL_DATA);
-      context.set(ShellDataConfig, shellData, shellDataProperty);
-
-      return applyResponseHeaders(requestContext, await next());
+      if (seoRoute === routes.seo.robots) {
+        shellData = queryAnalyticsShop(
+          storefrontClient,
+          storefrontId ?? "0",
+          normalizeStoreDomain(storeDomain),
+        ).then((analyticsShop) => ({ ...FALLBACK_SHELL_DATA, analyticsShop }));
+        context.set(ShellDataConfig, shellData, shellDataProperty);
+      }
+      let [response] = await Promise.all([next(), shellData]);
+      return applyResponseHeaders(requestContext, response);
     }
 
     // Shopify-owned checkout, permalink, AJAX cart, and /api/cart routes must
@@ -232,15 +221,10 @@ export function storefront(options: StorefrontOptions = {}): Middleware<
         context.url.pathname === routes.subscribe.action.href()) ||
       isProductGridFragment(context.url)
     ) {
-      context.set(
-        ShellDataConfig,
-        Promise.resolve(EMPTY_SHELL_DATA),
-        shellDataProperty,
-      );
       return applyResponseHeaders(requestContext, await next());
     }
 
-    let shellData = Promise.all([
+    shellData = Promise.all([
       queryShellMenus(storefrontClient, storeDomain),
       isClientNavigation(context.request)
         ? undefined
@@ -250,24 +234,15 @@ export function storefront(options: StorefrontOptions = {}): Middleware<
         storefrontId ?? "0",
         normalizeStoreDomain(storeDomain),
       ),
-    ]).then(
-      ([shellMenus, cartInitialData, analyticsShop]): StorefrontShellData => ({
-        analyticsShop,
-        cartInitialData,
-        footerMenu: shellMenus.footerMenu,
-        navigationMenu: shellMenus.navigationMenu,
-        storeWideSale: shellMenus.storeWideSale,
-      }),
-    );
-    // Shell queries only reject when the request aborts. Observe that here so
-    // a route that returns without rendering cannot leave it unhandled.
-    shellData.catch(() => {});
+    ]).then(([shellMenus, cartInitialData, analyticsShop]) => ({
+      ...shellMenus,
+      cartInitialData,
+      analyticsShop,
+    }));
     context.set(ShellDataConfig, shellData, shellDataProperty);
 
-    let response = await next();
-    // Finish every Shopify query before applying its response headers, as
-    // when the shell loaded before the route.
-    await shellData;
+    // Apply Shopify's response headers once the route and shell queries finish.
+    let [response] = await Promise.all([next(), shellData]);
     if (response.status === 404) {
       response =
         (await handleShopifyRedirects({
