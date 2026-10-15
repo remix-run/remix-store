@@ -24,6 +24,7 @@ import {
   type AppStorefrontClient,
   type NavigationMenuData,
   type StoreWideSaleData,
+  withDefaultCache,
 } from "../data/storefront.ts";
 import {
   localizeInternalUrl,
@@ -295,7 +296,9 @@ export function storefront(options: StorefrontOptions = {}): Middleware<
       response =
         (await handleShopifyRedirects({
           request: routingRequest,
-          storefrontClient,
+          // Hydrogen looks up redirects without a strategy; cache them as
+          // the React Router storefront did.
+          storefrontClient: withDefaultCache(storefrontClient),
           routeTemplates,
         })) ?? response;
       response = localizeRedirect(response, activeMarket, context.url);
