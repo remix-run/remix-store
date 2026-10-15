@@ -528,36 +528,15 @@ const PRODUCT_SUBSCRIPTION_QUERY = gql(`
 const STABLE_CACHE = Cache.long({ staleIfError: { days: 7 } });
 /**
  * Hydrogen 2026.4's default for queries without a strategy, which the React
- * Router storefront used for products, collections, and redirects: fresh for a
- * second, then served from cache for a day while requests refresh it in the
- * background. Current Hydrogen has no default, so it must be explicit.
+ * Router storefront used for products and collections: fresh for a second,
+ * then served from cache for a day while requests refresh it in the
+ * background. Current Hydrogen has no default; its Skeleton example recreates
+ * this one for catalog reads.
  */
-export const DEFAULT_QUERY_CACHE = Cache.short({
+const DEFAULT_QUERY_CACHE = Cache.short({
   staleWhileRevalidate: { hours: 23, minutes: 59, seconds: 59 },
   staleIfError: { minutes: 5 },
 });
-
-/**
- * Applies `cache` to queries that set no strategy, such as those Hydrogen's
- * request handlers make on the app's behalf.
- */
-export function withDefaultCache(
-  storefront: AppStorefrontClient,
-  cache: CachingStrategy = DEFAULT_QUERY_CACHE,
-): AppStorefrontClient {
-  let query = storefront.graphql as (
-    document: unknown,
-    options: { cache?: CachingStrategy },
-  ) => unknown;
-  // SAFETY: Forwards the document and options unchanged apart from a default
-  // cache, so the client's typed signature still describes every call.
-  let graphql = ((document: unknown, options?: { cache?: CachingStrategy }) =>
-    query(document, {
-      ...options,
-      cache: options?.cache ?? cache,
-    })) as AppStorefrontClient["graphql"];
-  return { ...storefront, graphql };
-}
 
 type ShopData = StorefrontApi.ResultOf<typeof SHOP_QUERY>["shop"];
 type HomeQueryData = StorefrontApi.ResultOf<typeof HOME_QUERY>;

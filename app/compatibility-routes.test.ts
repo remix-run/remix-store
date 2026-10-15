@@ -279,34 +279,6 @@ describe("Shopify compatibility routes", () => {
     assert.equal(external.status, 404);
     assert.equal(external.headers.get("Location"), null);
   });
-
-  it("caches merchant redirect lookups like the React Router storefront", async (t) => {
-    let now = Date.now();
-    t.mock.method(Date, "now", () => now);
-    t.mock.method(console, "error", () => {});
-    let shopifyAvailable = true;
-    let app = createTestApp(
-      createStorefrontFetch({
-        RemixAnalyticsShop: analyticsShopData,
-        RemixNavigation: navigationData,
-        redirects() {
-          if (!shopifyAvailable) throw new TypeError("Shopify unavailable");
-          return {
-            urlRedirects: { edges: [{ node: { target: "/collections/all" } }] },
-          };
-        },
-      }),
-    );
-
-    let first = await app.fetch(new Request(`${origin}/old-catalog`));
-    shopifyAvailable = false;
-    now += 60 * 60 * 1000;
-    let anHourLater = await app.fetch(new Request(`${origin}/old-catalog`));
-
-    assert.equal(first.status, 301);
-    assert.equal(anHourLater.status, 301);
-    assert.equal(anHourLater.headers.get("Location"), "/collections/all");
-  });
 });
 
 describe("discount compatibility links", () => {
