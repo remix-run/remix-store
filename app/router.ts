@@ -63,7 +63,7 @@ function errorPages(): Middleware {
       let renderPage = context.get(Renderer) as (
         node: RemixNode,
         init?: ResponseInit,
-      ) => Response;
+      ) => Promise<Response>;
       return renderPage(createElement(ErrorPage, {}), { status: 500 });
     }
   };

@@ -10,19 +10,9 @@ import type { RemixNode } from "remix/component";
 import type { Assets } from "../assets.ts";
 import { runtimeDispatch } from "../runtime.ts";
 
-import {
-  FALLBACK_FOOTER_MENU,
-  FALLBACK_NAVIGATION_MENU,
-} from "../data/storefront.ts";
 import { US_MARKET } from "../lib/public/market.ts";
 import { MarketConfig } from "./market.tsx";
-import {
-  AnalyticsShopConfig,
-  CartInitialDataConfig,
-  FooterMenuConfig,
-  NavigationMenuConfig,
-  StoreWideSaleConfig,
-} from "./storefront.ts";
+import { EMPTY_SHELL_DATA, ShellDataConfig } from "./storefront.ts";
 import {
   DocumentAssetsProvider,
   type DocumentAssets,
@@ -53,22 +43,17 @@ export function render(options: RenderOptions) {
       // Capture the upstream renderer before renderWith installs our wrapper.
       let renderNode = context.get(Renderer) as RenderFunction;
 
-      return function renderPage(node: RemixNode, init?: ResponseInit) {
-        let navigationMenu =
-          getContextValue(context, NavigationMenuConfig) ??
-          FALLBACK_NAVIGATION_MENU;
-        let footerMenu =
-          getContextValue(context, FooterMenuConfig) ?? FALLBACK_FOOTER_MENU;
-        let storeWideSale =
-          getContextValue(context, StoreWideSaleConfig) ?? null;
-        let cartInitialData = getContextValue(
-          context,
-          CartInitialDataConfig,
-        ) ?? {
-          cart: null,
-        };
-        let analyticsShop =
-          getContextValue(context, AnalyticsShopConfig) ?? null;
+      return async function renderPage(node: RemixNode, init?: ResponseInit) {
+        // Routes rendered before the storefront middleware, such as unsupported
+        // market paths, have no shell data and render the fallback shell.
+        let {
+          analyticsShop,
+          cartInitialData,
+          footerMenu,
+          navigationMenu,
+          storeWideSale,
+        } =
+          (await getContextValue(context, ShellDataConfig)) ?? EMPTY_SHELL_DATA;
         let market = getContextValue(context, MarketConfig) ?? US_MARKET;
         let headers = new Headers(init?.headers);
         // HTML contains request-scoped Storefront data and must not be cached.

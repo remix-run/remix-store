@@ -35,7 +35,8 @@ export function createRootController(options: RootControllerOptions = {}) {
           />,
         );
       },
-      async cart({ cartInitialData, market, render, request }) {
+      async cart({ market, render, request, shellData }) {
+        let { cartInitialData } = await shellData;
         return render(
           <CartPage
             canonicalUrl={

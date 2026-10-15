@@ -40,18 +40,31 @@ export interface StorefrontOptions {
   fetch?: typeof globalThis.fetch;
 }
 
+/** Request-scoped data every page shell renders: menus, sale, cart, analytics. */
+export interface StorefrontShellData {
+  analyticsShop: AnalyticsShop | null;
+  cartInitialData: CartInitialData;
+  footerMenu: NavigationMenuData;
+  navigationMenu: NavigationMenuData;
+  storeWideSale: StoreWideSaleData | null;
+}
+
+export const EMPTY_SHELL_DATA: StorefrontShellData = {
+  analyticsShop: null,
+  cartInitialData: { cart: null },
+  footerMenu: FALLBACK_FOOTER_MENU,
+  navigationMenu: FALLBACK_NAVIGATION_MENU,
+  storeWideSale: null,
+};
+
 export const StorefrontClient = createContextKey<AppStorefrontClient>();
-export const NavigationMenuConfig = createContextKey<NavigationMenuData>();
-export const FooterMenuConfig = createContextKey<NavigationMenuData>();
-export const StoreWideSaleConfig = createContextKey<StoreWideSaleData | null>();
-export const CartInitialDataConfig = createContextKey<CartInitialData>();
-export const AnalyticsShopConfig = createContextKey<AnalyticsShop | null>();
+/**
+ * Shell data starts loading before the route runs, so controllers query their
+ * own data in parallel instead of after it. The renderer awaits it.
+ */
+export const ShellDataConfig = createContextKey<Promise<StorefrontShellData>>();
 const storefrontProperty = { property: "storefrontClient" } as const;
-const navigationMenuProperty = { property: "navigationMenu" } as const;
-const footerMenuProperty = { property: "footerMenu" } as const;
-const storeWideSaleProperty = { property: "storeWideSale" } as const;
-const cartInitialDataProperty = { property: "cartInitialData" } as const;
-const analyticsShopProperty = { property: "analyticsShop" } as const;
+const shellDataProperty = { property: "shellData" } as const;
 
 export function storefront(options: StorefrontOptions = {}): Middleware<
   readonly [
@@ -61,29 +74,9 @@ export function storefront(options: StorefrontOptions = {}): Middleware<
       property: "storefrontClient";
     },
     {
-      key: typeof NavigationMenuConfig;
-      value: NavigationMenuData;
-      property: "navigationMenu";
-    },
-    {
-      key: typeof FooterMenuConfig;
-      value: NavigationMenuData;
-      property: "footerMenu";
-    },
-    {
-      key: typeof StoreWideSaleConfig;
-      value: StoreWideSaleData | null;
-      property: "storeWideSale";
-    },
-    {
-      key: typeof CartInitialDataConfig;
-      value: CartInitialData;
-      property: "cartInitialData";
-    },
-    {
-      key: typeof AnalyticsShopConfig;
-      value: AnalyticsShop | null;
-      property: "analyticsShop";
+      key: typeof ShellDataConfig;
+      value: Promise<StorefrontShellData>;
+      property: "shellData";
     },
   ]
 > {
@@ -159,27 +152,15 @@ export function storefront(options: StorefrontOptions = {}): Middleware<
 
     let seoRoute = matchSeoRoute(context.url);
     if (seoRoute) {
-      let analyticsShop =
+      let shellData =
         seoRoute === routes.seo.robots
-          ? await queryAnalyticsShop(
+          ? queryAnalyticsShop(
               storefrontClient,
               storefrontId ?? "0",
               normalizeStoreDomain(storeDomain),
-            )
-          : null;
-      context.set(
-        NavigationMenuConfig,
-        FALLBACK_NAVIGATION_MENU,
-        navigationMenuProperty,
-      );
-      context.set(FooterMenuConfig, FALLBACK_FOOTER_MENU, footerMenuProperty);
-      context.set(StoreWideSaleConfig, null, storeWideSaleProperty);
-      context.set(
-        CartInitialDataConfig,
-        { cart: null },
-        cartInitialDataProperty,
-      );
-      context.set(AnalyticsShopConfig, analyticsShop, analyticsShopProperty);
+            ).then((analyticsShop) => ({ ...EMPTY_SHELL_DATA, analyticsShop }))
+          : Promise.resolve(EMPTY_SHELL_DATA);
+      context.set(ShellDataConfig, shellData, shellDataProperty);
 
       return applyResponseHeaders(requestContext, await next());
     }
@@ -248,22 +229,14 @@ export function storefront(options: StorefrontOptions = {}): Middleware<
       isProductGridFragment(context.url)
     ) {
       context.set(
-        NavigationMenuConfig,
-        FALLBACK_NAVIGATION_MENU,
-        navigationMenuProperty,
+        ShellDataConfig,
+        Promise.resolve(EMPTY_SHELL_DATA),
+        shellDataProperty,
       );
-      context.set(FooterMenuConfig, FALLBACK_FOOTER_MENU, footerMenuProperty);
-      context.set(StoreWideSaleConfig, null, storeWideSaleProperty);
-      context.set(
-        CartInitialDataConfig,
-        { cart: null },
-        cartInitialDataProperty,
-      );
-      context.set(AnalyticsShopConfig, null, analyticsShopProperty);
       return applyResponseHeaders(requestContext, await next());
     }
 
-    let [shellMenus, cartInitialData, analyticsShop] = await Promise.all([
+    let shellData = Promise.all([
       queryShellMenus(storefrontClient, storeDomain),
       getCartData(context.request, storefrontClient),
       queryAnalyticsShop(
@@ -271,26 +244,24 @@ export function storefront(options: StorefrontOptions = {}): Middleware<
         storefrontId ?? "0",
         normalizeStoreDomain(storeDomain),
       ),
-    ]);
-    context.set(
-      NavigationMenuConfig,
-      shellMenus.navigationMenu,
-      navigationMenuProperty,
+    ]).then(
+      ([shellMenus, cartInitialData, analyticsShop]): StorefrontShellData => ({
+        analyticsShop,
+        cartInitialData,
+        footerMenu: shellMenus.footerMenu,
+        navigationMenu: shellMenus.navigationMenu,
+        storeWideSale: shellMenus.storeWideSale,
+      }),
     );
-    context.set(FooterMenuConfig, shellMenus.footerMenu, footerMenuProperty);
-    context.set(
-      StoreWideSaleConfig,
-      shellMenus.storeWideSale,
-      storeWideSaleProperty,
-    );
-    context.set(
-      CartInitialDataConfig,
-      cartInitialData,
-      cartInitialDataProperty,
-    );
-    context.set(AnalyticsShopConfig, analyticsShop, analyticsShopProperty);
+    // Shell queries only reject when the request aborts. Observe that here so
+    // a route that returns without rendering cannot leave it unhandled.
+    shellData.catch(() => {});
+    context.set(ShellDataConfig, shellData, shellDataProperty);
 
     let response = await next();
+    // Finish every Shopify query before applying its response headers, as
+    // when the shell loaded before the route.
+    await shellData;
     if (response.status === 404) {
       response =
         (await handleShopifyRedirects({
