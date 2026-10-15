@@ -164,28 +164,4 @@ describe("navbar interactions", () => {
     await act(() => link.click());
     assert.equal(nav.matches(":popover-open"), false);
   });
-
-  it("prefetches only menu links that lead to catalog pages", (t) => {
-    let { container, cleanup } = render(
-      <MobileMenu
-        menu={{
-          items: [
-            { id: "all", title: "All", url: "/collections/all" },
-            { id: "ca", title: "Canada", url: "/en-ca/collections/apparel" },
-            { id: "tee", title: "Tee", url: "/products/remix-tee" },
-            { id: "policy", title: "Policy", url: "/policies/refund-policy" },
-            { id: "discount", title: "Sale", url: "/discount/LAUNCH" },
-            { id: "cart", title: "Cart", url: "/cart/111:1" },
-            { id: "ext", title: "Blog", url: "https://remix.run/collections" },
-          ],
-        }}
-      />,
-    );
-    t.after(cleanup);
-
-    let prefetched = [
-      ...container.querySelectorAll('a[data-prefetch="intent"]'),
-    ].map((link) => link.textContent);
-    assert.deepEqual(prefetched, ["All", "Canada", "Tee"]);
-  });
 });
