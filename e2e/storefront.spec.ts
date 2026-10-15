@@ -369,10 +369,24 @@ test("a bare product URL shows its selected options without a new history entry"
 }) => {
   let hydrated = () =>
     page.waitForFunction(() => !document.getElementById("rmx-data"));
+  // A Remix navigation stays in navigation.transition until it finishes.
+  let navigationSettled = () =>
+    page.waitForFunction(() => !window.navigation.transition);
+  let pageRequests: string[] = [];
+  page.on("request", (request) => {
+    if (request.headers()["x-remix-frame"] !== "true") return;
+    let url = new URL(request.url());
+    if (url.pathname.startsWith("/products/")) {
+      pageRequests.push(url.pathname + url.search);
+    }
+  });
 
   await page.goto("/products/sized-product");
   await expect(page).toHaveURL(/\/products\/sized-product\?Size=Small$/);
   expect(await page.evaluate(() => history.length)).toBe(2);
+  // The page already shows the variant, so only the URL changes.
+  await navigationSettled();
+  expect(pageRequests).toEqual([]);
 
   // Back to the rewritten entry shows the product again, not the next page.
   await page
@@ -383,6 +397,34 @@ test("a bare product URL shows its selected options without a new history entry"
     page.getByRole("heading", { level: 1, name: "All Products" }),
   ).toBeVisible();
   await page.goBack();
+  await expect(page).toHaveURL(/\/products\/sized-product\?Size=Small$/);
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Sized product" }),
+  ).toBeVisible();
+
+  // A client navigation to a bare product URL requests the page once, then
+  // only rewrites the URL, and the rewritten entry still works with history.
+  await page.goto("/collections/all");
+  await hydrated();
+  pageRequests.length = 0;
+  await page.evaluate(() => {
+    let link = document.createElement("a");
+    link.href = "/products/sized-product";
+    link.textContent = "Sized product card";
+    document.querySelector("main")?.append(link);
+  });
+  await page.getByRole("link", { name: "Sized product card" }).click();
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Sized product" }),
+  ).toBeVisible();
+  await expect(page).toHaveURL(/\/products\/sized-product\?Size=Small$/);
+  await navigationSettled();
+  expect(pageRequests).toEqual(["/products/sized-product"]);
+  await page.goBack();
+  await expect(
+    page.getByRole("heading", { level: 1, name: "All Products" }),
+  ).toBeVisible();
+  await page.goForward();
   await expect(page).toHaveURL(/\/products\/sized-product\?Size=Small$/);
   await expect(
     page.getByRole("heading", { level: 1, name: "Sized product" }),

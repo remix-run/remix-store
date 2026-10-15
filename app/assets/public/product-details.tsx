@@ -24,6 +24,7 @@ import { Icon } from "../../ui/public/icon.tsx";
 import { RichText } from "../../ui/public/rich-text.tsx";
 import { getBrowserCartStore } from "./cart-store.ts";
 import { ProductGallery } from "./product-gallery.tsx";
+import { navigationSettled, replaceUrl } from "./replace-url.ts";
 import { ExpressShopPayButton } from "./shop-pay-button.tsx";
 import { SubscribeForm } from "./subscribe-form.tsx";
 
@@ -90,7 +91,7 @@ export const ProductDetails = clientEntry(
         hydrated = true;
         state = store.getState();
         handle.update();
-        showSelectedVariantInUrl();
+        void showSelectedVariantInUrl();
       });
     }
 
@@ -107,7 +108,7 @@ export const ProductDetails = clientEntry(
         if (signal.aborted || productIdentity(current) !== identity) return;
         storeIdentity = identity;
         store.hydrate(current);
-        showSelectedVariantInUrl();
+        void showSelectedVariantInUrl();
       });
     }
 
@@ -119,10 +120,19 @@ export const ProductDetails = clientEntry(
     }
 
     // Like production, a bare product URL gains the selected variant's
-    // options so it can be shared.
-    function showSelectedVariantInUrl() {
-      if (location.search) return;
+    // options so it can be shared. The page already shows that variant, so
+    // only the URL changes; a Remix navigation would fetch the page again.
+    async function showSelectedVariantInUrl() {
+      let identity = productIdentity(handle.props.product);
+      await navigationSettled();
       let { product } = handle.props;
+      if (
+        handle.signal.aborted ||
+        location.search ||
+        productIdentity(product) !== identity
+      ) {
+        return;
+      }
       let variant = product.selectedOrFirstAvailableVariant;
       if (
         !variant ||
@@ -137,8 +147,9 @@ export const ProductDetails = clientEntry(
         "",
         market.pathPrefix,
       );
-      if (href !== location.pathname) {
-        navigate(href, { history: "replace", resetScroll: false });
+      // Another navigation may have left this product while we waited.
+      if (new URL(href, location.href).pathname === location.pathname) {
+        replaceUrl(href);
       }
     }
 
