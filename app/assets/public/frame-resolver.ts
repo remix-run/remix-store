@@ -1,6 +1,94 @@
 import type { ResolveFrameOptions } from "remix/component";
 
+/**
+ * How long a prefetched page stays usable. Pages are `private, no-store`, so
+ * the browser's HTTP cache can't hold them; this is the only reuse.
+ */
+const PREFETCH_TTL_MS = 30_000;
+
+/** The page the visitor most recently signaled intent to open. */
+let prefetch:
+  | {
+      key: string;
+      expiresAt: number;
+      controller: AbortController;
+      response: Promise<Response>;
+    }
+  | undefined;
+
+/**
+ * Starts the request a navigation to `url` would make, for the next matching
+ * untargeted GET request to reuse. Replaces an unused earlier prefetch.
+ */
+export function prefetchFrame(url: URL): void {
+  let key = prefetchKey(url);
+  if (prefetch?.key === key && prefetch.expiresAt > Date.now()) return;
+
+  prefetch?.controller.abort();
+  let controller = new AbortController();
+  let response = requestFrame(url, { signal: controller.signal });
+  // A failed prefetch falls back to a normal request when it's used.
+  response.catch(() => {});
+  prefetch = {
+    key,
+    expiresAt: Date.now() + PREFETCH_TTL_MS,
+    controller,
+    response,
+  };
+}
+
 export async function resolveFrameResponse(
+  url: URL,
+  options?: ResolveFrameOptions,
+): Promise<Response> {
+  let method = options?.method?.toUpperCase() ?? "GET";
+  if (method !== "GET") {
+    // A submission through Remix may change what the prefetched page shows.
+    prefetch?.controller.abort();
+    prefetch = undefined;
+  } else if (!options?.target && !options?.formData) {
+    let prefetched = await takePrefetch(url, options?.signal);
+    if (prefetched) return prefetched;
+  }
+
+  return requestFrame(url, options);
+}
+
+/**
+ * Returns the prefetched response for `url` if it succeeded. Failed requests
+ * and error pages fall back to a normal request, which gets the current page;
+ * a body that fails while streaming is handled like any navigation's.
+ */
+async function takePrefetch(
+  url: URL,
+  signal: AbortSignal | undefined,
+): Promise<Response | undefined> {
+  let entry = prefetch;
+  if (entry?.key !== prefetchKey(url)) return undefined;
+
+  // A response body can be read once, so a prefetch serves one request.
+  prefetch = undefined;
+  if (entry.expiresAt <= Date.now() || signal?.aborted) {
+    entry.controller.abort();
+    return undefined;
+  }
+  signal?.addEventListener("abort", () => entry.controller.abort(), {
+    once: true,
+  });
+
+  let response = await entry.response.catch(() => undefined);
+  if (response?.ok) return response;
+  entry.controller.abort();
+  return undefined;
+}
+
+function prefetchKey(url: URL): string {
+  let key = new URL(url);
+  key.hash = "";
+  return key.href;
+}
+
+async function requestFrame(
   url: URL,
   options?: ResolveFrameOptions,
 ): Promise<Response> {

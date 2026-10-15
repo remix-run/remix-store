@@ -272,6 +272,7 @@ function CartTrigger(
       return (
         <a
           href={collectionHref("all", handle.props.pathPrefix)}
+          data-prefetch="intent"
           mix={[triggerBaseStyle, shopTriggerStyle]}
         >
           <CartIcon />

@@ -35,6 +35,8 @@ export type StorefrontQueryResult<T> =
 
 export type NavigationMenuItemData = SerializableObject & {
   id: string;
+  /** Whether the link may be prefetched on intent. Set by the navbar. */
+  prefetch?: boolean;
   title: string;
   url: string;
 };

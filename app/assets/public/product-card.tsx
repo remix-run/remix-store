@@ -29,6 +29,7 @@ export function ProductCard(
             `/products/${encodeURIComponent(product.handle)}`,
             pathPrefix ?? "",
           )}
+          data-prefetch="intent"
           mix={linkStyle}
         >
           <div

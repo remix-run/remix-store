@@ -24,7 +24,7 @@ import { Icon } from "../../ui/public/icon.tsx";
 import { RichText } from "../../ui/public/rich-text.tsx";
 import { getBrowserCartStore } from "./cart-store.ts";
 import { ProductGallery } from "./product-gallery.tsx";
-import { navigationSettled, replaceUrl } from "./replace-url.ts";
+import { navigationSettled, replaceUrl } from "./remix-navigation.ts";
 import { ExpressShopPayButton } from "./shop-pay-button.tsx";
 import { SubscribeForm } from "./subscribe-form.tsx";
 

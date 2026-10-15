@@ -1,10 +1,16 @@
 import { css, type Handle } from "remix/component";
+import { createMultiMatcher } from "remix/route-pattern/match";
 
 import { CartShell } from "../assets/public/cart.tsx";
 import { MobileMenu, RemixLogo } from "../assets/public/navbar.tsx";
 import type { CartInitialData } from "../data/cart.ts";
-import { marketPath, type ActiveMarket } from "../lib/public/market.ts";
+import {
+  marketPath,
+  resolveMarketPath,
+  type ActiveMarket,
+} from "../lib/public/market.ts";
 import { isCurrentPage } from "../lib/public/navigation.ts";
+import { routes } from "../routes.ts";
 import type {
   NavigationMenuData,
   StoreWideSaleData,
@@ -20,56 +26,87 @@ interface NavbarProps {
 }
 
 export function Navbar(handle: Handle<NavbarProps>) {
-  return () => (
-    <>
-      {handle.props.storeWideSale ? (
-        <StoreWideSaleMarquee
-          locale={handle.props.market.locale}
-          sale={handle.props.storeWideSale}
-        />
-      ) : null}
-      <header mix={navbarStyle}>
-        <a
-          href={marketPath("/", handle.props.market.pathPrefix)}
-          aria-label="Remix Store home"
-          mix={homeLinkStyle}
-        >
-          <RemixLogo />
-        </a>
+  return () => {
+    let menu = {
+      items: handle.props.menu.items.map((item) => ({
+        ...item,
+        prefetch: isCatalogLink(item.url),
+      })),
+    };
 
-        <nav aria-label="Main navigation" mix={desktopNavStyle}>
-          <ul>
-            {handle.props.menu.items.map((item) => (
-              <li key={item.id}>
-                <a
-                  href={item.url}
-                  aria-current={
-                    isCurrentPage(item.url, handle.props.currentPath)
-                      ? "page"
-                      : undefined
-                  }
-                >
-                  {item.title}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </nav>
+    return (
+      <>
+        {handle.props.storeWideSale ? (
+          <StoreWideSaleMarquee
+            locale={handle.props.market.locale}
+            sale={handle.props.storeWideSale}
+          />
+        ) : null}
+        <header mix={navbarStyle}>
+          <a
+            href={marketPath("/", handle.props.market.pathPrefix)}
+            aria-label="Remix Store home"
+            data-prefetch="intent"
+            mix={homeLinkStyle}
+          >
+            <RemixLogo />
+          </a>
 
-        <div mix={actionsStyle}>
-          <MobileMenu
-            currentPath={handle.props.currentPath}
-            menu={handle.props.menu}
-          />
-          <CartShell
-            initialData={handle.props.cartInitialData}
-            automaticDiscountLabel={handle.props.storeWideSale?.title}
-            market={handle.props.market}
-          />
-        </div>
-      </header>
-    </>
-  );
+          <nav aria-label="Main navigation" mix={desktopNavStyle}>
+            <ul>
+              {menu.items.map((item) => (
+                <li key={item.id}>
+                  <a
+                    href={item.url}
+                    data-prefetch={item.prefetch ? "intent" : undefined}
+                    aria-current={
+                      isCurrentPage(item.url, handle.props.currentPath)
+                        ? "page"
+                        : undefined
+                    }
+                  >
+                    {item.title}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+
+          <div mix={actionsStyle}>
+            <MobileMenu currentPath={handle.props.currentPath} menu={menu} />
+            <CartShell
+              initialData={handle.props.cartInitialData}
+              automaticDiscountLabel={handle.props.storeWideSale?.title}
+              market={handle.props.market}
+            />
+          </div>
+        </header>
+      </>
+    );
+  };
+}
+
+const catalogRoutes = createMultiMatcher<true>();
+for (let route of [
+  routes.collections.index,
+  routes.collections.show,
+  routes.products.show,
+]) {
+  catalogRoutes.add(route.pattern, true);
+}
+
+/**
+ * Whether a link leads to a catalog page, which is safe to prefetch. Menus
+ * come from Shopify and may link to routes with side effects, such as
+ * discount codes or cart permalinks.
+ */
+function isCatalogLink(href: string): boolean {
+  let url = new URL(href, "http://localhost");
+  if (url.origin !== "http://localhost") return false;
+  let resolution = resolveMarketPath(url.pathname);
+  if (resolution.kind !== "market") return false;
+  url.pathname = resolution.pathname;
+  return catalogRoutes.match(url) != null;
 }
 
 const navbarStyle = css({
