@@ -137,6 +137,37 @@ test("keeps product details when navigating from the home page", async ({
   ).toBeVisible();
 });
 
+test("a hovered product card's click shows the prefetched page", async ({
+  page,
+}) => {
+  let productRequests: string[] = [];
+  page.on("request", (request) => {
+    let { pathname } = new URL(request.url());
+    if (
+      request.headers()["x-remix-frame"] === "true" &&
+      pathname.startsWith("/products/")
+    ) {
+      productRequests.push(pathname);
+    }
+  });
+  await page.goto("/collections/all");
+  await page.waitForFunction(() => !document.getElementById("rmx-data"));
+  let card = page.locator('main a[href="/products/test-product"]');
+
+  let prefetched = page.waitForResponse(
+    (response) => new URL(response.url()).pathname === "/products/test-product",
+  );
+  await card.hover();
+  await prefetched;
+  await card.click();
+
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Test product" }),
+  ).toBeVisible();
+  await page.waitForFunction(() => !window.navigation.transition);
+  expect(productRequests).toEqual(["/products/test-product"]);
+});
+
 test("updates the product grid when navigating between collections", async ({
   page,
 }) => {
