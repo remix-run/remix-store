@@ -22,6 +22,7 @@ import {
 import { ErrorPage, NotFoundPage } from "./actions/pages.tsx";
 import { market } from "./middleware/market.tsx";
 import { render } from "./middleware/render.tsx";
+import { serverTiming } from "./middleware/server-timing.ts";
 import { storefront, type StorefrontOptions } from "./middleware/storefront.ts";
 import { routes } from "./routes.ts";
 import { fetchWithRuntime, type Runtime } from "./runtime.ts";
@@ -38,6 +39,7 @@ const passThrough: Middleware = (_context, next) => next();
 
 function createAppMiddleware(options: AppOptions) {
   return createMiddleware(
+    serverTiming(),
     options.platform ?? passThrough,
     ...options.renderer,
     errorPages(),

@@ -12,6 +12,7 @@ import { runtimeDispatch } from "../runtime.ts";
 
 import { US_MARKET } from "../lib/public/market.ts";
 import { MarketConfig } from "./market.tsx";
+import { ServerTiming, timeFirstChunk } from "./server-timing.ts";
 import { FALLBACK_SHELL_DATA, ShellDataConfig } from "./storefront.ts";
 import {
   DocumentAssetsProvider,
@@ -53,7 +54,8 @@ export function render(options: RenderOptions) {
         let headers = new Headers(init?.headers);
         // HTML contains request-scoped Storefront data and must not be cached.
         headers.set("Cache-Control", "private, no-store");
-        return renderNode(
+        let renderStart = performance.now();
+        let response = renderNode(
           <DocumentAssetsProvider {...options.documentAssets}>
             <ShellDataProvider
               {...shellData}
@@ -64,6 +66,11 @@ export function render(options: RenderOptions) {
             </ShellDataProvider>
           </DocumentAssetsProvider>,
           { ...init, headers },
+        );
+        return timeFirstChunk(
+          response,
+          getContextValue(context, ServerTiming),
+          renderStart,
         );
       };
     }),
