@@ -1,0 +1,819 @@
+{
+  "date": "2026-10-16T14:49:48.665Z",
+  "machine": {
+    "cpu": "Apple M4 Pro",
+    "logicalCpus": 12,
+    "memoryGiB": 48,
+    "platform": "darwin 25.6.0 arm64",
+    "node": "v24.15.0",
+    "wrk": "wrk 4.2.0 [kqueue] Copyright (C) 2012 Will Glozer"
+  },
+  "config": {
+    "rounds": 5,
+    "warmup": 3,
+    "duration": 10,
+    "threads": 2,
+    "connections": 10
+  },
+  "variants": [
+    {
+      "name": "remix-3.0.0",
+      "dir": "/private/var/folders/8l/rjzfcr157q36w674qgbz46p80000gn/T/opencode/remix-store-3.0.0",
+      "version": "3.0.0"
+    },
+    {
+      "name": "preview",
+      "dir": "/private/var/folders/8l/rjzfcr157q36w674qgbz46p80000gn/T/opencode/remix-store-preview",
+      "version": "3.0.0 (7f90015111)"
+    },
+    {
+      "name": "preview+mixins",
+      "dir": "/Users/brookslybrand/code/remix-store",
+      "version": "3.0.0 (7f90015111)"
+    }
+  ],
+  "pages": {
+    "remix-3.0.0": {
+      "home": 196375,
+      "collection": 171553,
+      "product": 159064
+    },
+    "preview": {
+      "home": 203273,
+      "collection": 178451,
+      "product": 166280
+    },
+    "preview+mixins": {
+      "home": 203273,
+      "collection": 178451,
+      "product": 166280
+    }
+  },
+  "samples": [
+    {
+      "round": 1,
+      "variant": "remix-3.0.0",
+      "page": "home",
+      "requestsPerSecond": 115.68,
+      "latencyMs": {
+        "p50": 85.22,
+        "p75": 88.13,
+        "p90": 92.8,
+        "p99": 108.96
+      },
+      "requests": 1165,
+      "errors": 0,
+      "rssPeakMiB": 755.640625,
+      "rssEndMiB": 755.640625,
+      "loadAverage": 8.2294921875
+    },
+    {
+      "round": 1,
+      "variant": "remix-3.0.0",
+      "page": "collection",
+      "requestsPerSecond": 120.55,
+      "latencyMs": {
+        "p50": 82.15,
+        "p75": 84.56,
+        "p90": 88.65,
+        "p99": 99.38
+      },
+      "requests": 1214,
+      "errors": 0,
+      "rssPeakMiB": 758.40625,
+      "rssEndMiB": 756.578125,
+      "loadAverage": 8.072265625
+    },
+    {
+      "round": 1,
+      "variant": "remix-3.0.0",
+      "page": "product",
+      "requestsPerSecond": 114.14,
+      "latencyMs": {
+        "p50": 86.41,
+        "p75": 89.67,
+        "p90": 96.35,
+        "p99": 111.3
+      },
+      "requests": 1150,
+      "errors": 0,
+      "rssPeakMiB": 762.625,
+      "rssEndMiB": 761.984375,
+      "loadAverage": 8.56689453125
+    },
+    {
+      "round": 1,
+      "variant": "preview",
+      "page": "home",
+      "requestsPerSecond": 372.88,
+      "latencyMs": {
+        "p50": 26.63,
+        "p75": 27.94,
+        "p90": 29.35,
+        "p99": 35.81
+      },
+      "requests": 3746,
+      "errors": 0,
+      "rssPeakMiB": 1364.421875,
+      "rssEndMiB": 1364.421875,
+      "loadAverage": 8.8359375
+    },
+    {
+      "round": 1,
+      "variant": "preview",
+      "page": "collection",
+      "requestsPerSecond": 467.19,
+      "latencyMs": {
+        "p50": 21.31,
+        "p75": 22.64,
+        "p90": 23.96,
+        "p99": 27.4
+      },
+      "requests": 4688,
+      "errors": 0,
+      "rssPeakMiB": 2080,
+      "rssEndMiB": 2079.328125,
+      "loadAverage": 7.7763671875
+    },
+    {
+      "round": 1,
+      "variant": "preview",
+      "page": "product",
+      "requestsPerSecond": 550,
+      "latencyMs": {
+        "p50": 17.82,
+        "p75": 19.54,
+        "p90": 20.57,
+        "p99": 25.8
+      },
+      "requests": 5519,
+      "errors": 0,
+      "rssPeakMiB": 2576.1875,
+      "rssEndMiB": 2573.5625,
+      "loadAverage": 7.275390625
+    },
+    {
+      "round": 1,
+      "variant": "preview+mixins",
+      "page": "home",
+      "requestsPerSecond": 372.72,
+      "latencyMs": {
+        "p50": 26.61,
+        "p75": 28,
+        "p90": 29.28,
+        "p99": 36.45
+      },
+      "requests": 3753,
+      "errors": 0,
+      "rssPeakMiB": 1339.8125,
+      "rssEndMiB": 1337.75,
+      "loadAverage": 7.34765625
+    },
+    {
+      "round": 1,
+      "variant": "preview+mixins",
+      "page": "collection",
+      "requestsPerSecond": 469.34,
+      "latencyMs": {
+        "p50": 21.25,
+        "p75": 22.62,
+        "p90": 23.79,
+        "p99": 27.29
+      },
+      "requests": 4719,
+      "errors": 0,
+      "rssPeakMiB": 2095.953125,
+      "rssEndMiB": 2095.953125,
+      "loadAverage": 6.98583984375
+    },
+    {
+      "round": 1,
+      "variant": "preview+mixins",
+      "page": "product",
+      "requestsPerSecond": 556.47,
+      "latencyMs": {
+        "p50": 17.55,
+        "p75": 19.2,
+        "p90": 20.26,
+        "p99": 28.09
+      },
+      "requests": 5593,
+      "errors": 0,
+      "rssPeakMiB": 2414.375,
+      "rssEndMiB": 2413.59375,
+      "loadAverage": 6.57568359375
+    },
+    {
+      "round": 2,
+      "variant": "preview+mixins",
+      "page": "home",
+      "requestsPerSecond": 374.27,
+      "latencyMs": {
+        "p50": 26.52,
+        "p75": 27.95,
+        "p90": 29.35,
+        "p99": 35.1
+      },
+      "requests": 3769,
+      "errors": 0,
+      "rssPeakMiB": 1523.921875,
+      "rssEndMiB": 1521.5625,
+      "loadAverage": 6.2568359375
+    },
+    {
+      "round": 2,
+      "variant": "preview+mixins",
+      "page": "collection",
+      "requestsPerSecond": 460.52,
+      "latencyMs": {
+        "p50": 21.53,
+        "p75": 22.96,
+        "p90": 24.23,
+        "p99": 31.32
+      },
+      "requests": 4633,
+      "errors": 0,
+      "rssPeakMiB": 2211.59375,
+      "rssEndMiB": 2209.78125,
+      "loadAverage": 5.83544921875
+    },
+    {
+      "round": 2,
+      "variant": "preview+mixins",
+      "page": "product",
+      "requestsPerSecond": 539.4,
+      "latencyMs": {
+        "p50": 18.17,
+        "p75": 19.79,
+        "p90": 21.21,
+        "p99": 30.1
+      },
+      "requests": 5426,
+      "errors": 0,
+      "rssPeakMiB": 2541.3125,
+      "rssEndMiB": 2539.078125,
+      "loadAverage": 5.76123046875
+    },
+    {
+      "round": 2,
+      "variant": "preview",
+      "page": "home",
+      "requestsPerSecond": 373.23,
+      "latencyMs": {
+        "p50": 26.52,
+        "p75": 27.93,
+        "p90": 29.32,
+        "p99": 39.15
+      },
+      "requests": 3760,
+      "errors": 0,
+      "rssPeakMiB": 1896.1875,
+      "rssEndMiB": 1894.46875,
+      "loadAverage": 5.4326171875
+    },
+    {
+      "round": 2,
+      "variant": "preview",
+      "page": "collection",
+      "requestsPerSecond": 458.3,
+      "latencyMs": {
+        "p50": 21.72,
+        "p75": 23.19,
+        "p90": 24.5,
+        "p99": 28.15
+      },
+      "requests": 4609,
+      "errors": 0,
+      "rssPeakMiB": 2820.59375,
+      "rssEndMiB": 2820.59375,
+      "loadAverage": 5.51318359375
+    },
+    {
+      "round": 2,
+      "variant": "preview",
+      "page": "product",
+      "requestsPerSecond": 543.31,
+      "latencyMs": {
+        "p50": 17.92,
+        "p75": 19.84,
+        "p90": 20.98,
+        "p99": 31.12
+      },
+      "requests": 5466,
+      "errors": 0,
+      "rssPeakMiB": 2988.203125,
+      "rssEndMiB": 2983.59375,
+      "loadAverage": 5.76123046875
+    },
+    {
+      "round": 2,
+      "variant": "remix-3.0.0",
+      "page": "home",
+      "requestsPerSecond": 114.6,
+      "latencyMs": {
+        "p50": 85.82,
+        "p75": 89,
+        "p90": 93.87,
+        "p99": 109.47
+      },
+      "requests": 1154,
+      "errors": 0,
+      "rssPeakMiB": 805.84375,
+      "rssEndMiB": 804.421875,
+      "loadAverage": 5.74609375
+    },
+    {
+      "round": 2,
+      "variant": "remix-3.0.0",
+      "page": "collection",
+      "requestsPerSecond": 120.8,
+      "latencyMs": {
+        "p50": 82.08,
+        "p75": 84.63,
+        "p90": 88.99,
+        "p99": 101.08
+      },
+      "requests": 1216,
+      "errors": 0,
+      "rssPeakMiB": 807.90625,
+      "rssEndMiB": 806.265625,
+      "loadAverage": 5.62451171875
+    },
+    {
+      "round": 2,
+      "variant": "remix-3.0.0",
+      "page": "product",
+      "requestsPerSecond": 113.66,
+      "latencyMs": {
+        "p50": 86.83,
+        "p75": 89.51,
+        "p90": 97.36,
+        "p99": 113.18
+      },
+      "requests": 1144,
+      "errors": 0,
+      "rssPeakMiB": 810.8125,
+      "rssEndMiB": 807.25,
+      "loadAverage": 5.18359375
+    },
+    {
+      "round": 3,
+      "variant": "remix-3.0.0",
+      "page": "home",
+      "requestsPerSecond": 115.86,
+      "latencyMs": {
+        "p50": 85.39,
+        "p75": 87.96,
+        "p90": 92.8,
+        "p99": 107.74
+      },
+      "requests": 1167,
+      "errors": 0,
+      "rssPeakMiB": 730.796875,
+      "rssEndMiB": 727.421875,
+      "loadAverage": 4.8583984375
+    },
+    {
+      "round": 3,
+      "variant": "remix-3.0.0",
+      "page": "collection",
+      "requestsPerSecond": 123.46,
+      "latencyMs": {
+        "p50": 80.05,
+        "p75": 82.73,
+        "p90": 86.4,
+        "p99": 100.39
+      },
+      "requests": 1243,
+      "errors": 0,
+      "rssPeakMiB": 733.921875,
+      "rssEndMiB": 730.15625,
+      "loadAverage": 4.8603515625
+    },
+    {
+      "round": 3,
+      "variant": "remix-3.0.0",
+      "page": "product",
+      "requestsPerSecond": 116.95,
+      "latencyMs": {
+        "p50": 84.28,
+        "p75": 86.89,
+        "p90": 93.78,
+        "p99": 107.47
+      },
+      "requests": 1178,
+      "errors": 0,
+      "rssPeakMiB": 736.578125,
+      "rssEndMiB": 736.578125,
+      "loadAverage": 5.10009765625
+    },
+    {
+      "round": 3,
+      "variant": "preview",
+      "page": "home",
+      "requestsPerSecond": 379.09,
+      "latencyMs": {
+        "p50": 26.13,
+        "p75": 27.63,
+        "p90": 29.03,
+        "p99": 36.4
+      },
+      "requests": 3809,
+      "errors": 0,
+      "rssPeakMiB": 1428.4375,
+      "rssEndMiB": 1428.4375,
+      "loadAverage": 5.19482421875
+    },
+    {
+      "round": 3,
+      "variant": "preview",
+      "page": "collection",
+      "requestsPerSecond": 464.07,
+      "latencyMs": {
+        "p50": 21.43,
+        "p75": 22.84,
+        "p90": 24.15,
+        "p99": 27.38
+      },
+      "requests": 4657,
+      "errors": 0,
+      "rssPeakMiB": 2095.1875,
+      "rssEndMiB": 2095.1875,
+      "loadAverage": 5.56494140625
+    },
+    {
+      "round": 3,
+      "variant": "preview",
+      "page": "product",
+      "requestsPerSecond": 560.49,
+      "latencyMs": {
+        "p50": 17.53,
+        "p75": 19.19,
+        "p90": 20.26,
+        "p99": 27.01
+      },
+      "requests": 5619,
+      "errors": 0,
+      "rssPeakMiB": 2609.859375,
+      "rssEndMiB": 2609.859375,
+      "loadAverage": 5.419921875
+    },
+    {
+      "round": 3,
+      "variant": "preview+mixins",
+      "page": "home",
+      "requestsPerSecond": 377.67,
+      "latencyMs": {
+        "p50": 26.27,
+        "p75": 27.75,
+        "p90": 29.05,
+        "p99": 34.45
+      },
+      "requests": 3792,
+      "errors": 0,
+      "rssPeakMiB": 1420.140625,
+      "rssEndMiB": 1420.140625,
+      "loadAverage": 5.2216796875
+    },
+    {
+      "round": 3,
+      "variant": "preview+mixins",
+      "page": "collection",
+      "requestsPerSecond": 461.21,
+      "latencyMs": {
+        "p50": 21.61,
+        "p75": 23.03,
+        "p90": 24.19,
+        "p99": 27.16
+      },
+      "requests": 4629,
+      "errors": 0,
+      "rssPeakMiB": 2061.796875,
+      "rssEndMiB": 2061.796875,
+      "loadAverage": 5.41455078125
+    },
+    {
+      "round": 3,
+      "variant": "preview+mixins",
+      "page": "product",
+      "requestsPerSecond": 548.12,
+      "latencyMs": {
+        "p50": 17.89,
+        "p75": 19.57,
+        "p90": 20.7,
+        "p99": 26.18
+      },
+      "requests": 5494,
+      "errors": 0,
+      "rssPeakMiB": 2576.359375,
+      "rssEndMiB": 2576.359375,
+      "loadAverage": 5.421875
+    },
+    {
+      "round": 4,
+      "variant": "preview+mixins",
+      "page": "home",
+      "requestsPerSecond": 373.22,
+      "latencyMs": {
+        "p50": 26.62,
+        "p75": 28,
+        "p90": 29.41,
+        "p99": 36.61
+      },
+      "requests": 3747,
+      "errors": 0,
+      "rssPeakMiB": 1522.203125,
+      "rssEndMiB": 1522.203125,
+      "loadAverage": 5.02001953125
+    },
+    {
+      "round": 4,
+      "variant": "preview+mixins",
+      "page": "collection",
+      "requestsPerSecond": 460.27,
+      "latencyMs": {
+        "p50": 21.5,
+        "p75": 22.99,
+        "p90": 24.31,
+        "p99": 31.92
+      },
+      "requests": 4615,
+      "errors": 0,
+      "rssPeakMiB": 2211.140625,
+      "rssEndMiB": 2211.140625,
+      "loadAverage": 4.86279296875
+    },
+    {
+      "round": 4,
+      "variant": "preview+mixins",
+      "page": "product",
+      "requestsPerSecond": 538.29,
+      "latencyMs": {
+        "p50": 18.23,
+        "p75": 19.86,
+        "p90": 21.28,
+        "p99": 29.24
+      },
+      "requests": 5397,
+      "errors": 0,
+      "rssPeakMiB": 2582.46875,
+      "rssEndMiB": 2582.46875,
+      "loadAverage": 4.94189453125
+    },
+    {
+      "round": 4,
+      "variant": "preview",
+      "page": "home",
+      "requestsPerSecond": 371.15,
+      "latencyMs": {
+        "p50": 26.7,
+        "p75": 28.14,
+        "p90": 29.46,
+        "p99": 37.52
+      },
+      "requests": 3731,
+      "errors": 0,
+      "rssPeakMiB": 1454.109375,
+      "rssEndMiB": 1454.109375,
+      "loadAverage": 4.63623046875
+    },
+    {
+      "round": 4,
+      "variant": "preview",
+      "page": "collection",
+      "requestsPerSecond": 462.27,
+      "latencyMs": {
+        "p50": 21.57,
+        "p75": 22.88,
+        "p90": 24.1,
+        "p99": 27.16
+      },
+      "requests": 4640,
+      "errors": 0,
+      "rssPeakMiB": 2196.6875,
+      "rssEndMiB": 2196.6875,
+      "loadAverage": 4.52001953125
+    },
+    {
+      "round": 4,
+      "variant": "preview",
+      "page": "product",
+      "requestsPerSecond": 548.68,
+      "latencyMs": {
+        "p50": 17.91,
+        "p75": 19.62,
+        "p90": 20.66,
+        "p99": 25.04
+      },
+      "requests": 5507,
+      "errors": 0,
+      "rssPeakMiB": 2736.71875,
+      "rssEndMiB": 2734.75,
+      "loadAverage": 4.66845703125
+    },
+    {
+      "round": 4,
+      "variant": "remix-3.0.0",
+      "page": "home",
+      "requestsPerSecond": 115.44,
+      "latencyMs": {
+        "p50": 85.56,
+        "p75": 88.15,
+        "p90": 92.48,
+        "p99": 105.89
+      },
+      "requests": 1162,
+      "errors": 0,
+      "rssPeakMiB": 675.015625,
+      "rssEndMiB": 673.21875,
+      "loadAverage": 4.55908203125
+    },
+    {
+      "round": 4,
+      "variant": "remix-3.0.0",
+      "page": "collection",
+      "requestsPerSecond": 120.54,
+      "latencyMs": {
+        "p50": 82.13,
+        "p75": 84.46,
+        "p90": 88.32,
+        "p99": 98.99
+      },
+      "requests": 1214,
+      "errors": 0,
+      "rssPeakMiB": 705.859375,
+      "rssEndMiB": 704.4375,
+      "loadAverage": 5.30859375
+    },
+    {
+      "round": 4,
+      "variant": "remix-3.0.0",
+      "page": "product",
+      "requestsPerSecond": 114.06,
+      "latencyMs": {
+        "p50": 86.53,
+        "p75": 89.18,
+        "p90": 96.42,
+        "p99": 108.16
+      },
+      "requests": 1148,
+      "errors": 0,
+      "rssPeakMiB": 709.546875,
+      "rssEndMiB": 708.625,
+      "loadAverage": 4.931640625
+    },
+    {
+      "round": 5,
+      "variant": "remix-3.0.0",
+      "page": "home",
+      "requestsPerSecond": 115.15,
+      "latencyMs": {
+        "p50": 85.75,
+        "p75": 88.41,
+        "p90": 92.97,
+        "p99": 106.97
+      },
+      "requests": 1160,
+      "errors": 0,
+      "rssPeakMiB": 733.359375,
+      "rssEndMiB": 730.109375,
+      "loadAverage": 4.7080078125
+    },
+    {
+      "round": 5,
+      "variant": "remix-3.0.0",
+      "page": "collection",
+      "requestsPerSecond": 121.07,
+      "latencyMs": {
+        "p50": 81.81,
+        "p75": 84.51,
+        "p90": 88.39,
+        "p99": 102.73
+      },
+      "requests": 1220,
+      "errors": 0,
+      "rssPeakMiB": 732.421875,
+      "rssEndMiB": 730.875,
+      "loadAverage": 4.52587890625
+    },
+    {
+      "round": 5,
+      "variant": "remix-3.0.0",
+      "page": "product",
+      "requestsPerSecond": 114.87,
+      "latencyMs": {
+        "p50": 85.84,
+        "p75": 88.8,
+        "p90": 95.47,
+        "p99": 108.83
+      },
+      "requests": 1152,
+      "errors": 0,
+      "rssPeakMiB": 734.765625,
+      "rssEndMiB": 734.5,
+      "loadAverage": 4.82080078125
+    },
+    {
+      "round": 5,
+      "variant": "preview",
+      "page": "home",
+      "requestsPerSecond": 374.43,
+      "latencyMs": {
+        "p50": 26.52,
+        "p75": 27.87,
+        "p90": 29.29,
+        "p99": 34.64
+      },
+      "requests": 3770,
+      "errors": 0,
+      "rssPeakMiB": 1412.546875,
+      "rssEndMiB": 1412.546875,
+      "loadAverage": 5.5556640625
+    },
+    {
+      "round": 5,
+      "variant": "preview",
+      "page": "collection",
+      "requestsPerSecond": 463.32,
+      "latencyMs": {
+        "p50": 21.43,
+        "p75": 22.88,
+        "p90": 24.16,
+        "p99": 27.39
+      },
+      "requests": 4661,
+      "errors": 0,
+      "rssPeakMiB": 2093.078125,
+      "rssEndMiB": 2093.078125,
+      "loadAverage": 5.400390625
+    },
+    {
+      "round": 5,
+      "variant": "preview",
+      "page": "product",
+      "requestsPerSecond": 543.43,
+      "latencyMs": {
+        "p50": 18.02,
+        "p75": 19.6,
+        "p90": 20.98,
+        "p99": 34.36
+      },
+      "requests": 5455,
+      "errors": 0,
+      "rssPeakMiB": 2621.5625,
+      "rssEndMiB": 2619.921875,
+      "loadAverage": 5.29248046875
+    },
+    {
+      "round": 5,
+      "variant": "preview+mixins",
+      "page": "home",
+      "requestsPerSecond": 362.08,
+      "latencyMs": {
+        "p50": 27.3,
+        "p75": 28.87,
+        "p90": 30.48,
+        "p99": 39.81
+      },
+      "requests": 3636,
+      "errors": 0,
+      "rssPeakMiB": 1343.171875,
+      "rssEndMiB": 1343.171875,
+      "loadAverage": 5.02001953125
+    },
+    {
+      "round": 5,
+      "variant": "preview+mixins",
+      "page": "collection",
+      "requestsPerSecond": 451.03,
+      "latencyMs": {
+        "p50": 21.99,
+        "p75": 23.51,
+        "p90": 24.93,
+        "p99": 30.07
+      },
+      "requests": 4528,
+      "errors": 0,
+      "rssPeakMiB": 2025.328125,
+      "rssEndMiB": 2024.65625,
+      "loadAverage": 5.4638671875
+    },
+    {
+      "round": 5,
+      "variant": "preview+mixins",
+      "page": "product",
+      "requestsPerSecond": 535.56,
+      "latencyMs": {
+        "p50": 18.36,
+        "p75": 20,
+        "p90": 21.23,
+        "p99": 28.72
+      },
+      "requests": 5371,
+      "errors": 0,
+      "rssPeakMiB": 2473.375,
+      "rssEndMiB": 2467.703125,
+      "loadAverage": 6.9072265625
+    }
+  ]
+}
