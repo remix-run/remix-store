@@ -1514,10 +1514,6 @@ packages:
       redis:
         optional: true
 
-  '@remix-run/session@git+https://git@github.com:remix-run/remix.git#8bd313d5cb92a1fb12990f0263d32a599de2aa7d&path:packages/session':
-    resolution: {commit: 8bd313d5cb92a1fb12990f0263d32a599de2aa7d, path: packages/session, repo: git@github.com:remix-run/remix.git, type: git}
-    version: 1.0.0
-
   '@remix-run/session@https://codeload.github.com/remix-run/remix/tar.gz/8bd313d5cb92a1fb12990f0263d32a599de2aa7d#path:packages/session':
     resolution: {path: packages/session, tarball: https://codeload.github.com/remix-run/remix/tar.gz/8bd313d5cb92a1fb12990f0263d32a599de2aa7d}
     version: 1.0.0
@@ -3605,13 +3601,11 @@ snapshots:
 
   '@remix-run/session-storage-memcache@https://codeload.github.com/remix-run/remix/tar.gz/8bd313d5cb92a1fb12990f0263d32a599de2aa7d#path:packages/session-storage-memcache':
     dependencies:
-      '@remix-run/session': git+https://git@github.com:remix-run/remix.git#8bd313d5cb92a1fb12990f0263d32a599de2aa7d&path:packages/session
+      '@remix-run/session': https://codeload.github.com/remix-run/remix/tar.gz/8bd313d5cb92a1fb12990f0263d32a599de2aa7d#path:packages/session
 
   '@remix-run/session-storage-redis@https://codeload.github.com/remix-run/remix/tar.gz/8bd313d5cb92a1fb12990f0263d32a599de2aa7d#path:packages/session-storage-redis':
     dependencies:
       '@remix-run/session': https://codeload.github.com/remix-run/remix/tar.gz/8bd313d5cb92a1fb12990f0263d32a599de2aa7d#path:packages/session
-
-  '@remix-run/session@git+https://git@github.com:remix-run/remix.git#8bd313d5cb92a1fb12990f0263d32a599de2aa7d&path:packages/session': {}
 
   '@remix-run/session@https://codeload.github.com/remix-run/remix/tar.gz/8bd313d5cb92a1fb12990f0263d32a599de2aa7d#path:packages/session': {}
 
