@@ -25,7 +25,7 @@
   "dependencies": {
     "@pitlane/assets": "0.2.0",
     "@shopify/hydrogen": "2026.10.0",
-    "remix": "3.0.0",
+    "remix": "github:remix-run/remix#preview/main&path:packages/remix",
     "sanitize-html": "2.18.0"
   },
   "devDependencies": {
@@ -53,9 +53,6 @@
       "qs": "6.16.0",
       "ws": "8.22.0",
       "cookie": "1.1.1"
-    },
-    "patchedDependencies": {
-      "@remix-run/component@1.0.0": "patches/@remix-run__component@1.0.0.patch"
     }
   }
 }
