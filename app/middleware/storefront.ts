@@ -30,6 +30,7 @@ import { routes } from "../routes.ts";
 import { getRuntime, type Env } from "../runtime.ts";
 import type { ShellData } from "../ui/shell-data.tsx";
 import { MarketConfig } from "./market.tsx";
+import { ServerTiming, timeStorefrontFetch } from "./server-timing.ts";
 
 export interface StorefrontOptions {
   cache?: CacheInstance;
@@ -122,9 +123,11 @@ export function storefront(options: StorefrontOptions = {}): Middleware<
       i18n: activeMarket,
       buyerIp,
     });
-    let storefrontFetch = createRetryingStorefrontFetch({
-      fetch: options.fetch,
-    });
+    let timing = context.get(ServerTiming);
+    let storefrontFetch = timeStorefrontFetch(
+      createRetryingStorefrontFetch({ fetch: options.fetch }),
+      timing,
+    );
     let cache = options.cache ?? getStorefrontCache(context.request);
     let storefrontClient = createStorefrontClient({
       type: "private",
@@ -224,6 +227,7 @@ export function storefront(options: StorefrontOptions = {}): Middleware<
       return applyResponseHeaders(requestContext, await next());
     }
 
+    let shellStart = performance.now();
     shellData = Promise.all([
       queryShellMenus(storefrontClient, storeDomain),
       isClientNavigation(context.request)
@@ -234,11 +238,10 @@ export function storefront(options: StorefrontOptions = {}): Middleware<
         storefrontId ?? "0",
         normalizeStoreDomain(storeDomain),
       ),
-    ]).then(([shellMenus, cartInitialData, analyticsShop]) => ({
-      ...shellMenus,
-      cartInitialData,
-      analyticsShop,
-    }));
+    ]).then(([shellMenus, cartInitialData, analyticsShop]) => {
+      timing?.measure("shell", shellStart);
+      return { ...shellMenus, cartInitialData, analyticsShop };
+    });
     context.set(ShellDataConfig, shellData, shellDataProperty);
 
     // Apply Shopify's response headers once the route and shell queries finish.
