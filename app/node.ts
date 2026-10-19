@@ -1,3 +1,5 @@
+import { constants as zlib } from "node:zlib";
+
 import { compression } from "remix/middleware/compression";
 import { staticFiles } from "remix/middleware/static";
 import type { Middleware } from "remix/router";
@@ -27,7 +29,13 @@ export function closeNodeApp() {
 }
 
 function nodePlatform(): Middleware {
-  let compress = compression();
+  // Node's default Brotli quality (11) spends ~150ms of CPU on each page and
+  // module. Quality 5 is within ~12% of its size for ~1% of the CPU. Fastly
+  // passes these bytes through: it only compresses uncompressed responses,
+  // and uncacheable HTML only at level 1.
+  let compress = compression({
+    brotli: { params: { [zlib.BROTLI_PARAM_QUALITY]: 5 } },
+  });
   // Root public files keep stable, unfingerprinted URLs, so cache them briefly.
   // Fingerprinted `/assets/*` responses set their own immutable headers.
   let servePublicFiles = staticFiles("./public", {
