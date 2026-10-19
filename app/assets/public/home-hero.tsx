@@ -9,6 +9,7 @@ import {
 
 import type { ImageData } from "../../data/storefront.ts";
 import { PillIcon, pillLinkStyle } from "../../ui/public/pill-link.tsx";
+import { remixNavigation } from "./remix-navigation.ts";
 
 export interface HomeHeroProps extends SerializableObject {
   assetImages: ImageData[];
@@ -70,17 +71,44 @@ export const HomeHero = clientEntry(
       preload = new AbortController();
       let signal = AbortSignal.any([handle.signal, preload.signal]);
 
+      // Leaving the page: free the connection for the next page now, rather
+      // than when this component unmounts after that page has arrived. If the
+      // navigation fails or is cancelled, pick up where the preload left off.
+      let navigation = remixNavigation();
+      navigation?.addEventListener(
+        "navigate",
+        (event) => {
+          if (!leavesPage(event)) return;
+          preload?.abort();
+          preload = undefined;
+          let resume = () => {
+            if (!handle.signal.aborted && section && !reducedMotion?.matches)
+              preloadFrames();
+          };
+          navigation.addEventListener("navigatesuccess", resume, {
+            once: true,
+            signal: handle.signal,
+          });
+          navigation.addEventListener("navigateerror", resume, {
+            once: true,
+            signal: handle.signal,
+          });
+        },
+        { signal },
+      );
+
       await whenPageIsIdle(signal);
       if (signal.aborted || !section) return;
       // Later frames use whichever crop the browser chose for the first, so
       // rendering them reuses the downloads.
       let chosen = firstFrameSrc();
       frameUrls = images.map((image) => matchingCrop(image.url, chosen));
-      let loaded = images.map((_, index) => index === 0);
+      // A resumed preload keeps the frames that already loaded.
+      let loaded = images.map((_, index) => index < loadedFrames);
 
       await Promise.all(
         frameUrls.map(async (url, index) => {
-          if (index === 0) return;
+          if (loaded[index]) return;
           let ok = await preloadImage(url, signal).then(
             () => true,
             () => false,
@@ -90,7 +118,7 @@ export const HomeHero = clientEntry(
           loaded[index] = true;
           let missing = loaded.indexOf(false);
           let playable = missing === -1 ? loaded.length : missing;
-          if (playable === loadedFrames) return;
+          if (playable <= loadedFrames) return;
           loadedFrames = playable;
           handle.update().then(updateFrame);
         }),
@@ -280,6 +308,16 @@ function matchingCrop(source: string, chosen: string | undefined): string {
   } catch {
     return source;
   }
+}
+
+/** Whether a navigation will replace this page, not just its hash or a download. */
+function leavesPage(event: NavigateEvent): boolean {
+  if (event.hashChange || event.downloadRequest !== null) return false;
+  let destination = new URL(event.destination.url);
+  return (
+    destination.pathname !== location.pathname ||
+    destination.search !== location.search
+  );
 }
 
 function prefersReducedData(): boolean {

@@ -47,6 +47,33 @@ function mockBrowser(t: TestContext) {
   };
 }
 
+/** Stands in for the Navigation API, so the test page itself never navigates. */
+function mockNavigation(t: TestContext) {
+  let navigation = new EventTarget();
+  Object.defineProperty(window, "navigation", {
+    configurable: true,
+    value: navigation,
+  });
+  t.after(() => Reflect.deleteProperty(window, "navigation"));
+  return {
+    navigate(
+      url: string,
+      { hashChange = false, downloadRequest = null as string | null } = {},
+    ) {
+      navigation.dispatchEvent(
+        Object.assign(new Event("navigate"), {
+          destination: { url: new URL(url, location.href).href },
+          downloadRequest,
+          hashChange,
+        }),
+      );
+    },
+    fail() {
+      navigation.dispatchEvent(new Event("navigateerror"));
+    },
+  };
+}
+
 function renderHero(t: TestContext, frames: number) {
   let view = render(
     <HomeHero
@@ -135,6 +162,49 @@ describe("home hero frames", () => {
       preloads.slice(2).map((image) => crop(image.src)),
       ["609x1083", "609x1083"],
     );
+    cleanup();
+  });
+
+  it("stops preloading when a navigation leaves the page, and resumes if it fails", async (t) => {
+    let { preloads, settle } = mockBrowser(t);
+    let { navigate, fail } = mockNavigation(t);
+    let { cleanup, firstFrame, frames } = renderHero(t, 4);
+    await until(() => firstFrame.currentSrc !== "");
+    settle();
+    await until(() => preloads.length === 3);
+    preloads[0]!.dispatchEvent(new Event("load"));
+    await until(() => frames().length === 2);
+
+    // The next page shouldn't share the connection with frames this one won't show.
+    navigate("/collections/all");
+    assert.deepEqual(
+      preloads.slice(1).map((image) => image.src),
+      ["", ""],
+    );
+
+    // Still here: the loaded frame stays, and only the missing ones load again.
+    fail();
+    settle();
+    await until(() => preloads.length === 5);
+    assert.deepEqual(
+      preloads.slice(3).map((image) => new URL(image.src).pathname),
+      ["/hero/frame-2.jpg", "/hero/frame-3.jpg"],
+    );
+    assert.equal(frames().length, 2);
+    cleanup();
+  });
+
+  it("keeps preloading through hash changes and downloads", async (t) => {
+    let { preloads, settle } = mockBrowser(t);
+    let { navigate } = mockNavigation(t);
+    let { cleanup, firstFrame } = renderHero(t, 3);
+    await until(() => firstFrame.currentSrc !== "");
+    settle();
+    await until(() => preloads.length === 2);
+
+    navigate("#details", { hashChange: true });
+    navigate("/size-guide.pdf", { downloadRequest: "size-guide.pdf" });
+    assert.ok(preloads.every((image) => image.src !== ""));
     cleanup();
   });
 
