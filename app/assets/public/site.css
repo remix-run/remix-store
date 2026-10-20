@@ -192,6 +192,18 @@ html {
   }
 }
 
+@keyframes navigation-progress {
+  0% {
+    transform: translateX(-100%) scaleX(0.3);
+  }
+  60% {
+    transform: translateX(40%) scaleX(0.6);
+  }
+  100% {
+    transform: translateX(100%) scaleX(0.3);
+  }
+}
+
 @keyframes product-skeleton-pulse {
   0% {
     opacity: 0.35;

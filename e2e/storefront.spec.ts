@@ -199,6 +199,31 @@ test("updates the product grid when navigating between collections", async ({
   ).toBe(true);
 });
 
+test("shows a progress bar while a slow page navigation loads", async ({
+  page,
+}) => {
+  await page.goto("/collections/all");
+  await page.waitForFunction(() => !document.getElementById("rmx-data"));
+  let progress = page.locator("[data-navigation-progress]");
+  await expect(progress).not.toHaveAttribute("data-visible");
+
+  let release = () => {};
+  let held = new Promise<void>((resolve) => (release = resolve));
+  await page.route("**/products/test-product", async (route) => {
+    if (route.request().headers()["x-remix-frame"] === "true") await held;
+    await route.continue();
+  });
+
+  await page.locator('main a[href="/products/test-product"]').click();
+  await expect(progress).toHaveAttribute("data-visible");
+
+  release();
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Test product" }),
+  ).toBeVisible();
+  await expect(progress).not.toHaveAttribute("data-visible");
+});
+
 test("loads the next page of products in place and retries failures", async ({
   page,
 }) => {

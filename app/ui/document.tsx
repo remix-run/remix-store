@@ -7,6 +7,7 @@ import { css, unsafeHTML, type Handle, type RemixNode } from "remix/component";
 import { ImportMap } from "remix/component/server";
 
 import { Footer } from "../assets/public/footer.tsx";
+import { NavigationProgress } from "../assets/public/navigation-progress.tsx";
 import {
   type AnalyticsShop,
   FALLBACK_FOOTER_MENU,
@@ -143,6 +144,7 @@ export function Document(handle: Handle<DocumentProps>) {
         <body mix={bodyStyle}>
           {/* Inline once so every `<use href="#name">` resolves without a request. */}
           <div hidden innerHTML={unsafeHTML(spritesSvg)} />
+          <NavigationProgress />
           <Navbar
             cartInitialData={shellData.cartInitialData}
             currentPath={shellData.currentPath}

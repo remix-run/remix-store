@@ -10,7 +10,6 @@ import {
 
 import type { ImageData } from "../../data/storefront.ts";
 import { PillIcon, pillLinkStyle } from "../../ui/public/pill-link.tsx";
-import { remixNavigation } from "./remix-navigation.ts";
 
 export interface HomeHeroProps extends SerializableObject {
   assetImages: ImageData[];
@@ -78,7 +77,9 @@ export const HomeHero = clientEntry(
       // Leaving the page: free the connection for the next page now, rather
       // than when this component unmounts after that page has arrived. If the
       // navigation fails or is cancelled, pick up where the preload left off.
-      let browserNavigation = remixNavigation();
+      let browserNavigation = navigation.supported
+        ? window.navigation
+        : undefined;
       browserNavigation?.addEventListener(
         "navigate",
         (event) => {

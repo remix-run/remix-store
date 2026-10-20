@@ -1,5 +1,6 @@
+import { navigation } from "remix/component";
+
 import { prefetchFrame } from "./frame-resolver.ts";
-import { remixNavigation } from "./remix-navigation.ts";
 
 /** Hover or focus this long first, so sweeping or tabbing across a grid stays quiet. */
 const INTENT_DELAY_MS = 100;
@@ -14,7 +15,7 @@ const INTENT_DELAY_MS = 100;
  */
 export function startLinkPrefetching(signal?: AbortSignal): void {
   // Without it, clicks load whole documents, which can't reuse a prefetch.
-  if (!remixNavigation() || prefersReducedData()) return;
+  if (!navigation.supported || prefersReducedData()) return;
 
   let resting:
     | { anchor: HTMLAnchorElement; timer: ReturnType<typeof setTimeout> }
