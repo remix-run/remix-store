@@ -9,7 +9,14 @@ import {
   type ProductFormStoreState,
   type SelectedOption,
 } from "@shopify/hydrogen";
-import { clientEntry, css, navigate, on, type Handle } from "remix/component";
+import {
+  clientEntry,
+  css,
+  navigate,
+  navigation,
+  on,
+  type Handle,
+} from "remix/component";
 
 import type { NavigationMenuData, ProductData } from "../../data/storefront.ts";
 import { getCartApiPath } from "../../lib/public/cart-routes.ts";
@@ -24,7 +31,6 @@ import { Icon } from "../../ui/public/icon.tsx";
 import { RichText } from "../../ui/public/rich-text.tsx";
 import { getBrowserCartStore } from "./cart-store.ts";
 import { ProductGallery } from "./product-gallery.tsx";
-import { navigationSettled, replaceUrl } from "./remix-navigation.ts";
 import { ExpressShopPayButton } from "./shop-pay-button.tsx";
 import { SubscribeForm } from "./subscribe-form.tsx";
 
@@ -121,10 +127,11 @@ export const ProductDetails = clientEntry(
 
     // Like production, a bare product URL gains the selected variant's
     // options so it can be shared. The page already shows that variant, so
-    // only the URL changes; a Remix navigation would fetch the page again.
+    // only the URL changes. Changing it during the navigation that rendered
+    // this product would interrupt that navigation, so wait for it first.
     async function showSelectedVariantInUrl() {
       let identity = productIdentity(handle.props.product);
-      await navigationSettled();
+      await navigation.settled();
       let { product } = handle.props;
       if (
         handle.signal.aborted ||
@@ -149,7 +156,9 @@ export const ProductDetails = clientEntry(
       );
       // Another navigation may have left this product while we waited.
       if (new URL(href, location.href).pathname === location.pathname) {
-        replaceUrl(href);
+        await navigate(href, { history: "replace", reload: false }).catch(
+          () => {},
+        );
       }
     }
 

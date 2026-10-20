@@ -39,6 +39,7 @@ function mockBrowser(t: TestContext) {
   );
   return {
     preloads,
+    idleRequested: () => idle.length > 0,
     settle() {
       for (let callback of idle.splice(0)) {
         callback({ didTimeout: false, timeRemaining: () => 50 });
@@ -47,19 +48,39 @@ function mockBrowser(t: TestContext) {
   };
 }
 
-/** Stands in for the Navigation API, so the test page itself never navigates. */
+/**
+ * Stands in for the Navigation API, so the test page itself never navigates.
+ * Navigations Remix would intercept stay in progress, as `transition`, until
+ * the test finishes them or starts another.
+ */
 function mockNavigation(t: TestContext) {
-  let navigation = new EventTarget();
+  let navigation = Object.assign(new EventTarget(), {
+    transition: null as { finished: Promise<void> } | null,
+  });
+  let current: PromiseWithResolvers<void> | undefined;
   Object.defineProperty(window, "navigation", {
     configurable: true,
     value: navigation,
   });
   t.after(() => Reflect.deleteProperty(window, "navigation"));
+
+  function finish(type: "navigatesuccess" | "navigateerror") {
+    let ending = current;
+    current = undefined;
+    navigation.transition = null;
+    navigation.dispatchEvent(new Event(type));
+    if (type === "navigatesuccess") ending?.resolve();
+    else ending?.reject(new DOMException("Navigation aborted", "AbortError"));
+  }
+
   return {
     navigate(
       url: string,
       { hashChange = false, downloadRequest = null as string | null } = {},
     ) {
+      let intercepted = !hashChange && downloadRequest === null;
+      // A new navigation aborts the one in progress.
+      if (intercepted && current) finish("navigateerror");
       navigation.dispatchEvent(
         Object.assign(new Event("navigate"), {
           destination: { url: new URL(url, location.href).href },
@@ -67,10 +88,13 @@ function mockNavigation(t: TestContext) {
           hashChange,
         }),
       );
+      if (!intercepted) return;
+      current = Promise.withResolvers<void>();
+      current.promise.catch(() => {});
+      navigation.transition = { finished: current.promise };
     },
-    fail() {
-      navigation.dispatchEvent(new Event("navigateerror"));
-    },
+    succeed: () => finish("navigatesuccess"),
+    fail: () => finish("navigateerror"),
   };
 }
 
@@ -166,7 +190,7 @@ describe("home hero frames", () => {
   });
 
   it("stops preloading when a navigation leaves the page, and resumes if it fails", async (t) => {
-    let { preloads, settle } = mockBrowser(t);
+    let { idleRequested, preloads, settle } = mockBrowser(t);
     let { navigate, fail } = mockNavigation(t);
     let { cleanup, firstFrame, frames } = renderHero(t, 4);
     await until(() => firstFrame.currentSrc !== "");
@@ -181,9 +205,13 @@ describe("home hero frames", () => {
       preloads.slice(1).map((image) => image.src),
       ["", ""],
     );
+    // Nothing restarts while that navigation is still in progress.
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    assert.equal(idleRequested(), false);
 
     // Still here: the loaded frame stays, and only the missing ones load again.
     fail();
+    await until(idleRequested);
     settle();
     await until(() => preloads.length === 5);
     assert.deepEqual(
@@ -195,7 +223,7 @@ describe("home hero frames", () => {
   });
 
   it("stays stopped when the visitor clicks the same link again while it loads", async (t) => {
-    let { preloads, settle } = mockBrowser(t);
+    let { idleRequested, preloads, settle } = mockBrowser(t);
     let { navigate, fail } = mockNavigation(t);
     let { firstFrame } = renderHero(t, 3);
     await until(() => firstFrame.currentSrc !== "");
@@ -209,13 +237,57 @@ describe("home hero frames", () => {
     // As in a Remix navigation, the URL changes before the next page renders.
     history.replaceState(history.state, "", destination);
 
-    // The second click interrupts the first navigation, which fails it.
-    fail();
+    // The second click interrupts the first navigation.
     navigate(destination);
     settle();
     await new Promise((resolve) => setTimeout(resolve, 50));
     assert.equal(preloads.length, 2);
     assert.ok(preloads.every((image) => image.src === ""));
+
+    // Preloading picks up again only once the last navigation settles.
+    fail();
+    await until(idleRequested);
+    settle();
+    await until(() => preloads.length === 4);
+  });
+
+  it("resumes when a navigation keeps the hero, which then belongs to the new URL", async (t) => {
+    let { idleRequested, preloads, settle } = mockBrowser(t);
+    let { navigate, succeed } = mockNavigation(t);
+    let { firstFrame } = renderHero(t, 3);
+    await until(() => firstFrame.currentSrc !== "");
+    settle();
+    await until(() => preloads.length === 2);
+
+    let original = location.href;
+    t.after(() => history.replaceState(history.state, "", original));
+    let destination = `${location.pathname}?ref=campaign`;
+    navigate(destination);
+    history.replaceState(history.state, "", destination);
+    succeed();
+    await until(idleRequested);
+    settle();
+    await until(() => preloads.length === 4);
+
+    // Navigating to the hero's own page again doesn't stop it.
+    navigate(destination);
+    assert.ok(preloads.slice(2).every((image) => image.src !== ""));
+  });
+
+  it("waits for a navigation still loading before downloading frames", async (t) => {
+    let { preloads, settle } = mockBrowser(t);
+    let { navigate, succeed } = mockNavigation(t);
+    let { firstFrame } = renderHero(t, 3);
+    await until(() => firstFrame.currentSrc !== "");
+
+    // As when the hero renders before the navigation that brought it finishes.
+    navigate(location.href);
+    settle();
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    assert.equal(preloads.length, 0);
+
+    succeed();
+    await until(() => preloads.length === 2);
   });
 
   it("keeps preloading through hash changes and downloads", async (t) => {
