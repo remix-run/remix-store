@@ -194,6 +194,30 @@ describe("home hero frames", () => {
     cleanup();
   });
 
+  it("stays stopped when the visitor clicks the same link again while it loads", async (t) => {
+    let { preloads, settle } = mockBrowser(t);
+    let { navigate, fail } = mockNavigation(t);
+    let { firstFrame } = renderHero(t, 3);
+    await until(() => firstFrame.currentSrc !== "");
+    settle();
+    await until(() => preloads.length === 2);
+
+    let original = location.href;
+    t.after(() => history.replaceState(history.state, "", original));
+    let destination = `${location.pathname}?page=next`;
+    navigate(destination);
+    // As in a Remix navigation, the URL changes before the next page renders.
+    history.replaceState(history.state, "", destination);
+
+    // The second click interrupts the first navigation, which fails it.
+    fail();
+    navigate(destination);
+    settle();
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    assert.equal(preloads.length, 2);
+    assert.ok(preloads.every((image) => image.src === ""));
+  });
+
   it("keeps preloading through hash changes and downloads", async (t) => {
     let { preloads, settle } = mockBrowser(t);
     let { navigate } = mockNavigation(t);
