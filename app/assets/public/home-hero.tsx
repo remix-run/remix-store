@@ -1,6 +1,7 @@
 import {
   clientEntry,
   css,
+  navigation,
   on,
   ref,
   type Handle,
@@ -9,7 +10,6 @@ import {
 
 import type { ImageData } from "../../data/storefront.ts";
 import { PillIcon, pillLinkStyle } from "../../ui/public/pill-link.tsx";
-import { remixNavigation } from "./remix-navigation.ts";
 
 export interface HomeHeroProps extends SerializableObject {
   assetImages: ImageData[];
@@ -77,8 +77,10 @@ export const HomeHero = clientEntry(
       // Leaving the page: free the connection for the next page now, rather
       // than when this component unmounts after that page has arrived. If the
       // navigation fails or is cancelled, pick up where the preload left off.
-      let navigation = remixNavigation();
-      navigation?.addEventListener(
+      let browserNavigation = navigation.supported
+        ? window.navigation
+        : undefined;
+      browserNavigation?.addEventListener(
         "navigate",
         (event) => {
           if (!leavesPage(event, pageUrl)) return;
@@ -88,7 +90,7 @@ export const HomeHero = clientEntry(
             if (!handle.signal.aborted && section && !reducedMotion?.matches)
               preloadFrames();
           };
-          navigation.addEventListener(
+          browserNavigation.addEventListener(
             "navigatesuccess",
             () => {
               // The navigation kept the hero, so its page now has this URL.
@@ -97,7 +99,7 @@ export const HomeHero = clientEntry(
             },
             { once: true, signal: handle.signal },
           );
-          navigation.addEventListener("navigateerror", resume, {
+          browserNavigation.addEventListener("navigateerror", resume, {
             once: true,
             signal: handle.signal,
           });
@@ -106,6 +108,9 @@ export const HomeHero = clientEntry(
       );
 
       await whenPageIsIdle(signal);
+      // Don't compete with a navigation still loading, such as the one that
+      // rendered the hero or one a resumed preload started during.
+      await navigation.settled();
       if (signal.aborted || !section) return;
       // Later frames use whichever crop the browser chose for the first, so
       // rendering them reuses the downloads.
