@@ -112,7 +112,7 @@ function LookbookEntry(
               handle.props.market.pathPrefix,
             )}
             aria-label={`${product.title}, ${price}`}
-            data-prefetch="intent"
+            data-rmx-prefetch="intent"
             mix={[pillLinkStyle, lookbookLinkStyle]}
           >
             <span aria-hidden="true" data-lookbook-hit-area="true" />

@@ -219,49 +219,43 @@ function ProductImageFallback() {
 }
 
 /** Marks a blur-up frame loaded once its full image loads or fails. */
-const markLoaded = createMixin<HTMLElement>(
-  (handle) => {
-    handle.addEventListener("insert", ({ node }) => {
-      let image = node.querySelector<HTMLImageElement>(
-        "img:not([data-preview-image])",
-      );
-      let settle = () => {
-        node.dataset.loaded = "true";
-      };
-      if (!image || image.complete) {
-        settle();
-        return;
-      }
-      image.addEventListener("load", settle, { signal: handle.signal });
-      image.addEventListener("error", settle, { signal: handle.signal });
-    });
-    return () => <handle.element />;
-  },
-  { ssr: false },
-);
+const markLoaded = createMixin<HTMLElement>((handle) => {
+  handle.addEventListener("insert", ({ node }) => {
+    let image = node.querySelector<HTMLImageElement>(
+      "img:not([data-preview-image])",
+    );
+    let settle = () => {
+      node.dataset.loaded = "true";
+    };
+    if (!image || image.complete) {
+      settle();
+      return;
+    }
+    image.addEventListener("load", settle, { signal: handle.signal });
+    image.addEventListener("error", settle, { signal: handle.signal });
+  });
+  return () => <handle.element />;
+});
 
 /** Fades images out as they scroll away from just below the header. */
-const fadeImagesOnScroll = createMixin<HTMLElement>(
-  (handle) => {
-    handle.addEventListener("insert", ({ node }) => {
-      let { signal } = handle;
-      let reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
-      let update = () => fadeByDistance(node, reducedMotion.matches);
-      let frame = throttleToAnimationFrame(update);
+const fadeImagesOnScroll = createMixin<HTMLElement>((handle) => {
+  handle.addEventListener("insert", ({ node }) => {
+    let { signal } = handle;
+    let reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
+    let update = () => fadeByDistance(node, reducedMotion.matches);
+    let frame = throttleToAnimationFrame(update);
 
-      update();
-      window.addEventListener("scroll", frame.request, {
-        passive: true,
-        signal,
-      });
-      window.addEventListener("resize", frame.request, { signal });
-      reducedMotion.addEventListener("change", frame.request, { signal });
-      signal.addEventListener("abort", frame.cancel);
+    update();
+    window.addEventListener("scroll", frame.request, {
+      passive: true,
+      signal,
     });
-    return () => <handle.element />;
-  },
-  { ssr: false },
-);
+    window.addEventListener("resize", frame.request, { signal });
+    reducedMotion.addEventListener("change", frame.request, { signal });
+    signal.addEventListener("abort", frame.cancel);
+  });
+  return () => <handle.element />;
+});
 
 function fadeByDistance(gallery: HTMLElement, reducedMotion: boolean) {
   let frames = gallery.querySelectorAll<HTMLElement>("[data-product-image]");

@@ -46,7 +46,7 @@ export function Navbar(handle: Handle<NavbarProps>) {
           <a
             href={marketPath("/", handle.props.market.pathPrefix)}
             aria-label="Remix Store home"
-            data-prefetch="intent"
+            data-rmx-prefetch="intent"
             mix={homeLinkStyle}
           >
             <RemixLogo />
@@ -58,7 +58,7 @@ export function Navbar(handle: Handle<NavbarProps>) {
                 <li key={item.id}>
                   <a
                     href={item.url}
-                    data-prefetch={item.prefetch ? "intent" : undefined}
+                    data-rmx-prefetch={item.prefetch ? "intent" : undefined}
                     aria-current={
                       isCurrentPage(item.url, handle.props.currentPath)
                         ? "page"

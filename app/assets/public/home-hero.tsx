@@ -215,7 +215,7 @@ export const HomeHero = clientEntry(
               <h1 id={`${handle.id}-title`}>{handle.props.heading}</h1>
               <a
                 href={handle.props.collectionHref}
-                data-prefetch="intent"
+                data-rmx-prefetch="intent"
                 mix={[pillLinkStyle, heroLinkStyle]}
               >
                 <span aria-hidden="true" data-link-hit-area="true" />

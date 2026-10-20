@@ -46,7 +46,7 @@ describe("navbar", () => {
     ]) {
       let links = html.match(nav)?.[0].match(/<a [^>]*>[^<]*/g) ?? [];
       let prefetched = links
-        .filter((link) => link.includes('data-prefetch="intent"'))
+        .filter((link) => link.includes('data-rmx-prefetch="intent"'))
         .map((link) => link.slice(link.indexOf(">") + 1));
       assert.deepEqual(prefetched, ["All", "Canada", "Tee"]);
     }

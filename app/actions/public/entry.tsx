@@ -12,8 +12,6 @@ import { navigate as remixNavigate, run } from "remix/component";
 import { createPageViewPublisher } from "../../assets/public/analytics.tsx";
 import { getBrowserCartStore } from "../../assets/public/cart-store.ts";
 import { configureOpenCartAction } from "../../assets/public/cart.tsx";
-import { resolveFrameResponse } from "../../assets/public/frame-resolver.ts";
-import { startLinkPrefetching } from "../../assets/public/link-prefetch.ts";
 import type { MarketPathPrefix } from "../../lib/public/market.ts";
 import { routeTemplates } from "../../lib/public/route-templates.ts";
 
@@ -31,9 +29,6 @@ let app = run({
 
     preloadShim(preloads);
     return [];
-  },
-  async resolveFrame(src, options) {
-    return resolveFrameResponse(new URL(src, window.location.href), options);
   },
 });
 
@@ -75,7 +70,6 @@ let pathPrefix = marketPathPrefix(
 let cartStore = getBrowserCartStore(undefined, pathPrefix);
 if (cartStore) trackCartAnalytics(cartStore);
 configureOpenCartAction();
-startLinkPrefetching();
 
 function marketPathPrefix(value: string | undefined): MarketPathPrefix {
   return value === "/en-ca" ? value : "";

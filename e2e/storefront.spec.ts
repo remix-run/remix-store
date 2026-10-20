@@ -137,11 +137,16 @@ test("keeps product details when navigating from the home page", async ({
   ).toBeVisible();
 });
 
-test("a hovered product card's click shows the prefetched page", async ({
+test("hovering a product card prefetches its JavaScript before navigation", async ({
   page,
 }) => {
+  let product = await page.request.get("/products/test-product");
+  expect(product.ok()).toBe(true);
+  let productHtml = await product.text();
   let productRequests: string[] = [];
+  let requestedUrls = new Set<string>();
   page.on("request", (request) => {
+    requestedUrls.add(request.url());
     let { pathname } = new URL(request.url());
     if (
       request.headers()["x-remix-frame"] === "true" &&
@@ -153,19 +158,44 @@ test("a hovered product card's click shows the prefetched page", async ({
   await page.goto("/collections/all");
   await page.waitForFunction(() => !document.getElementById("rmx-data"));
   let card = page.locator('main a[href="/products/test-product"]');
+  let initialRequests = new Set(requestedUrls);
 
   let prefetched = page.waitForResponse(
     (response) => new URL(response.url()).pathname === "/products/test-product",
   );
   await card.hover();
-  await prefetched;
+  let response = await prefetched;
+  expect(response.headers()["cache-control"]).toContain("no-store");
+  let scripts = await page.evaluate((html) => {
+    let destination = new DOMParser().parseFromString(html, "text/html");
+    return Array.from(
+      destination.querySelectorAll<HTMLLinkElement | HTMLScriptElement>(
+        'link[rel="modulepreload"], script[src][type="module"]',
+      ),
+      (element) =>
+        new URL(
+          element.getAttribute("href") ?? element.getAttribute("src")!,
+          location.href,
+        ).href,
+    ).filter((href) => new URL(href).origin === location.origin);
+  }, productHtml);
+  let destinationScripts = [...new Set(scripts)].filter(
+    (href) => !initialRequests.has(href),
+  );
+  expect(destinationScripts.length).toBeGreaterThan(0);
+  await expect
+    .poll(() => destinationScripts.filter((href) => requestedUrls.has(href)))
+    .toEqual(destinationScripts);
+  await expect(page).toHaveURL(/\/collections\/all$/);
+  let requestsBeforeNavigation = productRequests.length;
   await card.click();
 
   await expect(
     page.getByRole("heading", { level: 1, name: "Test product" }),
   ).toBeVisible();
   await page.waitForFunction(() => !window.navigation.transition);
-  expect(productRequests).toEqual(["/products/test-product"]);
+  // Activating the link requests fresh no-store HTML after asset discovery.
+  expect(productRequests.length).toBeGreaterThan(requestsBeforeNavigation);
 });
 
 test("updates the product grid when navigating between collections", async ({
