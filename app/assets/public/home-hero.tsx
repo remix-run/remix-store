@@ -9,6 +9,7 @@ import {
 
 import type { ImageData } from "../../data/storefront.ts";
 import { PillIcon, pillLinkStyle } from "../../ui/public/pill-link.tsx";
+import { remixNavigation } from "./remix-navigation.ts";
 
 export interface HomeHeroProps extends SerializableObject {
   assetImages: ImageData[];
@@ -31,6 +32,9 @@ export const HomeHero = clientEntry(
     // The URL each later frame was preloaded from, so rendering reuses it.
     let frameUrls: string[] = [];
     let section: HTMLElement | null = null;
+    // The URL of the page the hero is on. During a navigation, `location`
+    // already shows the destination while this page is still on screen.
+    let pageUrl = "";
     let reducedMotion: MediaQueryList | undefined;
     let animationFrame = 0;
 
@@ -70,17 +74,49 @@ export const HomeHero = clientEntry(
       preload = new AbortController();
       let signal = AbortSignal.any([handle.signal, preload.signal]);
 
+      // Leaving the page: free the connection for the next page now, rather
+      // than when this component unmounts after that page has arrived. If the
+      // navigation fails or is cancelled, pick up where the preload left off.
+      let navigation = remixNavigation();
+      navigation?.addEventListener(
+        "navigate",
+        (event) => {
+          if (!leavesPage(event, pageUrl)) return;
+          preload?.abort();
+          preload = undefined;
+          let resume = () => {
+            if (!handle.signal.aborted && section && !reducedMotion?.matches)
+              preloadFrames();
+          };
+          navigation.addEventListener(
+            "navigatesuccess",
+            () => {
+              // The navigation kept the hero, so its page now has this URL.
+              if (section) pageUrl = location.href;
+              resume();
+            },
+            { once: true, signal: handle.signal },
+          );
+          navigation.addEventListener("navigateerror", resume, {
+            once: true,
+            signal: handle.signal,
+          });
+        },
+        { signal },
+      );
+
       await whenPageIsIdle(signal);
       if (signal.aborted || !section) return;
       // Later frames use whichever crop the browser chose for the first, so
       // rendering them reuses the downloads.
       let chosen = firstFrameSrc();
       frameUrls = images.map((image) => matchingCrop(image.url, chosen));
-      let loaded = images.map((_, index) => index === 0);
+      // A resumed preload keeps the frames that already loaded.
+      let loaded = images.map((_, index) => index < loadedFrames);
 
       await Promise.all(
         frameUrls.map(async (url, index) => {
-          if (index === 0) return;
+          if (loaded[index]) return;
           let ok = await preloadImage(url, signal).then(
             () => true,
             () => false,
@@ -90,7 +126,7 @@ export const HomeHero = clientEntry(
           loaded[index] = true;
           let missing = loaded.indexOf(false);
           let playable = missing === -1 ? loaded.length : missing;
-          if (playable === loadedFrames) return;
+          if (playable <= loadedFrames) return;
           loadedFrames = playable;
           handle.update().then(updateFrame);
         }),
@@ -124,6 +160,7 @@ export const HomeHero = clientEntry(
             heroStyle,
             ref((element, signal) => {
               section = element;
+              pageUrl = location.href;
               let motion = matchMedia("(prefers-reduced-motion: reduce)");
               reducedMotion = motion;
 
@@ -280,6 +317,16 @@ function matchingCrop(source: string, chosen: string | undefined): string {
   } catch {
     return source;
   }
+}
+
+/** Whether a navigation will replace this page, not just its hash or a download. */
+function leavesPage(event: NavigateEvent, pageUrl: string): boolean {
+  if (event.hashChange || event.downloadRequest !== null) return false;
+  let destination = new URL(event.destination.url);
+  let page = new URL(pageUrl || location.href);
+  return (
+    destination.pathname !== page.pathname || destination.search !== page.search
+  );
 }
 
 function prefersReducedData(): boolean {

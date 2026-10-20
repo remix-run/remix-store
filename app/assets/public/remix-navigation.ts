@@ -15,6 +15,23 @@ export function remixNavigation(): Navigation | undefined {
 }
 
 /**
+ * Resolves once no navigation is in progress. Changing the URL during one
+ * cancels it, which would stop Remix before it finishes rendering the page.
+ * A navigation can start another before it finishes, as a frame redirect
+ * does, so this keeps waiting until none is left.
+ */
+export async function navigationSettled(): Promise<void> {
+  let navigation = remixNavigation();
+  let transition = navigation?.transition;
+  while (transition) {
+    await transition.finished.catch(() => {});
+    let next = navigation?.transition;
+    if (next === transition) return;
+    transition = next;
+  }
+}
+
+/**
  * Changes the current entry's URL without a Remix navigation, so the page is
  * not fetched or rendered again. history.replaceState clears the entry's
  * Navigation API state, and Remix only renders entries that carry its state on
