@@ -137,23 +137,29 @@ test("keeps product details when navigating from the home page", async ({
   ).toBeVisible();
 });
 
-test("hovering a product card prefetches its JavaScript before navigation", async ({
+test("hovering a product card prefetches JavaScript and reuses cached HTML on navigation", async ({
   page,
 }) => {
+  let network = await page.context().newCDPSession(page);
+  await network.send("Network.enable");
+  let cachedRequests = new Set<string>();
+  let productResponses: boolean[] = [];
+  network.on("Network.requestServedFromCache", ({ requestId }) => {
+    cachedRequests.add(requestId);
+  });
+  network.on("Network.responseReceived", ({ requestId, response }) => {
+    if (new URL(response.url).pathname === "/products/test-product") {
+      productResponses.push(
+        response.fromDiskCache === true || cachedRequests.has(requestId),
+      );
+    }
+  });
   let product = await page.request.get("/products/test-product");
   expect(product.ok()).toBe(true);
   let productHtml = await product.text();
-  let productRequests: string[] = [];
   let requestedUrls = new Set<string>();
   page.on("request", (request) => {
     requestedUrls.add(request.url());
-    let { pathname } = new URL(request.url());
-    if (
-      request.headers()["x-remix-frame"] === "true" &&
-      pathname.startsWith("/products/")
-    ) {
-      productRequests.push(pathname);
-    }
   });
   await page.goto("/collections/all");
   await page.waitForFunction(() => !document.getElementById("rmx-data"));
@@ -165,7 +171,7 @@ test("hovering a product card prefetches its JavaScript before navigation", asyn
   );
   await card.hover();
   let response = await prefetched;
-  expect(response.headers()["cache-control"]).toContain("no-store");
+  expect(response.headers()["cache-control"]).toBe("private, max-age=5");
   let scripts = await page.evaluate((html) => {
     let destination = new DOMParser().parseFromString(html, "text/html");
     return Array.from(
@@ -187,15 +193,16 @@ test("hovering a product card prefetches its JavaScript before navigation", asyn
     .poll(() => destinationScripts.filter((href) => requestedUrls.has(href)))
     .toEqual(destinationScripts);
   await expect(page).toHaveURL(/\/collections\/all$/);
-  let requestsBeforeNavigation = productRequests.length;
+  expect(productResponses).toEqual([false]);
   await card.click();
 
   await expect(
     page.getByRole("heading", { level: 1, name: "Test product" }),
   ).toBeVisible();
   await page.waitForFunction(() => !window.navigation.transition);
-  // Activating the link requests fresh no-store HTML after asset discovery.
-  expect(productRequests.length).toBeGreaterThan(requestsBeforeNavigation);
+  // CDP distinguishes a real HTTP cache hit from another server request.
+  expect(productResponses.length).toBeGreaterThan(1);
+  expect(productResponses.slice(1).every((cached) => cached)).toBe(true);
 });
 
 test("updates the product grid when navigating between collections", async ({

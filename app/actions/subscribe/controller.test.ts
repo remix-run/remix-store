@@ -26,7 +26,7 @@ describe("subscribe routes", () => {
     let html = await response.text();
 
     assert.equal(response.status, 200);
-    assert.equal(response.headers.get("Cache-Control"), "private, no-store");
+    assert.equal(response.headers.get("Cache-Control"), "private, max-age=5");
     assert.match(html, /<title>Subscribe \| The Remix Store<\/title>/);
     assert.match(html, /action="\/subscribe" method="post"/);
     assert.match(html, /type="email" name="email"/);

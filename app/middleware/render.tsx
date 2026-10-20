@@ -53,8 +53,19 @@ export function render(options: RenderOptions) {
           FALLBACK_SHELL_DATA;
         let market = getContextValue(context, MarketConfig) ?? US_MARKET;
         let headers = new SuperHeaders(init?.headers);
-        // HTML contains request-scoped Storefront data and must not be cached.
-        headers.cacheControl = cacheControl.privateNoStore;
+        // Handlers opt into caching when their response can tolerate staleness.
+        if (!headers.has("Cache-Control")) {
+          headers.cacheControl = cacheControl.privateNoStore;
+        }
+        // Cart cookies and frame metadata change the rendered representation.
+        headers.apply({
+          vary: [
+            "Cookie",
+            "X-Remix-Frame",
+            "X-Remix-Target",
+            "X-Remix-Top-Frame-Src",
+          ],
+        });
         return renderNode(
           <DocumentAssetsProvider {...options.documentAssets}>
             <ShellDataProvider

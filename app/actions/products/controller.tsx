@@ -34,6 +34,7 @@ export default createController(routes.products, {
             storefrontClient.storeUrl
           }
         />,
+        { headers: { "Cache-Control": "private, max-age=5" } },
       );
     },
   },

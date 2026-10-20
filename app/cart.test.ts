@@ -268,8 +268,24 @@ describe("cart routes", () => {
       }),
     );
     assert.equal(subscribePage.status, 200);
+    assert.equal(
+      subscribePage.headers.get("Cache-Control"),
+      "private, max-age=5",
+    );
     await subscribePage.text();
     assert.equal(cartQueries, 0);
+
+    let subscribeDocument = await app.fetch(
+      new Request(new URL(routes.subscribe.index.href(), origin), {
+        headers: { Cookie: cookie },
+      }),
+    );
+    assert.equal(
+      subscribeDocument.headers.get("Cache-Control"),
+      "private, max-age=5",
+    );
+    assert.match(await subscribeDocument.text(), /Test Product/);
+    assert.equal(cartQueries, 1);
 
     let cartPage = await app.fetch(
       new Request(new URL(routes.cart.href(), origin), {
@@ -280,7 +296,8 @@ describe("cart routes", () => {
       await cartPage.text(),
       /<title>Cart \(1\) \| The Remix Store<\/title>/,
     );
-    assert.equal(cartQueries, 1);
+    assert.equal(cartPage.headers.get("Cache-Control"), "private, no-store");
+    assert.equal(cartQueries, 2);
 
     let document = await app.fetch(
       new Request(new URL(routes.cart.href(), origin), {
@@ -288,7 +305,7 @@ describe("cart routes", () => {
       }),
     );
     await document.text();
-    assert.equal(cartQueries, 2);
+    assert.equal(cartQueries, 3);
   });
 });
 

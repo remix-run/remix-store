@@ -29,6 +29,7 @@ describe("collection routes", () => {
     let html = await response.text();
 
     assert.equal(response.status, 200);
+    assert.equal(response.headers.get("Cache-Control"), "private, max-age=5");
     assert.equal(variables?.first, 15);
     assert.equal(variables?.after, undefined);
     assert.match(html, /<h1>Racing collection<\/h1>/);
@@ -105,7 +106,7 @@ describe("collection routes", () => {
 
     assert.equal(response.status, 200);
     assert.equal(response.headers.get("X-Robots-Tag"), "noindex");
-    assert.equal(response.headers.get("Cache-Control"), "private, no-store");
+    assert.equal(response.headers.get("Cache-Control"), "private, max-age=5");
     assert.equal(variables?.first, 8);
     assert.equal(variables?.after, "page-2");
     assert.match(html, /href="\/en-ca\/products\/racing-shirt"/);
@@ -156,6 +157,7 @@ describe("collection routes", () => {
     let html = await response.text();
 
     assert.equal(response.status, 200);
+    assert.equal(response.headers.get("Cache-Control"), "private, no-store");
     assert.match(html, /role="alert"/);
     assert.match(html, /Products could not be loaded/);
     assert.match(html, /name="cursor" value="page-2"/);

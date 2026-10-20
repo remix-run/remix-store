@@ -34,6 +34,7 @@ export function createRootController(options: RootControllerOptions = {}) {
             pageInfo={home.data.pageInfo}
             showSeasonalSnow={isUtcDecember(clock())}
           />,
+          { headers: { "Cache-Control": "private, max-age=5" } },
         );
       },
       async cart({ market, render, request, shellData, storefrontClient }) {

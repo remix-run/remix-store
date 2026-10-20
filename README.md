@@ -58,8 +58,12 @@ The Oxygen build produces a self-contained Worker at `dist/server/index.js` and 
 | [remix-store.fly.dev](https://remix-store.fly.dev)                       | Fly origin, bypasses the CDN (debugging, health checks) |
 
 Fastly caches fingerprinted `/assets/*` files and short-lived root `public/`
-files; HTML is `private, no-store` and always reaches Fly. Responses served
-through Fastly include `X-Cache` and `X-Served-By` headers.
+files. Browsing handlers opt successful HTML responses into `private, max-age=5`
+so the browser can reuse prefetched pages for 5 seconds while shared CDN caches
+bypass it. HTML varies by cookie and Remix frame headers. The renderer defaults
+to `private, no-store` for other responses, including cart pages and errors.
+Mutations also use `private, no-store`. Responses served through Fastly include
+`X-Cache` and `X-Served-By` headers.
 
 Oxygen deployments use `.github/workflows/oxygen-deployment.yml`; `pnpm deploy:oxygen` deploys a preview locally. Both pass `--build-command 'pnpm build:oxygen'` so Shopify CLI runs this app's Vite build. The build writes the pinned compatibility date to `dist/server/oxygen.json` alongside the Worker.
 

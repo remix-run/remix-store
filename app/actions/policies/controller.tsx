@@ -30,6 +30,7 @@ export default createController(routes.policies, {
           market={market}
           policy={result.data}
         />,
+        { headers: { "Cache-Control": "private, max-age=5" } },
       );
     },
   },

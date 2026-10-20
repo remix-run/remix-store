@@ -59,6 +59,7 @@ export default createController(routes.collections, {
           products={collection.data.products.nodes}
           pageInfo={collection.data.products.pageInfo}
         />,
+        { headers: { "Cache-Control": "private, max-age=5" } },
       );
     },
     async products({ market, params, render, request, storefrontClient, url }) {
@@ -93,7 +94,12 @@ export default createController(routes.collections, {
           pathPrefix={market.pathPrefix}
           products={collection.data.products.nodes}
         />,
-        { headers: FRAGMENT_HEADERS },
+        {
+          headers: {
+            ...FRAGMENT_HEADERS,
+            "Cache-Control": "private, max-age=5",
+          },
+        },
       );
     },
     loadMore({ market, params, render, url }) {
@@ -102,7 +108,10 @@ export default createController(routes.collections, {
       if (!cursor) return new Response("Missing cursor", { status: 400 });
 
       return render(loadMoreControl(params.handle, cursor, market.pathPrefix), {
-        headers: FRAGMENT_HEADERS,
+        headers: {
+          ...FRAGMENT_HEADERS,
+          "Cache-Control": "private, max-age=5",
+        },
       });
     },
   },
