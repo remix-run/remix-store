@@ -1367,8 +1367,8 @@ packages:
     resolution: {path: packages/cookie, tarball: https://codeload.github.com/remix-run/remix/tar.gz/aa8b4d578c4039dcea10fb7071cc4d8107f5f921}
     version: 1.0.0
 
-  '@remix-run/cop-middleware@git+https://git@github.com:remix-run/remix.git#aa8b4d578c4039dcea10fb7071cc4d8107f5f921&path:packages/cop-middleware':
-    resolution: {commit: aa8b4d578c4039dcea10fb7071cc4d8107f5f921, path: packages/cop-middleware, repo: git@github.com:remix-run/remix.git, type: git}
+  '@remix-run/cop-middleware@https://codeload.github.com/remix-run/remix/tar.gz/aa8b4d578c4039dcea10fb7071cc4d8107f5f921#path:packages/cop-middleware':
+    resolution: {path: packages/cop-middleware, tarball: https://codeload.github.com/remix-run/remix/tar.gz/aa8b4d578c4039dcea10fb7071cc4d8107f5f921}
     version: 1.0.0
 
   '@remix-run/cors-middleware@https://codeload.github.com/remix-run/remix/tar.gz/aa8b4d578c4039dcea10fb7071cc4d8107f5f921#path:packages/cors-middleware':
@@ -1839,7 +1839,6 @@ packages:
 
   boolean@3.2.0:
     resolution: {integrity: sha512-d0II/GO9uf9lfUHH2BQsjxzRJZBdsjgsBiW4BvhWk/3qoKwQFjIDVN19PfX8F2D/r9PCMTtLWjYVCFrpeYUzsw==}
-    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
 
   buffer-from@1.1.2:
     resolution: {integrity: sha512-E+XQCRwSbaaiChtv6k6Dwgc+bx+Bs6vuKJHHl5kox/BaKbhiXzqQOwK4cO22yElGp2OCmjwVhT3HmxgyPGnJfQ==}
@@ -3460,7 +3459,7 @@ snapshots:
     dependencies:
       '@remix-run/headers': https://codeload.github.com/remix-run/remix/tar.gz/aa8b4d578c4039dcea10fb7071cc4d8107f5f921#path:packages/headers
 
-  '@remix-run/cop-middleware@git+https://git@github.com:remix-run/remix.git#aa8b4d578c4039dcea10fb7071cc4d8107f5f921&path:packages/cop-middleware':
+  '@remix-run/cop-middleware@https://codeload.github.com/remix-run/remix/tar.gz/aa8b4d578c4039dcea10fb7071cc4d8107f5f921#path:packages/cop-middleware':
     dependencies:
       '@remix-run/fetch-router': https://codeload.github.com/remix-run/remix/tar.gz/aa8b4d578c4039dcea10fb7071cc4d8107f5f921#path:packages/fetch-router
 
@@ -4532,7 +4531,7 @@ snapshots:
       '@remix-run/component-hmr': https://codeload.github.com/remix-run/remix/tar.gz/aa8b4d578c4039dcea10fb7071cc4d8107f5f921#path:packages/component-hmr(@emnapi/core@2.0.0-alpha.3)(@emnapi/runtime@2.0.0-alpha.3)
       '@remix-run/compression-middleware': https://codeload.github.com/remix-run/remix/tar.gz/aa8b4d578c4039dcea10fb7071cc4d8107f5f921#path:packages/compression-middleware
       '@remix-run/cookie': https://codeload.github.com/remix-run/remix/tar.gz/aa8b4d578c4039dcea10fb7071cc4d8107f5f921#path:packages/cookie
-      '@remix-run/cop-middleware': git+https://git@github.com:remix-run/remix.git#aa8b4d578c4039dcea10fb7071cc4d8107f5f921&path:packages/cop-middleware
+      '@remix-run/cop-middleware': https://codeload.github.com/remix-run/remix/tar.gz/aa8b4d578c4039dcea10fb7071cc4d8107f5f921#path:packages/cop-middleware
       '@remix-run/cors-middleware': https://codeload.github.com/remix-run/remix/tar.gz/aa8b4d578c4039dcea10fb7071cc4d8107f5f921#path:packages/cors-middleware
       '@remix-run/csrf-middleware': https://codeload.github.com/remix-run/remix/tar.gz/aa8b4d578c4039dcea10fb7071cc4d8107f5f921#path:packages/csrf-middleware
       '@remix-run/data-schema': https://codeload.github.com/remix-run/remix/tar.gz/aa8b4d578c4039dcea10fb7071cc4d8107f5f921#path:packages/data-schema
