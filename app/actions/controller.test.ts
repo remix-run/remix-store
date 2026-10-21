@@ -49,7 +49,7 @@ describe("platform skeleton", () => {
     assert.match(html, /Main navigation/);
     assert.match(html, /All Products/);
     assert.match(html, /Store policies/);
-    assert.equal(response.headers.get("Cache-Control"), "private, max-age=5");
+    assert.equal(response.headers.get("Cache-Control"), "private, no-store");
   });
 
   it("inlines every sprite symbol the page references", async () => {

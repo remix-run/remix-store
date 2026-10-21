@@ -1,6 +1,8 @@
+import { SuperHeaders } from "remix/headers";
 import { createController } from "remix/router";
 
 import { queryProduct, queryProductNavigation } from "../../data/storefront.ts";
+import { cacheControl } from "../../lib/cache-control.ts";
 import { marketPath } from "../../lib/public/market.ts";
 import { getRuntime } from "../../runtime.ts";
 import { routes } from "../../routes.ts";
@@ -34,7 +36,7 @@ export default createController(routes.products, {
             storefrontClient.storeUrl
           }
         />,
-        { headers: { "Cache-Control": "private, max-age=5" } },
+        { headers: new SuperHeaders({ cacheControl: cacheControl.browsing }) },
       );
     },
   },

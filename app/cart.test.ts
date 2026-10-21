@@ -282,7 +282,7 @@ describe("cart routes", () => {
     );
     assert.equal(
       subscribeDocument.headers.get("Cache-Control"),
-      "private, max-age=5",
+      "private, no-store",
     );
     assert.match(await subscribeDocument.text(), /Test Product/);
     assert.equal(cartQueries, 1);

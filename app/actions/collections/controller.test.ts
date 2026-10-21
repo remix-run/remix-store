@@ -29,7 +29,7 @@ describe("collection routes", () => {
     let html = await response.text();
 
     assert.equal(response.status, 200);
-    assert.equal(response.headers.get("Cache-Control"), "private, max-age=5");
+    assert.equal(response.headers.get("Cache-Control"), "private, no-store");
     assert.equal(variables?.first, 15);
     assert.equal(variables?.after, undefined);
     assert.match(html, /<h1>Racing collection<\/h1>/);
@@ -100,6 +100,7 @@ describe("collection routes", () => {
     let response = await app.fetch(
       new Request(
         "https://example.com/en-ca/collections/racing/products?cursor=page-2",
+        { headers: { "X-Remix-Frame": "true" } },
       ),
     );
     let html = await response.text();

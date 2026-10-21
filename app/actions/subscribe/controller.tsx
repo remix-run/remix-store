@@ -53,7 +53,9 @@ export function createSubscribeController(
               marketPath(routes.subscribe.index.href(), market.pathPrefix)
             }
           />,
-          { headers: { "Cache-Control": "private, max-age=5" } },
+          {
+            headers: new SuperHeaders({ cacheControl: cacheControl.browsing }),
+          },
         );
       },
       async action({ market, render, request, storefrontClient, url }) {
