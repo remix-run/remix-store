@@ -1,4 +1,5 @@
 import type { Renderer } from "remix/middleware/render";
+import { SuperHeaders } from "remix/headers";
 import { createController } from "remix/router";
 import { redirect } from "remix/response/redirect";
 import type { RemixNode, SerializableObject } from "remix/component";
@@ -17,6 +18,7 @@ import {
   parseSubscriptionForm,
 } from "../../data/subscription.ts";
 import { verifyBackInStockSubscription } from "../../data/storefront.ts";
+import { cacheControl } from "../../lib/cache-control.ts";
 import { marketPath, type ActiveMarket } from "../../lib/public/market.ts";
 import { getRuntime } from "../../runtime.ts";
 import { routes } from "../../routes.ts";
@@ -54,7 +56,9 @@ export function createSubscribeController(
         );
       },
       async action({ market, render, request, storefrontClient, url }) {
-        let headers = new Headers({ "Cache-Control": "private, no-store" });
+        let headers = new SuperHeaders({
+          cacheControl: cacheControl.privateNoStore,
+        });
         let respond = (
           body: SubscriptionBody,
           status: number,

@@ -1,11 +1,14 @@
 import { constants as zlib } from "node:zlib";
 
+import { SuperHeaders } from "remix/headers";
+import { CacheControl } from "remix/headers/cache-control";
 import { compression } from "remix/middleware/compression";
 import { staticFiles } from "remix/middleware/static";
 import type { Middleware } from "remix/router";
 
 import { getDocumentAssets } from "./assets.ts";
 import { assets } from "./assets.node.ts";
+import { cacheControl } from "./lib/cache-control.ts";
 import { render } from "./middleware/render.tsx";
 import { createApp } from "./router.ts";
 
@@ -39,17 +42,17 @@ function nodePlatform(): Middleware {
   // Root public files keep stable, unfingerprinted URLs, so cache them briefly.
   // Fingerprinted `/assets/*` responses set their own immutable headers.
   let servePublicFiles = staticFiles("./public", {
-    cacheControl: "public, max-age=86400",
+    cacheControl: new CacheControl(cacheControl.publicDay).toString(),
     index: false,
   });
 
   return (context, next) => {
     if (context.url.pathname === "/health") {
       return new Response("OK", {
-        headers: {
-          "Cache-Control": "no-store",
-          "Content-Type": "text/plain; charset=utf-8",
-        },
+        headers: new SuperHeaders({
+          cacheControl: cacheControl.noStore,
+          contentType: "text/plain; charset=utf-8",
+        }),
       });
     }
 
@@ -64,8 +67,8 @@ function nodePlatform(): Middleware {
         if (response && response.status < 400) return response;
 
         // A stale fingerprint during a deploy must not be cached by a CDN.
-        let headers = new Headers(response?.headers);
-        headers.set("Cache-Control", "no-store");
+        let headers = new SuperHeaders(response?.headers);
+        headers.cacheControl = cacheControl.noStore;
         return new Response(response ? response.body : "Not Found", {
           headers,
           status: response?.status ?? 404,

@@ -1,7 +1,11 @@
+import { SuperHeaders, type SuperHeadersPropertyInit } from "remix/headers";
+
+import { cacheControl } from "./cache-control.ts";
+
 const XML_HEADERS = {
-  "Cache-Control": "public, max-age=86400",
-  "Content-Type": "application/xml; charset=utf-8",
-};
+  cacheControl: cacheControl.publicDay,
+  contentType: "application/xml; charset=utf-8",
+} satisfies SuperHeadersPropertyInit;
 
 export type SitemapAlternate = {
   href: string;
@@ -32,7 +36,7 @@ export function sitemapIndexResponse(locations: string[]): Response {
     .map((location) => `  <sitemap><loc>${escapeXml(location)}</loc></sitemap>`)
     .join("\n");
   let body = `<?xml version="1.0" encoding="UTF-8"?>\n<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${entries}\n</sitemapindex>`;
-  return new Response(body, { headers: XML_HEADERS });
+  return new Response(body, { headers: new SuperHeaders(XML_HEADERS) });
 }
 
 export function sitemapResponse(
@@ -56,7 +60,7 @@ export function sitemapResponse(
     ? ' xmlns:xhtml="http://www.w3.org/1999/xhtml"'
     : "";
   let body = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"${imageNamespace}${xhtmlNamespace}>\n${entries.map(renderUrl).join("\n")}\n</urlset>`;
-  return new Response(body, { headers: XML_HEADERS });
+  return new Response(body, { headers: new SuperHeaders(XML_HEADERS) });
 }
 
 function renderUrl(url: SitemapUrl): string {
