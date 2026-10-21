@@ -28,7 +28,6 @@ jobs:
       - name: Deploy
         run: >-
           flyctl deploy
-          --build-arg "ASSET_BUILD_ID=$GITHUB_SHA"
           --ha=false
           --remote-only
         env:

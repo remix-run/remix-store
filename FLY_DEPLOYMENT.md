@@ -73,12 +73,12 @@ first.
 
 `.github/workflows/fly-deployment.yml` deploys every push to `main`, then verifies `/health` and the server-rendered home page. Deployments run one at a time and are never canceled midway, since an interrupted blue-green cutover leaves Machines on different images.
 
-The workflow passes the Git commit SHA as `ASSET_BUILD_ID`, giving each release immutable Remix Asset URLs. Moving the deploy token into a protected GitHub environment would limit it to `main` as well.
+Production serves Remix Assets at content-fingerprinted, immutable URLs, so unchanged files keep their URLs across releases. Moving the deploy token into a protected GitHub environment would limit it to `main` as well.
 
 ## Local image verification
 
 ```sh
-docker build --build-arg ASSET_BUILD_ID=local-test -t remix-store-fly .
+docker build -t remix-store-fly .
 docker run --rm --env-file .env -p 44100:44100 remix-store-fly
 ```
 

@@ -5,6 +5,7 @@ import {
   handleShopifyRoutes,
   type CacheInstance,
 } from "@shopify/hydrogen";
+import { SuperHeaders } from "remix/headers";
 import { createMultiMatcher } from "remix/route-pattern/match";
 import { createContextKey, type Middleware } from "remix/router";
 import { redirect } from "remix/response/redirect";
@@ -25,6 +26,7 @@ import {
   localizeInternalUrl,
   type ActiveMarket,
 } from "../lib/public/market.ts";
+import { cacheControl } from "../lib/cache-control.ts";
 import { routeTemplates } from "../lib/public/route-templates.ts";
 import { routes } from "../routes.ts";
 import { getRuntime, type Env } from "../runtime.ts";
@@ -86,7 +88,9 @@ export function storefront(options: StorefrontOptions = {}): Middleware<
     ) {
       // Subscription abuse controls require an adapter-supplied, trusted IP.
       // Fail closed before Storefront/Admin work, without logging request data.
-      let headers = new Headers({ "Cache-Control": "private, no-store" });
+      let headers = new SuperHeaders({
+        cacheControl: cacheControl.privateNoStore,
+      });
       let body = {
         error: "Something went wrong. Please try again.",
         success: false,
@@ -94,7 +98,7 @@ export function storefront(options: StorefrontOptions = {}): Middleware<
       if (context.request.headers.get("Accept")?.includes("application/json")) {
         return Response.json(body, { status: 503, headers });
       }
-      headers.set("Content-Type", "text/html; charset=utf-8");
+      headers.contentType = "text/html; charset=utf-8";
       return new Response(
         '<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Subscribe unavailable</title></head><body><main><h1>Subscribe</h1><p role="alert">Something went wrong. Please try again.</p></main></body></html>',
         { status: 503, headers },
@@ -183,10 +187,10 @@ export function storefront(options: StorefrontOptions = {}): Middleware<
         discount.location,
         activeMarket.pathPrefix,
       );
-      let headers = new Headers({
+      let headers = new SuperHeaders({
         Location: location,
+        cacheControl: cacheControl.privateNoStore,
       });
-      headers.set("Cache-Control", "private, no-store");
 
       if (discount.code && context.request.method === "GET") {
         try {
@@ -367,15 +371,14 @@ function noStoreRedirect(response: Response): Response {
 }
 
 function noStore(response: Response): Response {
-  try {
-    response.headers.set("Cache-Control", "private, no-store");
-    return response;
-  } catch (error) {
-    if (!(error instanceof TypeError)) throw error;
-    let mutableResponse = new Response(response.body, response);
-    mutableResponse.headers.set("Cache-Control", "private, no-store");
-    return mutableResponse;
-  }
+  // Copying the headers also covers responses whose headers are immutable.
+  let headers = new SuperHeaders(response.headers);
+  headers.cacheControl = cacheControl.privateNoStore;
+  return new Response(response.body, {
+    headers,
+    status: response.status,
+    statusText: response.statusText,
+  });
 }
 
 type SeoRoute = (typeof routes.seo)[keyof typeof routes.seo];

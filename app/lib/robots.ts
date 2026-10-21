@@ -1,14 +1,20 @@
+import { SuperHeaders, type SuperHeadersPropertyInit } from "remix/headers";
+
+import { cacheControl } from "./cache-control.ts";
+
 const RESPONSE_HEADERS = {
-  "Cache-Control": "public, max-age=86400",
-  "Content-Type": "text/plain; charset=utf-8",
-};
+  cacheControl: cacheControl.publicDay,
+  contentType: "text/plain; charset=utf-8",
+} satisfies SuperHeadersPropertyInit;
 
 export function robotsResponse(options: {
   origin: string;
   shopId?: string;
   sitemapPath: string;
 }): Response {
-  return new Response(robotsText(options), { headers: RESPONSE_HEADERS });
+  return new Response(robotsText(options), {
+    headers: new SuperHeaders(RESPONSE_HEADERS),
+  });
 }
 
 function robotsText({

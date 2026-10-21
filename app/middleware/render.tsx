@@ -6,10 +6,12 @@ import {
 } from "remix/middleware/render";
 import { createMiddleware, type RequestContext } from "remix/router";
 import type { RemixNode } from "remix/component";
+import { SuperHeaders } from "remix/headers";
 
 import type { Assets } from "../assets.ts";
 import { runtimeDispatch } from "../runtime.ts";
 
+import { cacheControl } from "../lib/cache-control.ts";
 import { US_MARKET } from "../lib/public/market.ts";
 import { MarketConfig } from "./market.tsx";
 import { FALLBACK_SHELL_DATA, ShellDataConfig } from "./storefront.ts";
@@ -50,9 +52,9 @@ export function render(options: RenderOptions) {
           (await getContextValue(context, ShellDataConfig)) ??
           FALLBACK_SHELL_DATA;
         let market = getContextValue(context, MarketConfig) ?? US_MARKET;
-        let headers = new Headers(init?.headers);
+        let headers = new SuperHeaders(init?.headers);
         // HTML contains request-scoped Storefront data and must not be cached.
-        headers.set("Cache-Control", "private, no-store");
+        headers.cacheControl = cacheControl.privateNoStore;
         return renderNode(
           <DocumentAssetsProvider {...options.documentAssets}>
             <ShellDataProvider

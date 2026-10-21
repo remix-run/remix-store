@@ -1,3 +1,4 @@
+import { SuperHeaders } from "remix/headers";
 import { createController } from "remix/router";
 
 import {
@@ -5,6 +6,7 @@ import {
   querySitemapResources,
   type SitemapResourceType,
 } from "../../data/seo-resources.ts";
+import { cacheControl } from "../../lib/cache-control.ts";
 import { robotsResponse } from "../../lib/robots.ts";
 import {
   sitemapIndexResponse,
@@ -128,11 +130,11 @@ function sitemapUnavailable(cause: unknown): Response {
   console.error("[seo] Sitemap generation failed", cause);
   return new Response("Sitemap temporarily unavailable", {
     status: 503,
-    headers: {
-      "Cache-Control": "no-store",
-      "Content-Type": "text/plain; charset=utf-8",
+    headers: new SuperHeaders({
+      cacheControl: cacheControl.noStore,
+      contentType: "text/plain; charset=utf-8",
       "Retry-After": "60",
-    },
+    }),
   });
 }
 
