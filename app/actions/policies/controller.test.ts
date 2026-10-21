@@ -49,7 +49,6 @@ describe("policy routes", () => {
     let html = await response.text();
 
     assert.equal(response.status, 200);
-    assert.equal(response.headers.get("Cache-Control"), "private, no-store");
     assert.equal(variables?.privacyPolicy, true);
     assert.equal(variables?.refundPolicy, false);
     assert.match(html, /<title>Privacy policy \| The Remix Store<\/title>/);

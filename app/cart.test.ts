@@ -247,6 +247,34 @@ describe("cart routes", () => {
     assert.equal(storefrontBody?.variables.language, "EN");
   });
 
+  it("caches browsing frames briefly, but never documents that embed the cart", async (t) => {
+    let mockFetch = createStorefrontFetch({
+      Cart: () => ({ cart: createCart() }),
+      RemixAnalyticsShop: analyticsShopData,
+      RemixNavigation: navigationData,
+    });
+    t.mock.method(globalThis, "fetch", mockFetch);
+    let app = createTestApp(mockFetch);
+    let cookie = createCartCookie(CART_ID).split(";", 1)[0] ?? "";
+    let url = new URL(routes.subscribe.index.href(), origin);
+
+    // The cart store trusts embedded cart data until its next mutation, so a
+    // reused document would show a stale cart.
+    let document = await app.fetch(
+      new Request(url, { headers: { Cookie: cookie } }),
+    );
+    assert.equal(document.headers.get("Cache-Control"), "private, no-store");
+    assert.match(await document.text(), /Test Product/);
+
+    let frame = await app.fetch(
+      new Request(url, {
+        headers: { Cookie: cookie, "X-Remix-Frame": "true" },
+      }),
+    );
+    assert.equal(frame.headers.get("Cache-Control"), "private, max-age=5");
+    await frame.text();
+  });
+
   it("leaves the cart to the browser store on client navigations, except /cart", async (t) => {
     let cartQueries = 0;
     let mockFetch = createStorefrontFetch({
@@ -268,24 +296,8 @@ describe("cart routes", () => {
       }),
     );
     assert.equal(subscribePage.status, 200);
-    assert.equal(
-      subscribePage.headers.get("Cache-Control"),
-      "private, max-age=5",
-    );
     await subscribePage.text();
     assert.equal(cartQueries, 0);
-
-    let subscribeDocument = await app.fetch(
-      new Request(new URL(routes.subscribe.index.href(), origin), {
-        headers: { Cookie: cookie },
-      }),
-    );
-    assert.equal(
-      subscribeDocument.headers.get("Cache-Control"),
-      "private, no-store",
-    );
-    assert.match(await subscribeDocument.text(), /Test Product/);
-    assert.equal(cartQueries, 1);
 
     let cartPage = await app.fetch(
       new Request(new URL(routes.cart.href(), origin), {
@@ -296,8 +308,7 @@ describe("cart routes", () => {
       await cartPage.text(),
       /<title>Cart \(1\) \| The Remix Store<\/title>/,
     );
-    assert.equal(cartPage.headers.get("Cache-Control"), "private, no-store");
-    assert.equal(cartQueries, 2);
+    assert.equal(cartQueries, 1);
 
     let document = await app.fetch(
       new Request(new URL(routes.cart.href(), origin), {
@@ -305,7 +316,7 @@ describe("cart routes", () => {
       }),
     );
     await document.text();
-    assert.equal(cartQueries, 3);
+    assert.equal(cartQueries, 2);
   });
 });
 

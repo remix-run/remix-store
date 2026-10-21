@@ -41,7 +41,6 @@ describe("product routes", () => {
     let html = await response.text();
 
     assert.equal(response.status, 200);
-    assert.equal(response.headers.get("Cache-Control"), "private, no-store");
     assert.deepEqual(variables?.selectedOptions, [
       { name: "Color", value: "Red" },
       { name: "ref", value: "campaign" },

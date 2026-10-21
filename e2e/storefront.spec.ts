@@ -137,72 +137,86 @@ test("keeps product details when navigating from the home page", async ({
   ).toBeVisible();
 });
 
-test("hovering a product card prefetches JavaScript and reuses cached HTML on navigation", async ({
+test("clicking a hovered product card reuses the prefetched page", async ({
   page,
 }) => {
+  // Playwright can't tell a cache hit from a server response; CDP can.
   let network = await page.context().newCDPSession(page);
   await network.send("Network.enable");
   let cachedRequests = new Set<string>();
-  let productResponses: boolean[] = [];
+  let productResponses: Array<"cache" | "server"> = [];
   network.on("Network.requestServedFromCache", ({ requestId }) => {
     cachedRequests.add(requestId);
   });
   network.on("Network.responseReceived", ({ requestId, response }) => {
-    if (new URL(response.url).pathname === "/products/test-product") {
-      productResponses.push(
-        response.fromDiskCache === true || cachedRequests.has(requestId),
-      );
-    }
-  });
-  let product = await page.request.get("/products/test-product");
-  expect(product.ok()).toBe(true);
-  let productHtml = await product.text();
-  let requestedUrls = new Set<string>();
-  page.on("request", (request) => {
-    requestedUrls.add(request.url());
+    if (new URL(response.url).pathname !== "/products/test-product") return;
+    productResponses.push(
+      response.fromDiskCache || cachedRequests.has(requestId)
+        ? "cache"
+        : "server",
+    );
   });
   await page.goto("/collections/all");
   await page.waitForFunction(() => !document.getElementById("rmx-data"));
   let card = page.locator('main a[href="/products/test-product"]');
-  let initialRequests = new Set(requestedUrls);
 
-  let prefetched = page.waitForResponse(
-    (response) => new URL(response.url()).pathname === "/products/test-product",
-  );
   await card.hover();
-  let response = await prefetched;
-  expect(response.headers()["cache-control"]).toBe("private, max-age=5");
-  let scripts = await page.evaluate((html) => {
-    let destination = new DOMParser().parseFromString(html, "text/html");
-    return Array.from(
-      destination.querySelectorAll<HTMLLinkElement | HTMLScriptElement>(
-        'link[rel="modulepreload"], script[src][type="module"]',
-      ),
-      (element) =>
-        new URL(
-          element.getAttribute("href") ?? element.getAttribute("src")!,
-          location.href,
-        ).href,
-    ).filter((href) => new URL(href).origin === location.origin);
-  }, productHtml);
-  let destinationScripts = [...new Set(scripts)].filter(
-    (href) => !initialRequests.has(href),
-  );
-  expect(destinationScripts.length).toBeGreaterThan(0);
-  await expect
-    .poll(() => destinationScripts.filter((href) => requestedUrls.has(href)))
-    .toEqual(destinationScripts);
+  await expect.poll(() => productResponses).toEqual(["server"]);
   await expect(page).toHaveURL(/\/collections\/all$/);
-  expect(productResponses).toEqual([false]);
   await card.click();
 
   await expect(
     page.getByRole("heading", { level: 1, name: "Test product" }),
   ).toBeVisible();
   await page.waitForFunction(() => !window.navigation.transition);
-  // CDP distinguishes a real HTTP cache hit from another server request.
-  expect(productResponses.length).toBeGreaterThan(1);
-  expect(productResponses.slice(1).every((cached) => cached)).toBe(true);
+  expect(productResponses.slice(1)).not.toHaveLength(0);
+  expect(productResponses.slice(1)).not.toContain("server");
+});
+
+test("hovering a product card prefetches the product page's JavaScript", async ({
+  page,
+}) => {
+  test.skip(
+    process.env.E2E_RUNTIME === "oxygen-dev",
+    "Vite dev loads modules on demand, so pages declare none to prefetch.",
+  );
+  let requestedUrls = new Set<string>();
+  page.on("request", (request) => requestedUrls.add(request.url()));
+  await page.goto("/collections/all");
+  await page.waitForFunction(() => !document.getElementById("rmx-data"));
+  let loadedUrls = new Set(requestedUrls);
+  let card = page.locator('main a[href="/products/test-product"]');
+
+  let prefetched = page.waitForResponse(
+    (response) => new URL(response.url()).pathname === "/products/test-product",
+  );
+  await card.hover();
+  let destinationHtml = await (await prefetched).text();
+  let destinationModules = await page.evaluate((html) => {
+    let destination = new DOMParser().parseFromString(html, "text/html");
+    let elements = destination.querySelectorAll(
+      'link[rel="modulepreload"], script[type="module"][src]',
+    );
+    return Array.from(
+      elements,
+      (element) =>
+        new URL(
+          element.getAttribute("href") ?? element.getAttribute("src")!,
+          location.href,
+        ),
+    )
+      .filter((url) => url.origin === location.origin)
+      .map((url) => url.href);
+  }, destinationHtml);
+  let newModules = [...new Set(destinationModules)].filter(
+    (href) => !loadedUrls.has(href),
+  );
+
+  expect(newModules).not.toHaveLength(0);
+  await expect
+    .poll(() => newModules.filter((href) => !requestedUrls.has(href)))
+    .toEqual([]);
+  await expect(page).toHaveURL(/\/collections\/all$/);
 });
 
 test("updates the product grid when navigating between collections", async ({
