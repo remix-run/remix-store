@@ -17,8 +17,6 @@ RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store \
 
 FROM base AS runtime
 
-ARG ASSET_BUILD_ID
-ENV ASSET_BUILD_ID="${ASSET_BUILD_ID}"
 ENV NODE_ENV="production"
 ENV PORT="44100"
 

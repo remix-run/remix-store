@@ -4,12 +4,11 @@ import { browserBoundary } from "./assets.ts";
 
 const nodeEnv = process.env.NODE_ENV ?? "development";
 const isDevelopment = nodeEnv === "development";
-const buildId = process.env.ASSET_BUILD_ID;
+const isProduction = nodeEnv === "production";
 const isHmr = Boolean(isDevelopment && process.env.REMIX_NODE_HMR);
 
 const assetServerOptions: Parameters<typeof createAssetServer>[0] = {
   basePath: "/assets",
-  rootDir: process.cwd(),
   mounts: {
     app: "app",
     node_modules: "node_modules",
@@ -21,6 +20,8 @@ const assetServerOptions: Parameters<typeof createAssetServer>[0] = {
   watch: isDevelopment
     ? { ignore: ["dist/**", "node_modules/**", "test-results/**"] }
     : false,
+  // Content fingerprints need files that stay put, so only production uses them.
+  fingerprint: isProduction,
   hmr: isHmr
     ? {
         channel: async () =>
@@ -37,6 +38,4 @@ const assetServerOptions: Parameters<typeof createAssetServer>[0] = {
       : undefined,
   },
 };
-if (buildId) assetServerOptions.fingerprint = true;
-
 export const assets = createAssetServer(assetServerOptions);
