@@ -28,6 +28,7 @@ jobs:
       - name: Deploy
         run: >-
           flyctl deploy
+          --no-cache
           --ha=false
           --remote-only
         env:
