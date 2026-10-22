@@ -540,18 +540,12 @@ function productIdentity(product: ProductData): string {
   return `${product.id}:${product.selectedOrFirstAvailableVariant?.id ?? ""}`;
 }
 
-/** Drops Shopify's lone "Default Title", and options when nothing can vary. */
+/**
+ * Like production, only options with a choice to make get a menu. This also
+ * drops Shopify's lone "Default Title".
+ */
 function selectableOptions(options: ProductOption[]): ProductOption[] {
-  let visible = options.filter((option) => !isDefaultTitleOption(option));
-  return visible.some((option) => option.values.length > 1) ? visible : [];
-}
-
-function isDefaultTitleOption(option: ProductOption): boolean {
-  return (
-    option.name.trim().toLowerCase() === "title" &&
-    option.values.length === 1 &&
-    option.values[0]?.name.trim().toLowerCase() === "default title"
-  );
+  return options.filter((option) => option.values.length > 1);
 }
 
 /** Option state from server data, used until the store hydrates. */

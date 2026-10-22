@@ -326,6 +326,28 @@ describe("product form", () => {
     assert.equal(addButton.textContent, "Add to cart");
   });
 
+  it("hides options that have only one value, but keeps them in variant URLs", async (t) => {
+    let product = createProductWithSingleValueOption();
+    t.after(resetBrowserCartStore);
+
+    let { $, $$, act, cleanup } = render(
+      <ProductDetails
+        product={product}
+        search=""
+        shopPayStoreUrl={shopPayStoreUrl}
+      />,
+    );
+    t.after(cleanup);
+    await flushAsync(act);
+
+    assert.equal($$("details").length, 1);
+    assert.match($("summary")?.textContent ?? "", /^Color: Red/);
+    assert.equal(
+      $('a[href*="Color=Blue"]')?.getAttribute("href"),
+      "/products/test-product?Fit=Classic&Color=Blue",
+    );
+  });
+
   it("disables add-to-cart until a variant is resolved", async (t) => {
     let product = createProduct();
     product.selectedOrFirstAvailableVariant = null;
@@ -427,6 +449,38 @@ function createDefaultVariantProduct() {
   product.adjacentVariants = [variant];
   product.encodedVariantExistence = "v1_0";
   product.encodedVariantAvailability = "v1_0";
+  return product;
+}
+
+/** Like a T-shirt sold in one color but several sizes. */
+function createProductWithSingleValueOption() {
+  let product = createProduct();
+  let variants = [
+    product.selectedOrFirstAvailableVariant!,
+    ...product.adjacentVariants,
+    ...product.options[0]!.optionValues.map(
+      (value) => value.firstSelectableVariant,
+    ),
+  ];
+  for (let variant of new Set(variants)) {
+    if (variant) {
+      variant.selectedOptions = [
+        { name: "Fit", value: "Classic" },
+        ...variant.selectedOptions,
+      ];
+    }
+  }
+  product.options.unshift({
+    name: "Fit",
+    optionValues: [
+      {
+        name: "Classic",
+        firstSelectableVariant: product.selectedOrFirstAvailableVariant,
+      },
+    ],
+  });
+  product.encodedVariantExistence = "v1_0:0 2 3";
+  product.encodedVariantAvailability = "v1_0:0 3";
   return product;
 }
 
