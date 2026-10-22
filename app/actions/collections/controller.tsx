@@ -1,8 +1,10 @@
+import { SuperHeaders } from "remix/headers";
 import { createController } from "remix/router";
 import { redirect } from "remix/response/redirect";
 
 import { LoadMoreProducts } from "../../assets/public/load-more-products.tsx";
 import { queryCollection } from "../../data/storefront.ts";
+import { cacheControl } from "../../lib/cache-control.ts";
 import { marketPath, type MarketPathPrefix } from "../../lib/public/market.ts";
 import { routes } from "../../routes.ts";
 import {
@@ -59,6 +61,7 @@ export default createController(routes.collections, {
           products={collection.data.products.nodes}
           pageInfo={collection.data.products.pageInfo}
         />,
+        { headers: new SuperHeaders({ cacheControl: cacheControl.browsing }) },
       );
     },
     async products({ market, params, render, request, storefrontClient, url }) {
@@ -93,7 +96,12 @@ export default createController(routes.collections, {
           pathPrefix={market.pathPrefix}
           products={collection.data.products.nodes}
         />,
-        { headers: FRAGMENT_HEADERS },
+        {
+          headers: new SuperHeaders({
+            ...FRAGMENT_HEADERS,
+            cacheControl: cacheControl.browsing,
+          }),
+        },
       );
     },
     loadMore({ market, params, render, url }) {
@@ -102,7 +110,10 @@ export default createController(routes.collections, {
       if (!cursor) return new Response("Missing cursor", { status: 400 });
 
       return render(loadMoreControl(params.handle, cursor, market.pathPrefix), {
-        headers: FRAGMENT_HEADERS,
+        headers: new SuperHeaders({
+          ...FRAGMENT_HEADERS,
+          cacheControl: cacheControl.browsing,
+        }),
       });
     },
   },

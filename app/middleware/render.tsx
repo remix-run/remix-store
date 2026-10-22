@@ -14,7 +14,11 @@ import { runtimeDispatch } from "../runtime.ts";
 import { cacheControl } from "../lib/cache-control.ts";
 import { US_MARKET } from "../lib/public/market.ts";
 import { MarketConfig } from "./market.tsx";
-import { FALLBACK_SHELL_DATA, ShellDataConfig } from "./storefront.ts";
+import {
+  FALLBACK_SHELL_DATA,
+  isClientNavigation,
+  ShellDataConfig,
+} from "./storefront.ts";
 import {
   DocumentAssetsProvider,
   type DocumentAssets,
@@ -53,8 +57,24 @@ export function render(options: RenderOptions) {
           FALLBACK_SHELL_DATA;
         let market = getContextValue(context, MarketConfig) ?? US_MARKET;
         let headers = new SuperHeaders(init?.headers);
-        // HTML contains request-scoped Storefront data and must not be cached.
-        headers.cacheControl = cacheControl.privateNoStore;
+        // Handlers opt into caching when their response can tolerate staleness.
+        // Full documents embed the cart, and the cart store trusts that data
+        // until the next mutation, so only frame responses may be reused.
+        if (
+          !headers.has("Cache-Control") ||
+          !isClientNavigation(context.request)
+        ) {
+          headers.cacheControl = cacheControl.privateNoStore;
+        }
+        // Cart cookies and frame metadata change the rendered representation.
+        headers.apply({
+          vary: [
+            "Cookie",
+            "X-Remix-Frame",
+            "X-Remix-Target",
+            "X-Remix-Top-Frame-Src",
+          ],
+        });
         return renderNode(
           <DocumentAssetsProvider {...options.documentAssets}>
             <ShellDataProvider

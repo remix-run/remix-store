@@ -247,6 +247,34 @@ describe("cart routes", () => {
     assert.equal(storefrontBody?.variables.language, "EN");
   });
 
+  it("caches browsing frames briefly, but never documents that embed the cart", async (t) => {
+    let mockFetch = createStorefrontFetch({
+      Cart: () => ({ cart: createCart() }),
+      RemixAnalyticsShop: analyticsShopData,
+      RemixNavigation: navigationData,
+    });
+    t.mock.method(globalThis, "fetch", mockFetch);
+    let app = createTestApp(mockFetch);
+    let cookie = createCartCookie(CART_ID).split(";", 1)[0] ?? "";
+    let url = new URL(routes.subscribe.index.href(), origin);
+
+    // The cart store trusts embedded cart data until its next mutation, so a
+    // reused document would show a stale cart.
+    let document = await app.fetch(
+      new Request(url, { headers: { Cookie: cookie } }),
+    );
+    assert.equal(document.headers.get("Cache-Control"), "private, no-store");
+    assert.match(await document.text(), /Test Product/);
+
+    let frame = await app.fetch(
+      new Request(url, {
+        headers: { Cookie: cookie, "X-Remix-Frame": "true" },
+      }),
+    );
+    assert.equal(frame.headers.get("Cache-Control"), "private, max-age=5");
+    await frame.text();
+  });
+
   it("leaves the cart to the browser store on client navigations, except /cart", async (t) => {
     let cartQueries = 0;
     let mockFetch = createStorefrontFetch({

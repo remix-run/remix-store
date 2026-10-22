@@ -53,6 +53,9 @@ export function createSubscribeController(
               marketPath(routes.subscribe.index.href(), market.pathPrefix)
             }
           />,
+          {
+            headers: new SuperHeaders({ cacheControl: cacheControl.browsing }),
+          },
         );
       },
       async action({ market, render, request, storefrontClient, url }) {

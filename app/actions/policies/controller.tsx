@@ -1,6 +1,8 @@
+import { SuperHeaders } from "remix/headers";
 import { createController } from "remix/router";
 
 import { isPolicyHandle, queryPolicy } from "../../data/policies.ts";
+import { cacheControl } from "../../lib/cache-control.ts";
 import { marketPath } from "../../lib/public/market.ts";
 import { routes } from "../../routes.ts";
 import { NotFoundPage } from "../pages.tsx";
@@ -30,6 +32,7 @@ export default createController(routes.policies, {
           market={market}
           policy={result.data}
         />,
+        { headers: new SuperHeaders({ cacheControl: cacheControl.browsing }) },
       );
     },
   },

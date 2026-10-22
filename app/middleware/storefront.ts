@@ -264,7 +264,7 @@ export function storefront(options: StorefrontOptions = {}): Middleware<
  * Requests from Remix's browser runtime. The page that sends them has already
  * hydrated, so client-owned state such as the cart is live in the browser.
  */
-function isClientNavigation(request: Request): boolean {
+export function isClientNavigation(request: Request): boolean {
   return request.headers.get("X-Remix-Frame") === "true";
 }
 

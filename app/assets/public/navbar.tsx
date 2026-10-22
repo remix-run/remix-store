@@ -174,7 +174,7 @@ export const MobileMenu = clientEntry(
               <li key={item.id}>
                 <a
                   href={item.url}
-                  data-prefetch={item.prefetch ? "intent" : undefined}
+                  data-rmx-prefetch={item.prefetch ? "intent" : undefined}
                   aria-current={
                     handle.props.currentPath &&
                     isCurrentPage(item.url, handle.props.currentPath)

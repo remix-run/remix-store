@@ -1,7 +1,9 @@
+import { SuperHeaders } from "remix/headers";
 import { createController } from "remix/router";
 
 import { getCartData } from "../data/cart.server.ts";
 import { queryHome } from "../data/storefront.ts";
+import { cacheControl } from "../lib/cache-control.ts";
 import { marketPath } from "../lib/public/market.ts";
 import { isUtcDecember, type Clock } from "../lib/seasonal.ts";
 import { routes } from "../routes.ts";
@@ -34,6 +36,9 @@ export function createRootController(options: RootControllerOptions = {}) {
             pageInfo={home.data.pageInfo}
             showSeasonalSnow={isUtcDecember(clock())}
           />,
+          {
+            headers: new SuperHeaders({ cacheControl: cacheControl.browsing }),
+          },
         );
       },
       async cart({ market, render, request, shellData, storefrontClient }) {
