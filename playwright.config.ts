@@ -31,13 +31,14 @@ export default defineConfig({
     {
       name: "chromium",
       testIgnore: /.*\.nojs\.spec\.ts/,
-      use: devices["Desktop Chrome"],
+      use: { ...devices["Desktop Chrome"], channel: "chrome" },
     },
     {
       name: "chromium-no-js",
       testMatch: /.*\.nojs\.spec\.ts/,
       use: {
         ...devices["Desktop Chrome"],
+        channel: "chrome",
         javaScriptEnabled: false,
       },
     },
