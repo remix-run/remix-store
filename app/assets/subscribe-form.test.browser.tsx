@@ -78,9 +78,7 @@ describe("subscribe form", () => {
   });
 
   it("hydrates a server-rendered success as completed and disabled", async (t) => {
-    let calls = 0;
-    t.mock.method(globalThis, "fetch", async () => {
-      calls += 1;
+    let fetch = t.mock.method(globalThis, "fetch", async () => {
       throw new Error("must not fetch a completed subscription");
     });
     let view = render(
@@ -98,16 +96,12 @@ describe("subscribe form", () => {
     assert.ok(button instanceof HTMLButtonElement);
     assert.equal(button.disabled, true);
     await view.act(() => submit(view.$));
-    assert.equal(calls, 0);
+    assert.equal(fetch.mock.callCount(), 0);
   });
 
   it("guards duplicate submissions while pending and after success", async (t) => {
     let deferred = createDeferred<Response>();
-    let calls = 0;
-    t.mock.method(globalThis, "fetch", async () => {
-      calls += 1;
-      return deferred.promise;
-    });
+    let fetch = t.mock.method(globalThis, "fetch", () => deferred.promise);
     let view = render(<SubscribeForm action="/subscribe" mode="newsletter" />);
     t.after(view.cleanup);
     await flushAsync(view.act);
@@ -117,12 +111,12 @@ describe("subscribe form", () => {
       submit(view.$);
       submit(view.$);
     });
-    assert.equal(calls, 1);
+    assert.equal(fetch.mock.callCount(), 1);
 
     deferred.resolve(Response.json({ message: "Subscribed", success: true }));
     await waitFor(() => view.$('[role="status"]') !== null, view.act);
     await view.act(() => submit(view.$));
-    assert.equal(calls, 1);
+    assert.equal(fetch.mock.callCount(), 1);
 
     let email = view.$('input[name="email"]');
     assert.ok(email instanceof HTMLInputElement);
