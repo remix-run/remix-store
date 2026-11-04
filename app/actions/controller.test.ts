@@ -23,11 +23,11 @@ describe("platform skeleton", () => {
     assert.equal(response.status, 200);
     assert.match(
       html,
-      /<script data-rmx-import-map type="importmap">\{"imports":\{"remix\/component":"\/assets\/remix-component\.js"\}\}<\/script>/,
+      /<script data-rmx-import-map type="importmap" nonce="[^"]+">\{"imports":\{"remix\/component":"\/assets\/remix-component\.js"\}\}<\/script>/,
     );
     assert.match(
       html,
-      /<script src="\/assets\/entry\.js" type="module"><\/script>/,
+      /<script src="\/assets\/entry\.js" type="module" nonce="[^"]+"><\/script>/,
     );
     assert.match(html, /<title>Home \| The Remix Store<\/title>/);
     assert.match(html, /<link rel="canonical" href="https:\/\/example\.com\/"/);

@@ -37,7 +37,7 @@ export function createTestApp(
         stylesheets: [],
         scriptEntry: {
           href: "/assets/entry.js",
-          preloads: [],
+          preloads: ["/assets/entry.js"],
           importMap: {
             imports: { "remix/component": "/assets/remix-component.js" },
           },

@@ -156,6 +156,7 @@ interactivity guide and this app's browser-entry setup.
 | `app/router.ts` | Shared Fetch app, router, middleware, and runtime boundary |
 | `app/middleware/storefront.ts` | Request-scoped Shopify context and Storefront client |
 | `app/middleware/render.tsx` | Runtime-neutral streaming HTML renderer |
+| `app/middleware/csp.ts` | Nonce-based Content Security Policy; runs before the renderer |
 | `app/runtime.ts` | Request-scoped env, cache, and `waitUntil`; outer error boundary |
 | `app/node.ts` | Node static files, Remix Assets, rendering, and router composition |
 | `server.node.ts` | Node HTTP listener and shutdown lifecycle |
@@ -212,6 +213,10 @@ app without starting an HTTP listener. Runtime adapters call the app's
   The runtime lives in `remix/component`; headless primitives and animations
   require the separate, unstable `@remix-run/ui` package, which this app does
   not currently use.
+- HTML responses enforce a nonce-based CSP. Authored `<script>` and
+  `<link rel="modulepreload">` tags need the `nonce` from
+  `DocumentAssetsProvider`; inline event-handler attributes never run. New
+  third-party origins go in `app/middleware/csp.ts`.
 - Raw HTML rendered by JSX must be explicitly authorized with `unsafeHTML()`.
   Sanitize untrusted HTML first; `unsafeHTML()` preserves input and does not
   sanitize it. Direct DOM properties such as `template.innerHTML` are not JSX

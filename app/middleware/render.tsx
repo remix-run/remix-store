@@ -4,6 +4,7 @@ import {
   Renderer,
   type RenderFunction,
 } from "remix/middleware/render";
+import { getCspNonce } from "remix/middleware/csp";
 import { createMiddleware, type RequestContext } from "remix/router";
 import type { RemixNode } from "remix/component";
 import { SuperHeaders } from "remix/headers";
@@ -76,7 +77,10 @@ export function render(options: RenderOptions) {
           ],
         });
         return renderNode(
-          <DocumentAssetsProvider {...options.documentAssets}>
+          <DocumentAssetsProvider
+            {...options.documentAssets}
+            nonce={getCspNonce(context)}
+          >
             <ShellDataProvider
               {...shellData}
               currentPath={new URL(context.request.url).pathname}

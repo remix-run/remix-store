@@ -6,6 +6,7 @@ import { createApp } from "./router.ts";
 import { type Env, type ExecutionContext } from "./runtime.ts";
 
 const app = createApp({
+  csp: { development: import.meta.env.DEV },
   renderer: render({
     assets,
     documentAssets: await getDocumentAssets(
