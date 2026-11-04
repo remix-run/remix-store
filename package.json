@@ -25,7 +25,7 @@
   "dependencies": {
     "@pitlane/assets": "0.2.0",
     "@shopify/hydrogen": "2026.10.0",
-    "remix": "https://github.com/remix-run/previews/releases/download/v0.20261103.195415-main-2269870f/remix.tgz",
+    "remix": "3.2.0",
     "sanitize-html": "2.18.0"
   },
   "devDependencies": {
