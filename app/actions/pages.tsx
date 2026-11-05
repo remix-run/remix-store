@@ -15,7 +15,7 @@ import { focalPointPosition } from "../lib/image-utils.ts";
 import { marketPath, type ActiveMarket } from "../lib/public/market.ts";
 import { routes } from "../routes.ts";
 import { Document } from "../ui/document.tsx";
-import { ShellDataProvider } from "../ui/shell-data.tsx";
+import { ShellDataProvider, shellMarket } from "../ui/shell-data.tsx";
 import { PillIcon, pillLinkStyle } from "../ui/public/pill-link.tsx";
 import { ShopifyImage } from "../ui/public/shopify-image.tsx";
 
@@ -25,7 +25,6 @@ export function HomePage(
     description?: string | null;
     hero: HomeHeroData | null;
     lookbookEntries: HomeLookbookEntryData[];
-    market: ActiveMarket;
     pageInfo: ProductPageInfoData;
     products: ProductCardData[];
     showSeasonalSnow: boolean;
@@ -33,6 +32,7 @@ export function HomePage(
 ) {
   return () => {
     let { hero, lookbookEntries } = handle.props;
+    let market = shellMarket(handle);
     let [firstEntry, ...remainingEntries] = lookbookEntries;
     let collectionHandle = hero?.collectionHandle ?? "all";
 
@@ -48,28 +48,24 @@ export function HomePage(
             assetImages={hero?.assetImages ?? []}
             collectionHref={marketPath(
               routes.collections.show.href({ handle: collectionHandle }),
-              handle.props.market.pathPrefix,
+              market.pathPrefix,
             )}
             heading="Remix 3 Racing Team Collection"
             cta="Shop New Items"
           />
           <div mix={editorialStyle}>
             {firstEntry ? (
-              <LookbookEntry entry={firstEntry} market={handle.props.market} />
+              <LookbookEntry entry={firstEntry} market={market} />
             ) : null}
             <RunnerPanel />
             {remainingEntries.map((entry) => (
-              <LookbookEntry
-                key={entry.id}
-                entry={entry}
-                market={handle.props.market}
-              />
+              <LookbookEntry key={entry.id} entry={entry} market={market} />
             ))}
             {handle.props.products.length ? (
               <div data-home-catalog="true" mix={homeCatalogStyle}>
                 <CollectionProducts
                   collectionHandle="all"
-                  pathPrefix={handle.props.market.pathPrefix}
+                  pathPrefix={market.pathPrefix}
                   products={handle.props.products}
                   pageInfo={handle.props.pageInfo}
                 />
@@ -174,7 +170,6 @@ export function CartPage(
   handle: Handle<{
     canonicalUrl?: string;
     initialData: CartInitialData;
-    market: ActiveMarket;
   }>,
 ) {
   return () => {
@@ -195,7 +190,7 @@ export function CartPage(
           <CartPageContent
             initialData={handle.props.initialData}
             automaticDiscountLabel={storeWideSale?.title}
-            market={handle.props.market}
+            market={shellMarket(handle)}
           />
         </main>
       </Document>

@@ -416,6 +416,61 @@ describe("subscribe routes", () => {
     assert.doesNotMatch(body, /member@example\.com|customer/);
     assert.doesNotMatch(JSON.stringify(logs), /member@example\.com|customer/);
   });
+
+  it("logs the safe Admin error code", async (t) => {
+    let logs: unknown[][] = [];
+    t.mock.method(console, "error", (...args: unknown[]) => logs.push(args));
+    let app = createTestApp(createStorefrontFetch(shellHandlers), {
+      subscribe: {
+        adminFetch: async () => new Response("unavailable", { status: 503 }),
+        rateLimiter: allowAll(),
+      },
+    });
+
+    let response = await post(app, {
+      consent: "yes",
+      email: "member@example.com",
+    });
+    assert.equal(response.status, 502);
+    assert.deepEqual(logs, [
+      ["[subscribe] Shopify Admin subscription failed:", "response"],
+    ]);
+  });
+
+  it("reports a Storefront outage as a failure, not an ineligible product", async (t) => {
+    let logs: unknown[][] = [];
+    t.mock.method(console, "error", (...args: unknown[]) => logs.push(args));
+    let adminCalls = 0;
+    let app = createTestApp(
+      createStorefrontFetch({
+        ...shellHandlers,
+        RemixBackInStockSubscription: () => {
+          throw new TypeError("connection lost");
+        },
+      }),
+      {
+        subscribe: {
+          adminFetch: async () => {
+            adminCalls += 1;
+            throw new Error("must not call Admin");
+          },
+          rateLimiter: allowAll(),
+        },
+      },
+    );
+
+    let response = await post(app, {
+      consent: "yes",
+      email: "member@example.com",
+      "product-handle": "test-product",
+      "variant-id": "gid://shopify/ProductVariant/222",
+    });
+
+    assert.equal(response.status, 502);
+    assert.match(await response.text(), /Something went wrong/);
+    assert.equal(adminCalls, 0);
+    assert.match(String(logs[0]?.[0]), /Back-in-stock variant lookup failed/);
+  });
 });
 
 interface VerifiedVariantFixture extends StorefrontJsonObject {

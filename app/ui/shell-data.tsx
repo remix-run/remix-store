@@ -1,7 +1,7 @@
 import { type Handle, type RemixNode } from "remix/component";
 
 import type { CartInitialData } from "../data/public/cart.ts";
-import type { ActiveMarket } from "../lib/public/market.ts";
+import { US_MARKET, type ActiveMarket } from "../lib/public/market.ts";
 import type { AnalyticsShop } from "../data/analytics-shop.ts";
 import type {
   NavigationMenuData,
@@ -38,4 +38,13 @@ export function ShellDataProvider(
     storeWideSale: handle.props.storeWideSale,
   });
   return () => <>{handle.props.children}</>;
+}
+
+/**
+ * The request's market. The render middleware wraps every page in
+ * ShellDataProvider, so server components read it here instead of taking a
+ * prop. Hydrated islands still need it passed explicitly.
+ */
+export function shellMarket(handle: Pick<Handle, "context">): ActiveMarket {
+  return handle.context.get(ShellDataProvider)?.market ?? US_MARKET;
 }

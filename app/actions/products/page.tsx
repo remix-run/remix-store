@@ -4,13 +4,12 @@ import { ProductViewed } from "../../assets/public/analytics.tsx";
 import { ProductDetails } from "../../assets/public/product-details.tsx";
 import type { ProductData } from "../../data/product.ts";
 import type { NavigationMenuData } from "../../data/public/types.ts";
-import type { ActiveMarket } from "../../lib/public/market.ts";
 import { Document } from "../../ui/document.tsx";
+import { shellMarket } from "../../ui/shell-data.tsx";
 
 export function ProductPage(
   handle: Handle<{
     canonicalUrl: string;
-    market: ActiveMarket;
     menu: NavigationMenuData;
     product: ProductData;
     search: string;
@@ -34,7 +33,7 @@ export function ProductPage(
         <main>
           <ProductViewed key={product.id} product={analyticsProduct(product)} />
           <ProductDetails
-            market={handle.props.market}
+            market={shellMarket(handle)}
             menu={handle.props.menu}
             product={product}
             search={handle.props.search}

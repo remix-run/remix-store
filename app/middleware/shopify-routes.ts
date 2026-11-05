@@ -154,8 +154,8 @@ async function discountRedirect(
   if (discount.code && request.method === "GET") {
     try {
       let discountHeaders = await applyDiscountCode(
-        request,
         storefrontClient,
+        request,
         discount.code,
       );
       for (let [name, value] of discountHeaders) headers.append(name, value);
@@ -163,7 +163,8 @@ async function discountRedirect(
       if (isRequestAbort(request, error) || !isStorefrontFailure(error)) {
         throw error;
       }
-      console.error("[hydrogen] Discount application failed");
+      // Log only the failure type: the error may echo the discount code.
+      console.error("[hydrogen] Discount application failed:", error.name);
     }
   }
 

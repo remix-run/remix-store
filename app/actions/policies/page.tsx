@@ -4,15 +4,14 @@ import { PageTitle } from "../../assets/public/page-title.tsx";
 import type { PolicyData } from "../../data/policies.ts";
 import {
   localizeInternalUrl,
-  type ActiveMarket,
   type MarketPathPrefix,
 } from "../../lib/public/market.ts";
 import { Document } from "../../ui/document.tsx";
+import { shellMarket } from "../../ui/shell-data.tsx";
 
 export function PolicyPage(
   handle: Handle<{
     canonicalUrl: string;
-    market: ActiveMarket;
     policy: PolicyData;
   }>,
 ) {
@@ -28,7 +27,7 @@ export function PolicyPage(
           innerHTML={unsafeHTML(
             localizePolicyLinks(
               handle.props.policy.body,
-              handle.props.market.pathPrefix,
+              shellMarket(handle).pathPrefix,
             ),
           )}
         />

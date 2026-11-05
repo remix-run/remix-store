@@ -3,10 +3,13 @@ import {
   getCartId,
   gql,
   type StorefrontApi,
-  type StorefrontClient,
 } from "@shopify/hydrogen";
 
-import { StorefrontQueryError, requireStorefrontData } from "./storefront.ts";
+import {
+  StorefrontQueryError,
+  requireStorefrontData,
+  type AppStorefrontClient,
+} from "./storefront.ts";
 
 const DISCOUNT_CART_CREATE_MUTATION = gql(`
   mutation RemixDiscountCartCreate(
@@ -71,8 +74,8 @@ const CART_DISCOUNT_CODES_UPDATE_MUTATION = gql(`
  * Throws a Storefront failure when the API errors or rejects the code.
  */
 export async function applyDiscountCode(
+  storefrontClient: AppStorefrontClient,
   request: Request,
-  storefrontClient: StorefrontClient,
   code: string,
 ): Promise<Headers> {
   let cartId = getCartId(request);

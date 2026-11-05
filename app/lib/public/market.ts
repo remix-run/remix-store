@@ -116,6 +116,15 @@ export function marketPath(
   return value === "/" ? `${pathPrefix}/` : `${pathPrefix}${value}`;
 }
 
+/** The absolute URL of an app path in a market, on the request's origin. */
+export function marketUrl(
+  requestUrl: URL,
+  path: string,
+  pathPrefix: MarketPathPrefix,
+): string {
+  return requestUrl.origin + marketPath(path, pathPrefix);
+}
+
 export function localizeInternalUrl(
   value: string,
   pathPrefix: MarketPathPrefix,

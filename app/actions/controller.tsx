@@ -1,10 +1,10 @@
 import { SuperHeaders } from "remix/headers";
 import { createController } from "remix/router";
 
-import { getCartData } from "../data/cart-handlers.ts";
+import { loadCartDataOrEmpty } from "../data/cart-handlers.ts";
 import { queryHome } from "../data/home.ts";
 import { cacheControl } from "../lib/cache-control.ts";
-import { marketPath } from "../lib/public/market.ts";
+import { marketUrl } from "../lib/public/market.ts";
 import { isUtcDecember, type Clock } from "../lib/seasonal.ts";
 import { routes } from "../routes.ts";
 import { CartPage, HomePage } from "./pages.tsx";
@@ -18,16 +18,12 @@ export function createRootController(options: RootControllerOptions = {}) {
 
   return createController(routes, {
     actions: {
-      async home({ market, request, render, storefrontClient }) {
+      async home({ market, render, storefrontClient, url }) {
         let home = await queryHome(storefrontClient);
 
         return render(
           <HomePage
-            canonicalUrl={
-              new URL(request.url).origin +
-              marketPath(routes.home.href(), market.pathPrefix)
-            }
-            market={market}
+            canonicalUrl={marketUrl(url, routes.home.href(), market.pathPrefix)}
             description={home.shop.description}
             hero={home.hero}
             lookbookEntries={home.lookbookEntries}
@@ -40,20 +36,23 @@ export function createRootController(options: RootControllerOptions = {}) {
           },
         );
       },
-      async cart({ market, render, request, shellData, storefrontClient }) {
+      async cart({
+        market,
+        render,
+        request,
+        shellData,
+        storefrontClient,
+        url,
+      }) {
         // The page title and server-rendered lines need the cart even when the
         // shell leaves it to the browser store on client navigations.
         let cartInitialData =
           (await shellData).cartInitialData ??
-          (await getCartData(request, storefrontClient));
+          (await loadCartDataOrEmpty(storefrontClient, request));
         return render(
           <CartPage
-            canonicalUrl={
-              new URL(request.url).origin +
-              marketPath(routes.cart.href(), market.pathPrefix)
-            }
+            canonicalUrl={marketUrl(url, routes.cart.href(), market.pathPrefix)}
             initialData={cartInitialData}
-            market={market}
           />,
         );
       },

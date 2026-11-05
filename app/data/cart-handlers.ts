@@ -6,7 +6,6 @@ import {
   type CartGetData,
   type CartUserError,
   type CartWarning,
-  type StorefrontClient,
 } from "@shopify/hydrogen";
 import type {
   SerializableObject,
@@ -14,6 +13,7 @@ import type {
 } from "remix/component";
 
 import { isRequestAbort } from "../runtime.ts";
+import { isStorefrontFailure, type AppStorefrontClient } from "./storefront.ts";
 
 const CART_FRAGMENT = gql(`
   fragment CartFragment on Cart {
@@ -73,12 +73,12 @@ export interface CartOperations {
 
 /**
  * Loads the current cart for SSR. A missing or malformed cart cookie renders
- * an empty cart; transport failures are caught so a cart query outage never
- * takes down the rest of the page.
+ * an empty cart, and so does a Storefront failure, so a cart query outage
+ * never takes down the rest of the page. Aborts and bugs still throw.
  */
-export async function getCartData(
+export async function loadCartDataOrEmpty(
+  storefrontClient: AppStorefrontClient,
   request: Request,
-  storefrontClient: StorefrontClient,
 ): Promise<CartInitialData> {
   let cartId = getCartId(request);
   if (!cartId) return { cart: null };
@@ -89,7 +89,9 @@ export async function getCartData(
     // from CART_FRAGMENT; only its open extension fields block inference.
     return result.data as CartInitialData;
   } catch (error) {
-    if (isRequestAbort(request, error)) throw error;
+    if (isRequestAbort(request, error) || !isStorefrontFailure(error)) {
+      throw error;
+    }
     console.error(
       "[hydrogen] Cart query failed; rendering without cart data",
       error,

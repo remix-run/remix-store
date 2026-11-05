@@ -3,7 +3,7 @@ import { createController } from "remix/router";
 
 import { isPolicyHandle, queryPolicy } from "../../data/policies.ts";
 import { cacheControl } from "../../lib/cache-control.ts";
-import { marketPath } from "../../lib/public/market.ts";
+import { marketUrl } from "../../lib/public/market.ts";
 import { routes } from "../../routes.ts";
 import { NotFoundPage } from "../../ui/error-pages.tsx";
 import { PolicyPage } from "./page.tsx";
@@ -22,11 +22,11 @@ export default createController(routes.policies, {
 
       return render(
         <PolicyPage
-          canonicalUrl={
-            url.origin +
-            marketPath(routes.policies.show.href(params), market.pathPrefix)
-          }
-          market={market}
+          canonicalUrl={marketUrl(
+            url,
+            routes.policies.show.href(params),
+            market.pathPrefix,
+          )}
           policy={policy}
         />,
         { headers: new SuperHeaders({ cacheControl: cacheControl.browsing }) },

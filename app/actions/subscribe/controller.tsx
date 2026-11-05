@@ -1,10 +1,10 @@
-import type { Renderer } from "remix/middleware/render";
 import { SuperHeaders } from "remix/headers";
 import { createController } from "remix/router";
 import { redirect } from "remix/response/redirect";
-import type { RemixNode, SerializableObject } from "remix/component";
+import type { SerializableObject } from "remix/component";
 
 import {
+  AdminApiError,
   createAdminCustomerClient,
   subscribeCustomer,
 } from "../../data/admin.ts";
@@ -18,10 +18,14 @@ import {
   parseSubscriptionForm,
 } from "../../data/subscription.ts";
 import { queryBackInStockEligibleVariant } from "../../data/product.ts";
+import { isStorefrontFailure } from "../../data/storefront.ts";
 import { cacheControl } from "../../lib/cache-control.ts";
-import { marketPath, type ActiveMarket } from "../../lib/public/market.ts";
+import {
+  marketPath,
+  marketUrl,
+  type ActiveMarket,
+} from "../../lib/public/market.ts";
 import { routes } from "../../routes.ts";
-import { isRequestAbort } from "../../runtime.ts";
 import { SubscribePage } from "./page.tsx";
 
 export interface SubscribeControllerOptions {
@@ -42,21 +46,9 @@ export function createSubscribeController(
   return createController(routes.subscribe, {
     actions: {
       async index({ market, render, url }) {
-        return render(
-          <SubscribePage
-            action={marketPath(
-              routes.subscribe.action.href(),
-              market.pathPrefix,
-            )}
-            canonicalUrl={
-              url.origin +
-              marketPath(routes.subscribe.index.href(), market.pathPrefix)
-            }
-          />,
-          {
-            headers: new SuperHeaders({ cacheControl: cacheControl.browsing }),
-          },
-        );
+        return render(subscribePage(url, market), {
+          headers: new SuperHeaders({ cacheControl: cacheControl.browsing }),
+        });
       },
       async action({
         buyerIp,
@@ -70,17 +62,21 @@ export function createSubscribeController(
         let headers = new SuperHeaders({
           cacheControl: cacheControl.privateNoStore,
         });
+        // JavaScript submissions get JSON. Without it, the form re-renders
+        // the page with the result, or follows a redirect on success.
         let respond = (
           body: SubscriptionBody,
           status: number,
           successRedirect?: string,
-        ) =>
-          subscriptionResponse(request, url, render, market, {
-            body,
-            headers,
-            status,
-            successRedirect,
-          });
+        ) => {
+          if (request.headers.get("Accept")?.includes("application/json")) {
+            return Response.json(body, { status, headers });
+          }
+          if (body.success && successRedirect) {
+            return redirect(successRedirect, { status: 303, headers });
+          }
+          return render(subscribePage(url, market, body), { status, headers });
+        };
 
         if (!isSameOriginRequest(request, url)) {
           return respond(
@@ -92,7 +88,8 @@ export function createSubscribeController(
         let parsed: ReturnType<typeof parseSubscriptionForm>;
         try {
           parsed = parseSubscriptionForm(await readBoundedForm(request));
-        } catch {
+        } catch (error) {
+          if (!(error instanceof InvalidSubscriptionFormError)) throw error;
           return respond(
             { error: "Invalid form submission.", success: false },
             400,
@@ -121,11 +118,21 @@ export function createSubscribeController(
           "Thanks for subscribing! We’ll keep you updated on our latest news.";
         let { product } = parsed;
         if (product) {
-          let verified = await queryBackInStockEligibleVariant(
-            storefrontClient,
-            product.handle,
-            product.variantId,
-          );
+          let verified;
+          try {
+            verified = await queryBackInStockEligibleVariant(
+              storefrontClient,
+              product.handle,
+              product.variantId,
+            );
+          } catch (error) {
+            if (!isStorefrontFailure(error)) throw error;
+            console.error(
+              "[subscribe] Back-in-stock variant lookup failed",
+              error,
+            );
+            return respond(SUBSCRIPTION_FAILED, 502);
+          }
           if (!verified) {
             return respond(
               {
@@ -158,23 +165,24 @@ export function createSubscribeController(
             tags,
           });
         } catch (error) {
-          if (isRequestAbort(request, error)) throw error;
-          // Keep Admin details and customer data out of logs and responses.
-          console.error("[subscribe] Shopify Admin subscription failed");
-          return respond(
-            {
-              error: "Something went wrong. Please try again.",
-              success: false,
-            },
-            502,
+          // Anything else, including aborts, reaches the error boundary.
+          if (!(error instanceof AdminApiError)) throw error;
+          // The code is safe to log; Admin responses may hold customer data.
+          console.error(
+            "[subscribe] Shopify Admin subscription failed:",
+            error.code,
           );
+          return respond(SUBSCRIPTION_FAILED, 502);
         }
 
         return respond(
           { message, success: true },
           200,
           product
-            ? marketPath("/collections/all", market.pathPrefix)
+            ? marketPath(
+                routes.collections.show.href({ handle: "all" }),
+                market.pathPrefix,
+              )
             : undefined,
         );
       },
@@ -196,17 +204,29 @@ function isSameOriginRequest(request: Request, url: URL): boolean {
 
 const MAX_FORM_BYTES = 4096;
 
+const SUBSCRIPTION_FAILED: SubscriptionBody = {
+  error: "Something went wrong. Please try again.",
+  success: false,
+};
+
+/** The submission is not a small urlencoded form. */
+class InvalidSubscriptionFormError extends Error {
+  override name = "InvalidSubscriptionFormError";
+}
+
 async function readBoundedForm(request: Request): Promise<FormData> {
   let contentType = request.headers
     .get("Content-Type")
     ?.split(";", 1)[0]
     ?.trim();
   if (contentType !== "application/x-www-form-urlencoded") {
-    throw new TypeError("Unsupported subscription form content type");
+    throw new InvalidSubscriptionFormError(
+      "Unsupported subscription form content type",
+    );
   }
   let declaredLength = Number(request.headers.get("Content-Length"));
   if (declaredLength > MAX_FORM_BYTES)
-    throw new TypeError("Subscription form is too large");
+    throw new InvalidSubscriptionFormError("Subscription form is too large");
 
   let reader = request.body?.getReader();
   let chunks: Uint8Array[] = [];
@@ -218,7 +238,9 @@ async function readBoundedForm(request: Request): Promise<FormData> {
       total += value.byteLength;
       if (total > MAX_FORM_BYTES) {
         await reader.cancel();
-        throw new TypeError("Subscription form is too large");
+        throw new InvalidSubscriptionFormError(
+          "Subscription form is too large",
+        );
       }
       chunks.push(value);
     }
@@ -258,39 +280,20 @@ async function oneWayDigest(value: string): Promise<string> {
     .join("");
 }
 
-function subscriptionResponse(
-  request: Request,
+function subscribePage(
   url: URL,
-  render: Renderer<RemixNode>,
   market: ActiveMarket,
-  init: {
-    body: SubscriptionBody;
-    headers: Headers;
-    status: number;
-    successRedirect?: string;
-  },
-): Response | Promise<Response> {
-  if (request.headers.get("Accept")?.includes("application/json")) {
-    return Response.json(init.body, {
-      status: init.status,
-      headers: init.headers,
-    });
-  }
-  if (init.body.success && init.successRedirect) {
-    return redirect(init.successRedirect, {
-      status: 303,
-      headers: init.headers,
-    });
-  }
-  return render(
+  result?: SubscriptionBody,
+) {
+  return (
     <SubscribePage
       action={marketPath(routes.subscribe.action.href(), market.pathPrefix)}
-      canonicalUrl={
-        url.origin +
-        marketPath(routes.subscribe.index.href(), market.pathPrefix)
-      }
-      result={init.body}
-    />,
-    { status: init.status, headers: init.headers },
+      canonicalUrl={marketUrl(
+        url,
+        routes.subscribe.index.href(),
+        market.pathPrefix,
+      )}
+      result={result}
+    />
   );
 }

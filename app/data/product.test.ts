@@ -6,7 +6,7 @@ import {
   graphqlResponse,
 } from "../testing/storefront-client.ts";
 import { queryBackInStockEligibleVariant, queryProduct } from "./product.ts";
-import { StorefrontQueryError } from "./storefront.ts";
+import { isStorefrontFailure, StorefrontQueryError } from "./storefront.ts";
 
 const VARIANT_ID = "gid://shopify/ProductVariant/1";
 
@@ -68,13 +68,21 @@ describe("queryBackInStockEligibleVariant", () => {
     }
   });
 
-  it("returns null during a Storefront outage but propagates aborts", async () => {
+  it("throws Storefront failures instead of reporting the variant ineligible", async () => {
     let outage = createTestStorefrontClient(async () => {
       throw new TypeError("connection lost");
     });
-    assert.equal(
-      await queryBackInStockEligibleVariant(outage, "shirt", VARIANT_ID),
-      null,
+    await assert.rejects(
+      queryBackInStockEligibleVariant(outage, "shirt", VARIANT_ID),
+      (error: unknown) => isStorefrontFailure(error),
+    );
+
+    let graphqlFailure = createTestStorefrontClient(async () =>
+      graphqlResponse(null, [{ message: "Upstream failure" }]),
+    );
+    await assert.rejects(
+      queryBackInStockEligibleVariant(graphqlFailure, "shirt", VARIANT_ID),
+      StorefrontQueryError,
     );
 
     let abort = new DOMException("The request was aborted", "AbortError");

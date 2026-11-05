@@ -6,7 +6,11 @@ import { LoadMoreProducts } from "../../assets/public/load-more-products.tsx";
 import { queryCollection } from "../../data/collection.ts";
 import { isStorefrontFailure } from "../../data/storefront.ts";
 import { cacheControl } from "../../lib/cache-control.ts";
-import { marketPath, type MarketPathPrefix } from "../../lib/public/market.ts";
+import {
+  marketPath,
+  marketUrl,
+  type MarketPathPrefix,
+} from "../../lib/public/market.ts";
 import { routes } from "../../routes.ts";
 import {
   collectionPageHref,
@@ -46,11 +50,11 @@ export default createController(routes.collections, {
 
       return render(
         <CollectionPage
-          canonicalUrl={
-            url.origin +
-            marketPath(routes.collections.show.href(params), market.pathPrefix)
-          }
-          market={market}
+          canonicalUrl={marketUrl(
+            url,
+            routes.collections.show.href(params),
+            market.pathPrefix,
+          )}
           id={collection.id}
           handle={collection.handle}
           title={collection.title}

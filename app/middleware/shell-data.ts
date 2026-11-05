@@ -1,7 +1,7 @@
 import { createMultiMatcher } from "remix/route-pattern/match";
 
 import { loadAnalyticsShopOrNull } from "../data/analytics-shop.ts";
-import { getCartData } from "../data/cart-handlers.ts";
+import { loadCartDataOrEmpty } from "../data/cart-handlers.ts";
 import {
   FALLBACK_FOOTER_MENU,
   FALLBACK_NAVIGATION_MENU,
@@ -46,7 +46,7 @@ export function loadShellData(
     loadShellMenusOrFallback(storefrontClient),
     isClientNavigation(request)
       ? undefined
-      : getCartData(request, storefrontClient),
+      : loadCartDataOrEmpty(storefrontClient, request),
     loadAnalyticsShopOrNull(storefrontClient),
   ]).then(([shellMenus, cartInitialData, analyticsShop]) => ({
     ...shellMenus,

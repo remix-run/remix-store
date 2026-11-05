@@ -7,7 +7,6 @@ import {
 
 import {
   CATALOG_CACHE,
-  isStorefrontFailure,
   requireStorefrontData,
   type AppStorefrontClient,
 } from "./storefront.ts";
@@ -178,28 +177,23 @@ export async function queryProduct(
 /**
  * Looks up a variant with fresh (uncached) data and returns it only when a
  * back-in-stock subscription is allowed: the variant belongs to the product,
- * is sold out, and the product opts in. Returns null otherwise, including
- * during a Storefront outage.
+ * is sold out, and the product opts in. Returns null otherwise. Storefront
+ * failures throw, so an outage is not mistaken for an ineligible variant.
  */
 export async function queryBackInStockEligibleVariant(
   storefront: AppStorefrontClient,
   productHandle: string,
   variantId: string,
 ): Promise<{ productHandle: string; variantTitle: string } | null> {
-  let result;
-  try {
-    result = await storefront.graphql(PRODUCT_SUBSCRIPTION_QUERY, {
-      variables: { variantId },
-      cache: Cache.none(),
-    });
-  } catch (error) {
-    if (!isStorefrontFailure(error)) throw error;
-    return null;
-  }
-
-  let variant = result.data?.node;
+  let result = await storefront.graphql(PRODUCT_SUBSCRIPTION_QUERY, {
+    variables: { variantId },
+    cache: Cache.none(),
+  });
+  let variant = requireStorefrontData(
+    result,
+    "The Storefront API did not return back-in-stock variant data.",
+  ).node;
   if (
-    result.errors ||
     !variant ||
     !("availableForSale" in variant) ||
     variant.id !== variantId ||
