@@ -144,20 +144,34 @@ export function SubscribeFormComponent(handle: Handle<SubscribeFormProps>) {
               />
             </>
           ) : null}
-          {result?.success ? (
-            <p role="status" mix={successStyle}>
-              {result.message}
-            </p>
-          ) : result?.error ? (
-            <p role="alert" mix={errorStyle}>
-              {result.error}
-            </p>
-          ) : mode.helper ? (
-            <p mix={helperStyle}>{mode.helper}</p>
-          ) : null}
+          <FormStatus helper={mode.helper} result={result} />
         </form>
       </section>
     );
+  };
+}
+
+/** The submission's outcome, or the placement's helper copy before one. */
+function FormStatus(
+  handle: Handle<{ helper?: string; result?: SubscribeResponse }>,
+) {
+  return () => {
+    let { helper, result } = handle.props;
+    if (result?.success) {
+      return (
+        <p role="status" mix={successStyle}>
+          {result.message}
+        </p>
+      );
+    }
+    if (result?.error) {
+      return (
+        <p role="alert" mix={errorStyle}>
+          {result.error}
+        </p>
+      );
+    }
+    return helper ? <p mix={helperStyle}>{helper}</p> : null;
   };
 }
 

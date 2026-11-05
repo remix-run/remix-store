@@ -38,15 +38,6 @@ export const HomeHero = clientEntry(
     let pageUrl = "";
     let reducedMotion: MediaQueryList | undefined;
 
-    function showFrame(index: number) {
-      if (!section) return;
-      section
-        .querySelectorAll<HTMLElement>("[data-home-hero-frame]")
-        .forEach((frame, frameIndex) => {
-          frame.style.visibility = frameIndex === index ? "visible" : "hidden";
-        });
-    }
-
     let frameUpdate = throttleToAnimationFrame(() => {
       if (!section || loadedFrames < 2 || reducedMotion?.matches) return;
       let target = scrollFrame(
@@ -54,15 +45,9 @@ export const HomeHero = clientEntry(
         section.offsetHeight,
         handle.props.assetImages.length,
       );
-      showFrame(Math.min(target, loadedFrames - 1));
+      showFrame(section, Math.min(target, loadedFrames - 1));
     });
     let updateFrame = frameUpdate.request;
-
-    function firstFrameSrc() {
-      return section?.querySelector<HTMLImageElement>(
-        '[data-home-hero-frame="0"] img',
-      )?.currentSrc;
-    }
 
     async function preloadFrames() {
       let images = handle.props.assetImages;
@@ -93,41 +78,26 @@ export const HomeHero = clientEntry(
       if (signal.aborted || !section) return;
       // Later frames use whichever crop the browser chose for the first, so
       // rendering them reuses the downloads.
-      let chosen = firstFrameSrc();
+      let chosen = firstFrameSrc(section);
       frameUrls = images.map((image) => matchingCrop(image.url, chosen));
-      // A resumed preload keeps the frames that already loaded.
-      let loaded = images.map((_, index) => index < loadedFrames);
-
-      await Promise.all(
-        frameUrls.map(async (url, index) => {
-          if (loaded[index]) return;
-          let ok = await preloadImage(url, signal).then(
-            () => true,
-            () => false,
-          );
-          if (!ok || signal.aborted) return;
-          // The animation plays up to the first frame still missing.
-          loaded[index] = true;
-          let playable = playableFrames(loaded);
-          if (playable <= loadedFrames) return;
-          loadedFrames = playable;
-          handle.update().then(updateFrame);
-        }),
-      );
+      await downloadFrames(frameUrls, loadedFrames, signal, (playable) => {
+        loadedFrames = playable;
+        handle.update().then(updateFrame);
+      });
     }
 
     // A rotation or resize can switch the first frame to another crop. The
     // later frames then start over at that crop, from the first frame.
     function onFirstFrameLoad() {
-      let images = handle.props.assetImages;
-      if (!preload || frameUrls.length < 2) return;
-      if (matchingCrop(images[1]!.url, firstFrameSrc()) === frameUrls[1])
+      let second = handle.props.assetImages[1];
+      if (!preload || !second || !section || frameUrls.length < 2) return;
+      if (matchingCrop(second.url, firstFrameSrc(section)) === frameUrls[1])
         return;
       preload.abort();
       preload = undefined;
       frameUrls = [];
       loadedFrames = 1;
-      showFrame(0);
+      showFrame(section, 0);
       handle.update();
       if (!reducedMotion?.matches) preloadFrames();
     }
@@ -144,30 +114,23 @@ export const HomeHero = clientEntry(
             ref((element, signal) => {
               section = element;
               pageUrl = location.href;
-              let motion = matchMedia("(prefers-reduced-motion: reduce)");
-              reducedMotion = motion;
-
-              let onMotionChange = () => {
-                if (motion.matches) {
-                  showFrame(0);
-                } else {
-                  preloadFrames();
-                  updateFrame();
-                }
-              };
-
-              window.addEventListener("scroll", updateFrame, {
-                passive: true,
-                signal,
+              reducedMotion = watchViewport(signal, {
+                onMotionChange(reduced) {
+                  if (reduced) {
+                    showFrame(element, 0);
+                  } else {
+                    preloadFrames();
+                    updateFrame();
+                  }
+                },
+                onScroll: updateFrame,
               });
-              window.addEventListener("resize", updateFrame, { signal });
-              motion.addEventListener("change", onMotionChange, { signal });
               signal.addEventListener("abort", () => {
                 section = null;
                 frameUpdate.cancel();
               });
 
-              if (!motion.matches) preloadFrames();
+              if (!reducedMotion.matches) preloadFrames();
             }),
           ]}
         >
@@ -251,6 +214,76 @@ function scrollFrame(top: number, height: number, frames: number): number {
     Math.floor(progress * SCROLL_FRAMES_RATE * frames),
     frames - 1,
   );
+}
+
+function showFrame(section: HTMLElement, index: number): void {
+  section
+    .querySelectorAll<HTMLElement>("[data-home-hero-frame]")
+    .forEach((frame, frameIndex) => {
+      frame.style.visibility = frameIndex === index ? "visible" : "hidden";
+    });
+}
+
+/** The source the browser picked for the first frame's art-directed image. */
+function firstFrameSrc(section: HTMLElement): string | undefined {
+  return section.querySelector<HTMLImageElement>(
+    '[data-home-hero-frame="0"] img',
+  )?.currentSrc;
+}
+
+/**
+ * Downloads the frames from `loadedFrames` on, in parallel. Each time the run
+ * of loaded frames from the start grows, reports how many can now play.
+ */
+async function downloadFrames(
+  urls: string[],
+  loadedFrames: number,
+  signal: AbortSignal,
+  onPlayable: (frames: number) => void,
+): Promise<void> {
+  // A resumed preload keeps the frames that already loaded.
+  let loaded = urls.map((_, index) => index < loadedFrames);
+  let playable = loadedFrames;
+  await Promise.all(
+    urls.map(async (url, index) => {
+      if (loaded[index]) return;
+      let ok = await preloadImage(url, signal).then(
+        () => true,
+        () => false,
+      );
+      if (!ok || signal.aborted) return;
+      loaded[index] = true;
+      let next = playableFrames(loaded);
+      if (next <= playable) return;
+      playable = next;
+      onPlayable(next);
+    }),
+  );
+}
+
+/**
+ * Calls `onScroll` on scroll and resize, and `onMotionChange` when the reduced
+ * motion preference changes, until `signal` aborts. Returns that preference.
+ */
+function watchViewport(
+  signal: AbortSignal,
+  handlers: {
+    onMotionChange: (reduced: boolean) => void;
+    onScroll: () => void;
+  },
+): MediaQueryList {
+  let motion = matchMedia("(prefers-reduced-motion: reduce)");
+  window.addEventListener("scroll", handlers.onScroll, {
+    passive: true,
+    signal,
+  });
+  window.addEventListener("resize", handlers.onScroll, { signal });
+  motion.addEventListener(
+    "change",
+    () => handlers.onMotionChange(motion.matches),
+    { signal },
+  );
+  return motion;
 }
 
 /** How many frames can play: those before the first one still missing. */
