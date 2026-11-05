@@ -1,6 +1,6 @@
 import { css, type Handle } from "remix/component";
 
-import type { ProductCardData } from "../../data/storefront.ts";
+import type { ProductCardData } from "../../data/public/types.ts";
 import { marketPath, type MarketPathPrefix } from "../../lib/public/market.ts";
 import {
   ShopifyImage,

@@ -1,7 +1,8 @@
 import { SuperHeaders } from "remix/headers";
 import { createController } from "remix/router";
 
-import { queryProduct, queryProductNavigation } from "../../data/storefront.ts";
+import { queryProductNavigation } from "../../data/menus.ts";
+import { queryProduct } from "../../data/product.ts";
 import { cacheControl } from "../../lib/cache-control.ts";
 import { marketPath } from "../../lib/public/market.ts";
 import { getRuntime } from "../../runtime.ts";
@@ -14,12 +15,9 @@ export default createController(routes.products, {
     async show({ market, params, render, request, storefrontClient, url }) {
       let [product, productNavigation] = await Promise.all([
         queryProduct(storefrontClient, params.handle, url.searchParams),
-        queryProductNavigation(storefrontClient, url.host),
+        queryProductNavigation(storefrontClient),
       ]);
-      if (!product.ok) {
-        throw new Error(product.message, { cause: product.errors });
-      }
-      if (!product.data) return render(<NotFoundPage />, { status: 404 });
+      if (!product) return render(<NotFoundPage />, { status: 404 });
 
       return render(
         <ProductPage
@@ -29,7 +27,7 @@ export default createController(routes.products, {
           }
           market={market}
           menu={productNavigation}
-          product={product.data}
+          product={product}
           search={url.search}
           shopPayStoreUrl={
             getRuntime(request).env?.PUBLIC_CHECKOUT_DOMAIN?.trim() ||

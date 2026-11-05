@@ -14,14 +14,13 @@ import { cartHandlers, getCartData } from "../data/cart.server.ts";
 import { applyDiscountCode } from "../data/discount.server.ts";
 import { getStorefrontCache } from "../data/storefront-cache.ts";
 import { createRetryingStorefrontFetch } from "../data/storefront-fetch.ts";
+import { queryAnalyticsShop } from "../data/analytics-shop.ts";
 import {
   FALLBACK_FOOTER_MENU,
   FALLBACK_NAVIGATION_MENU,
-  normalizeStoreDomain,
-  queryAnalyticsShop,
   queryShellMenus,
-  type AppStorefrontClient,
-} from "../data/storefront.ts";
+} from "../data/menus.ts";
+import type { AppStorefrontClient } from "../data/storefront.ts";
 import {
   localizeInternalUrl,
   type ActiveMarket,
@@ -151,11 +150,9 @@ export function storefront(options: StorefrontOptions = {}): Middleware<
     let seoRoute = matchSeoRoute(context.url);
     if (seoRoute) {
       if (seoRoute === routes.seo.robots) {
-        shellData = queryAnalyticsShop(
-          storefrontClient,
-          storefrontId ?? "0",
-          normalizeStoreDomain(storeDomain),
-        ).then((analyticsShop) => ({ ...FALLBACK_SHELL_DATA, analyticsShop }));
+        shellData = queryAnalyticsShop(storefrontClient).then(
+          (analyticsShop) => ({ ...FALLBACK_SHELL_DATA, analyticsShop }),
+        );
         context.set(ShellDataConfig, shellData, shellDataProperty);
       }
       let [response] = await Promise.all([next(), shellData]);
@@ -229,15 +226,11 @@ export function storefront(options: StorefrontOptions = {}): Middleware<
     }
 
     shellData = Promise.all([
-      queryShellMenus(storefrontClient, storeDomain),
+      queryShellMenus(storefrontClient),
       isClientNavigation(context.request)
         ? undefined
         : getCartData(context.request, storefrontClient),
-      queryAnalyticsShop(
-        storefrontClient,
-        storefrontId ?? "0",
-        normalizeStoreDomain(storeDomain),
-      ),
+      queryAnalyticsShop(storefrontClient),
     ]).then(([shellMenus, cartInitialData, analyticsShop]) => ({
       ...shellMenus,
       cartInitialData,

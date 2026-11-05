@@ -5,7 +5,7 @@ import { CollectionProducts } from "../../ui/collection-products.tsx";
 import type {
   ProductCardData,
   ProductPageInfoData,
-} from "../../data/storefront.ts";
+} from "../../data/public/types.ts";
 import { PageTitle } from "../../assets/public/page-title.tsx";
 import type { ActiveMarket } from "../../lib/public/market.ts";
 import { Document } from "../../ui/document.tsx";

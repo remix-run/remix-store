@@ -4,7 +4,7 @@ import { ProductCard } from "../assets/public/product-card.tsx";
 import type {
   ProductCardData,
   ProductPageInfoData,
-} from "../data/storefront.ts";
+} from "../data/public/types.ts";
 import { marketPath, type MarketPathPrefix } from "../lib/public/market.ts";
 import { routes } from "../routes.ts";
 

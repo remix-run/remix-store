@@ -7,7 +7,7 @@ import {
   type SerializableObject,
 } from "remix/component";
 
-import type { ImageData } from "../../data/storefront.ts";
+import type { ImageData } from "../../data/public/types.ts";
 import { PillIcon, pillLinkStyle } from "../../ui/public/pill-link.tsx";
 import { remixNavigation } from "./remix-navigation.ts";
 

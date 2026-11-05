@@ -5,13 +5,12 @@ import { CollectionProducts } from "../ui/collection-products.tsx";
 import { HomeHero } from "../assets/public/home-hero.tsx";
 import { SnowField } from "../assets/public/snow-field.tsx";
 import type { CartInitialData } from "../data/cart.ts";
+import type { HomeHeroData, HomeLookbookEntryData } from "../data/home.ts";
 import type {
-  HomeHeroData,
-  HomeLookbookEntryData,
   ProductCardData,
   ProductMoney,
   ProductPageInfoData,
-} from "../data/storefront.ts";
+} from "../data/public/types.ts";
 import { focalPointPosition } from "../lib/image-utils.ts";
 import { marketPath, type ActiveMarket } from "../lib/public/market.ts";
 import { routes } from "../routes.ts";

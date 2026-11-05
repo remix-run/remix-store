@@ -6,7 +6,7 @@ import {
   type SerializableObject,
 } from "remix/component";
 
-import type { NavigationMenuData } from "../../data/storefront.ts";
+import type { NavigationMenuData } from "../../data/public/types.ts";
 import { marketPath, type MarketPathPrefix } from "../../lib/public/market.ts";
 import { Icon } from "../../ui/public/icon.tsx";
 

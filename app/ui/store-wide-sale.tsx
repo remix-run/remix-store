@@ -1,6 +1,6 @@
 import { css, type Handle } from "remix/component";
 
-import type { StoreWideSaleData } from "../data/storefront.ts";
+import type { StoreWideSaleData } from "../data/public/types.ts";
 import type { MarketLocale } from "../lib/public/market.ts";
 
 // Two identical groups animate by exactly one group width. Ten compact

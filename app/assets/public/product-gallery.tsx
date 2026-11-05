@@ -1,6 +1,6 @@
 import { createMixin, css, on, ref, type Handle } from "remix/component";
 
-import type { ImageData } from "../../data/storefront.ts";
+import type { ImageData } from "../../data/public/types.ts";
 import { Icon } from "../../ui/public/icon.tsx";
 import {
   ShopifyImage,

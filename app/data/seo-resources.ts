@@ -1,12 +1,12 @@
-import {
-  Cache,
-  gql,
-  StorefrontApiError,
-  StorefrontTimeoutError,
-} from "@shopify/hydrogen";
+import { gql } from "@shopify/hydrogen";
 
 import type { MarketCountry } from "../lib/public/market.ts";
-import type { AppStorefrontClient } from "./storefront.ts";
+import {
+  requireStorefrontData,
+  STABLE_CACHE,
+  StorefrontQueryError,
+  type AppStorefrontClient,
+} from "./storefront.ts";
 
 const SITEMAP_INDEX_QUERY = gql(`
   query RemixSitemapIndex @inContext(country: US, language: EN) {
@@ -80,8 +80,6 @@ const CANADIAN_SITEMAP_RESOURCES_QUERY = gql(`
   }
 `);
 
-const SITEMAP_CACHE = Cache.long({ staleIfError: { days: 7 } });
-
 export type SitemapResourceType = "collections" | "products";
 
 type SitemapResource = {
@@ -99,35 +97,20 @@ export async function querySitemapPageCounts(
   storefront: AppStorefrontClient,
   market: MarketCountry = "US",
 ): Promise<Record<SitemapResourceType, number>> {
-  try {
-    let result =
-      market === "CA"
-        ? await storefront.graphql(CANADIAN_SITEMAP_INDEX_QUERY, {
-            cache: SITEMAP_CACHE,
-          })
-        : await storefront.graphql(SITEMAP_INDEX_QUERY, {
-            cache: SITEMAP_CACHE,
-          });
-    let collectionCount = result.data?.collections.pagesCount?.count;
-    let productCount = result.data?.products.pagesCount?.count;
-    if (
-      result.errors ||
-      collectionCount === undefined ||
-      productCount === undefined
-    ) {
-      throw new Error("The Storefront API did not return sitemap counts.", {
-        cause: result.errors,
-      });
-    }
-    return {
-      collections: collectionCount,
-      products: productCount,
-    };
-  } catch (error) {
-    throw error instanceof Error
-      ? sitemapError(error)
-      : new Error("Sitemap request failed.");
+  let result =
+    market === "CA"
+      ? await storefront.graphql(CANADIAN_SITEMAP_INDEX_QUERY, {
+          cache: STABLE_CACHE,
+        })
+      : await storefront.graphql(SITEMAP_INDEX_QUERY, { cache: STABLE_CACHE });
+  let message = "The Storefront API did not return sitemap counts.";
+  let data = requireStorefrontData(result, message);
+  let collectionCount = data.collections.pagesCount?.count;
+  let productCount = data.products.pagesCount?.count;
+  if (collectionCount === undefined || productCount === undefined) {
+    throw new StorefrontQueryError(message);
   }
+  return { collections: collectionCount, products: productCount };
 }
 
 export async function querySitemapResources(
@@ -136,44 +119,23 @@ export async function querySitemapResources(
   page: number,
   market: MarketCountry = "US",
 ): Promise<SitemapPage> {
-  try {
-    let document =
-      market === "CA"
-        ? CANADIAN_SITEMAP_RESOURCES_QUERY
-        : SITEMAP_RESOURCES_QUERY;
-    let result = await storefront.graphql(document, {
-      cache: SITEMAP_CACHE,
-      variables: { page, type: type === "products" ? "PRODUCT" : "COLLECTION" },
-    });
-    let resources = result.data?.sitemap.resources;
-    if (result.errors || !resources) {
-      throw new Error("The Storefront API did not return sitemap resources.", {
-        cause: result.errors,
-      });
-    }
-    return {
-      hasNextPage: resources.hasNextPage,
-      items: resources.items.map((item) => ({
-        handle: item.handle,
-        image: "image" in item ? item.image : null,
-        updatedAt: item.updatedAt,
-      })),
-    };
-  } catch (error) {
-    throw error instanceof Error
-      ? sitemapError(error)
-      : new Error("Sitemap request failed.");
-  }
-}
-
-function sitemapError(error: Error): Error {
-  if (
-    error instanceof StorefrontApiError ||
-    error instanceof StorefrontTimeoutError
-  ) {
-    return new Error("The Storefront API sitemap request failed.", {
-      cause: error,
-    });
-  }
-  return error;
+  let document =
+    market === "CA"
+      ? CANADIAN_SITEMAP_RESOURCES_QUERY
+      : SITEMAP_RESOURCES_QUERY;
+  let result = await storefront.graphql(document, {
+    cache: STABLE_CACHE,
+    variables: { page, type: type === "products" ? "PRODUCT" : "COLLECTION" },
+  });
+  let message = "The Storefront API did not return sitemap resources.";
+  let resources = requireStorefrontData(result, message).sitemap.resources;
+  if (!resources) throw new StorefrontQueryError(message);
+  return {
+    hasNextPage: resources.hasNextPage,
+    items: resources.items.map((item) => ({
+      handle: item.handle,
+      image: "image" in item ? item.image : null,
+      updatedAt: item.updatedAt,
+    })),
+  };
 }

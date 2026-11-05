@@ -14,7 +14,7 @@ import { routes } from "../routes.ts";
 import type {
   NavigationMenuData,
   StoreWideSaleData,
-} from "../data/storefront.ts";
+} from "../data/public/types.ts";
 import { StoreWideSaleMarquee } from "./store-wide-sale.tsx";
 
 interface NavbarProps {

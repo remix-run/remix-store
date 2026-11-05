@@ -7,7 +7,7 @@ import {
   type SerializableObject,
 } from "remix/component";
 
-import type { NavigationMenuData } from "../../data/storefront.ts";
+import type { NavigationMenuData } from "../../data/public/types.ts";
 import { isCurrentPage } from "../../lib/public/navigation.ts";
 
 export const RemixLogo = clientEntry(

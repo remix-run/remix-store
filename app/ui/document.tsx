@@ -7,11 +7,11 @@ import { css, unsafeHTML, type Handle, type RemixNode } from "remix/component";
 import { ImportMap } from "remix/component/server";
 
 import { Footer } from "../assets/public/footer.tsx";
+import type { AnalyticsShop } from "../data/analytics-shop.ts";
 import {
-  type AnalyticsShop,
   FALLBACK_FOOTER_MENU,
   FALLBACK_NAVIGATION_MENU,
-} from "../data/storefront.ts";
+} from "../data/menus.ts";
 import { US_MARKET, type ActiveMarket } from "../lib/public/market.ts";
 import { DocumentAssetsProvider } from "./document-assets.tsx";
 import { Navbar } from "./navbar.tsx";

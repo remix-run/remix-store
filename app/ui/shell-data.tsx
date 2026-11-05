@@ -2,11 +2,11 @@ import { type Handle, type RemixNode } from "remix/component";
 
 import type { CartInitialData } from "../data/cart.ts";
 import type { ActiveMarket } from "../lib/public/market.ts";
+import type { AnalyticsShop } from "../data/analytics-shop.ts";
 import type {
-  AnalyticsShop,
   NavigationMenuData,
   StoreWideSaleData,
-} from "../data/storefront.ts";
+} from "../data/public/types.ts";
 
 type ShellDataProviderProps = ShellData & { children?: RemixNode };
 

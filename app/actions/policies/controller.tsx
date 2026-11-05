@@ -15,11 +15,8 @@ export default createController(routes.policies, {
         return render(<NotFoundPage />, { status: 404 });
       }
 
-      let result = await queryPolicy(storefrontClient, params.handle);
-      if (!result.ok) {
-        throw new Error(result.message, { cause: result.errors });
-      }
-      if (!result.data) {
+      let policy = await queryPolicy(storefrontClient, params.handle);
+      if (!policy) {
         return render(<NotFoundPage />, { status: 404 });
       }
 
@@ -30,7 +27,7 @@ export default createController(routes.policies, {
             marketPath(routes.policies.show.href(params), market.pathPrefix)
           }
           market={market}
-          policy={result.data}
+          policy={policy}
         />,
         { headers: new SuperHeaders({ cacheControl: cacheControl.browsing }) },
       );

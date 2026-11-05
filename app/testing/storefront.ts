@@ -17,6 +17,7 @@ import type { SerializableObject } from "remix/component";
 import { MemoryStorefrontCache } from "../data/storefront-cache.ts";
 import { render } from "../middleware/render.tsx";
 import { createApp, type AppOptions } from "../router.ts";
+import { graphqlResponse } from "./storefront-client.ts";
 
 export const testEnv = {
   PUBLIC_CHECKOUT_DOMAIN: "checkout.example.com",
@@ -106,15 +107,6 @@ export function createStorefrontFetch(
     }
     return graphqlResponse(await handler(body));
   };
-}
-
-export function graphqlResponse(
-  data: StorefrontResponseData,
-  errors?: Array<{ message: string }>,
-): Response {
-  return new Response(JSON.stringify(errors ? { data, errors } : { data }), {
-    headers: { "Content-Type": "application/json" },
-  });
 }
 
 export function navigationData() {

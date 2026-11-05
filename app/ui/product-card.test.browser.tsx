@@ -2,7 +2,7 @@ import * as assert from "remix/assert";
 import { describe, it } from "remix/test";
 import { render } from "remix/component/test";
 
-import type { ProductCardData } from "../data/storefront.ts";
+import type { ProductCardData } from "../data/public/types.ts";
 import { ProductCard } from "../assets/public/product-card.tsx";
 
 describe("product cards", () => {

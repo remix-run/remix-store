@@ -17,7 +17,7 @@ import {
   isSubscriptionValidationError,
   parseSubscriptionForm,
 } from "../../data/subscription.ts";
-import { verifyBackInStockSubscription } from "../../data/storefront.ts";
+import { queryBackInStockEligibleVariant } from "../../data/product.ts";
 import { cacheControl } from "../../lib/cache-control.ts";
 import { marketPath, type ActiveMarket } from "../../lib/public/market.ts";
 import { getRuntime } from "../../runtime.ts";
@@ -126,7 +126,7 @@ export function createSubscribeController(
         let message =
           "Thanks for subscribing! We’ll keep you updated on our latest news.";
         if (parsed.productHandle && parsed.variantId) {
-          let verified = await verifyBackInStockSubscription(
+          let verified = await queryBackInStockEligibleVariant(
             storefrontClient,
             parsed.productHandle,
             parsed.variantId,

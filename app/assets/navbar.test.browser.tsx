@@ -2,7 +2,7 @@ import * as assert from "remix/assert";
 import { describe, it } from "remix/test";
 import { render } from "remix/component/test";
 
-import type { NavigationMenuData } from "../data/storefront.ts";
+import type { NavigationMenuData } from "../data/public/types.ts";
 import { StoreWideSaleMarquee } from "../ui/store-wide-sale.tsx";
 import { MobileMenu } from "./public/navbar.tsx";
 

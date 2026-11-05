@@ -1,16 +1,10 @@
-import {
-  Cache,
-  gql,
-  StorefrontApiError,
-  StorefrontTimeoutError,
-  type StorefrontApi,
-} from "@shopify/hydrogen";
+import { gql, type StorefrontApi } from "@shopify/hydrogen";
 import type { SerializableObject } from "remix/component";
 
-import type {
-  AppStorefrontClient,
-  StorefrontQueryFailureCause,
-  StorefrontQueryResult,
+import {
+  requireStorefrontData,
+  STABLE_CACHE,
+  type AppStorefrontClient,
 } from "./storefront.ts";
 
 const POLICY_HANDLES = {
@@ -81,7 +75,6 @@ const CONTACT_QUERY = gql(`
   }
 `);
 
-const STABLE_CACHE = Cache.long({ staleIfError: { days: 7 } });
 type PolicyKey = (typeof POLICY_HANDLES)[keyof typeof POLICY_HANDLES];
 type PolicyQueryData = StorefrontApi.ResultOf<typeof POLICY_QUERY>;
 
@@ -91,81 +84,48 @@ export function isPolicyHandle(handle: string): handle is PolicyHandle {
   );
 }
 
+/** Returns null for a missing policy; throws when the Storefront API fails. */
 export async function queryPolicy(
   storefront: AppStorefrontClient,
   handle: PolicyHandle,
-): Promise<StorefrontQueryResult<PolicyData | null>> {
-  try {
-    if (handle === "contact-information") {
-      let result = await storefront.graphql(CONTACT_QUERY, {
-        cache: STABLE_CACHE,
-        variables: { handle: "contact" },
-      });
-      if (result.errors || !result.data) {
-        return queryFailure(
-          "The Storefront API did not return contact information.",
-          result.errors,
-        );
-      }
-      let page = result.data.page;
-      return {
-        ok: true,
-        data: page
-          ? {
-              body: page.body,
-              handle,
-              id: page.id,
-              title: page.title,
-            }
-          : null,
-      };
-    }
-
-    let policyKey = POLICY_HANDLES[handle];
-    let result = await storefront.graphql(POLICY_QUERY, {
+): Promise<PolicyData | null> {
+  if (handle === "contact-information") {
+    let result = await storefront.graphql(CONTACT_QUERY, {
       cache: STABLE_CACHE,
-      variables: {
-        privacyPolicy: false,
-        refundPolicy: false,
-        shippingPolicy: false,
-        termsOfService: false,
-        [policyKey]: true,
-      },
+      variables: { handle: "contact" },
     });
-    if (result.errors || !result.data) {
-      return queryFailure(
-        "The Storefront API did not return policy content.",
-        result.errors,
-      );
-    }
-
-    let policy = policyFrom(result.data, policyKey);
-    return {
-      ok: true,
-      data: policy
-        ? {
-            body: policy.body,
-            handle,
-            id: policy.id,
-            title: policy.title,
-          }
-        : null,
-    };
-  } catch (error) {
-    if (
-      !(error instanceof StorefrontApiError) &&
-      !(error instanceof StorefrontTimeoutError)
-    ) {
-      throw error;
-    }
-    return queryFailure("The Storefront API request failed.", error);
+    let { page } = requireStorefrontData(
+      result,
+      "The Storefront API did not return contact information.",
+    );
+    return page
+      ? { body: page.body, handle, id: page.id, title: page.title }
+      : null;
   }
+
+  let policyKey = POLICY_HANDLES[handle];
+  let result = await storefront.graphql(POLICY_QUERY, {
+    cache: STABLE_CACHE,
+    variables: {
+      privacyPolicy: false,
+      refundPolicy: false,
+      shippingPolicy: false,
+      termsOfService: false,
+      [policyKey]: true,
+    },
+  });
+  let policy = policyFrom(
+    requireStorefrontData(
+      result,
+      "The Storefront API did not return policy content.",
+    ),
+    policyKey,
+  );
+  return policy
+    ? { body: policy.body, handle, id: policy.id, title: policy.title }
+    : null;
 }
 
 function policyFrom(data: PolicyQueryData, key: PolicyKey) {
   return data.shop[key];
-}
-
-function queryFailure(message: string, errors: StorefrontQueryFailureCause) {
-  return { ok: false, message, errors } as const;
 }
