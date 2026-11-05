@@ -12,8 +12,9 @@ import {
   createCart,
   createCartInitialData,
   VARIANT_ID,
-} from "../../test/cart-fixtures.ts";
-import { createProduct } from "../../test/product-fixtures.ts";
+} from "../testing/cart-fixtures.ts";
+import { flushAsync, waitFor } from "../testing/browser.ts";
+import { createProduct } from "../testing/product-fixtures.ts";
 import {
   connectBrowserCartStore,
   resetBrowserCartStore,
@@ -215,7 +216,7 @@ describe("cart interactions", () => {
     let increase = $('button[aria-label="Increase quantity"]');
     assert.ok(increase instanceof HTMLButtonElement);
     await act(() => increase.click());
-    await waitFor(() => api.requests.length === 1, act);
+    await waitFor(() => api.requests.length === 1, { act });
 
     // Reopening while the mutation is in flight waits for the confirmed
     // cart instead of publishing `cart: null`.
@@ -226,7 +227,7 @@ describe("cart interactions", () => {
     let settledCart = createCart(2);
     settledCart.updatedAt = "2026-01-01T00:00:01.000Z";
     mutation.resolve({ cart: settledCart, userErrors: [], warnings: [] });
-    await waitFor(() => cartViews().length === 2, act);
+    await waitFor(() => cartViews().length === 2, { act });
 
     assert.equal(
       cartViews()[1]?.payload.cart?.updatedAt,
@@ -335,7 +336,9 @@ describe("cart interactions", () => {
 
     drawer.requestClose();
     assert.equal(drawer.open, false);
-    await waitFor(() => trigger.getAttribute("aria-expanded") === "false", act);
+    await waitFor(() => trigger.getAttribute("aria-expanded") === "false", {
+      act,
+    });
 
     assert.equal(configureOpenCartAction(), true);
     await window.Shopify!.actions.openCart();
@@ -405,7 +408,7 @@ describe("cart interactions", () => {
       let increase = $$('button[aria-label="Increase quantity"]')[1];
       assert.ok(increase instanceof HTMLButtonElement);
       await act(() => increase.click());
-      await waitFor(() => api.requests.length === quantity, act);
+      await waitFor(() => api.requests.length === quantity, { act });
 
       let settledCart = createCart(++quantity);
       settledCart.cost.subtotalAmount.amount = amount;
@@ -418,7 +421,7 @@ describe("cart interactions", () => {
           Array.from($$('[role="progressbar"]')).every(
             (progress) => progress.getAttribute("aria-valuenow") === percentage,
           ),
-        act,
+        { act },
       );
 
       assert.doesNotMatch(
@@ -477,13 +480,13 @@ describe("cart interactions", () => {
     let increase = $$('button[aria-label="Increase quantity"]')[1];
     assert.ok(increase instanceof HTMLButtonElement);
     await act(() => increase.click());
-    await waitFor(() => api.requests.length === 1, act);
+    await waitFor(() => api.requests.length === 1, { act });
 
     let settledCart = createCart(2);
     settledCart.cost.subtotalAmount = { amount: "106", currencyCode: "CAD" };
     settledCart.cost.totalAmount = { amount: "106", currencyCode: "CAD" };
     mutation.resolve({ cart: settledCart, userErrors: [], warnings: [] });
-    await waitFor(() => $$('[role="progressbar"]').length === 0, act);
+    await waitFor(() => $$('[role="progressbar"]').length === 0, { act });
 
     assert.equal(
       (
@@ -522,7 +525,7 @@ describe("cart interactions", () => {
     let remove = drawer.querySelector('button[aria-label="Remove item"]');
     assert.ok(remove instanceof HTMLButtonElement);
     await act(() => remove.click());
-    await waitFor(() => api.requests.length === 1, act);
+    await waitFor(() => api.requests.length === 1, { act });
 
     assert.equal(drawer.open, false);
     assert.doesNotMatch(drawer.textContent ?? "", /empty/i);
@@ -663,16 +666,15 @@ describe("cart interactions", () => {
 
     let mutation = api.enqueue();
     await act(() => add.click());
-    await waitFor(() => api.requests.length === 1, act);
+    await waitFor(() => api.requests.length === 1, { act });
     assert.equal(drawer.open, false);
     assert.equal(add.getAttribute("aria-label"), "Adding to cart");
     assert.equal(api.requests[0]?.body.lines?.[0]?.merchandiseId, VARIANT_ID);
 
     mutation.resolve({ cart: createCart(), userErrors: [], warnings: [] });
-    await waitFor(
-      () => add.getAttribute("aria-label") === "Added to cart",
+    await waitFor(() => add.getAttribute("aria-label") === "Added to cart", {
       act,
-    );
+    });
     assert.equal(drawer.open, false);
     assert.match(
       $('button[aria-controls="cart-drawer"]')?.textContent ?? "",
@@ -707,10 +709,9 @@ describe("cart interactions", () => {
 
     let messages = errors.mock.calls.map((call) => call.arguments.join(" "));
     assert.deepEqual(messages, [], messages.join("\n"));
-    await waitFor(
-      () => /1 item\(s\) in cart/.test(container.textContent),
-      async () => root.flush(),
-    );
+    await waitFor(() => /1 item\(s\) in cart/.test(container.textContent), {
+      act: async () => root.flush(),
+    });
     assert.ok(container.querySelector('button[aria-controls="cart-drawer"]'));
   });
 
@@ -735,7 +736,7 @@ describe("cart interactions", () => {
 
     let mutation = api.enqueue();
     await act(() => add.click());
-    await waitFor(() => api.requests.length === 1, act);
+    await waitFor(() => api.requests.length === 1, { act });
     mutation.resolve({
       cart: null,
       userErrors: [{ message: "This variant is sold out." }],
@@ -743,7 +744,7 @@ describe("cart interactions", () => {
     });
     await waitFor(
       () => add.closest("form")?.querySelector('[role="alert"]') != null,
-      act,
+      { act },
     );
 
     assert.equal(drawer.open, false);
@@ -772,7 +773,7 @@ describe("cart interactions", () => {
     assert.ok(quantity instanceof HTMLInputElement);
 
     await act(() => increase.click());
-    await waitFor(() => api.requests.length === 1, act);
+    await waitFor(() => api.requests.length === 1, { act });
     assert.equal(quantity.value, "2");
     assert.equal(getComputedStyle(quantity).transitionDuration, "0s");
     assert.equal(
@@ -789,7 +790,7 @@ describe("cart interactions", () => {
     assert.equal(checkout.querySelector("svg"), null);
 
     await act(() => increase.click());
-    await waitFor(() => api.requests.length === 2, act);
+    await waitFor(() => api.requests.length === 2, { act });
     assert.equal(quantity.value, "3");
     assert.equal(firstMutation.aborted, true);
 
@@ -800,7 +801,7 @@ describe("cart interactions", () => {
     secondMutation.resolve({ cart: settledCart, userErrors: [], warnings: [] });
     await waitFor(
       () => increase.closest("li")?.hasAttribute("aria-busy") === false,
-      act,
+      { act },
     );
 
     assert.equal(quantity.value, "3");
@@ -831,7 +832,7 @@ describe("cart interactions", () => {
     assert.ok(quantity instanceof HTMLInputElement);
 
     await act(() => increase.click());
-    await waitFor(() => api.requests.length === 1, act);
+    await waitFor(() => api.requests.length === 1, { act });
     assert.equal(quantity.value, "2");
 
     mutation.resolve({
@@ -845,7 +846,7 @@ describe("cart interactions", () => {
       ],
       warnings: [],
     });
-    await waitFor(() => quantity.value === "1", act);
+    await waitFor(() => quantity.value === "1", { act });
 
     assert.equal(quantity.getAttribute("aria-invalid"), "true");
     let errorId = quantity.getAttribute("aria-describedby");
@@ -951,8 +952,6 @@ function useDesktopCartViewport(t: TestContext): void {
   });
 }
 
-type Act = ReturnType<typeof render>["act"];
-
 type DeferredMutation = {
   readonly aborted: boolean;
   resolve(result: CartEndpointResult): void;
@@ -1037,22 +1036,4 @@ function withAbort<T>(promise: Promise<T>, signal?: AbortSignal): Promise<T> {
       },
     );
   });
-}
-
-async function flushAsync(act: Act) {
-  for (let index = 0; index < 5; index++) {
-    await Promise.resolve();
-    await act(() => {});
-  }
-}
-
-async function waitFor(predicate: () => boolean, act: Act) {
-  let deadline = Date.now() + 2_000;
-  while (!predicate()) {
-    if (Date.now() > deadline) {
-      throw new Error("Timed out waiting for cart interaction");
-    }
-    await new Promise((resolve) => setTimeout(resolve, 0));
-    await act(() => {});
-  }
 }

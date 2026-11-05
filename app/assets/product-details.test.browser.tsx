@@ -6,7 +6,8 @@ import {
   BLUE_VARIANT_ID,
   RED_VARIANT_ID,
   createProduct,
-} from "../../test/product-fixtures.ts";
+} from "../testing/product-fixtures.ts";
+import { flushAsync, waitFor } from "../testing/browser.ts";
 import { CA_MARKET } from "../lib/public/market.ts";
 import { resetBrowserCartStore } from "./public/cart-store.ts";
 import { ProductDetails, variantHref } from "./public/product-details.tsx";
@@ -283,7 +284,7 @@ describe("product form", () => {
         new SubmitEvent("submit", { bubbles: true, cancelable: true }),
       ),
     );
-    await waitFor(() => $('[role="status"]') !== null, act);
+    await waitFor(() => $('[role="status"]') !== null, { act });
 
     assert.ok(requestBody);
     assert.deepEqual([...requestBody.keys()].sort(), [
@@ -482,23 +483,4 @@ function createProductWithSingleValueOption() {
   product.encodedVariantExistence = "v1_0:0 2 3";
   product.encodedVariantAvailability = "v1_0:0 3";
   return product;
-}
-
-type Act = ReturnType<typeof render>["act"];
-
-async function flushAsync(act: Act) {
-  await act(async () => {
-    await Promise.resolve();
-    await Promise.resolve();
-  });
-}
-
-async function waitFor(predicate: () => boolean, act: Act) {
-  let deadline = Date.now() + 2_000;
-  while (!predicate()) {
-    if (Date.now() > deadline)
-      throw new Error("Timed out waiting for product form");
-    await new Promise((resolve) => setTimeout(resolve, 0));
-    await act(() => {});
-  }
 }

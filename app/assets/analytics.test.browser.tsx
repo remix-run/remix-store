@@ -17,11 +17,11 @@ import {
   publishCartViewed,
   publishCartViewedWhenSettled,
 } from "./public/analytics.tsx";
-import { createCart } from "../../test/cart-fixtures.ts";
+import { createCart } from "../testing/cart-fixtures.ts";
 import {
   createTestComponent,
   renderTestComponent,
-} from "../../test/component-fixtures.ts";
+} from "../testing/component-fixtures.ts";
 
 interface PublishedEvent {
   event: AnalyticsEventName;

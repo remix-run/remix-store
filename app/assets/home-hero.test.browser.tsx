@@ -2,6 +2,7 @@ import * as assert from "remix/assert";
 import { describe, it, type TestContext } from "remix/test";
 import { render } from "remix/component/test";
 
+import { nextTask, waitFor } from "../testing/browser.ts";
 import { HomeHero } from "./public/home-hero.tsx";
 
 /** An image that never loads on its own, so the test decides when it does. */
@@ -14,22 +15,6 @@ class PendingImage extends EventTarget {
   removeAttribute(name: string) {
     if (name === "src") this.src = "";
   }
-}
-
-async function until(condition: () => boolean) {
-  for (let attempt = 0; attempt < 100 && !condition(); attempt++) {
-    await new Promise((resolve) => setTimeout(resolve, 20));
-  }
-  assert.ok(condition(), "condition never became true");
-}
-
-/**
- * Lets every queued microtask run. Image decoding, the preload bookkeeping
- * and component updates all chain microtasks after a load or idle callback,
- * and the microtask queue drains completely before the next task starts.
- */
-function drainMicrotasks() {
-  return new Promise((resolve) => setTimeout(resolve, 0));
 }
 
 /** Tracks frame preloads and holds idle callbacks until `settle` runs them. */
@@ -117,11 +102,11 @@ describe("home hero frames", () => {
   it("preloads later frames at low priority, at the first frame's crop, once the page settles", async (t) => {
     let { preloads, settle } = mockBrowser(t);
     let { cleanup, firstFrame, frames } = renderHero(t, 4);
-    await until(() => firstFrame.currentSrc !== "");
+    await waitFor(() => firstFrame.currentSrc !== "");
     assert.equal(preloads.length, 0);
 
     settle();
-    await until(() => preloads.length === 3);
+    await waitFor(() => preloads.length === 3);
     let firstCrop = crop(firstFrame.currentSrc);
     assert.deepEqual(
       preloads.map((image) => [
@@ -135,10 +120,10 @@ describe("home hero frames", () => {
     // A frame joins the animation once every frame before it has loaded,
     // rendered from the URL it was preloaded from.
     preloads[1]!.dispatchEvent(new Event("load"));
-    await drainMicrotasks();
+    await nextTask();
     assert.equal(frames().length, 1);
     preloads[0]!.dispatchEvent(new Event("load"));
-    await until(() => frames().length === 3);
+    await waitFor(() => frames().length === 3);
     assert.deepEqual(
       [...frames()].slice(1).map((frame) => frame.getAttribute("src")),
       [preloads[0]!.src, preloads[1]!.src],
@@ -151,11 +136,11 @@ describe("home hero frames", () => {
   it("starts the later frames over when the first frame changes crop", async (t) => {
     let { preloads, settle } = mockBrowser(t);
     let { cleanup, firstFrame, frames } = renderHero(t, 3);
-    await until(() => firstFrame.currentSrc !== "");
+    await waitFor(() => firstFrame.currentSrc !== "");
     settle();
-    await until(() => preloads.length === 2);
+    await waitFor(() => preloads.length === 2);
     preloads[0]!.dispatchEvent(new Event("load"));
-    await until(() => frames().length === 2);
+    await waitFor(() => frames().length === 2);
 
     // As after a rotation: the browser picks another crop for the first frame.
     let rotated = new URL(firstFrame.currentSrc);
@@ -164,11 +149,11 @@ describe("home hero frames", () => {
     Object.defineProperty(firstFrame, "currentSrc", { value: rotated.href });
     firstFrame.dispatchEvent(new Event("load"));
 
-    await until(() => frames().length === 1);
+    await waitFor(() => frames().length === 1);
     assert.equal(preloads[1]!.src, "");
     assert.equal(frames()[0]!.style.visibility, "visible");
     settle();
-    await until(() => preloads.length === 4);
+    await waitFor(() => preloads.length === 4);
     assert.deepEqual(
       preloads.slice(2).map((image) => crop(image.src)),
       ["609x1083", "609x1083"],
@@ -180,11 +165,11 @@ describe("home hero frames", () => {
     let { preloads, settle } = mockBrowser(t);
     let { navigate, fail } = mockNavigation(t);
     let { cleanup, firstFrame, frames } = renderHero(t, 4);
-    await until(() => firstFrame.currentSrc !== "");
+    await waitFor(() => firstFrame.currentSrc !== "");
     settle();
-    await until(() => preloads.length === 3);
+    await waitFor(() => preloads.length === 3);
     preloads[0]!.dispatchEvent(new Event("load"));
-    await until(() => frames().length === 2);
+    await waitFor(() => frames().length === 2);
 
     // The next page shouldn't share the connection with frames this one won't show.
     navigate("/collections/all");
@@ -196,7 +181,7 @@ describe("home hero frames", () => {
     // Still here: the loaded frame stays, and only the missing ones load again.
     fail();
     settle();
-    await until(() => preloads.length === 5);
+    await waitFor(() => preloads.length === 5);
     assert.deepEqual(
       preloads.slice(3).map((image) => new URL(image.src).pathname),
       ["/hero/frame-2.jpg", "/hero/frame-3.jpg"],
@@ -209,9 +194,9 @@ describe("home hero frames", () => {
     let { preloads, pendingIdle, settle } = mockBrowser(t);
     let { navigate, fail } = mockNavigation(t);
     let { firstFrame } = renderHero(t, 3);
-    await until(() => firstFrame.currentSrc !== "");
+    await waitFor(() => firstFrame.currentSrc !== "");
     settle();
-    await until(() => preloads.length === 2);
+    await waitFor(() => preloads.length === 2);
 
     let original = location.href;
     t.after(() => history.replaceState(history.state, "", original));
@@ -226,7 +211,7 @@ describe("home hero frames", () => {
     assert.equal(pendingIdle(), 1);
     navigate(destination);
     settle();
-    await drainMicrotasks();
+    await nextTask();
     assert.equal(preloads.length, 2);
     assert.ok(preloads.every((image) => image.src === ""));
   });
@@ -235,9 +220,9 @@ describe("home hero frames", () => {
     let { preloads, settle } = mockBrowser(t);
     let { navigate } = mockNavigation(t);
     let { cleanup, firstFrame } = renderHero(t, 3);
-    await until(() => firstFrame.currentSrc !== "");
+    await waitFor(() => firstFrame.currentSrc !== "");
     settle();
-    await until(() => preloads.length === 2);
+    await waitFor(() => preloads.length === 2);
 
     navigate("#details", { hashChange: true });
     navigate("/size-guide.pdf", { downloadRequest: "size-guide.pdf" });
@@ -255,7 +240,7 @@ describe("home hero frames", () => {
       delete (navigator as Navigator & { connection?: unknown }).connection;
     });
     let { firstFrame } = renderHero(t, 3);
-    await until(() => firstFrame.currentSrc !== "");
+    await waitFor(() => firstFrame.currentSrc !== "");
     // Preloads only start from an idle callback, and none was requested.
     assert.equal(pendingIdle(), 0);
     assert.equal(preloads.length, 0);

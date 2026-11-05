@@ -2,6 +2,7 @@ import * as assert from "remix/assert";
 import { describe, it } from "remix/test";
 import { render } from "remix/component/test";
 
+import { flushAsync, waitFor } from "../testing/browser.ts";
 import { SubscribeForm } from "./public/subscribe-form.tsx";
 
 describe("subscribe form", () => {
@@ -65,7 +66,7 @@ describe("subscribe form", () => {
     deferred.resolve(
       Response.json({ message: "Thanks for subscribing!", success: true }),
     );
-    await waitFor(() => view.$('[role="status"]') !== null, view.act);
+    await waitFor(() => view.$('[role="status"]') !== null, { act: view.act });
 
     button = view.$("button");
     assert.ok(button instanceof HTMLButtonElement);
@@ -114,7 +115,7 @@ describe("subscribe form", () => {
     assert.equal(fetch.mock.callCount(), 1);
 
     deferred.resolve(Response.json({ message: "Subscribed", success: true }));
-    await waitFor(() => view.$('[role="status"]') !== null, view.act);
+    await waitFor(() => view.$('[role="status"]') !== null, { act: view.act });
     await view.act(() => submit(view.$));
     assert.equal(fetch.mock.callCount(), 1);
 
@@ -151,7 +152,7 @@ describe("subscribe form", () => {
     await view.act(() => submit(view.$));
     await waitFor(
       () => view.$('[role="alert"]')?.textContent === "Please try later.",
-      view.act,
+      { act: view.act },
     );
     let button = view.$("button");
     assert.ok(button instanceof HTMLButtonElement);
@@ -163,7 +164,7 @@ describe("subscribe form", () => {
         view
           .$('[role="alert"]')
           ?.textContent?.includes("Something went wrong") === true,
-      view.act,
+      { act: view.act },
     );
     assert.doesNotMatch(
       view.$('[role="alert"]')?.textContent ?? "",
@@ -176,8 +177,6 @@ describe("subscribe form", () => {
 });
 
 type Query = ReturnType<typeof render>["$"];
-type Act = ReturnType<typeof render>["act"];
-
 function parseUrlEncodedBody(
   body: BodyInit | null | undefined,
 ): URLSearchParams {
@@ -205,21 +204,4 @@ function createDeferred<T>() {
     resolve = resolvePromise;
   });
   return { promise, resolve };
-}
-
-async function flushAsync(act: Act) {
-  await act(async () => {
-    await Promise.resolve();
-    await Promise.resolve();
-  });
-}
-
-async function waitFor(predicate: () => boolean, act: Act) {
-  let deadline = Date.now() + 2_000;
-  while (!predicate()) {
-    if (Date.now() > deadline)
-      throw new Error("Timed out waiting for subscribe form");
-    await new Promise((resolve) => setTimeout(resolve, 0));
-    await act(() => {});
-  }
 }

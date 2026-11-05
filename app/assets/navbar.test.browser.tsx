@@ -3,6 +3,7 @@ import { describe, it } from "remix/test";
 import { render } from "remix/component/test";
 
 import type { NavigationMenuData } from "../data/public/types.ts";
+import { nextTask } from "../testing/browser.ts";
 import { StoreWideSaleMarquee } from "../ui/store-wide-sale.tsx";
 import { MobileMenu } from "./public/navbar.tsx";
 
@@ -107,8 +108,6 @@ describe("navbar interactions", () => {
       outside.dispatchEvent(
         new MouseEvent("click", { bubbles: true, cancelable: true }),
       );
-    let nextTask = () => new Promise((resolve) => setTimeout(resolve));
-
     // Light dismiss hides the popover, then delivers the click in the same
     // task. hidePopover() fires the same synchronous beforetoggle.
     nav.showPopover();

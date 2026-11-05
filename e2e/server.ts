@@ -8,7 +8,7 @@ import { createServer, preview } from "vite";
 
 import { createNodeApp } from "../app/node.ts";
 import { remixOxygen } from "../vite/remix-oxygen.ts";
-import { createCart } from "../test/cart-fixtures.ts";
+import { createCart } from "../app/testing/cart-fixtures.ts";
 
 const appPort = 44_110;
 const storefrontPort = 44_111;
