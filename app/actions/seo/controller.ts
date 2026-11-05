@@ -2,6 +2,7 @@ import { SuperHeaders } from "remix/headers";
 import { createController } from "remix/router";
 
 import { loadAnalyticsShopOrNull } from "../../data/analytics-shop.ts";
+import { isStorefrontFailure } from "../../data/storefront.ts";
 import {
   querySitemapPageCounts,
   querySitemapResources,
@@ -47,6 +48,7 @@ export default createController(routes.seo, {
 
         return sitemapIndexResponse(locations);
       } catch (error) {
+        if (!isStorefrontFailure(error)) throw error;
         return sitemapUnavailable(error);
       }
     },
@@ -121,6 +123,7 @@ export default createController(routes.seo, {
           fallbackLocation: url.origin + routes.home.href(),
         });
       } catch (error) {
+        if (!isStorefrontFailure(error)) throw error;
         return sitemapUnavailable(error);
       }
     },

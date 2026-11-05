@@ -21,6 +21,7 @@ import { queryBackInStockEligibleVariant } from "../../data/product.ts";
 import { cacheControl } from "../../lib/cache-control.ts";
 import { marketPath, type ActiveMarket } from "../../lib/public/market.ts";
 import { routes } from "../../routes.ts";
+import { isRequestAbort } from "../../runtime.ts";
 import { SubscribePage } from "./page.tsx";
 
 export interface SubscribeControllerOptions {
@@ -156,8 +157,7 @@ export function createSubscribeController(
             tags,
           });
         } catch (error) {
-          if (request.signal.aborted && error === request.signal.reason)
-            throw error;
+          if (isRequestAbort(request, error)) throw error;
           // Keep Admin details and customer data out of logs and responses.
           console.error("[subscribe] Shopify Admin subscription failed");
           return respond(

@@ -27,11 +27,16 @@ export async function fetchWithRuntime(
   try {
     return await handler();
   } catch (error) {
-    if (!(request.signal.aborted && error === request.signal.reason)) {
+    if (!isRequestAbort(request, error)) {
       console.error(error);
     }
     return new Response("Internal Server Error", { status: 500 });
   }
+}
+
+/** True when `error` is the cancellation of this request, not a failure. */
+export function isRequestAbort(request: Request, error: unknown): boolean {
+  return request.signal.aborted && error === request.signal.reason;
 }
 
 export function getRuntime(request: Request): Runtime {

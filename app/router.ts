@@ -25,7 +25,7 @@ import { market } from "./middleware/market.tsx";
 import { render } from "./middleware/render.tsx";
 import { storefront, type StorefrontOptions } from "./middleware/storefront.ts";
 import { routes } from "./routes.ts";
-import { fetchWithRuntime, type Runtime } from "./runtime.ts";
+import { fetchWithRuntime, isRequestAbort, type Runtime } from "./runtime.ts";
 
 export interface AppOptions {
   csp?: CspOptions;
@@ -56,11 +56,7 @@ function errorPages(): Middleware {
       return await next();
     } catch (error) {
       if (error instanceof Response) return error;
-      if (
-        context.request.signal.aborted &&
-        error === context.request.signal.reason
-      )
-        throw error;
+      if (isRequestAbort(context.request, error)) throw error;
       console.error(error);
       // SAFETY: createAppMiddleware installs the UI renderer before this error
       // boundary runs; Remix's generic Renderer key erases its input type.

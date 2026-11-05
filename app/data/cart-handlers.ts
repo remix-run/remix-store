@@ -11,6 +11,8 @@ import type {
   SerializablePrimitive,
 } from "remix/component";
 
+import { isRequestAbort } from "../runtime.ts";
+
 const CART_FRAGMENT = gql(`
   fragment CartFragment on Cart {
     updatedAt
@@ -73,7 +75,7 @@ export async function getCartData(
     // from CART_FRAGMENT; only its open extension fields block inference.
     return result.data as CartInitialData;
   } catch (error) {
-    if (request.signal.aborted && error === request.signal.reason) throw error;
+    if (isRequestAbort(request, error)) throw error;
     console.error(
       "[hydrogen] Cart query failed; rendering without cart data",
       error,

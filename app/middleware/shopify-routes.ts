@@ -15,6 +15,7 @@ import {
   type ActiveMarket,
 } from "../lib/public/market.ts";
 import { routeTemplates } from "../lib/public/route-templates.ts";
+import { isRequestAbort } from "../runtime.ts";
 
 export interface ShopifyRouteContext {
   market: ActiveMarket;
@@ -156,8 +157,7 @@ async function discountRedirect(
       );
       for (let [name, value] of discountHeaders) headers.append(name, value);
     } catch (error) {
-      if (request.signal.aborted && error === request.signal.reason)
-        throw error;
+      if (isRequestAbort(request, error)) throw error;
       console.error("[hydrogen] Discount application failed");
     }
   }
