@@ -1,16 +1,17 @@
 import * as assert from "remix/assert";
 import { after, describe, it } from "remix/test";
 
-import {
+import { createNodeApp } from "./node.ts";
+
+const {
   app,
   browserEntryHref,
-  closeNodeApp,
+  close,
   fonts,
   productDetailsEntryHref,
   snowFieldEntryHref,
-} from "./node.ts";
-
-after(closeNodeApp);
+} = await createNodeApp();
+after(close);
 
 describe("node platform", () => {
   it("serves a cheap health check before Storefront middleware", async () => {

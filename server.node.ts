@@ -7,11 +7,11 @@ import {
   CDN_ORIGIN_SECRET_HEADER,
   resolveNodeBuyerIp,
 } from "./app/buyer-ip.ts";
-import { app, closeNodeApp } from "./app/node.ts";
+import { resolveNodeMode } from "./app/assets.node.ts";
+import { createNodeApp } from "./app/node.ts";
 
-const isHmr = Boolean(
-  process.env.NODE_ENV === "development" && process.env.REMIX_NODE_HMR,
-);
+const mode = resolveNodeMode(process.env);
+const { app, close: closeNodeApp } = await createNodeApp({ mode });
 const hmrProxyPort = process.env.HMR_PROXY_PORT
   ? parsePort("HMR_PROXY_PORT", process.env.HMR_PROXY_PORT)
   : null;
@@ -26,12 +26,12 @@ const handler: FetchHandler = (request, client) => {
 
 const server = http.createServer(
   createRequestListener(handler, {
-    trustProxy: isHmr || process.env.TRUST_PROXY === "true",
+    trustProxy: mode.hmr || process.env.TRUST_PROXY === "true",
   }),
 );
 
 server.listen(port, () => {
-  if (isHmr) {
+  if (mode.hmr) {
     import("remix/node-hmr/runtime").then((nodeHmr) =>
       nodeHmr.emitServerReady(),
     );

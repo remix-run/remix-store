@@ -76,7 +76,7 @@ Fly setup, secrets, local image verification, and continuous deployment are docu
 - `app/router.ts` owns the shared Fetch app, routes, middleware, and runtime boundary.
 - `app/assets.ts` defines the shared metadata contract, document asset sources, and document asset factory.
 - `app/assets.node.ts` constructs the native Remix asset server; `app/assets.oxygen.ts` constructs Pitlane's Worker-safe manifest resolver.
-- `app/node.ts` composes Node static files, Remix Assets, rendering, and routing.
+- `app/node.ts` exports `createNodeApp()`, which composes Node static files, Remix Assets, rendering, and routing. `server.node.ts` resolves the run mode once and passes it in.
 - `app/middleware/storefront.ts` requires a trusted buyer IP, creates a request-scoped Hydrogen Storefront client, and publishes it with the merged env and buyer IP.
 - `app/middleware/shopify-routes.ts` answers Shopify-owned cart, checkout, and discount-link URLs and follows Shopify redirects for app 404s.
 - `app/middleware/shell-data.ts` loads menus, cart, and analytics for responses that render the page shell.

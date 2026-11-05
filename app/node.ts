@@ -7,32 +7,49 @@ import { staticFiles } from "remix/middleware/static";
 import type { Middleware } from "remix/router";
 
 import { getDocumentAssets } from "./assets.ts";
-import { assets } from "./assets.node.ts";
+import {
+  createNodeAssetServer,
+  resolveNodeMode,
+  type NodeMode,
+} from "./assets.node.ts";
 import { cacheControl } from "./lib/cache-control.ts";
 import { render } from "./middleware/render.tsx";
 import { createApp } from "./router.ts";
 
-const documentAssets = await getDocumentAssets(assets);
-export const browserEntryHref = documentAssets.scriptEntry.href;
-export const fonts = documentAssets.fonts;
-export const productDetailsEntryHref = await assets.getHref(
-  "app/assets/public/product-details.tsx",
-);
-export const snowFieldEntryHref = await assets.getHref(
-  "app/assets/public/snow-field.tsx",
-);
+type NodeAssetServer = Awaited<ReturnType<typeof createNodeAssetServer>>;
 
-export const app = createApp({
-  csp: { development: process.env.NODE_ENV === "development" },
-  platform: nodePlatform(),
-  renderer: render({ assets, documentAssets }),
-});
+export type NodeApp = Awaited<ReturnType<typeof createNodeApp>>;
 
-export function closeNodeApp() {
-  return assets.close();
+/**
+ * Builds the Node app: starts the asset server (watching in development),
+ * compiles the document entry hrefs and composes the router. Call `close`
+ * to stop the asset server.
+ */
+export async function createNodeApp({
+  mode = resolveNodeMode(process.env),
+}: { mode?: NodeMode } = {}) {
+  let assets = await createNodeAssetServer(mode);
+  let documentAssets = await getDocumentAssets(assets);
+
+  return {
+    app: createApp({
+      csp: { development: mode.development },
+      platform: nodePlatform(assets),
+      renderer: render({ assets, documentAssets }),
+    }),
+    browserEntryHref: documentAssets.scriptEntry.href,
+    fonts: documentAssets.fonts,
+    productDetailsEntryHref: await assets.getHref(
+      "app/assets/public/product-details.tsx",
+    ),
+    snowFieldEntryHref: await assets.getHref(
+      "app/assets/public/snow-field.tsx",
+    ),
+    close: () => assets.close(),
+  };
 }
 
-function nodePlatform(): Middleware {
+function nodePlatform(assets: NodeAssetServer): Middleware {
   // Node's default Brotli quality (11) spends ~150ms of CPU on each page and
   // module. Quality 5 is within ~12% of its size for ~1% of the CPU. Fastly
   // passes these bytes through: it only compresses uncompressed responses,

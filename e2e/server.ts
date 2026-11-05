@@ -6,6 +6,7 @@ import { createRequestListener } from "remix/node-fetch-server";
 import { oxygen } from "@shopify/mini-oxygen/vite";
 import { createServer, preview } from "vite";
 
+import { createNodeApp } from "../app/node.ts";
 import { remixOxygen } from "../vite/remix-oxygen.ts";
 import { createCart } from "../test/cart-fixtures.ts";
 
@@ -57,7 +58,7 @@ await listen(storefrontServer, storefrontPort);
 const runtime = process.env.E2E_RUNTIME ?? "node";
 let closeApp: () => Promise<void>;
 if (runtime === "node") {
-  let { app, closeNodeApp } = await import("../app/node.ts");
+  let { app, close: closeNodeApp } = await createNodeApp();
   let appServer = http.createServer(
     createRequestListener((request) =>
       app.fetch(request, { buyerIp: "127.0.0.1", env }),
