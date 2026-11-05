@@ -1,9 +1,9 @@
-import { Renderer } from "remix/middleware/render";
 import { createContextKey, type Middleware } from "remix/router";
 import { redirect } from "remix/response/redirect";
-import { createElement, type RemixNode } from "remix/component";
+import { createElement } from "remix/component";
 
 import { NotFoundPage } from "../ui/error-pages.tsx";
+import { getPageRenderer } from "./page-renderer.ts";
 import {
   resolveMarketPath,
   US_MARKET,
@@ -31,12 +31,9 @@ export function market(): Middleware<{
       if (context.method !== "GET" && context.method !== "HEAD") {
         return new Response("Not Found", { status: 404 });
       }
-      // SAFETY: The app's renderer middleware runs before market resolution;
-      // Remix's generic Renderer key erases the concrete RemixNode input type.
-      let renderPage = context.get(Renderer) as Renderer<RemixNode> | undefined;
-      return renderPage
-        ? renderPage(createElement(NotFoundPage, {}), { status: 404 })
-        : new Response("Not Found", { status: 404 });
+      return getPageRenderer(context)(createElement(NotFoundPage, {}), {
+        status: 404,
+      });
     }
 
     context.set(MarketConfig, resolution.market, marketProperty);

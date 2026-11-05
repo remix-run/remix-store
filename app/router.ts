@@ -1,5 +1,4 @@
-import { Renderer } from "remix/middleware/render";
-import { createElement, type RemixNode } from "remix/component";
+import { createElement } from "remix/component";
 import {
   createMiddleware,
   createRouter,
@@ -22,6 +21,7 @@ import {
 import { ErrorPage, NotFoundPage } from "./ui/error-pages.tsx";
 import { csp, type CspOptions } from "./middleware/csp.ts";
 import { market } from "./middleware/market.tsx";
+import { getPageRenderer } from "./middleware/page-renderer.ts";
 import { render } from "./middleware/render.tsx";
 import { storefront, type StorefrontOptions } from "./middleware/storefront.ts";
 import { routes } from "./routes.ts";
@@ -58,10 +58,9 @@ function errorPages(): Middleware {
       if (error instanceof Response) return error;
       if (isRequestAbort(context.request, error)) throw error;
       console.error(error);
-      // SAFETY: createAppMiddleware installs the UI renderer before this error
-      // boundary runs; Remix's generic Renderer key erases its input type.
-      let renderPage = context.get(Renderer) as Renderer<RemixNode>;
-      return renderPage(createElement(ErrorPage, {}), { status: 500 });
+      return getPageRenderer(context)(createElement(ErrorPage, {}), {
+        status: 500,
+      });
     }
   };
 }

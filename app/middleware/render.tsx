@@ -1,9 +1,4 @@
-import {
-  render as remixRender,
-  renderWith,
-  Renderer,
-  type RenderFunction,
-} from "remix/middleware/render";
+import { render as remixRender, renderWith } from "remix/middleware/render";
 import { getCspNonce } from "remix/middleware/csp";
 import { createMiddleware, type RequestContext } from "remix/router";
 import type { RemixNode } from "remix/component";
@@ -13,8 +8,8 @@ import type { Assets } from "../assets.ts";
 import { runtimeDispatch } from "../runtime.ts";
 
 import { cacheControl } from "../lib/cache-control.ts";
-import { US_MARKET } from "../lib/public/market.ts";
 import { MarketConfig } from "./market.tsx";
+import { getPageRenderer } from "./page-renderer.ts";
 import { FALLBACK_SHELL_DATA, isClientNavigation } from "./shell-data.ts";
 import { ShellDataConfig } from "./storefront.ts";
 import {
@@ -28,32 +23,20 @@ export interface RenderOptions {
   assets: Pick<Assets, "getScriptEntry">;
 }
 
-interface ContextValueKey<Value> {
-  defaultValue?: Value;
-}
-
-function getContextValue<Value>(
-  context: RequestContext,
-  key: ContextValueKey<Value>,
-): Value | undefined {
-  return context.get(key);
-}
-
 export function render(options: RenderOptions) {
   return createMiddleware(
     runtimeDispatch(),
     remixRender({ assets: options.assets }),
-    renderWith((context) => {
+    renderWith((context: RequestContext) => {
       // Capture the upstream renderer before renderWith installs our wrapper.
-      let renderNode = context.get(Renderer) as RenderFunction;
+      let renderNode = getPageRenderer(context);
 
       return async function renderPage(node: RemixNode, init?: ResponseInit) {
         // Routes rendered before the storefront middleware, such as unsupported
         // market paths, have no shell data and render the fallback shell.
         let shellData =
-          (await getContextValue(context, ShellDataConfig)) ??
-          FALLBACK_SHELL_DATA;
-        let market = getContextValue(context, MarketConfig) ?? US_MARKET;
+          (await context.get(ShellDataConfig)) ?? FALLBACK_SHELL_DATA;
+        let market = context.get(MarketConfig);
         let headers = new SuperHeaders(init?.headers);
         // Handlers opt into caching when their response can tolerate staleness.
         // Full documents embed the cart, and the cart store trusts that data
