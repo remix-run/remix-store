@@ -119,11 +119,12 @@ export function createSubscribeController(
         let tags: string[] = [];
         let message =
           "Thanks for subscribing! We’ll keep you updated on our latest news.";
-        if (parsed.productHandle && parsed.variantId) {
+        let { product } = parsed;
+        if (product) {
           let verified = await queryBackInStockEligibleVariant(
             storefrontClient,
-            parsed.productHandle,
-            parsed.variantId,
+            product.handle,
+            product.variantId,
           );
           if (!verified) {
             return respond(
@@ -137,7 +138,7 @@ export function createSubscribeController(
           tags = backInStockTags(
             verified.productHandle,
             verified.variantTitle,
-            parsed.variantId,
+            product.variantId,
           );
           message = "Thanks! We’ll let you know when it’s back in stock.";
         }
@@ -172,7 +173,7 @@ export function createSubscribeController(
         return respond(
           { message, success: true },
           200,
-          parsed.productHandle
+          product
             ? marketPath("/collections/all", market.pathPrefix)
             : undefined,
         );

@@ -7,8 +7,8 @@ export const BACK_IN_STOCK_TAG = "back-in-stock-subscriber";
 export interface SubscriptionFormInput {
   consent: true;
   email: string;
-  productHandle?: string;
-  variantId?: string;
+  /** Present for back-in-stock requests, which always name both. */
+  product?: { handle: string; variantId: string };
 }
 
 export interface SubscriptionValidationError {
@@ -75,11 +75,15 @@ export function parseSubscriptionForm(
   if (!productResult.success) {
     return { message: "The product subscription is invalid." };
   }
+  let { productHandle, variantId } = productResult.value;
   return {
     consent: consentResult.value.consent,
     email: emailResult.value.email,
-    productHandle: productResult.value.productHandle,
-    variantId: productResult.value.variantId,
+    // The schema accepts both or neither, so one check covers the pair.
+    product:
+      productHandle && variantId
+        ? { handle: productHandle, variantId }
+        : undefined,
   };
 }
 
