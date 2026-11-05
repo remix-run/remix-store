@@ -341,7 +341,8 @@ describe("cart interactions", () => {
     });
 
     assert.equal(configureOpenCartAction(), true);
-    await window.Shopify!.actions.openCart();
+    assert.ok(window.Shopify);
+    await window.Shopify.actions.openCart();
     assert.equal(drawer.open, true);
     assert.equal(trigger.getAttribute("aria-expanded"), "true");
 
@@ -538,7 +539,8 @@ describe("cart interactions", () => {
     assert.doesNotMatch(drawer.textContent ?? "", /empty/i);
 
     assert.equal(configureOpenCartAction(), true);
-    await window.Shopify!.actions.openCart();
+    assert.ok(window.Shopify);
+    await window.Shopify.actions.openCart();
     assert.equal(drawer.open, false);
   });
 
