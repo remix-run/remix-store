@@ -10,7 +10,9 @@ import {
 } from "@shopify/hydrogen";
 import { clientEntry, css, navigate, on, type Handle } from "remix/component";
 
+import { cartApiPath } from "../../lib/public/cart-routes.ts";
 import {
+  documentMarketPathPrefix,
   marketPath,
   US_MARKET,
   type ActiveMarket,
@@ -25,8 +27,8 @@ import {
 } from "./analytics.tsx";
 import { PageTitle } from "./page-title.tsx";
 import {
-  getBrowserCartStore,
-  getCartApiPath,
+  appCartData,
+  connectBrowserCartStore,
   type CartInitialData,
 } from "./cart-store.ts";
 import { Icon } from "../../ui/public/icon.tsx";
@@ -67,7 +69,7 @@ function openCartDrawer() {
     drawer.showModal();
     setCartTriggerExpanded(true);
     let prefix = documentMarketPathPrefix();
-    publishCartViewedWhenSettled(getBrowserCartStore(undefined, prefix));
+    publishCartViewedWhenSettled(connectBrowserCartStore(undefined, prefix));
   }
 }
 
@@ -78,11 +80,6 @@ function closeCartDrawer() {
     drawer.close();
     setCartTriggerExpanded(false);
   }
-}
-
-function documentMarketPathPrefix(): MarketPathPrefix {
-  let value = document.documentElement.dataset.marketPrefix;
-  return value === "/en-ca" ? value : "";
 }
 
 function setCartTriggerExpanded(expanded: boolean) {
@@ -135,7 +132,7 @@ export const CartShell = clientEntry(
     }>,
   ) {
     let market = handle.props.market ?? US_MARKET;
-    let store = getBrowserCartStore(
+    let store = connectBrowserCartStore(
       handle.props.initialData,
       market.pathPrefix,
     );
@@ -238,7 +235,7 @@ export const CartPageContent = clientEntry(
     }>,
   ) {
     let market = handle.props.market ?? US_MARKET;
-    let store = getBrowserCartStore(
+    let store = connectBrowserCartStore(
       handle.props.initialData,
       market.pathPrefix,
     );
@@ -565,7 +562,7 @@ function CartView(handle: Handle<CartViewProps>) {
                     <p mix={detailStyle}>{merchandise.title}</p>
                   ) : null}
                   <form
-                    action={getCartApiPath(handle.props.market.pathPrefix)}
+                    action={cartApiPath(handle.props.market.pathPrefix)}
                     method="post"
                     aria-busy={linePending ? "true" : undefined}
                     mix={quantityFormStyle}
@@ -726,23 +723,9 @@ function CartView(handle: Handle<CartViewProps>) {
   };
 }
 
-type CartDiscountAllocationData = {
-  __typename?: string;
-  discountedAmount: MoneyV2;
-};
-
-type CartLineWithDiscountAllocations = CartData["lines"]["nodes"][number] & {
-  discountAllocations?: CartDiscountAllocationData[];
-};
-
 function getCartDiscountAllocation(cart: CartData): MoneyV2 | null {
-  let allocations = cart.lines.nodes
-    .flatMap((line) => {
-      // SAFETY: The app cart fragment selects `discountAllocations`; Hydrogen's
-      // open cart line type does not retain custom fragment extension fields.
-      let lineWithAllocations = line as CartLineWithDiscountAllocations;
-      return lineWithAllocations.discountAllocations ?? [];
-    })
+  let allocations = appCartData(cart)
+    .lines.nodes.flatMap((line) => line.discountAllocations ?? [])
     .filter(
       (allocation) =>
         allocation.__typename === "CartAutomaticDiscountAllocation",

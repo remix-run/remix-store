@@ -14,7 +14,9 @@ import type { SerializableObject } from "remix/component";
 
 import { getFocalPoint, type FocalPoint } from "../lib/image-utils.ts";
 import {
+  isMarketPathPrefix,
   localizeInternalUrl,
+  marketForCountry,
   type MarketLocale,
   type MarketPathPrefix,
 } from "../lib/public/market.ts";
@@ -930,7 +932,7 @@ function getMarketPathPrefix(
   storefront: AppStorefrontClient,
 ): MarketPathPrefix {
   let pathPrefix = storefront.i18n.pathPrefix;
-  if (pathPrefix === "" || pathPrefix === "/en-ca") return pathPrefix;
+  if (isMarketPathPrefix(pathPrefix)) return pathPrefix;
   throw new Error("Unsupported market path prefix.");
 }
 
@@ -1172,7 +1174,7 @@ function toProductCardData(
 }
 
 function storefrontLocale(storefront: AppStorefrontClient): MarketLocale {
-  return storefront.i18n.country === "CA" ? "en-CA" : "en-US";
+  return marketForCountry(storefront.i18n.country).locale;
 }
 
 function toSerializableFocalPoint(

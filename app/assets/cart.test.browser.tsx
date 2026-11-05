@@ -13,8 +13,9 @@ import {
   createCartInitialData,
   VARIANT_ID,
 } from "../../test/cart-fixtures.ts";
+import { createProduct } from "../../test/product-fixtures.ts";
 import {
-  getBrowserCartStore,
+  connectBrowserCartStore,
   resetBrowserCartStore,
 } from "./public/cart-store.ts";
 import {
@@ -22,7 +23,7 @@ import {
   CartShell,
   configureOpenCartAction,
 } from "./public/cart.tsx";
-import { ProductAddToCart } from "./public/product-add-to-cart.tsx";
+import { ProductDetails } from "./public/product-details.tsx";
 
 const CartUpdatePayloadSchema = s.object({
   discountCodes: s.optional(s.array(s.string())),
@@ -649,18 +650,14 @@ describe("cart interactions", () => {
     let { $, act, cleanup } = render(
       <>
         <CartShell initialData={initialData} />
-        <ProductAddToCart
-          available
-          label="Add to cart"
-          merchandiseId={VARIANT_ID}
-        />
+        <ProductDetails {...productDetailsProps(t)} />
       </>,
     );
     t.after(cleanup);
     await flushAsync(act);
 
     let drawer = $("#cart-drawer");
-    let add = $('button[type="submit"]');
+    let add = $('button[name="add-to-cart"]');
     assert.ok(drawer instanceof HTMLDialogElement);
     assert.ok(add instanceof HTMLButtonElement);
 
@@ -668,13 +665,15 @@ describe("cart interactions", () => {
     await act(() => add.click());
     await waitFor(() => api.requests.length === 1, act);
     assert.equal(drawer.open, false);
-    assert.equal(add.textContent, "Adding…");
+    assert.equal(add.getAttribute("aria-label"), "Adding to cart");
     assert.equal(api.requests[0]?.body.lines?.[0]?.merchandiseId, VARIANT_ID);
 
     mutation.resolve({ cart: createCart(), userErrors: [], warnings: [] });
-    await waitFor(() => add.textContent === "Add to cart", act);
+    await waitFor(
+      () => add.getAttribute("aria-label") === "Added to cart",
+      act,
+    );
     assert.equal(drawer.open, false);
-    assert.equal(add.textContent, "Add to cart");
     assert.match(
       $('button[aria-controls="cart-drawer"]')?.textContent ?? "",
       /1Item in cart/,
@@ -693,7 +692,7 @@ describe("cart interactions", () => {
     let html = await renderToString(<CartShell />);
     assert.match(html, /Loading cart/);
     resetBrowserCartStore();
-    getBrowserCartStore({ cart: createCart() });
+    connectBrowserCartStore({ cart: createCart() });
 
     let container = document.createElement("div");
     container.innerHTML = html;
@@ -723,18 +722,14 @@ describe("cart interactions", () => {
     let { $, act, cleanup } = render(
       <>
         <CartShell initialData={initialData} />
-        <ProductAddToCart
-          available
-          label="Add to cart"
-          merchandiseId={VARIANT_ID}
-        />
+        <ProductDetails {...productDetailsProps(t)} />
       </>,
     );
     t.after(cleanup);
     await flushAsync(act);
 
     let drawer = $("#cart-drawer");
-    let add = $('button[type="submit"]');
+    let add = $('button[name="add-to-cart"]');
     assert.ok(drawer instanceof HTMLDialogElement);
     assert.ok(add instanceof HTMLButtonElement);
 
@@ -746,7 +741,10 @@ describe("cart interactions", () => {
       userErrors: [{ message: "This variant is sold out." }],
       warnings: [],
     });
-    await waitFor(() => add.textContent === "Add to cart", act);
+    await waitFor(
+      () => add.closest("form")?.querySelector('[role="alert"]') != null,
+      act,
+    );
 
     assert.equal(drawer.open, false);
     assert.match(
@@ -862,6 +860,20 @@ describe("cart interactions", () => {
     );
   });
 });
+
+/** Product page props for a product whose selected variant is VARIANT_ID. */
+function productDetailsProps(t: TestContext) {
+  // The product form mirrors the selected variant into the URL once hydrated.
+  t.mock.method(window.navigation, "navigate", () => ({
+    committed: Promise.resolve(),
+    finished: Promise.resolve(),
+  }));
+  return {
+    product: createProduct(VARIANT_ID),
+    search: "",
+    shopPayStoreUrl: "https://example.myshopify.com",
+  };
+}
 
 type PublishedCartView = {
   event: string;

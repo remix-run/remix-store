@@ -2,7 +2,8 @@ import { createCartCookie } from "@shopify/hydrogen";
 import * as assert from "remix/assert";
 import { describe, it } from "remix/test";
 
-import { CART_API_PATH, routes } from "./routes.ts";
+import { CART_API_PATH } from "./lib/public/cart-routes.ts";
+import { routes } from "./routes.ts";
 import {
   analyticsShopData,
   createStorefrontFetch,

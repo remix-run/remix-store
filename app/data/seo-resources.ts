@@ -5,6 +5,7 @@ import {
   StorefrontTimeoutError,
 } from "@shopify/hydrogen";
 
+import type { MarketCountry } from "../lib/public/market.ts";
 import type { AppStorefrontClient } from "./storefront.ts";
 
 const SITEMAP_INDEX_QUERY = gql(`
@@ -96,7 +97,7 @@ export type SitemapPage = {
 
 export async function querySitemapPageCounts(
   storefront: AppStorefrontClient,
-  market: "US" | "CA" = "US",
+  market: MarketCountry = "US",
 ): Promise<Record<SitemapResourceType, number>> {
   try {
     let result =
@@ -133,7 +134,7 @@ export async function querySitemapResources(
   storefront: AppStorefrontClient,
   type: SitemapResourceType,
   page: number,
-  market: "US" | "CA" = "US",
+  market: MarketCountry = "US",
 ): Promise<SitemapPage> {
   try {
     let document =

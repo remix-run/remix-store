@@ -10,9 +10,9 @@ import {
 import { navigate as remixNavigate, run } from "remix/component";
 
 import { createPageViewPublisher } from "../../assets/public/analytics.tsx";
-import { getBrowserCartStore } from "../../assets/public/cart-store.ts";
+import { connectBrowserCartStore } from "../../assets/public/cart-store.ts";
 import { configureOpenCartAction } from "../../assets/public/cart.tsx";
-import type { MarketPathPrefix } from "../../lib/public/market.ts";
+import { documentMarketPathPrefix } from "../../lib/public/market.ts";
 import { routeTemplates } from "../../lib/public/route-templates.ts";
 
 let app = run({
@@ -64,13 +64,6 @@ await Promise.all([
 ]);
 
 publishPageViewed();
-let pathPrefix = marketPathPrefix(
-  document.documentElement.dataset.marketPrefix,
-);
-let cartStore = getBrowserCartStore(undefined, pathPrefix);
+let cartStore = connectBrowserCartStore(undefined, documentMarketPathPrefix());
 if (cartStore) trackCartAnalytics(cartStore);
 configureOpenCartAction();
-
-function marketPathPrefix(value: string | undefined): MarketPathPrefix {
-  return value === "/en-ca" ? value : "";
-}

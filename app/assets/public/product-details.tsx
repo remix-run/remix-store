@@ -12,7 +12,7 @@ import {
 import { clientEntry, css, navigate, on, type Handle } from "remix/component";
 
 import type { NavigationMenuData, ProductData } from "../../data/storefront.ts";
-import { getCartApiPath } from "../../lib/public/cart-routes.ts";
+import { cartApiPath } from "../../lib/public/cart-routes.ts";
 import {
   marketPath,
   US_MARKET,
@@ -22,7 +22,7 @@ import { productSubscriptionsEnabled } from "../../lib/public/subscription.ts";
 import { dismissibleDetails } from "../../ui/public/dismissible-details.tsx";
 import { Icon } from "../../ui/public/icon.tsx";
 import { RichText } from "../../ui/public/rich-text.tsx";
-import { getBrowserCartStore } from "./cart-store.ts";
+import { connectBrowserCartStore } from "./cart-store.ts";
 import { ProductGallery } from "./product-gallery.tsx";
 import { navigationSettled, replaceUrl } from "./remix-navigation.ts";
 import { ExpressShopPayButton } from "./shop-pay-button.tsx";
@@ -63,7 +63,7 @@ export const ProductDetails = clientEntry(
   import.meta.url,
   function ProductDetails(handle: Handle<ProductDetailsProps>) {
     let market = handle.props.market ?? US_MARKET;
-    let cartStore = getBrowserCartStore(undefined, market.pathPrefix);
+    let cartStore = connectBrowserCartStore(undefined, market.pathPrefix);
     let store = cartStore
       ? createProductFormStore(handle.props.product, cartStore)
       : undefined;
@@ -235,7 +235,7 @@ export const ProductDetails = clientEntry(
                   ]}
                 >
                   <AddToCartForm
-                    action={getCartApiPath(market.pathPrefix)}
+                    action={cartApiPath(market.pathPrefix)}
                     enabled={addEnabled}
                     label={addToCartLabel(product, selectedVariant)}
                     register={register}
@@ -423,11 +423,12 @@ function AddToCartForm(
         await delay(ADD_TO_CART_CHECK_MS - (Date.now() - startedAt));
       }
     } catch (error) {
-      if (isCurrent()) {
-        submissionError =
-          error instanceof Error
-            ? error.message
-            : "The item could not be added.";
+      // Store-reported failures arrive through `storeErrors`; anything thrown
+      // here is a transport or programming error, so shoppers get fixed copy.
+      let aborted = error instanceof Error && error.name === "AbortError";
+      if (!aborted) console.error("Add to cart failed:", error);
+      if (isCurrent() && !aborted) {
+        submissionError = "The item could not be added.";
       }
     } finally {
       if (isCurrent()) {
