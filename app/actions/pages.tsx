@@ -103,7 +103,7 @@ function LookbookEntry(
         {product && price ? (
           <a
             href={marketPath(
-              `/products/${encodeURIComponent(product.handle)}`,
+              routes.products.show.href({ handle: product.handle }),
               handle.props.market.pathPrefix,
             )}
             aria-label={`${product.title}, ${price}`}

@@ -3,7 +3,12 @@ import { Frame } from "remix/component";
 import { createRouter } from "remix/router";
 import { describe, it } from "remix/test";
 
-import { fetchWithRuntime, getRuntime, type Runtime } from "../runtime.ts";
+import {
+  fetchWithRuntime,
+  getRuntime,
+  runtimeDispatch,
+  type Runtime,
+} from "../runtime.ts";
 import { render } from "./render.tsx";
 
 function frameRouter() {
@@ -13,7 +18,9 @@ function frameRouter() {
     importMap: { imports: {} },
   };
   return createRouter({
+    // createApp installs runtimeDispatch ahead of the renderer, too.
     middleware: [
+      runtimeDispatch(),
       ...render({
         assets: {
           async getScriptEntry() {
@@ -34,7 +41,7 @@ function frameRouter() {
   });
 }
 
-describe("shared renderer runtime dispatch", () => {
+describe("runtime dispatch through rendered frames", () => {
   it("keeps env, buyer IP, cache and background work available through redirected and nested frames", async () => {
     let router = frameRouter();
     let scheduled: Promise<unknown>[] = [];

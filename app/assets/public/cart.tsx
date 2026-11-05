@@ -25,6 +25,7 @@ import { PageTitle } from "./page-title.tsx";
 import { connectBrowserCartStore } from "./cart-store.ts";
 import type { CartInitialData } from "../../data/public/cart.ts";
 import { Icon } from "../../ui/public/icon.tsx";
+import { visuallyHiddenStyle } from "../../ui/public/visually-hidden.ts";
 
 const CART_DRAWER_ID = "cart-drawer";
 
@@ -287,7 +288,7 @@ function CartTrigger(
         <span>{quantity}</span>
         <span data-expanded-label="true">
           Item{quantity === 1 ? "" : "s"}
-          <span data-sr-only="true"> in cart</span>
+          <span mix={visuallyHiddenStyle}> in cart</span>
         </span>
       </>
     );
@@ -499,7 +500,7 @@ function CartPageHeading(handle: Handle<{ totalQuantity: number }>) {
         <PageTitle title="Cart" />
       </div>
       <div aria-hidden="true" mix={mobileCartSpacerStyle} />
-      <h1 mix={mobileCartTitleStyle}>Cart</h1>
+      <h1 mix={[visuallyHiddenStyle, mobileCartTitleStyle]}>Cart</h1>
       <h2 mix={cartCountStyle}>{cartCountLabel(handle.props.totalQuantity)}</h2>
     </>
   );
@@ -577,15 +578,6 @@ const triggerBaseStyle = css({
     },
   "@media (hover: hover)": {
     "&:hover [data-expanded-label]": { maxWidth: "10ch" },
-  },
-  "& [data-sr-only]": {
-    clip: "rect(0, 0, 0, 0)",
-    clipPath: "inset(50%)",
-    height: "1px",
-    overflow: "hidden",
-    position: "absolute",
-    whiteSpace: "nowrap",
-    width: "1px",
   },
   "@media (min-width: 810px)": {
     fontSize: "1.25rem",
@@ -706,13 +698,6 @@ const mobileCartSpacerStyle = css({
   "@media (min-width: 810px)": { display: "none" },
 });
 const mobileCartTitleStyle = css({
-  clip: "rect(0, 0, 0, 0)",
-  clipPath: "inset(50%)",
-  height: "1px",
-  overflow: "hidden",
-  position: "absolute",
-  whiteSpace: "nowrap",
-  width: "1px",
   "@media (min-width: 810px)": { display: "none" },
 });
 const cartCountStyle = css({

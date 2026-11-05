@@ -5,8 +5,6 @@ import type { RemixNode } from "remix/component";
 import { SuperHeaders } from "remix/headers";
 
 import type { Assets } from "../assets.ts";
-import { runtimeDispatch } from "../runtime.ts";
-
 import { cacheControl } from "../lib/cache-control.ts";
 import { MarketConfig } from "./market.ts";
 import { getPageRenderer } from "./page-renderer.ts";
@@ -25,7 +23,6 @@ export interface RenderOptions {
 
 export function render(options: RenderOptions) {
   return createMiddleware(
-    runtimeDispatch(),
     remixRender({ assets: options.assets }),
     renderWith((context: RequestContext) => {
       // Capture the upstream renderer before renderWith installs our wrapper.

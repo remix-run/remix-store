@@ -22,114 +22,67 @@ const CHARACTER_WIDTH = 6;
 const GLITCH_INTERVAL = 80;
 const GLITCH_PERCENT = 0.08;
 
+interface LoadedMatrix {
+  activeIndices: number[];
+  /** The decoded art as a data URL, so the layers never refetch it. */
+  imageUrl: string;
+  text: string;
+  /** Characters per row, which is the image's pixel width. */
+  width: number;
+}
+
 export const MatrixText = clientEntry(
   import.meta.url,
   function MatrixText(handle: Handle<MatrixTextProps>) {
     let source = MATRIX_SOURCES[handle.props.kind];
-    let imageDataUrl: string = source;
-    let originalText = "";
+    let matrix: LoadedMatrix | null = null;
     let displayText = "";
-    let activeCharacterIndices: number[] = [];
     let scale = 1;
-    let ready = false;
+
+    function fitToElement(element: HTMLElement) {
+      if (!matrix) return;
+      let nextScale = element.clientWidth / (matrix.width * CHARACTER_WIDTH);
+      if (!Number.isFinite(nextScale) || nextScale <= 0) return;
+      if (nextScale === scale) return;
+      scale = nextScale;
+      handle.update();
+    }
+
+    async function mount(element: HTMLElement, signal: AbortSignal) {
+      let resizeObserver = new ResizeObserver(() => fitToElement(element));
+      resizeObserver.observe(element);
+      signal.addEventListener("abort", () => resizeObserver.disconnect());
+
+      let loaded = await loadMatrix(source);
+      if (!loaded || signal.aborted) return;
+      matrix = loaded;
+      displayText = loaded.text;
+      fitToElement(element);
+      await handle.update();
+      if (signal.aborted) return;
+
+      runGlitch(loaded, signal, (text) => {
+        displayText = text;
+        handle.update();
+      });
+    }
 
     return () => (
       <div
         aria-hidden="true"
-        data-matrix-ready={ready || undefined}
-        mix={[
-          matrixStyle,
-          ref((element, signal) => {
-            let image = new Image();
-            let interval = 0;
-            let motionPreference = window.matchMedia(
-              "(prefers-reduced-motion: reduce)",
-            );
-
-            function updateScale(width: number) {
-              let nextScale = element.clientWidth / (width * CHARACTER_WIDTH);
-              if (
-                !Number.isFinite(nextScale) ||
-                nextScale <= 0 ||
-                nextScale === scale
-              )
-                return;
-              scale = nextScale;
-              handle.update();
-            }
-
-            function stopGlitch() {
-              if (interval) window.clearInterval(interval);
-              interval = 0;
-              displayText = originalText;
-            }
-
-            function startGlitch() {
-              stopGlitch();
-              if (
-                motionPreference.matches ||
-                !originalText ||
-                activeCharacterIndices.length === 0
-              ) {
-                handle.update();
-                return;
-              }
-
-              interval = window.setInterval(() => {
-                displayText = glitchText(originalText, activeCharacterIndices);
-                handle.update();
-              }, GLITCH_INTERVAL);
-            }
-
-            image.onerror = () => {
-              // Matrix art is decorative; keep the stable empty stage when its
-              // source cannot be loaded.
-            };
-            image.onload = async () => {
-              if (signal.aborted) return;
-              let canvas = drawToCanvas(image);
-              let pixels = canvas
-                ?.getContext("2d", { willReadFrequently: true })
-                ?.getImageData(0, 0, canvas.width, canvas.height).data;
-              if (!canvas || !pixels) return;
-
-              let matrix = matrixFromPixels(pixels, canvas.width);
-              imageDataUrl = canvas.toDataURL();
-              originalText = matrix.text;
-              displayText = matrix.text;
-              activeCharacterIndices = matrix.activeIndices;
-              ready = true;
-              updateScale(canvas.width);
-              await handle.update();
-              startGlitch();
-            };
-
-            image.src = source;
-            let resizeObserver = new ResizeObserver(() => {
-              if (image.naturalWidth) updateScale(image.naturalWidth);
-            });
-            resizeObserver.observe(element);
-            motionPreference.addEventListener("change", startGlitch);
-            signal.addEventListener("abort", () => {
-              image.onerror = null;
-              image.onload = null;
-              stopGlitch();
-              resizeObserver.disconnect();
-              motionPreference.removeEventListener("change", startGlitch);
-            });
-          }),
-        ]}
+        data-matrix-ready={matrix ? true : undefined}
+        mix={[matrixStyle, ref(mount)]}
       >
-        {ready ? (
+        {matrix ? (
           <>
             <MatrixLayer
-              imageUrl={imageDataUrl}
+              imageUrl={matrix.imageUrl}
               layer="blur"
               scale={scale}
-              text={originalText}
+              text={matrix.text}
             />
             <MatrixLayer
-              imageUrl={imageDataUrl}
+              imageUrl={matrix.imageUrl}
               layer="text"
               scale={scale}
               text={displayText}
@@ -140,6 +93,64 @@ export const MatrixText = clientEntry(
     );
   },
 );
+
+/**
+ * Loads and converts the matrix art. Returns null when it cannot load: the
+ * art is decorative, so the stage just stays empty.
+ */
+async function loadMatrix(source: string): Promise<LoadedMatrix | null> {
+  let image = new Image();
+  image.src = source;
+  try {
+    await image.decode();
+  } catch {
+    return null;
+  }
+  let canvas = drawToCanvas(image);
+  let pixels = canvas
+    ?.getContext("2d", { willReadFrequently: true })
+    ?.getImageData(0, 0, canvas.width, canvas.height).data;
+  if (!canvas || !pixels) return null;
+  return {
+    ...matrixFromPixels(pixels, canvas.width),
+    imageUrl: canvas.toDataURL(),
+    width: canvas.width,
+  };
+}
+
+/**
+ * Cycles glitched frames through `render` until `signal` aborts. Reduced
+ * motion pauses it on the original text, and it resumes when that changes.
+ */
+function runGlitch(
+  matrix: LoadedMatrix,
+  signal: AbortSignal,
+  render: (text: string) => void,
+) {
+  let motionPreference = window.matchMedia("(prefers-reduced-motion: reduce)");
+  let interval = 0;
+
+  function stop() {
+    if (interval) window.clearInterval(interval);
+    interval = 0;
+  }
+
+  function restart() {
+    stop();
+    render(matrix.text);
+    if (motionPreference.matches || matrix.activeIndices.length === 0) return;
+    interval = window.setInterval(() => {
+      render(glitchText(matrix.text, matrix.activeIndices));
+    }, GLITCH_INTERVAL);
+  }
+
+  restart();
+  motionPreference.addEventListener("change", restart);
+  signal.addEventListener("abort", () => {
+    stop();
+    motionPreference.removeEventListener("change", restart);
+  });
+}
 
 function MatrixLayer(
   handle: Handle<{

@@ -96,6 +96,17 @@ describe("MatrixText", () => {
     assert.equal(browser.intervals.size, 0);
     assert.equal(browser.motionListeners.size, 0);
   });
+
+  it("never starts the glitch when unmounted while the art loads", async (t) => {
+    let browser = mockBrowser(t);
+    let view = render(<MatrixText kind="404" />);
+    view.cleanup();
+
+    await browser.imageDecoded;
+
+    assert.equal(browser.intervals.size, 0);
+    assert.equal(browser.motionListeners.size, 0);
+  });
 });
 
 function layer(
@@ -133,6 +144,7 @@ function mockBrowser(t: TestContext, { reducedMotion = false } = {}) {
   let intervals = new Map<number, () => void>();
   let nextInterval = 1;
   let motionListeners = new Set<MotionListener>();
+  let decodes: Promise<void>[] = [];
 
   class MatrixImage extends Image {
     override get src() {
@@ -141,6 +153,11 @@ function mockBrowser(t: TestContext, { reducedMotion = false } = {}) {
     override set src(value: string) {
       requestedSources.push(value);
       super.src = imageUrl;
+    }
+    override decode() {
+      let decoded = super.decode();
+      decodes.push(decoded);
+      return decoded;
     }
   }
   replaceProperty(t, globalThis, "Image", MatrixImage);
@@ -172,6 +189,12 @@ function mockBrowser(t: TestContext, { reducedMotion = false } = {}) {
     intervals,
     motionListeners,
     requestedSources,
+    /** Settles after every requested image has decoded, and a turn more. */
+    get imageDecoded() {
+      return Promise.allSettled(decodes).then(
+        () => new Promise((resolve) => setTimeout(resolve)),
+      );
+    },
     tick() {
       for (let callback of intervals.values()) callback();
     },

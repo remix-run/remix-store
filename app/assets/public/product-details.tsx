@@ -28,6 +28,7 @@ import { ProductGallery } from "./product-gallery.tsx";
 import { navigationSettled, replaceUrl } from "./remix-navigation.ts";
 import { ExpressShopPayButton } from "./shop-pay-button.tsx";
 import { SubscribeForm } from "./subscribe-form.tsx";
+import { visuallyHiddenStyle } from "../../ui/public/visually-hidden.ts";
 
 type ProductDetailsProps = {
   market?: ActiveMarket;
@@ -663,15 +664,6 @@ function delay(milliseconds: number): Promise<void> | undefined {
   return new Promise((resolve) => setTimeout(resolve, milliseconds));
 }
 
-const visuallyHiddenStyle = css({
-  clip: "rect(0 0 0 0)",
-  clipPath: "inset(50%)",
-  height: "1px",
-  overflow: "hidden",
-  position: "absolute",
-  whiteSpace: "nowrap",
-  width: "1px",
-});
 // A flex row like production: the gallery takes all the room it can (up to
 // 1200px) and the details column shrinks to its minimum width before the
 // gallery gives up more.

@@ -25,7 +25,12 @@ import { getPageRenderer } from "./middleware/page-renderer.ts";
 import { render } from "./middleware/render.tsx";
 import { storefront, type StorefrontOptions } from "./middleware/storefront.ts";
 import { routes } from "./routes.ts";
-import { fetchWithRuntime, isRequestAbort, type Runtime } from "./runtime.ts";
+import {
+  fetchWithRuntime,
+  isRequestAbort,
+  runtimeDispatch,
+  type Runtime,
+} from "./runtime.ts";
 
 export interface AppOptions {
   csp?: CspOptions;
@@ -41,6 +46,9 @@ const passThrough: Middleware = (_context, next) => next();
 function createAppMiddleware(options: AppOptions) {
   return createMiddleware(
     options.platform ?? passThrough,
+    // Frame and redirect dispatch through context.router reuses the runtime
+    // bindings, so it must wrap the router before anything can dispatch.
+    runtimeDispatch(),
     // The renderer reads the nonce when it is installed, so CSP runs first.
     csp(options.csp),
     ...options.renderer,

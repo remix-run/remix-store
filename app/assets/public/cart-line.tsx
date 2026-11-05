@@ -13,6 +13,7 @@ import {
 } from "../../lib/public/market.ts";
 import { Icon } from "../../ui/public/icon.tsx";
 import { shopifyImageUrl } from "../../ui/public/shopify-image.tsx";
+import { visuallyHiddenStyle } from "../../ui/public/visually-hidden.ts";
 import { formatCartMoney, pendingValueStyle } from "./cart-format.ts";
 
 const register = createCartFormRegister();
@@ -102,7 +103,11 @@ export function CartLine(
             aria-busy={pending ? "true" : undefined}
             mix={quantityFormStyle}
           >
-            <button {...register("set")} data-set-quantity="true">
+            <button
+              {...register("set")}
+              data-set-quantity="true"
+              mix={visuallyHiddenStyle}
+            >
               Update quantity
             </button>
             <input type="hidden" {...register("lineId", { value: line.id })} />
@@ -237,15 +242,6 @@ const quantityFormStyle = css({
   lineHeight: "20px",
   marginTop: "4px",
   width: "fit-content",
-  "& [data-set-quantity]": {
-    clip: "rect(0, 0, 0, 0)",
-    clipPath: "inset(50%)",
-    height: "1px",
-    overflow: "hidden",
-    position: "absolute",
-    whiteSpace: "nowrap",
-    width: "1px",
-  },
   "& button:not([data-set-quantity])": {
     background: "transparent",
     border: 0,

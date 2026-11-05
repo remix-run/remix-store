@@ -7,6 +7,7 @@ import {
   type SerializableObject,
 } from "remix/component";
 import { Icon } from "../../ui/public/icon.tsx";
+import { visuallyHiddenStyle } from "../../ui/public/visually-hidden.ts";
 
 const SubscribeResponseSchema = object({
   error: optional(string()),
@@ -253,15 +254,6 @@ const notifyRowStyle = css({
     gap: "12px",
     gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
   },
-});
-const visuallyHiddenStyle = css({
-  clip: "rect(0, 0, 0, 0)",
-  clipPath: "inset(50%)",
-  height: "1px",
-  overflow: "hidden",
-  position: "absolute",
-  whiteSpace: "nowrap",
-  width: "1px",
 });
 const emailInputStyle = css({
   background: "transparent",
