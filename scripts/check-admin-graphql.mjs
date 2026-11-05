@@ -12,7 +12,10 @@ const EXPECTED_OPERATIONS = new Set([
 
 const [schemaJson, source] = await Promise.all([
   readFile(new URL(`../admin-${VERSION}.schema.json`, import.meta.url), "utf8"),
-  readFile(new URL("../app/actions/subscribe/admin.ts", import.meta.url), "utf8"),
+  readFile(
+    new URL("../app/actions/subscribe/admin.ts", import.meta.url),
+    "utf8",
+  ),
 ]);
 const introspection = JSON.parse(schemaJson);
 const schema = buildClientSchema(introspection.data);
