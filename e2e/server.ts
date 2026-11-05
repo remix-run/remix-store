@@ -6,9 +6,16 @@ import { createRequestListener } from "remix/node-fetch-server";
 import { oxygen } from "@shopify/mini-oxygen/vite";
 import { createServer, preview } from "vite";
 
+import type { ProductData } from "../app/data/product.ts";
 import { createNodeApp } from "../app/node.ts";
-import { remixOxygen } from "../vite/remix-oxygen.ts";
 import { createCart } from "../app/testing/cart-fixtures.ts";
+import {
+  createStorefrontFetch,
+  type StorefrontHandlers,
+  type StorefrontOperations,
+  type StorefrontRequestBody,
+} from "../app/testing/storefront.ts";
+import { remixOxygen } from "../vite/remix-oxygen.ts";
 
 const appPort = 44_110;
 const storefrontPort = 44_111;
@@ -16,41 +23,31 @@ const env = {
   PUBLIC_STORE_DOMAIN: `http://localhost:${storefrontPort}`,
   PRIVATE_STOREFRONT_API_TOKEN: "e2e-token",
 };
+const storefrontUrl = `${env.PUBLIC_STORE_DOMAIN}/api/graphql.json`;
 
-const storefrontRequestSchema = object({
-  query: string(),
-  variables: optional(
-    object({
-      country: optional(string()),
-      handle: optional(string()),
-      after: optional(string()),
-    }),
-  ),
+const storefrontVariablesSchema = object({
+  country: optional(string()),
+  handle: optional(string()),
+  after: optional(string()),
 });
 
-type StorefrontVariables = {
-  after?: string;
-  country?: string;
-  handle?: string;
-};
-type StorefrontRequest = { query: string; variables: StorefrontVariables };
+const storefrontFetch = createStorefrontFetch(storefrontHandlers());
 
 const storefrontServer = http.createServer(async (request, response) => {
   let body = "";
   for await (let chunk of request) body += chunk;
 
+  let fixture: Response;
   try {
-    let { query, variables } = parseStorefrontRequest(body);
-    let operation = query.match(
-      /\b(?:query|mutation)\s+([A-Za-z_][A-Za-z0-9_]*)/,
-    )?.[1];
-    let data = storefrontData(operation, variables);
-    response.writeHead(200, { "Content-Type": "application/json" });
-    response.end(JSON.stringify({ data }));
+    fixture = await storefrontFetch(storefrontUrl, { method: "POST", body });
   } catch (error) {
-    response.writeHead(500, { "Content-Type": "application/json" });
-    response.end(JSON.stringify({ errors: [{ message: String(error) }] }));
+    fixture = Response.json(
+      { errors: [{ message: String(error) }] },
+      { status: 500 },
+    );
   }
+  response.writeHead(fixture.status, Object.fromEntries(fixture.headers));
+  response.end(await fixture.text());
 });
 
 await listen(storefrontServer, storefrontPort);
@@ -108,55 +105,47 @@ async function shutdown() {
 process.on("SIGINT", () => void shutdown().then(() => process.exit(0)));
 process.on("SIGTERM", () => void shutdown().then(() => process.exit(0)));
 
-function parseStorefrontRequest(body: string): StorefrontRequest {
-  let { query, variables: parsedVariables } = parse(
-    storefrontRequestSchema,
-    JSON.parse(body),
-  );
-  return { query, variables: parsedVariables ?? {} };
+function variablesOf({ variables }: StorefrontRequestBody) {
+  return parse(storefrontVariablesSchema, variables);
 }
 
-function storefrontData(
-  operation: string | undefined,
-  { after, country, handle }: StorefrontVariables,
-) {
-  switch (operation) {
-    case "RemixNavigation":
-      return {
-        menu: {
-          items: [
-            {
-              id: "all",
-              title: "All Products",
-              url: "http://localhost:44110/collections/all",
-            },
-            {
-              id: "apparel",
-              title: "Apparel",
-              url: "http://localhost:44110/collections/apparel",
-            },
-          ],
-        },
-        footerMenu: { items: [] },
-        shop: {
-          primaryDomain: { url: "http://localhost:44110" },
-          storeWideSale: {
-            reference: {
-              __typename: "Metaobject",
-              title: { value: "Sale" },
-              description: { value: "Now" },
-              endDateTime: { value: "2099-06-02T12:00:00Z" },
-            },
+function storefrontHandlers(): StorefrontHandlers {
+  return {
+    RemixNavigation: () => ({
+      menu: {
+        items: [
+          {
+            id: "all",
+            title: "All Products",
+            url: "http://localhost:44110/collections/all",
+          },
+          {
+            id: "apparel",
+            title: "Apparel",
+            url: "http://localhost:44110/collections/apparel",
+          },
+        ],
+      },
+      footerMenu: { items: [] },
+      shop: {
+        primaryDomain: { url: "http://localhost:44110" },
+        storeWideSale: {
+          reference: {
+            __typename: "Metaobject",
+            title: { value: "Sale" },
+            description: { value: "Now" },
+            endDateTime: { value: "2099-06-02T12:00:00Z" },
           },
         },
-      };
-    case "RemixHomeEditorial":
-      return {
-        shop: { name: "Remix Store", description: "Racing apparel" },
-        hero: null,
-        lookbook: null,
-      };
-    case "RemixCollection":
+      },
+    }),
+    RemixHomeEditorial: () => ({
+      shop: { name: "Remix Store", description: "Racing apparel" },
+      hero: null,
+      lookbook: null,
+    }),
+    RemixCollection: (body) => {
+      let { after, country, handle } = variablesOf(body);
       if (handle === "apparel") {
         return {
           collection: {
@@ -205,46 +194,41 @@ function storefrontData(
                 },
         },
       };
-    case "RemixCanadianSitemapResources":
-    case "RemixSitemapResources":
-      return {
-        sitemap: { resources: { hasNextPage: false, items: [] } },
-      };
-    case "RemixProductNavigation":
-      return { menu: null, shop: null };
-    case "RemixProduct":
+    },
+    RemixSitemapResources: () => ({
+      sitemap: { resources: { hasNextPage: false, items: [] } },
+    }),
+    RemixProductNavigation: () => ({
+      menu: null,
+      shop: { primaryDomain: { url: "http://localhost:44110" } },
+    }),
+    RemixProduct: (body) => {
+      let { country, handle } = variablesOf(body);
       return {
         product:
           handle === "sized-product" ? sizedProduct(country) : product(country),
       };
-    case "RemixAnalyticsShop":
-      return {
-        shop: { id: "gid://shopify/Shop/test" },
-        localization: {
-          country: {
-            currency: { isoCode: country === "CA" ? "CAD" : "USD" },
-          },
+    },
+    RemixAnalyticsShop: (body) => ({
+      shop: { id: "gid://shopify/Shop/test" },
+      localization: {
+        country: {
+          currency: { isoCode: currencyFor(variablesOf(body).country) },
         },
-      };
-    case "redirects":
-      return { urlRedirects: { edges: [] } };
-    case "RemixDiscountCartCreate":
-      return {
-        cartCreate: {
-          cart: { id: "gid://shopify/Cart/discount" },
-          userErrors: [],
-          warnings: [],
-        },
-      };
-    case "CartCreate":
-      return {
-        cartCreate: { cart: cart(), userErrors: [], warnings: [] },
-      };
-    case "Cart":
-      return { cart: cart() };
-    default:
-      throw new Error(`Unexpected Storefront operation: ${operation}`);
-  }
+      },
+    }),
+    RemixDiscountCartCreate: () => ({
+      cartCreate: {
+        cart: { id: "gid://shopify/Cart/discount" },
+        userErrors: [],
+        warnings: [],
+      },
+    }),
+    CartCreate: () => ({
+      cartCreate: { cart: cart(), userErrors: [], warnings: [] },
+    }),
+    Cart: () => ({ cart: cart() }),
+  };
 }
 
 function cart() {
@@ -264,8 +248,20 @@ function cart() {
   return value;
 }
 
-function productCard(country?: string) {
-  let currencyCode = country === "CA" ? "CAD" : "USD";
+type ProductVariant = NonNullable<
+  ProductData["selectedOrFirstAvailableVariant"]
+>;
+type CollectionProductCard = NonNullable<
+  StorefrontOperations["RemixCollection"]["collection"]
+>["products"]["nodes"][number];
+type CurrencyCode = ProductVariant["price"]["currencyCode"];
+
+function currencyFor(country?: string): CurrencyCode {
+  return country === "CA" ? "CAD" : "USD";
+}
+
+function productCard(country?: string): CollectionProductCard {
+  let currencyCode = currencyFor(country);
   return {
     id: "product",
     handle: "test-product",
@@ -291,14 +287,16 @@ function productCard(country?: string) {
   };
 }
 
-function product(country?: string) {
-  let currencyCode = country === "CA" ? "CAD" : "USD";
+function product(country?: string): ProductData {
+  let currencyCode = currencyFor(country);
   let selectedVariant = variant(currencyCode);
   return {
     id: "product",
     handle: "test-product",
     title: "Test product",
     description: "A deterministic test product.",
+    vendor: "Remix",
+    subscribeIfBackInStock: null,
     requiresSellingPlan: false,
     category: { name: "Test category" },
     seo: { title: "Test product", description: "A test product" },
@@ -324,9 +322,9 @@ function product(country?: string) {
 }
 
 /** A product with a real option and several images. */
-function sizedProduct(country?: string) {
-  let currencyCode = country === "CA" ? "CAD" : "USD";
-  let sizeVariant = (id: string, size: string) => ({
+function sizedProduct(country?: string): ProductData {
+  let currencyCode = currencyFor(country);
+  let sizeVariant = (id: string, size: string): ProductVariant => ({
     ...variant(currencyCode),
     id: `gid://shopify/ProductVariant/${id}`,
     product: { handle: "sized-product", title: "Sized product" },
@@ -366,7 +364,7 @@ function sizedProduct(country?: string) {
   };
 }
 
-function variant(currencyCode = "USD") {
+function variant(currencyCode: CurrencyCode = "USD"): ProductVariant {
   return {
     availableForSale: true,
     compareAtPrice: null,
@@ -376,6 +374,7 @@ function variant(currencyCode = "USD") {
     product: { handle: "test-product", title: "Test product" },
     selectedOptions: [{ name: "Title", value: "Default Title" }],
     title: "Default Title",
+    sku: null,
   };
 }
 

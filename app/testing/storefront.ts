@@ -12,8 +12,16 @@ import {
   type Schema,
 } from "remix/data-schema";
 import { lazy } from "remix/data-schema/lazy";
-import type { SerializableObject } from "remix/component";
 
+import type { AnalyticsShopOperations } from "../data/analytics-shop.ts";
+import type { CartOperations } from "../data/cart-handlers.ts";
+import type { CollectionOperations } from "../data/collection.ts";
+import type { DiscountOperations } from "../data/discount.ts";
+import type { HomeOperations } from "../data/home.ts";
+import type { MenuOperations } from "../data/menus.ts";
+import type { PolicyOperations } from "../data/policies.ts";
+import type { ProductOperations } from "../data/product.ts";
+import type { SitemapOperations } from "../data/seo-resources.ts";
 import { MemoryStorefrontCache } from "../data/storefront-cache.ts";
 import { render } from "../middleware/render.tsx";
 import { createApp, type AppOptions } from "../router.ts";
@@ -77,13 +85,49 @@ export function createTestApp(
   };
 }
 
+/** Response data of every app Storefront operation, by operation name. */
+export interface StorefrontOperations
+  extends
+    AnalyticsShopOperations,
+    CartOperations,
+    CollectionOperations,
+    DiscountOperations,
+    HomeOperations,
+    MenuOperations,
+    PolicyOperations,
+    ProductOperations,
+    SitemapOperations {
+  // Hydrogen runs these for Shopify compatibility routes; its documents are
+  // not exported, so the shapes follow their query text.
+  redirects: { urlRedirects: { edges: Array<{ node: { target: string } }> } };
+  VariantSelectedOptions: {
+    node: {
+      selectedOptions: Array<{ name: string; value: string }>;
+      product: { handle: string };
+    } | null;
+  };
+}
+
+export type StorefrontOperationName = keyof StorefrontOperations;
+
+/** Fake responses for the operations a test expects, typed by operation. */
+export type StorefrontHandlers = {
+  [Name in StorefrontOperationName]?: StorefrontHandler<Name>;
+};
+
+export interface StorefrontHandler<Name extends StorefrontOperationName> {
+  (
+    body: StorefrontRequestBody,
+  ): StorefrontOperations[Name] | Promise<StorefrontOperations[Name]>;
+}
+
 export function createStorefrontFetch(
-  handlers: Record<string, StorefrontHandler>,
+  handlers: StorefrontHandlers,
 ): typeof globalThis.fetch {
   return async (_input, init) => {
     let body = parseStorefrontRequestBody(init?.body);
     let operationName = operationNameFrom(body.query);
-    let handler = handlers[operationName];
+    let handler = handlers[operationName as StorefrontOperationName];
     if (!handler && operationName === "redirects") {
       return graphqlResponse({ urlRedirects: { edges: [] } });
     }
@@ -108,15 +152,18 @@ export function createStorefrontFetch(
   };
 }
 
-export function navigationData() {
+export function navigationData(): StorefrontOperations["RemixNavigation"] {
   return {
     footerMenu: { items: [] },
     menu: { items: [] },
-    shop: { primaryDomain: { url: "https://example.myshopify.com" } },
+    shop: {
+      primaryDomain: { url: "https://example.myshopify.com" },
+      storeWideSale: null,
+    },
   };
 }
 
-export function analyticsShopData() {
+export function analyticsShopData(): StorefrontOperations["RemixAnalyticsShop"] {
   return {
     shop: { id: "gid://shopify/Shop/test" },
     localization: { country: { currency: { isoCode: "USD" } } },
@@ -153,16 +200,9 @@ const storefrontRequestBodySchema = object({
   variables: storefrontJsonObjectSchema,
 });
 
-export type StorefrontResponseData = StorefrontJsonObject | SerializableObject;
 export type StorefrontRequestBody = InferOutput<
   typeof storefrontRequestBodySchema
 >;
-
-export interface StorefrontHandler {
-  (
-    body: StorefrontRequestBody,
-  ): StorefrontResponseData | Promise<StorefrontResponseData>;
-}
 
 function parseStorefrontRequestBody(
   body: BodyInit | null | undefined,

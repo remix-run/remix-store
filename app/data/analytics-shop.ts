@@ -1,4 +1,4 @@
-import { gql } from "@shopify/hydrogen";
+import { gql, type StorefrontApi } from "@shopify/hydrogen";
 import type { SerializableObject } from "remix/component";
 
 import {
@@ -66,4 +66,9 @@ export async function loadAnalyticsShopOrNull(
     shopId,
     storefrontId: storefront.storefrontId ?? "0",
   };
+}
+
+/** Response data of this module's Storefront operations, by operation name. */
+export interface AnalyticsShopOperations {
+  RemixAnalyticsShop: StorefrontApi.ResultOf<typeof ANALYTICS_SHOP_QUERY>;
 }

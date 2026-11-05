@@ -1,4 +1,4 @@
-import { gql } from "@shopify/hydrogen";
+import { gql, type StorefrontApi } from "@shopify/hydrogen";
 
 import type { MarketCountry } from "../lib/public/market.ts";
 import {
@@ -138,4 +138,16 @@ export async function querySitemapResources(
       updatedAt: item.updatedAt,
     })),
   };
+}
+
+/** Response data of this module's Storefront operations, by operation name. */
+export interface SitemapOperations {
+  RemixSitemapIndex: StorefrontApi.ResultOf<typeof SITEMAP_INDEX_QUERY>;
+  RemixCanadianSitemapIndex: StorefrontApi.ResultOf<
+    typeof CANADIAN_SITEMAP_INDEX_QUERY
+  >;
+  RemixSitemapResources: StorefrontApi.ResultOf<typeof SITEMAP_RESOURCES_QUERY>;
+  RemixCanadianSitemapResources: StorefrontApi.ResultOf<
+    typeof CANADIAN_SITEMAP_RESOURCES_QUERY
+  >;
 }

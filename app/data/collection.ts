@@ -1,4 +1,4 @@
-import { formatMoney, gql } from "@shopify/hydrogen";
+import { formatMoney, gql, type StorefrontApi } from "@shopify/hydrogen";
 import type { SerializableObject } from "remix/component";
 
 import type { MarketLocale } from "../lib/public/market.ts";
@@ -178,4 +178,9 @@ function toProductCardData(
       formattedCompareAtPrice !== null &&
       formattedPrice.numericAmount < formattedCompareAtPrice.numericAmount,
   };
+}
+
+/** Response data of this module's Storefront operations, by operation name. */
+export interface CollectionOperations {
+  RemixCollection: StorefrontApi.ResultOf<typeof COLLECTION_QUERY>;
 }

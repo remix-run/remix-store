@@ -9,6 +9,7 @@ import {
   navigationData,
   type StorefrontHandler,
   type StorefrontRequestBody,
+  type StorefrontOperations,
 } from "../../testing/storefront.ts";
 
 describe("SEO resource routes", () => {
@@ -83,7 +84,9 @@ describe("SEO resource routes", () => {
       operation: string;
       variables: StorefrontRequestBody["variables"];
     }> = [];
-    let resource = (handle: string) => ({
+    let resource = (
+      handle: string,
+    ): StorefrontOperations["RemixSitemapResources"] => ({
       sitemap: {
         resources: {
           hasNextPage: false,
@@ -324,7 +327,7 @@ describe("SEO resource routes", () => {
 });
 
 function seoApp(
-  resourceHandler: StorefrontHandler = () => ({
+  resourceHandler: StorefrontHandler<"RemixSitemapResources"> = () => ({
     sitemap: { resources: { hasNextPage: false, items: [] } },
   }),
   onShellQuery: () => void = () => {},

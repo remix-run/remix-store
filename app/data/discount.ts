@@ -2,6 +2,7 @@ import {
   createCartCookie,
   getCartId,
   gql,
+  type StorefrontApi,
   type StorefrontClient,
 } from "@shopify/hydrogen";
 
@@ -113,4 +114,15 @@ export async function applyDiscountCode(
   if (nextCartId !== cartId)
     headers.append("Set-Cookie", createCartCookie(nextCartId));
   return headers;
+}
+
+/** Response data of this module's Storefront operations, by operation name. */
+export interface DiscountOperations {
+  RemixDiscountCartCreate: StorefrontApi.ResultOf<
+    typeof DISCOUNT_CART_CREATE_MUTATION
+  >;
+  RemixDiscountCart: StorefrontApi.ResultOf<typeof DISCOUNT_CART_QUERY>;
+  RemixCartDiscountCodesUpdate: StorefrontApi.ResultOf<
+    typeof CART_DISCOUNT_CODES_UPDATE_MUTATION
+  >;
 }

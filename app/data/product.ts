@@ -215,3 +215,11 @@ export async function queryBackInStockEligibleVariant(
     variantTitle: variant.title,
   };
 }
+
+/** Response data of this module's Storefront operations, by operation name. */
+export interface ProductOperations {
+  RemixProduct: StorefrontApi.ResultOf<typeof PRODUCT_QUERY>;
+  RemixBackInStockSubscription: StorefrontApi.ResultOf<
+    typeof PRODUCT_SUBSCRIPTION_QUERY
+  >;
+}

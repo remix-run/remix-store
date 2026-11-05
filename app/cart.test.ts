@@ -10,6 +10,7 @@ import {
   createTestApp,
   navigationData,
   type StorefrontRequestBody,
+  type StorefrontOperations,
 } from "./testing/storefront.ts";
 import { CART_ID, createCart } from "./testing/cart-fixtures.ts";
 
@@ -321,7 +322,7 @@ describe("cart routes", () => {
   });
 });
 
-function saleNavigationData() {
+function saleNavigationData(): StorefrontOperations["RemixNavigation"] {
   let data = navigationData();
   return {
     ...data,

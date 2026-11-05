@@ -1,4 +1,4 @@
-import { gql } from "@shopify/hydrogen";
+import { gql, type StorefrontApi } from "@shopify/hydrogen";
 import type { SerializableObject } from "remix/component";
 
 import {
@@ -349,4 +349,12 @@ function isInternalUrl(value: string, internalHosts: Set<string>): boolean {
   } catch {
     return false;
   }
+}
+
+/** Response data of this module's Storefront operations, by operation name. */
+export interface MenuOperations {
+  RemixNavigation: StorefrontApi.ResultOf<typeof NAVIGATION_QUERY>;
+  RemixProductNavigation: StorefrontApi.ResultOf<
+    typeof PRODUCT_NAVIGATION_QUERY
+  >;
 }

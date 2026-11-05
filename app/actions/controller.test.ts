@@ -8,6 +8,7 @@ import {
   createTestApp,
   testEnv,
   type StorefrontRequestBody,
+  type StorefrontOperations,
 } from "../testing/storefront.ts";
 
 const shellMenuFetch = createStorefrontFetch({
@@ -281,7 +282,7 @@ function createHomeApp(clock: () => Date) {
   );
 }
 
-function navigationData() {
+function navigationData(): StorefrontOperations["RemixNavigation"] {
   return {
     menu: {
       items: [
@@ -307,7 +308,7 @@ function navigationData() {
   };
 }
 
-function homeData() {
+function homeData(): StorefrontOperations["RemixHomeEditorial"] {
   return {
     shop: {
       name: "Test Remix Store",
@@ -349,7 +350,11 @@ function homeData() {
                     __typename: "MediaImage",
                     id: "lookbook-media",
                     presentation: {
-                      asJson: { focalPoint: { x: 0.4, y: 0.6 } },
+                      // SAFETY: The Storefront JSON scalar arrives as an
+                      // object; Hydrogen's generated types call it a string.
+                      asJson: {
+                        focalPoint: { x: 0.4, y: 0.6 },
+                      } as unknown as string,
                     },
                     image: {
                       id: "lookbook-image",
@@ -369,7 +374,7 @@ function homeData() {
   };
 }
 
-function collectionData() {
+function collectionData(): StorefrontOperations["RemixCollection"] {
   return {
     collection: {
       id: "gid://shopify/Collection/1",
@@ -386,7 +391,6 @@ function collectionData() {
             images: { nodes: [] },
             selectedOrFirstAvailableVariant: null,
             priceRange: {
-              minVariantPrice: { amount: "20.00", currencyCode: "USD" },
               maxVariantPrice: { amount: "20.00", currencyCode: "USD" },
             },
           },

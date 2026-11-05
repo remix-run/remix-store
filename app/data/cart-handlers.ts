@@ -4,6 +4,8 @@ import {
   gql,
   type CartDataFromHandlers,
   type CartGetData,
+  type CartUserError,
+  type CartWarning,
   type StorefrontClient,
 } from "@shopify/hydrogen";
 import type {
@@ -56,6 +58,18 @@ export type SerializedCartData = SerializableCartValue<HydrogenCartData>;
 export type CartInitialData = SerializableCartValue<
   CartGetData<HydrogenCartData>
 >;
+
+/** Response data of the Hydrogen cart operations the app runs, by operation name. */
+export interface CartOperations {
+  Cart: { cart: SerializedCartData | null };
+  CartCreate: {
+    cartCreate: {
+      cart: SerializedCartData | null;
+      userErrors: CartUserError[];
+      warnings: CartWarning[];
+    };
+  };
+}
 
 /**
  * Loads the current cart for SSR. A missing or malformed cart cookie renders

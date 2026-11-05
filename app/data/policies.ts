@@ -129,3 +129,9 @@ export async function queryPolicy(
 function policyFrom(data: PolicyQueryData, key: PolicyKey) {
   return data.shop[key];
 }
+
+/** Response data of this module's Storefront operations, by operation name. */
+export interface PolicyOperations {
+  RemixPolicy: StorefrontApi.ResultOf<typeof POLICY_QUERY>;
+  RemixContact: StorefrontApi.ResultOf<typeof CONTACT_QUERY>;
+}

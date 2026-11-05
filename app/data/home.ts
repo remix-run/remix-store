@@ -260,3 +260,8 @@ function toSerializableFocalPoint(
 ): (SerializableObject & FocalPoint) | null {
   return point ? { x: point.x, y: point.y } : null;
 }
+
+/** Response data of this module's Storefront operations, by operation name. */
+export interface HomeOperations {
+  RemixHomeEditorial: StorefrontApi.ResultOf<typeof HOME_QUERY>;
+}

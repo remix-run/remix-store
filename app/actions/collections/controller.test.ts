@@ -8,6 +8,8 @@ import {
   createTestApp,
   navigationData,
   type StorefrontRequestBody,
+  type StorefrontHandler,
+  type StorefrontOperations,
 } from "../../testing/storefront.ts";
 
 describe("collection routes", () => {
@@ -265,7 +267,7 @@ describe("collection routes", () => {
 });
 
 function storefrontFetch(
-  collection: Parameters<typeof createStorefrontFetch>[0][string],
+  collection: StorefrontHandler<"RemixCollection">,
 ): typeof globalThis.fetch {
   return createStorefrontFetch({
     RemixAnalyticsShop: analyticsShopData,
@@ -277,14 +279,18 @@ function storefrontFetch(
 function collectionData(pageInfo: {
   hasNextPage: boolean;
   endCursor: string | null;
-}) {
+}): {
+  collection: NonNullable<
+    StorefrontOperations["RemixCollection"]["collection"]
+  >;
+} {
   return {
     collection: {
       id: "gid://shopify/Collection/1",
       handle: "racing",
       title: "Racing collection",
       description: "Racing apparel",
-      seo: { title: null as string | null },
+      seo: { title: null },
       products: {
         nodes: [
           {
@@ -307,7 +313,6 @@ function collectionData(pageInfo: {
               compareAtPrice: { amount: "30.00", currencyCode: "USD" },
             },
             priceRange: {
-              minVariantPrice: { amount: "20.00", currencyCode: "USD" },
               maxVariantPrice: { amount: "20.00", currencyCode: "USD" },
             },
           },
