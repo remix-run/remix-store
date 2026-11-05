@@ -8,7 +8,7 @@ import {
   createTestApp,
   navigationData,
   type StorefrontRequestBody,
-} from "../../testing/storefront.ts";
+} from "../../testing/fake-storefront.ts";
 
 describe("policy routes", () => {
   it("renders Shopify policy content in the branded document", async () => {

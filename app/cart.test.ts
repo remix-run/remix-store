@@ -11,7 +11,7 @@ import {
   navigationData,
   type StorefrontRequestBody,
   type StorefrontOperations,
-} from "./testing/storefront.ts";
+} from "./testing/fake-storefront.ts";
 import { CART_ID, createCart } from "./testing/cart-fixtures.ts";
 
 const origin = "https://storefront.example";

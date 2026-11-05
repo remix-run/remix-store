@@ -10,7 +10,7 @@ import {
   type StorefrontRequestBody,
   type StorefrontHandler,
   type StorefrontOperations,
-} from "../../testing/storefront.ts";
+} from "../../testing/fake-storefront.ts";
 
 describe("collection routes", () => {
   it("renders catalog cards and keeps load more as a GET fallback", async () => {

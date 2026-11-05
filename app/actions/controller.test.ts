@@ -9,7 +9,7 @@ import {
   testEnv,
   type StorefrontRequestBody,
   type StorefrontOperations,
-} from "../testing/storefront.ts";
+} from "../testing/fake-storefront.ts";
 
 const shellMenuFetch = createStorefrontFetch({
   RemixAnalyticsShop: analyticsShopData,

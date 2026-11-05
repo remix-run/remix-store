@@ -6,7 +6,7 @@ import {
   createStorefrontFetch,
   createTestApp,
   navigationData,
-} from "../testing/storefront.ts";
+} from "../testing/fake-storefront.ts";
 import type { CspOptions } from "./csp.ts";
 
 async function fetchPage(csp?: CspOptions) {

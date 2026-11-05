@@ -10,7 +10,7 @@ import {
   type StorefrontHandler,
   type StorefrontRequestBody,
   type StorefrontOperations,
-} from "../../testing/storefront.ts";
+} from "../../testing/fake-storefront.ts";
 
 describe("SEO resource routes", () => {
   it("publishes crawler rules while loading only the required shop identity", async () => {

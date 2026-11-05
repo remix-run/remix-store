@@ -6,7 +6,7 @@ import {
   resolveMarketPath,
   US_MARKET,
 } from "../lib/public/market.ts";
-import { createTestApp } from "../testing/storefront.ts";
+import { createTestApp } from "../testing/fake-storefront.ts";
 
 describe("market routing", () => {
   it("resolves unprefixed US and prefix-stripped Canadian paths", () => {

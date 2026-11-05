@@ -11,7 +11,11 @@ import type { AppStorefrontClient } from "../data/storefront.ts";
 import type { ActiveMarket } from "../lib/public/market.ts";
 import { getRuntime, type Env } from "../runtime.ts";
 import { MarketConfig } from "./market.ts";
-import { loadShellData, type StorefrontShellData } from "./shell-data.ts";
+import {
+  loadShellData,
+  ShellDataConfig,
+  type StorefrontShellData,
+} from "./shell-data.ts";
 import {
   applyResponseHeaders,
   handleShopifyCompatibilityRoute,
@@ -26,11 +30,6 @@ export interface StorefrontOptions {
 }
 
 export const StorefrontClient = createContextKey<AppStorefrontClient>();
-/**
- * Shell data starts loading before the route runs, so controllers query their
- * own data in parallel instead of after it. The renderer awaits it.
- */
-export const ShellDataConfig = createContextKey<Promise<StorefrontShellData>>();
 /** Adapter bindings merged with app-level overrides. */
 export const RequestEnv = createContextKey<Env>();
 /** The adapter-supplied, trusted buyer IP. Every app request has one. */

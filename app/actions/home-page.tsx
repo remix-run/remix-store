@@ -14,7 +14,7 @@ import { focalPointPosition } from "../lib/image-utils.ts";
 import { marketPath, type ActiveMarket } from "../lib/public/market.ts";
 import { routes } from "../routes.ts";
 import { Document } from "../ui/document.tsx";
-import { shellMarket } from "../ui/shell-data.tsx";
+import { shellMarket } from "../ui/shell-data-provider.tsx";
 import { PillIcon, pillLinkStyle } from "../ui/public/pill-link.tsx";
 import { ShopifyImage } from "../ui/public/shopify-image.tsx";
 

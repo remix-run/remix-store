@@ -5,7 +5,7 @@ import { ProductDetails } from "./public/product-details.tsx";
 import type { ProductData } from "../../data/public/product.ts";
 import type { NavigationMenuData } from "../../data/public/types.ts";
 import { Document } from "../../ui/document.tsx";
-import { shellMarket } from "../../ui/shell-data.tsx";
+import { shellMarket } from "../../ui/shell-data-provider.tsx";
 
 export function ProductPage(
   handle: Handle<{

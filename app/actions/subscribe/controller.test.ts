@@ -10,7 +10,7 @@ import {
   navigationData,
   type StorefrontJsonObject,
   type StorefrontRequestBody,
-} from "../../testing/storefront.ts";
+} from "../../testing/fake-storefront.ts";
 
 const shellHandlers = {
   RemixAnalyticsShop: analyticsShopData,

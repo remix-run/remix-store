@@ -8,13 +8,16 @@ import type { Assets } from "../assets.ts";
 import { cacheControl } from "../lib/cache-control.ts";
 import { MarketConfig } from "./market.ts";
 import { getPageRenderer } from "./page-renderer.ts";
-import { FALLBACK_SHELL_DATA, isClientNavigation } from "./shell-data.ts";
-import { ShellDataConfig } from "./storefront.ts";
+import {
+  FALLBACK_SHELL_DATA,
+  isClientNavigation,
+  ShellDataConfig,
+} from "./shell-data.ts";
 import {
   DocumentAssetsProvider,
   type DocumentAssets,
 } from "../ui/document-assets.tsx";
-import { ShellDataProvider } from "../ui/shell-data.tsx";
+import { ShellDataProvider } from "../ui/shell-data-provider.tsx";
 
 export interface RenderOptions {
   documentAssets: DocumentAssets;

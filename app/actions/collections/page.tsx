@@ -8,7 +8,7 @@ import type {
 } from "../../data/public/types.ts";
 import { PageTitle } from "../../ui/public/page-title.tsx";
 import { Document } from "../../ui/document.tsx";
-import { shellMarket } from "../../ui/shell-data.tsx";
+import { shellMarket } from "../../ui/shell-data-provider.tsx";
 
 // The grid shows up to three columns below 2000px wide.
 const FIRST_ROW_PRODUCTS = 3;

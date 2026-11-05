@@ -14,7 +14,7 @@ import {
   type StorefrontHandlers,
   type StorefrontOperations,
   type StorefrontRequestBody,
-} from "../app/testing/storefront.ts";
+} from "../app/testing/fake-storefront.ts";
 import { remixOxygen } from "../vite/remix-oxygen.ts";
 
 const appPort = 44_110;

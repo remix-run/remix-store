@@ -1,4 +1,5 @@
 import { createMultiMatcher } from "remix/route-pattern/match";
+import { createContextKey } from "remix/router";
 
 import { loadAnalyticsShopOrNull } from "../data/analytics-shop.ts";
 import { loadCartDataOrEmpty } from "../data/cart-handlers.ts";
@@ -9,10 +10,16 @@ import {
 } from "../data/menus.ts";
 import type { AppStorefrontClient } from "../data/storefront.ts";
 import { routes } from "../routes.ts";
-import type { ShellData } from "../ui/shell-data.tsx";
+import type { ShellData } from "../ui/shell-data-provider.tsx";
 
 /** The Storefront part of the page shell: menus, sale, cart, analytics. */
 export type StorefrontShellData = Omit<ShellData, "currentPath" | "market">;
+
+/**
+ * Shell data starts loading before the route runs, so controllers query their
+ * own data in parallel instead of after it. The renderer awaits it.
+ */
+export const ShellDataConfig = createContextKey<Promise<StorefrontShellData>>();
 
 export const FALLBACK_SHELL_DATA: StorefrontShellData = {
   analyticsShop: null,

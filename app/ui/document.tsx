@@ -15,7 +15,7 @@ import {
 import { US_MARKET, type ActiveMarket } from "../lib/public/market.ts";
 import { DocumentAssetsProvider } from "./document-assets.tsx";
 import { Navbar } from "./navbar.tsx";
-import { ShellDataProvider } from "./shell-data.tsx";
+import { ShellDataProvider } from "./shell-data-provider.tsx";
 import { spritesSvg } from "./sprites.ts";
 
 const SITE_NAME = "The Remix Store";

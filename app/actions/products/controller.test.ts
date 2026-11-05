@@ -10,7 +10,7 @@ import {
   navigationData,
   type StorefrontRequestBody,
   type StorefrontOperations,
-} from "../../testing/storefront.ts";
+} from "../../testing/fake-storefront.ts";
 
 describe("product routes", () => {
   it("sends Shop Pay to the store domain without a checkout domain", async () => {

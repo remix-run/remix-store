@@ -7,7 +7,7 @@ import {
 } from "../../lib/public/market.ts";
 import type { PolicyData } from "./data.ts";
 import { Document } from "../../ui/document.tsx";
-import { shellMarket } from "../../ui/shell-data.tsx";
+import { shellMarket } from "../../ui/shell-data-provider.tsx";
 
 export function PolicyPage(
   handle: Handle<{

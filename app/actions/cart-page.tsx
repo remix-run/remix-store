@@ -3,7 +3,7 @@ import { css, type Handle } from "remix/component";
 import type { CartInitialData } from "../data/public/cart.ts";
 import { Document } from "../ui/document.tsx";
 import { CartPageContent } from "../ui/public/cart/cart.tsx";
-import { ShellDataProvider, shellMarket } from "../ui/shell-data.tsx";
+import { ShellDataProvider, shellMarket } from "../ui/shell-data-provider.tsx";
 
 export function CartPage(
   handle: Handle<{
