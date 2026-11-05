@@ -2,7 +2,10 @@ import { clientEntry, css, ref, type Handle } from "remix/component";
 
 import { throttleToAnimationFrame } from "./animation-frame.ts";
 
-/** The wordmark. Once the page scrolls, it collapses to the brand colors. */
+/**
+ * The Remix wordmark. Past the first 20px of scroll the mark turns brand blue
+ * and the colored letters slide in; scrolling back to the top hides them.
+ */
 export const RemixLogo = clientEntry(
   import.meta.url,
   function RemixLogo(handle: Handle) {
