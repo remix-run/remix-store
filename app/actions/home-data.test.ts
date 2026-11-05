@@ -5,8 +5,8 @@ import {
   createTestStorefrontClient,
   graphqlResponse,
 } from "../testing/storefront-client.ts";
-import { queryHome } from "./home.ts";
-import { StorefrontQueryError } from "./storefront.ts";
+import { queryHome } from "./home-data.ts";
+import { StorefrontQueryError } from "../data/storefront.ts";
 
 describe("queryHome", () => {
   it("maps valid home editorial data and skips malformed entries", async () => {

@@ -2,7 +2,7 @@ import * as assert from "remix/assert";
 import * as s from "remix/data-schema";
 import { describe, it } from "remix/test";
 
-import type { RateLimiter } from "../../lib/rate-limit.ts";
+import type { RateLimiter } from "./rate-limit.ts";
 import {
   analyticsShopData,
   createStorefrontFetch,

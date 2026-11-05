@@ -1,12 +1,10 @@
 import { formatMoney } from "@shopify/hydrogen";
 import { css, type Handle } from "remix/component";
 
-import { CartPageContent } from "../ui/public/cart/cart.tsx";
 import { CollectionProducts } from "../ui/collection-products.tsx";
 import { HomeHero } from "./public/home-hero.tsx";
 import { SnowField } from "./public/snow-field.tsx";
-import type { CartInitialData } from "../data/public/cart.ts";
-import type { HomeHeroData, HomeLookbookEntryData } from "../data/home.ts";
+import type { HomeHeroData, HomeLookbookEntryData } from "./home-data.ts";
 import type {
   ProductCardData,
   ProductMoney,
@@ -16,7 +14,7 @@ import { focalPointPosition } from "../lib/image-utils.ts";
 import { marketPath, type ActiveMarket } from "../lib/public/market.ts";
 import { routes } from "../routes.ts";
 import { Document } from "../ui/document.tsx";
-import { ShellDataProvider, shellMarket } from "../ui/shell-data.tsx";
+import { shellMarket } from "../ui/shell-data.tsx";
 import { PillIcon, pillLinkStyle } from "../ui/public/pill-link.tsx";
 import { ShopifyImage } from "../ui/public/shopify-image.tsx";
 
@@ -160,40 +158,6 @@ function lookbookPrice(
   if (!Number.isFinite(Number(price.amount))) return "Price unavailable";
   return formatMoney(price, { locale, withoutTrailingZeros: true }).toString();
 }
-
-export function CartPage(
-  handle: Handle<{
-    canonicalUrl?: string;
-    initialData: CartInitialData;
-  }>,
-) {
-  return () => {
-    let storeWideSale = handle.context.get(ShellDataProvider)?.storeWideSale;
-
-    return (
-      <Document
-        canonicalUrl={handle.props.canonicalUrl}
-        title={
-          handle.props.initialData.cart?.totalQuantity
-            ? `Cart (${handle.props.initialData.cart.totalQuantity})`
-            : "Cart"
-        }
-        description="View your shopping cart and checkout"
-        noIndex
-      >
-        <main mix={cartMainStyle}>
-          <CartPageContent
-            initialData={handle.props.initialData}
-            automaticDiscountLabel={storeWideSale?.title}
-            market={shellMarket(handle)}
-          />
-        </main>
-      </Document>
-    );
-  };
-}
-
-const cartMainStyle = css({ minHeight: "70vh" });
 
 const editorialStyle = css({ position: "relative" });
 

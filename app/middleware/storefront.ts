@@ -5,8 +5,8 @@ import {
 } from "@shopify/hydrogen";
 import { createContextKey, type Middleware } from "remix/router";
 
-import { getStorefrontCache } from "../data/storefront-cache.ts";
-import { createRetryingStorefrontFetch } from "../data/storefront-fetch.ts";
+import { getStorefrontCache } from "./storefront-cache.ts";
+import { createRetryingStorefrontFetch } from "./storefront-fetch.ts";
 import type { AppStorefrontClient } from "../data/storefront.ts";
 import type { ActiveMarket } from "../lib/public/market.ts";
 import { getRuntime, type Env } from "../runtime.ts";

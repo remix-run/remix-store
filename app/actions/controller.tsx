@@ -2,12 +2,13 @@ import { SuperHeaders } from "remix/headers";
 import { createController } from "remix/router";
 
 import { loadCartDataOrEmpty } from "../data/cart-handlers.ts";
-import { queryHome } from "../data/home.ts";
+import { queryHome } from "./home-data.ts";
 import { cacheControl } from "../lib/cache-control.ts";
 import { marketUrl } from "../lib/public/market.ts";
-import { isUtcDecember, type Clock } from "../lib/seasonal.ts";
+import { isUtcDecember, type Clock } from "./seasonal.ts";
 import { routes } from "../routes.ts";
-import { CartPage, HomePage } from "./pages.tsx";
+import { CartPage } from "./cart-page.tsx";
+import { HomePage } from "./home-page.tsx";
 
 export interface RootControllerOptions {
   clock?: Clock;

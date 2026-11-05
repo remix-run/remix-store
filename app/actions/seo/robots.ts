@@ -1,6 +1,6 @@
 import { SuperHeaders, type SuperHeadersPropertyInit } from "remix/headers";
 
-import { cacheControl } from "./cache-control.ts";
+import { cacheControl } from "../../lib/cache-control.ts";
 
 const RESPONSE_HEADERS = {
   cacheControl: cacheControl.publicDay,

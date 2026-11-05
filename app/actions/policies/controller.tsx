@@ -1,7 +1,7 @@
 import { SuperHeaders } from "remix/headers";
 import { createController } from "remix/router";
 
-import { isPolicyHandle, queryPolicy } from "../../data/policies.ts";
+import { isPolicyHandle, queryPolicy } from "./data.ts";
 import { cacheControl } from "../../lib/cache-control.ts";
 import { marketUrl } from "../../lib/public/market.ts";
 import { routes } from "../../routes.ts";

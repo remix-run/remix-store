@@ -5,7 +5,7 @@ import {
   requireStorefrontData,
   STABLE_CACHE,
   type AppStorefrontClient,
-} from "./storefront.ts";
+} from "../../data/storefront.ts";
 
 const POLICY_HANDLES = {
   "privacy-policy": "privacyPolicy",

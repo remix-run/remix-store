@@ -1,12 +1,12 @@
 import { gql, type StorefrontApi } from "@shopify/hydrogen";
 
-import type { MarketCountry } from "../lib/public/market.ts";
+import type { MarketCountry } from "../../lib/public/market.ts";
 import {
   requireStorefrontData,
   STABLE_CACHE,
   StorefrontQueryError,
   type AppStorefrontClient,
-} from "./storefront.ts";
+} from "../../data/storefront.ts";
 
 const SITEMAP_INDEX_QUERY = gql(`
   query RemixSitemapIndex @inContext(country: US, language: EN) {

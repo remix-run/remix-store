@@ -7,14 +7,14 @@ import {
   querySitemapPageCounts,
   querySitemapResources,
   type SitemapResourceType,
-} from "../../data/seo-resources.ts";
+} from "./data.ts";
 import { cacheControl } from "../../lib/cache-control.ts";
-import { robotsResponse } from "../../lib/robots.ts";
+import { robotsResponse } from "./robots.ts";
 import {
   sitemapIndexResponse,
   sitemapResponse,
   type SitemapUrl,
-} from "../../lib/sitemap.ts";
+} from "./sitemap.ts";
 import { CA_MARKET, marketUrl, US_MARKET } from "../../lib/public/market.ts";
 import { routes } from "../../routes.ts";
 

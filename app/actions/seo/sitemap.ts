@@ -1,7 +1,7 @@
 import { SuperHeaders, type SuperHeadersPropertyInit } from "remix/headers";
 
-import { cacheControl } from "./cache-control.ts";
-import type { MarketLocale } from "./public/market.ts";
+import { cacheControl } from "../../lib/cache-control.ts";
+import type { MarketLocale } from "../../lib/public/market.ts";
 
 const XML_HEADERS = {
   cacheControl: cacheControl.publicDay,

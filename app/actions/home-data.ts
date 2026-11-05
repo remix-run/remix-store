@@ -2,19 +2,19 @@ import { gql, type StorefrontApi } from "@shopify/hydrogen";
 import type { SerializableObject } from "remix/component";
 
 import { getFocalPoint, type FocalPoint } from "../lib/image-utils.ts";
-import { queryCollection } from "./collection.ts";
+import { queryCollection } from "../data/collection.ts";
 import type {
   ImageData,
   ProductCardData,
   ProductMoney,
   ProductPageInfoData,
-} from "./public/types.ts";
+} from "../data/public/types.ts";
 import {
   requireStorefrontData,
   STABLE_CACHE,
   withStorefrontFallback,
   type AppStorefrontClient,
-} from "./storefront.ts";
+} from "../data/storefront.ts";
 
 export type HomeHeroData = SerializableObject & {
   assetImages: ImageData[];

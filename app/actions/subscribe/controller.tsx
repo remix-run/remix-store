@@ -7,16 +7,13 @@ import {
   AdminApiError,
   createAdminCustomerClient,
   subscribeCustomer,
-} from "../../data/admin.ts";
-import {
-  type RateLimiter,
-  subscriptionRateLimiter,
-} from "../../lib/rate-limit.ts";
+} from "./admin.ts";
+import { type RateLimiter, subscriptionRateLimiter } from "./rate-limit.ts";
 import {
   backInStockTags,
   isSubscriptionValidationError,
   parseSubscriptionForm,
-} from "../../data/subscription.ts";
+} from "./form.ts";
 import { queryBackInStockEligibleVariant } from "../../data/product.ts";
 import { isStorefrontFailure } from "../../data/storefront.ts";
 import { cacheControl } from "../../lib/cache-control.ts";

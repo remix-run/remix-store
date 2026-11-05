@@ -1,11 +1,11 @@
 import { css, unsafeHTML, type Handle } from "remix/component";
 
 import { PageTitle } from "../../ui/public/page-title.tsx";
-import type { PolicyData } from "../../data/policies.ts";
 import {
   localizeInternalUrl,
   type MarketPathPrefix,
 } from "../../lib/public/market.ts";
+import type { PolicyData } from "./data.ts";
 import { Document } from "../../ui/document.tsx";
 import { shellMarket } from "../../ui/shell-data.tsx";
 
