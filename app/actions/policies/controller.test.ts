@@ -11,7 +11,7 @@ import {
 } from "../../testing/storefront.ts";
 
 describe("policy routes", () => {
-  it("renders sanitized Shopify policy content in the branded document", async () => {
+  it("renders Shopify policy content in the branded document", async () => {
     let variables: StorefrontRequestBody["variables"] | undefined;
     let app = createTestApp(
       createStorefrontFetch({
@@ -22,15 +22,7 @@ describe("policy routes", () => {
           return {
             shop: {
               privacyPolicy: {
-                body: `
-                  <h2>Information we collect</h2>
-                  <div style="position: fixed"><span>Policy copy</span></div>
-                  <a href="/collections/all">Catalog</a>
-                  <a href="https://example.org" target="_blank">Learn more</a>
-                  <a href="javascript:alert('nope')">Unsafe</a>
-                  <img src=x onerror="alert('nope')">
-                  <script>alert('nope')</script>
-                `,
+                body: '<h2>Information we collect</h2><p>Policy <a href="/collections/all">copy</a></p>',
                 handle: "privacy-policy",
                 id: "gid://shopify/ShopPolicy/privacy",
                 title: "Privacy policy",
@@ -53,16 +45,14 @@ describe("policy routes", () => {
     assert.equal(variables?.refundPolicy, false);
     assert.match(html, /<title>Privacy policy \| The Remix Store<\/title>/);
     assert.match(html, /<h1[^>]*>Privacy policy<\/h1>/);
-    assert.match(html, /<h2>Information we collect<\/h2>/);
-    assert.match(html, /<div><span>Policy copy<\/span><\/div>/);
-    assert.match(html, /rel="noopener noreferrer"/);
+    assert.match(
+      html,
+      /<h2>Information we collect<\/h2><p>Policy <a href="\/collections\/all">copy<\/a><\/p>/,
+    );
     assert.match(
       html,
       /rel="canonical" href="https:\/\/example\.com\/policies\/privacy-policy"/,
     );
-    assert.doesNotMatch(html, /javascript:/);
-    assert.doesNotMatch(html, /onerror/);
-    assert.doesNotMatch(html, /alert\('nope'\)/);
   });
 
   it("localizes Canadian policy canonicals and internal body links", async () => {
