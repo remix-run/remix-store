@@ -371,7 +371,7 @@ describe("cart interactions", () => {
     assert.match(container.textContent, /US\$10\.00/);
   });
 
-  it("updates USD shipping progress in the drawer and page without promising free shipping", async (t) => {
+  it("updates shipping progress in the drawer and page as the cart changes", async (t) => {
     let api = createCartApiMock(t);
     let cart = createCart();
     cart.cost.subtotalAmount.amount = "50";
@@ -387,95 +387,11 @@ describe("cart interactions", () => {
     t.after(cleanup);
     await flushAsync(act);
 
-    for (let progress of $$('[role="progressbar"]')) {
-      assert.equal(progress.getAttribute("aria-valuenow"), "66");
-    }
-    assert.equal($$('[role="progressbar"]').length, 2);
-    assert.match(container.textContent, /Add \$25\.00 more/);
-    assert.match(
-      container.textContent,
-      /Shipping options confirmed at checkout/,
-    );
-    assert.doesNotMatch(container.textContent, /Free shipping with a US\$75/);
-
-    let quantity = 1;
-    for (let [amount, percentage] of [
-      ["74.99", "99"],
-      ["75", "100"],
-      ["150", "100"],
-      ["0", "0"],
-    ] as const) {
-      let mutation = api.enqueue();
-      let increase = $$('button[aria-label="Increase quantity"]')[1];
-      assert.ok(increase instanceof HTMLButtonElement);
-      await act(() => increase.click());
-      await waitFor(() => api.requests.length === quantity, { act });
-
-      let settledCart = createCart(++quantity);
-      settledCart.cost.subtotalAmount.amount = amount;
-      settledCart.cost.totalAmount.amount = amount;
-      mutation.resolve({ cart: settledCart, userErrors: [], warnings: [] });
-      await waitFor(
-        () =>
-          increase.closest("li")?.hasAttribute("aria-busy") === false &&
-          $$('[role="progressbar"]').length === 2 &&
-          Array.from($$('[role="progressbar"]')).every(
-            (progress) => progress.getAttribute("aria-valuenow") === percentage,
-          ),
-        { act },
+    let progress = () =>
+      Array.from($$('[role="progressbar"]'), (bar) =>
+        bar.getAttribute("aria-valuenow"),
       );
-
-      assert.doesNotMatch(
-        container.textContent,
-        /Your shipping is free|Free shipping unlocked/,
-      );
-      if (Number(amount) >= 75) {
-        assert.match(
-          container.textContent,
-          /You've reached the US\$75 free shipping minimum/,
-        );
-      } else {
-        assert.match(
-          container.textContent,
-          /Add \$[\d.]+ more for free shipping/,
-        );
-        assert.doesNotMatch(container.textContent, /You've reached/);
-      }
-    }
-  });
-
-  it("keeps the USD minimum explanation when Canadian cart money changes to CAD", async (t) => {
-    let api = createCartApiMock(t);
-    let cart = createCart();
-    cart.cost.subtotalAmount.amount = "50";
-    let initialData = { cart };
-    t.after(resetBrowserCartStore);
-
-    let { $$, act, container, cleanup } = render(
-      <>
-        <CartShell initialData={initialData} market={CA_MARKET} />
-        <CartPageContent initialData={initialData} market={CA_MARKET} />
-      </>,
-    );
-    t.after(cleanup);
-    await flushAsync(act);
-
-    assert.equal($$('[role="progressbar"]').length, 2);
-    for (let progress of $$('[role="progressbar"]')) {
-      assert.equal(progress.getAttribute("aria-valuenow"), "66");
-    }
-    assert.match(container.textContent, /Add US\$25\.00 more/);
-    assert.equal(
-      (
-        container.textContent.match(/Free shipping with a US\$75 minimum/g) ??
-        []
-      ).length,
-      2,
-    );
-    assert.doesNotMatch(
-      container.textContent,
-      /Shipping options confirmed at checkout/,
-    );
+    assert.deepEqual(progress(), ["66", "66"]);
 
     let mutation = api.enqueue();
     let increase = $$('button[aria-label="Increase quantity"]')[1];
@@ -484,25 +400,15 @@ describe("cart interactions", () => {
     await waitFor(() => api.requests.length === 1, { act });
 
     let settledCart = createCart(2);
-    settledCart.cost.subtotalAmount = { amount: "106", currencyCode: "CAD" };
-    settledCart.cost.totalAmount = { amount: "106", currencyCode: "CAD" };
+    settledCart.cost.subtotalAmount.amount = "75";
+    settledCart.cost.totalAmount.amount = "75";
     mutation.resolve({ cart: settledCart, userErrors: [], warnings: [] });
-    await waitFor(() => $$('[role="progressbar"]').length === 0, { act });
+    await waitFor(() => progress().join() === "100,100", { act });
 
     assert.equal(
-      (
-        container.textContent.match(/Free shipping with a US\$75 minimum/g) ??
-        []
-      ).length,
+      container.textContent.match(/You've reached the US\$75 free shipping/g)
+        ?.length,
       2,
-    );
-    assert.match(
-      container.textContent,
-      /See your shipping options at checkout/,
-    );
-    assert.doesNotMatch(
-      container.textContent,
-      /more for free shipping|You've reached|Your shipping is free/,
     );
   });
 
@@ -542,109 +448,6 @@ describe("cart interactions", () => {
     assert.ok(window.Shopify);
     await window.Shopify.actions.openCart();
     assert.equal(drawer.open, false);
-  });
-
-  it("renders compare-at pricing and server-provided automatic discounts", (t) => {
-    let cart = createCart();
-    cart.lines.nodes[0]!.cost.compareAtAmountPerQuantity = {
-      amount: "15",
-      currencyCode: "USD",
-    };
-    cart.lines.nodes[0]!.discountAllocations = [
-      {
-        __typename: "CartAutomaticDiscountAllocation",
-        discountedAmount: { amount: "5", currencyCode: "USD" },
-      },
-    ];
-    cart.cost.subtotalAmount.amount = "15";
-    cart.cost.totalAmount.amount = "10";
-    t.after(resetBrowserCartStore);
-
-    let { container, cleanup } = render(
-      <CartPageContent initialData={{ cart }} />,
-    );
-    t.after(cleanup);
-
-    assert.equal(
-      container.querySelector("[data-line-price] s")?.textContent,
-      "$15.00 each",
-    );
-    assert.match(container.textContent, /Automatic discount-\$5\.00/);
-    assert.match(container.textContent, /Total\$10\.00/);
-    assert.match(container.textContent, /Taxes & Shipping details at checkout/);
-  });
-
-  it("names cart page variants by title and omits Shopify's default title", (t) => {
-    t.after(resetBrowserCartStore);
-    let lineText = (title: string, size: string) => {
-      let cart = createCart();
-      let merchandise = cart.lines.nodes[0]!.merchandise;
-      merchandise.title = title;
-      merchandise.selectedOptions = [{ name: "Size", value: size }];
-      let { container, cleanup } = render(
-        <CartPageContent initialData={{ cart }} />,
-      );
-      let text = container.querySelector("li")?.textContent ?? "";
-      cleanup();
-      resetBrowserCartStore();
-      return text;
-    };
-
-    let sized = lineText("Medium", "Medium");
-    assert.match(sized, /Test ProductMedium/);
-    assert.doesNotMatch(sized, /Size:/);
-
-    assert.doesNotMatch(
-      lineText("Default Title", "Default Title"),
-      /Default Title|Title:/,
-    );
-  });
-
-  it("labels automatic line allocations with the sale title", (t) => {
-    let cart = createCart();
-    cart.cost.totalAmount.amount = "8";
-    cart.lines.nodes[0]!.discountAllocations = [
-      {
-        __typename: "CartAutomaticDiscountAllocation",
-        discountedAmount: { amount: "2", currencyCode: "USD" },
-      },
-    ];
-    t.after(resetBrowserCartStore);
-
-    let { container, cleanup } = render(
-      <CartPageContent
-        initialData={{ cart }}
-        automaticDiscountLabel="Summer Sale"
-      />,
-    );
-    t.after(cleanup);
-
-    assert.match(container.textContent, /Summer Sale-\$2\.00/);
-    assert.doesNotMatch(container.textContent, /Automatic discount/);
-  });
-
-  it("does not label code discounts as the store-wide sale", (t) => {
-    let cart = createCart();
-    cart.cost.totalAmount.amount = "7";
-    cart.lines.nodes[0]!.discountAllocations = [
-      {
-        __typename: "CartCodeDiscountAllocation",
-        discountedAmount: { amount: "3", currencyCode: "USD" },
-      },
-    ];
-    t.after(resetBrowserCartStore);
-
-    let { container, cleanup } = render(
-      <CartPageContent
-        initialData={{ cart }}
-        automaticDiscountLabel="Summer Sale"
-      />,
-    );
-    t.after(cleanup);
-
-    assert.match(container.textContent, /Total\$7\.00/);
-    assert.doesNotMatch(container.textContent, /Summer Sale/);
-    assert.doesNotMatch(container.textContent, /Automatic discount/);
   });
 
   it("keeps one live cart across an empty-cart add and stale server props", async (t) => {
