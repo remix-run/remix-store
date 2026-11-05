@@ -11,7 +11,7 @@ export type Assets = Pick<AssetServer, "getScriptEntry" | "getHref"> & {
 
 /** Browser files every document links. The Vite config registers these too. */
 export const documentAssetSources = {
-  scriptEntry: "app/actions/public/entry.tsx",
+  scriptEntry: "app/actions/public/entry.ts",
   stylesheet: "app/ui/public/site.css",
   fonts: {
     interRoman: "app/ui/public/font/inter-roman-latin-var.woff2",

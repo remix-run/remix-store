@@ -161,7 +161,7 @@ interactivity guide and this app's browser-entry setup.
 | `app/node.ts` | Node static files, Remix Assets, rendering, and router composition |
 | `server.node.ts` | Node HTTP listener and shutdown lifecycle |
 | `app/entry.oxygen.ts` | Oxygen assets, router composition, and Worker fetch handler |
-| `app/actions/public/entry.tsx` | Browser hydration module loader |
+| `app/actions/public/entry.ts` | Browser hydration module loader |
 | `vite/remix-oxygen.ts` | Pitlane's Remix Vite plugin, finished into one Oxygen Worker |
 
 Keep business routes, controllers, data, UI, and middleware runtime-neutral.
