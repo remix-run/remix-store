@@ -14,4 +14,3 @@ node_modules
 .react-router
 storefront-graphql-env.d.ts
 customer-account-graphql-env.d.ts
-.desloppify/
