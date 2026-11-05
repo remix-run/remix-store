@@ -5,7 +5,7 @@ import { isPolicyHandle, queryPolicy } from "../../data/policies.ts";
 import { cacheControl } from "../../lib/cache-control.ts";
 import { marketPath } from "../../lib/public/market.ts";
 import { routes } from "../../routes.ts";
-import { NotFoundPage } from "../pages.tsx";
+import { NotFoundPage } from "../../ui/error-pages.tsx";
 import { PolicyPage } from "./page.tsx";
 
 export default createController(routes.policies, {

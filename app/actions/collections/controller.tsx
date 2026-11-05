@@ -12,7 +12,7 @@ import {
   collectionPageHref,
   ProductPage,
 } from "../../ui/collection-products.tsx";
-import { NotFoundPage } from "../pages.tsx";
+import { NotFoundPage } from "../../ui/error-pages.tsx";
 import { CollectionPage } from "./page.tsx";
 
 const MAX_CURSOR_LENGTH = 2_048;

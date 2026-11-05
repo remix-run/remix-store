@@ -19,7 +19,7 @@ import {
   createSubscribeController,
   type SubscribeControllerOptions,
 } from "./actions/subscribe/controller.tsx";
-import { ErrorPage, NotFoundPage } from "./actions/pages.tsx";
+import { ErrorPage, NotFoundPage } from "./ui/error-pages.tsx";
 import { csp, type CspOptions } from "./middleware/csp.ts";
 import { market } from "./middleware/market.tsx";
 import { render } from "./middleware/render.tsx";

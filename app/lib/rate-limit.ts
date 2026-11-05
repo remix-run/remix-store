@@ -24,17 +24,8 @@ export interface FixedWindowRateLimiterOptions {
 type Entry = { count: number; resetAt: number };
 
 /**
- * Bounded, process-local fallback for Node and Oxygen isolates.
- *
- * The multi-key decision is atomic only within this JavaScript instance. It is
- * not a shared production quota across Fly processes or Oxygen isolates.
- * This per-instance limiter is the deliberately portable baseline for the
- * app's Fly and Oxygen targets. Production must additionally enforce a shared
- * edge/WAF quota before enabling the subscription route; that deployment gate
- * coordinates abuse protection without coupling application code to a storage
- * vendor. A future shared adapter may instead be injected into
- * `createApp({subscribe: {rateLimiter}})` and must implement `consumeMany` with
- * one all-or-nothing storage transaction.
+ * Bounded, process-local fixed-window limiter, atomic only within this
+ * isolate. See docs/admin-api.md for the shared edge quota production needs.
  */
 export class FixedWindowRateLimiter implements RateLimiter {
   readonly #entries = new Map<string, Entry>();

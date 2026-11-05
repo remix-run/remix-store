@@ -7,7 +7,7 @@ import {
   AdminApiError,
   createAdminCustomerClient,
   subscribeCustomer,
-} from "./admin.server.ts";
+} from "./admin.ts";
 
 describe("Shopify Admin customer client", () => {
   it("creates a customer with single-opt-in consent through an injected fetch", async () => {

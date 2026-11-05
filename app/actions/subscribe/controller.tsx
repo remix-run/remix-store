@@ -7,11 +7,11 @@ import type { RemixNode, SerializableObject } from "remix/component";
 import {
   createAdminCustomerClient,
   subscribeCustomer,
-} from "../../data/admin.server.ts";
+} from "../../data/admin.ts";
 import {
   type RateLimiter,
   subscriptionRateLimiter,
-} from "../../data/rate-limit.ts";
+} from "../../lib/rate-limit.ts";
 import {
   backInStockTags,
   isSubscriptionValidationError,

@@ -19,7 +19,7 @@ import {
   type MarketLocale,
   type MarketPathPrefix,
 } from "../../lib/public/market.ts";
-import { BrandedState } from "../../ui/public/branded-state.tsx";
+import { BrandedState } from "./branded-state.tsx";
 import { shopifyImageUrl } from "../../ui/public/shopify-image.tsx";
 import {
   hasPendingCartWork,

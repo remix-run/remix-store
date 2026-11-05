@@ -1,7 +1,7 @@
 import { SuperHeaders } from "remix/headers";
 import { createController } from "remix/router";
 
-import { getCartData } from "../data/cart.server.ts";
+import { getCartData } from "../data/cart-handlers.ts";
 import { queryHome } from "../data/home.ts";
 import { cacheControl } from "../lib/cache-control.ts";
 import { marketPath } from "../lib/public/market.ts";

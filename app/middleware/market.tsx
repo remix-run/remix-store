@@ -3,7 +3,7 @@ import { createContextKey, type Middleware } from "remix/router";
 import { redirect } from "remix/response/redirect";
 import { createElement, type RemixNode } from "remix/component";
 
-import { NotFoundPage } from "../actions/pages.tsx";
+import { NotFoundPage } from "../ui/error-pages.tsx";
 import {
   resolveMarketPath,
   US_MARKET,

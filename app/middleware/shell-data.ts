@@ -1,7 +1,7 @@
 import { createMultiMatcher } from "remix/route-pattern/match";
 
 import { loadAnalyticsShopOrNull } from "../data/analytics-shop.ts";
-import { getCartData } from "../data/cart.server.ts";
+import { getCartData } from "../data/cart-handlers.ts";
 import {
   FALLBACK_FOOTER_MENU,
   FALLBACK_NAVIGATION_MENU,

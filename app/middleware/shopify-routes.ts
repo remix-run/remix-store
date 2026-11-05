@@ -6,8 +6,8 @@ import {
 import { SuperHeaders } from "remix/headers";
 import { redirect } from "remix/response/redirect";
 
-import { cartHandlers } from "../data/cart.server.ts";
-import { applyDiscountCode } from "../data/discount.server.ts";
+import { cartHandlers } from "../data/cart-handlers.ts";
+import { applyDiscountCode } from "../data/discount.ts";
 import type { AppStorefrontClient } from "../data/storefront.ts";
 import { cacheControl } from "../lib/cache-control.ts";
 import {

@@ -14,7 +14,6 @@ import type {
 import { focalPointPosition } from "../lib/image-utils.ts";
 import { marketPath, type ActiveMarket } from "../lib/public/market.ts";
 import { routes } from "../routes.ts";
-import { BrandedState } from "../ui/public/branded-state.tsx";
 import { Document } from "../ui/document.tsx";
 import { ShellDataProvider } from "../ui/shell-data.tsx";
 import { PillIcon, pillLinkStyle } from "../ui/public/pill-link.tsx";
@@ -197,48 +196,6 @@ export function CartPage(
             initialData={handle.props.initialData}
             automaticDiscountLabel={storeWideSale?.title}
             market={handle.props.market}
-          />
-        </main>
-      </Document>
-    );
-  };
-}
-
-export function NotFoundPage(handle: Handle) {
-  return () => {
-    let market = handle.context.get(ShellDataProvider)?.market;
-    return (
-      <Document title="Not Found" appendSiteName={false} noIndex>
-        <main>
-          <BrandedState
-            kind="404"
-            heading="Page not found"
-            copy="Please check the URL and try again"
-            href={marketPath("/", market?.pathPrefix ?? "")}
-            icon="fast-forward"
-            linkLabel="Back Home"
-            reverseIcon
-          />
-        </main>
-      </Document>
-    );
-  };
-}
-
-export function ErrorPage(handle: Handle) {
-  return () => {
-    let market = handle.context.get(ShellDataProvider)?.market;
-    return (
-      <Document title="Something went wrong" appendSiteName={false} noIndex>
-        <main>
-          <BrandedState
-            kind="500"
-            heading="Storefront unavailable"
-            copy="The storefront could not load. Please try again."
-            href={marketPath("/", market?.pathPrefix ?? "")}
-            icon="fast-forward"
-            linkLabel="Back Home"
-            reverseIcon
           />
         </main>
       </Document>

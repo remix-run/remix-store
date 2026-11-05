@@ -3,7 +3,7 @@ import { describe, it } from "remix/test";
 import { render } from "remix/component/test";
 
 import type { ProductCardData } from "../data/public/types.ts";
-import { ProductCard } from "../assets/public/product-card.tsx";
+import { ProductCard } from "./public/product-card.tsx";
 
 describe("product cards", () => {
   it("presents the compare-at price as superseded when a product is on sale", (t) => {
