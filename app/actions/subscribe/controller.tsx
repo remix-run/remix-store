@@ -194,6 +194,8 @@ function isSameOriginRequest(request: Request, url: URL): boolean {
   }
 }
 
+const MAX_FORM_BYTES = 4096;
+
 async function readBoundedForm(request: Request): Promise<FormData> {
   let contentType = request.headers
     .get("Content-Type")
@@ -203,7 +205,7 @@ async function readBoundedForm(request: Request): Promise<FormData> {
     throw new TypeError("Unsupported subscription form content type");
   }
   let declaredLength = Number(request.headers.get("Content-Length"));
-  if (declaredLength > 4096)
+  if (declaredLength > MAX_FORM_BYTES)
     throw new TypeError("Subscription form is too large");
 
   let reader = request.body?.getReader();
@@ -214,7 +216,7 @@ async function readBoundedForm(request: Request): Promise<FormData> {
       let { done, value } = await reader.read();
       if (done || !value) break;
       total += value.byteLength;
-      if (total > 4096) {
+      if (total > MAX_FORM_BYTES) {
         await reader.cancel();
         throw new TypeError("Subscription form is too large");
       }
@@ -236,7 +238,7 @@ async function readBoundedForm(request: Request): Promise<FormData> {
   return form;
 }
 
-async function rateLimitKeys(
+function rateLimitKeys(
   buyerIp: string,
   email: string,
 ): Promise<[string, string]> {

@@ -52,10 +52,7 @@ describe("fixed-window rate limiter", () => {
       limiter.consumeMany(["same-ip", "first-email"]),
       limiter.consumeMany(["same-ip", "second-email"]),
     ]);
-    assert.deepEqual(results.map((result) => result.allowed).sort(), [
-      false,
-      true,
-    ]);
+    assert.equal(results.filter((result) => result.allowed).length, 1);
   });
 
   it("stays bounded while accepting new key batches", async () => {

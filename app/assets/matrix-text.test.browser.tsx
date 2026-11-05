@@ -3,9 +3,44 @@ import { describe, it, type TestContext } from "remix/test";
 import { render } from "remix/component/test";
 
 import { waitFor } from "../testing/browser.ts";
-import { MatrixText } from "./public/matrix-text.tsx";
+import {
+  glitchText,
+  MatrixText,
+  matrixFromPixels,
+} from "./public/matrix-text.tsx";
 
 type MotionListener = () => void;
+
+describe("matrix text helpers", () => {
+  it("maps each pixel's brightness to a hex character, a row per line", () => {
+    let white = [255, 255, 255, 255];
+    let black = [0, 0, 0, 255];
+    let gray = [128, 128, 128, 255];
+
+    assert.deepEqual(
+      matrixFromPixels([...white, ...black, ...black, ...gray], 2),
+      {
+        activeIndices: [0, 4],
+        text: "0 \n 4",
+      },
+    );
+  });
+
+  it("steps the chosen active characters and wraps F to 0", () => {
+    assert.equal(
+      glitchText("0 \n 4", [0, 4], () => 0),
+      "1 \n 4",
+    );
+    assert.equal(
+      glitchText("0 \n F", [0, 4], () => 0.99),
+      "0 \n 0",
+    );
+    assert.equal(
+      glitchText("", [], () => 0),
+      "",
+    );
+  });
+});
 
 describe("MatrixText", () => {
   it("renders the image as hex characters and glitches them", async (t) => {

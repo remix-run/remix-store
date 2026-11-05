@@ -76,27 +76,7 @@ export const MatrixText = clientEntry(
               }
 
               interval = window.setInterval(() => {
-                let characters = originalText.split("");
-                let count = Math.max(
-                  1,
-                  Math.floor(activeCharacterIndices.length * GLITCH_PERCENT),
-                );
-                for (let index = 0; index < count; index++) {
-                  let characterIndex =
-                    activeCharacterIndices[
-                      Math.floor(Math.random() * activeCharacterIndices.length)
-                    ];
-                  if (characterIndex === undefined) continue;
-                  let value = Number.parseInt(
-                    characters[characterIndex] ?? "",
-                    16,
-                  );
-                  if (Number.isFinite(value))
-                    characters[characterIndex] = ((value + 1) % 16)
-                      .toString(16)
-                      .toUpperCase();
-                }
-                displayText = characters.join("");
+                displayText = glitchText(originalText, activeCharacterIndices);
                 handle.update();
               }, GLITCH_INTERVAL);
             }
@@ -106,47 +86,18 @@ export const MatrixText = clientEntry(
               // source cannot be loaded.
             };
             image.onload = async () => {
-              if (signal.aborted || !image.naturalWidth || !image.naturalHeight)
-                return;
-              let canvas = document.createElement("canvas");
-              canvas.width = image.naturalWidth;
-              canvas.height = image.naturalHeight;
-              let context = canvas.getContext("2d", {
-                willReadFrequently: true,
-              });
-              if (!context) return;
+              if (signal.aborted) return;
+              let canvas = drawToCanvas(image);
+              let pixels = canvas
+                ?.getContext("2d", { willReadFrequently: true })
+                ?.getImageData(0, 0, canvas.width, canvas.height).data;
+              if (!canvas || !pixels) return;
 
-              context.drawImage(image, 0, 0);
-              let pixels = context.getImageData(
-                0,
-                0,
-                canvas.width,
-                canvas.height,
-              ).data;
-              let text = "";
-              let active: number[] = [];
-
-              for (let offset = 0; offset < pixels.length; offset += 4) {
-                let character = brightnessCharacter(
-                  pixels[offset] ?? 0,
-                  pixels[offset + 1] ?? 0,
-                  pixels[offset + 2] ?? 0,
-                );
-                if (character !== " ") active.push(text.length);
-                text += character;
-                let pixelIndex = offset / 4;
-                if (
-                  (pixelIndex + 1) % canvas.width === 0 &&
-                  pixelIndex < canvas.width * canvas.height - 1
-                ) {
-                  text += "\n";
-                }
-              }
-
+              let matrix = matrixFromPixels(pixels, canvas.width);
               imageDataUrl = canvas.toDataURL();
-              originalText = text;
-              displayText = text;
-              activeCharacterIndices = active;
+              originalText = matrix.text;
+              displayText = matrix.text;
+              activeCharacterIndices = matrix.activeIndices;
               ready = true;
               updateScale(canvas.width);
               await handle.update();
@@ -171,30 +122,110 @@ export const MatrixText = clientEntry(
       >
         {ready ? (
           <>
-            <div
-              data-matrix-layer="blur"
-              style={{
-                backgroundImage: `url(${imageDataUrl})`,
-                transform: `translate(-50%, -50%) scale(${scale})`,
-              }}
-            >
-              {originalText}
-            </div>
-            <div
-              data-matrix-layer="text"
-              style={{
-                backgroundImage: `url(${imageDataUrl})`,
-                transform: `translate(-50%, -50%) scale(${scale})`,
-              }}
-            >
-              {displayText}
-            </div>
+            <MatrixLayer
+              imageUrl={imageDataUrl}
+              layer="blur"
+              scale={scale}
+              text={originalText}
+            />
+            <MatrixLayer
+              imageUrl={imageDataUrl}
+              layer="text"
+              scale={scale}
+              text={displayText}
+            />
           </>
         ) : null}
       </div>
     );
   },
 );
+
+function MatrixLayer(
+  handle: Handle<{
+    imageUrl: string;
+    layer: "blur" | "text";
+    scale: number;
+    text: string;
+  }>,
+) {
+  return () => {
+    let { imageUrl, layer, scale, text } = handle.props;
+    return (
+      <div
+        data-matrix-layer={layer}
+        style={{
+          backgroundImage: `url(${imageUrl})`,
+          transform: `translate(-50%, -50%) scale(${scale})`,
+        }}
+      >
+        {text}
+      </div>
+    );
+  };
+}
+
+function drawToCanvas(image: HTMLImageElement): HTMLCanvasElement | null {
+  if (!image.naturalWidth || !image.naturalHeight) return null;
+  let canvas = document.createElement("canvas");
+  canvas.width = image.naturalWidth;
+  canvas.height = image.naturalHeight;
+  let context = canvas.getContext("2d", { willReadFrequently: true });
+  if (!context) return null;
+  context.drawImage(image, 0, 0);
+  return canvas;
+}
+
+/**
+ * One hex character per RGBA pixel, a row per line. `activeIndices` are the
+ * text offsets of the visible (non-space) characters, which the glitch cycles.
+ */
+export function matrixFromPixels(
+  pixels: ArrayLike<number>,
+  width: number,
+): { activeIndices: number[]; text: string } {
+  let rows: string[] = [];
+  let activeIndices: number[] = [];
+  let offset = 0;
+  for (let start = 0; start < pixels.length; start += width * 4) {
+    let row = "";
+    for (
+      let pixel = start;
+      pixel < Math.min(start + width * 4, pixels.length);
+      pixel += 4
+    ) {
+      let character = brightnessCharacter(
+        pixels[pixel] ?? 0,
+        pixels[pixel + 1] ?? 0,
+        pixels[pixel + 2] ?? 0,
+      );
+      if (character !== " ") activeIndices.push(offset + row.length);
+      row += character;
+    }
+    rows.push(row);
+    offset += row.length + 1;
+  }
+  return { activeIndices, text: rows.join("\n") };
+}
+
+/** Steps a few random active hex characters to their next value. */
+export function glitchText(
+  text: string,
+  activeIndices: number[],
+  random: () => number = Math.random,
+): string {
+  let characters = text.split("");
+  let count = Math.max(1, Math.floor(activeIndices.length * GLITCH_PERCENT));
+  for (let step = 0; step < count; step++) {
+    let index = activeIndices[Math.floor(random() * activeIndices.length)];
+    if (index === undefined) continue;
+    let value = Number.parseInt(characters[index] ?? "", 16);
+    if (Number.isFinite(value)) {
+      characters[index] = ((value + 1) % 16).toString(16).toUpperCase();
+    }
+  }
+  return characters.join("");
+}
 
 function brightnessCharacter(red: number, green: number, blue: number): string {
   let average = (red + green + blue) / 3;

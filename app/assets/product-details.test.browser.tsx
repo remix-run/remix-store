@@ -287,12 +287,10 @@ describe("product form", () => {
     await waitFor(() => $('[role="status"]') !== null, { act });
 
     assert.ok(requestBody);
-    assert.deepEqual([...requestBody.keys()].sort(), [
-      "consent",
-      "email",
-      "product-handle",
-      "variant-id",
-    ]);
+    assert.deepEqual(
+      [...requestBody.keys()].sort((a, b) => a.localeCompare(b)),
+      ["consent", "email", "product-handle", "variant-id"],
+    );
     assert.equal(requestBody?.get("product-handle"), "test-product");
     assert.equal(
       requestBody?.get("variant-id"),

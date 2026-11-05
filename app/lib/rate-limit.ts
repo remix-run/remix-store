@@ -1,3 +1,5 @@
+const MS_PER_SECOND = 1000;
+
 export interface RateLimitResult {
   allowed: boolean;
   retryAfterSeconds: number;
@@ -72,7 +74,7 @@ export class FixedWindowRateLimiter implements RateLimiter {
       if (entry && entry.count >= this.#limit) {
         retryAfterSeconds = Math.max(
           retryAfterSeconds,
-          Math.max(1, Math.ceil((entry.resetAt - now) / 1000)),
+          Math.max(1, Math.ceil((entry.resetAt - now) / MS_PER_SECOND)),
         );
       }
     }
@@ -119,5 +121,5 @@ export class FixedWindowRateLimiter implements RateLimiter {
 export const subscriptionRateLimiter = new FixedWindowRateLimiter({
   limit: 5,
   maxEntries: 10_000,
-  windowMs: 10 * 60 * 1000,
+  windowMs: 10 * 60 * MS_PER_SECOND,
 });

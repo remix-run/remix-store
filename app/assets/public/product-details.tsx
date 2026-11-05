@@ -63,103 +63,13 @@ type ProductOption = {
 export const ProductDetails = clientEntry(
   import.meta.url,
   function ProductDetails(handle: Handle<ProductDetailsProps>) {
-    let market = handle.props.market ?? US_MARKET;
-    let cartStore = connectBrowserCartStore(undefined, market.pathPrefix);
-    let store = cartStore
-      ? createProductFormStore(handle.props.product, cartStore)
-      : undefined;
-    let state: ProductState | undefined = store?.getState();
-    let hydrated = false;
-    // The product the store holds, and one queued to replace it after render.
-    let storeIdentity = productIdentity(handle.props.product);
-    let queuedIdentity: string | undefined;
-
-    if (store) {
-      let unsubscribe = store.subscribe((nextState) => {
-        state = nextState;
-        if (hydrated) handle.update();
-      });
-      handle.signal.addEventListener(
-        "abort",
-        () => {
-          unsubscribe();
-          store.destroy();
-        },
-        { once: true },
-      );
-      handle.queueTask((signal) => {
-        if (signal.aborted) return;
-        hydrated = true;
-        state = store.getState();
-        handle.update();
-        void showSelectedVariantInUrl();
-      });
-    }
-
-    /** Client navigation brings new product props; load them into the store. */
-    function syncStore(product: ProductData) {
-      let identity = productIdentity(product);
-      if (!store || identity === storeIdentity || identity === queuedIdentity) {
-        return;
-      }
-      queuedIdentity = identity;
-      handle.queueTask((signal) => {
-        if (queuedIdentity === identity) queuedIdentity = undefined;
-        let current = handle.props.product;
-        if (signal.aborted || productIdentity(current) !== identity) return;
-        storeIdentity = identity;
-        store.hydrate(current);
-        void showSelectedVariantInUrl();
-      });
-    }
-
-    /** The store's state once it holds the rendered product. */
-    function activeState(product: ProductData) {
-      return hydrated && productIdentity(product) === storeIdentity
-        ? state
-        : undefined;
-    }
-
-    // Like production, a bare product URL gains the selected variant's
-    // options so it can be shared. The page already shows that variant, so
-    // only the URL changes; a Remix navigation would fetch the page again.
-    async function showSelectedVariantInUrl() {
-      let identity = productIdentity(handle.props.product);
-      await navigationSettled();
-      let { product } = handle.props;
-      if (
-        handle.signal.aborted ||
-        location.search ||
-        productIdentity(product) !== identity
-      ) {
-        return;
-      }
-      let variant = product.selectedOrFirstAvailableVariant;
-      if (
-        !variant ||
-        !selectableOptions(serverProductOptions(product)).length
-      ) {
-        return;
-      }
-      let href = variantHref(
-        product.handle,
-        variant.selectedOptions,
-        product.options,
-        "",
-        market.pathPrefix,
-      );
-      // Another navigation may have left this product while we waited.
-      if (new URL(href, location.href).pathname === location.pathname) {
-        replaceUrl(href);
-      }
-    }
+    let productStore = connectProductStore(handle);
 
     return () => {
-      market = handle.props.market ?? US_MARKET;
+      let market = handle.props.market ?? US_MARKET;
       let { menu, product, search, shopPayStoreUrl } = handle.props;
-      syncStore(product);
-
-      let current = activeState(product);
+      let { store } = productStore;
+      let current = productStore.stateFor(product);
       let selectedVariant = current
         ? current.selectedVariant
         : product.selectedOrFirstAvailableVariant;
@@ -189,18 +99,10 @@ export const ProductDetails = clientEntry(
 
       return (
         <div mix={productPageStyle}>
-          <nav aria-label="Product collections" mix={sidebarStyle}>
-            <ul>
-              {(menu?.items ?? []).map((item) => (
-                <li key={item.id}>
-                  <a href={item.url}>{item.title}</a>
-                </li>
-              ))}
-            </ul>
-          </nav>
+          <CollectionsSidebar menu={menu} />
 
           <ProductGallery
-            controls={hydrated}
+            controls={productStore.hydrated}
             images={product.images.nodes}
             selectedImage={selectedVariant?.image}
           />
@@ -214,20 +116,13 @@ export const ProductDetails = clientEntry(
 
             <div mix={purchaseGroupStyle}>
               <div mix={purchaseStyle}>
-                {options.length ? (
-                  <div mix={optionsStyle}>
-                    {options.map((option) => (
-                      <OptionMenu
-                        key={option.name}
-                        option={option}
-                        pathPrefix={market.pathPrefix}
-                        product={product}
-                        register={current ? register : undefined}
-                        search={search}
-                      />
-                    ))}
-                  </div>
-                ) : null}
+                <ProductOptions
+                  options={options}
+                  pathPrefix={market.pathPrefix}
+                  product={product}
+                  register={current ? register : undefined}
+                  search={search}
+                />
 
                 <div
                   mix={[
@@ -273,6 +168,151 @@ export const ProductDetails = clientEntry(
     };
   },
 );
+
+/**
+ * Connects the rendered product to a product form store backed by the browser
+ * cart. Without a cart store (no scripts, or before hydration) the page
+ * renders the server's selection and `stateFor` returns undefined.
+ */
+function connectProductStore(handle: Handle<ProductDetailsProps>) {
+  let market = handle.props.market ?? US_MARKET;
+  let cartStore = connectBrowserCartStore(undefined, market.pathPrefix);
+  let store = cartStore
+    ? createProductFormStore(handle.props.product, cartStore)
+    : undefined;
+  let state: ProductState | undefined = store?.getState();
+  let hydrated = false;
+  // The product the store holds, and one queued to replace it after render.
+  let storeIdentity = productIdentity(handle.props.product);
+  let queuedIdentity: string | undefined;
+
+  if (store) {
+    let unsubscribe = store.subscribe((nextState) => {
+      state = nextState;
+      if (hydrated) handle.update();
+    });
+    handle.signal.addEventListener(
+      "abort",
+      () => {
+        unsubscribe();
+        store.destroy();
+      },
+      { once: true },
+    );
+    handle.queueTask((signal) => {
+      if (signal.aborted) return;
+      hydrated = true;
+      state = store.getState();
+      handle.update();
+      void showSelectedVariantInUrl(handle);
+    });
+  }
+
+  /** Client navigation brings new product props; load them into the store. */
+  function syncStore(product: ProductData) {
+    let identity = productIdentity(product);
+    if (!store || identity === storeIdentity || identity === queuedIdentity) {
+      return;
+    }
+    queuedIdentity = identity;
+    handle.queueTask((signal) => {
+      if (queuedIdentity === identity) queuedIdentity = undefined;
+      let current = handle.props.product;
+      if (signal.aborted || productIdentity(current) !== identity) return;
+      storeIdentity = identity;
+      store.hydrate(current);
+      void showSelectedVariantInUrl(handle);
+    });
+  }
+
+  return {
+    store,
+    get hydrated() {
+      return hydrated;
+    },
+    /** The store's state once it holds the rendered product. */
+    stateFor(product: ProductData): ProductState | undefined {
+      syncStore(product);
+      return hydrated && productIdentity(product) === storeIdentity
+        ? state
+        : undefined;
+    },
+  };
+}
+
+// Like production, a bare product URL gains the selected variant's options so
+// it can be shared. The page already shows that variant, so only the URL
+// changes; a Remix navigation would fetch the page again.
+async function showSelectedVariantInUrl(handle: Handle<ProductDetailsProps>) {
+  let identity = productIdentity(handle.props.product);
+  await navigationSettled();
+  let { market = US_MARKET, product } = handle.props;
+  if (
+    handle.signal.aborted ||
+    location.search ||
+    productIdentity(product) !== identity
+  ) {
+    return;
+  }
+  let variant = product.selectedOrFirstAvailableVariant;
+  if (!variant || !selectableOptions(serverProductOptions(product)).length) {
+    return;
+  }
+  let href = variantHref(
+    product.handle,
+    variant.selectedOptions,
+    product.options,
+    "",
+    market.pathPrefix,
+  );
+  // Another navigation may have left this product while we waited.
+  if (new URL(href, location.href).pathname === location.pathname) {
+    replaceUrl(href);
+  }
+}
+
+function CollectionsSidebar(handle: Handle<{ menu?: NavigationMenuData }>) {
+  return () => (
+    <nav aria-label="Product collections" mix={sidebarStyle}>
+      <ul>
+        {(handle.props.menu?.items ?? []).map((item) => (
+          <li key={item.id}>
+            <a href={item.url}>{item.title}</a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  );
+}
+
+function ProductOptions(
+  handle: Handle<{
+    options: ProductOption[];
+    pathPrefix: ActiveMarket["pathPrefix"];
+    product: ProductData;
+    register?: ProductFormRegister;
+    search: string;
+  }>,
+) {
+  return () => {
+    let { options, pathPrefix, product, register, search } = handle.props;
+    if (!options.length) return null;
+    return (
+      <div mix={optionsStyle}>
+        {options.map((option) => (
+          <OptionMenu
+            key={option.name}
+            option={option}
+            pathPrefix={pathPrefix}
+            product={product}
+            register={register}
+            search={search}
+          />
+        ))}
+      </div>
+    );
+  };
+}
 
 function ProductHeading(
   handle: Handle<{

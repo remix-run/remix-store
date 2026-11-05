@@ -51,13 +51,11 @@ export const HomeHero = clientEntry(
       cancelAnimationFrame(animationFrame);
       animationFrame = requestAnimationFrame(() => {
         if (!section || loadedFrames < 2 || reducedMotion?.matches) return;
-        let frames = handle.props.assetImages.length;
-        let rect = section.getBoundingClientRect();
-        let progress = Math.max(
-          0,
-          Math.min(1, -rect.top / section.offsetHeight),
+        let target = scrollFrame(
+          section.getBoundingClientRect().top,
+          section.offsetHeight,
+          handle.props.assetImages.length,
         );
-        let target = Math.min(Math.floor(progress * 1.5 * frames), frames - 1);
         showFrame(Math.min(target, loadedFrames - 1));
       });
     }
@@ -77,33 +75,21 @@ export const HomeHero = clientEntry(
       // Leaving the page: free the connection for the next page now, rather
       // than when this component unmounts after that page has arrived. If the
       // navigation fails or is cancelled, pick up where the preload left off.
-      let navigation = remixNavigation();
-      navigation?.addEventListener(
-        "navigate",
-        (event) => {
-          if (!leavesPage(event, pageUrl)) return;
+      watchPageExit({
+        lifetime: handle.signal,
+        pageUrl: () => pageUrl,
+        signal,
+        onLeave() {
           preload?.abort();
           preload = undefined;
-          let resume = () => {
-            if (!handle.signal.aborted && section && !reducedMotion?.matches)
-              preloadFrames();
-          };
-          navigation.addEventListener(
-            "navigatesuccess",
-            () => {
-              // The navigation kept the hero, so its page now has this URL.
-              if (section) pageUrl = location.href;
-              resume();
-            },
-            { once: true, signal: handle.signal },
-          );
-          navigation.addEventListener("navigateerror", resume, {
-            once: true,
-            signal: handle.signal,
-          });
         },
-        { signal },
-      );
+        onSettled(succeeded) {
+          // A successful navigation kept the hero, so its page has this URL.
+          if (succeeded && section) pageUrl = location.href;
+          if (!handle.signal.aborted && section && !reducedMotion?.matches)
+            preloadFrames();
+        },
+      });
 
       await whenPageIsIdle(signal);
       if (signal.aborted || !section) return;
@@ -124,8 +110,7 @@ export const HomeHero = clientEntry(
           if (!ok || signal.aborted) return;
           // The animation plays up to the first frame still missing.
           loaded[index] = true;
-          let missing = loaded.indexOf(false);
-          let playable = missing === -1 ? loaded.length : missing;
+          let playable = playableFrames(loaded);
           if (playable <= loadedFrames) return;
           loadedFrames = playable;
           handle.update().then(updateFrame);
@@ -189,39 +174,17 @@ export const HomeHero = clientEntry(
           ]}
         >
           <div mix={heroStageStyle}>
-            <div aria-hidden="true" mix={heroFramesStyle}>
-              {images.map((image, index) =>
-                index === 0 ? (
-                  <FirstFrame
-                    image={image}
-                    key={image.id ?? image.url}
-                    onLoad={onFirstFrameLoad}
-                  />
-                ) : (
-                  <img
-                    key={image.id ?? image.url}
-                    data-home-hero-frame={index}
-                    src={frameUrls[index]}
-                    alt=""
-                    width={image.width ?? undefined}
-                    height={image.height ?? undefined}
-                    decoding="async"
-                    style={{ visibility: "hidden" }}
-                  />
-                ),
-              )}
-            </div>
+            <HeroFrames
+              frameUrls={frameUrls}
+              images={images}
+              onFirstFrameLoad={onFirstFrameLoad}
+            />
             <div mix={heroContentStyle}>
               <h1 id={`${handle.id}-title`}>{handle.props.heading}</h1>
-              <a
+              <HeroLink
+                cta={handle.props.cta}
                 href={handle.props.collectionHref}
-                data-rmx-prefetch="intent"
-                mix={[pillLinkStyle, heroLinkStyle]}
-              >
-                <span aria-hidden="true" data-link-hit-area="true" />
-                <PillIcon name="fast-forward" />
-                <span>{handle.props.cta}</span>
-              </a>
+              />
             </div>
           </div>
         </section>
@@ -229,6 +192,107 @@ export const HomeHero = clientEntry(
     };
   },
 );
+
+function HeroFrames(
+  handle: Handle<{
+    frameUrls: string[];
+    images: ImageData[];
+    onFirstFrameLoad: () => void;
+  }>,
+) {
+  return () => {
+    let { frameUrls, images, onFirstFrameLoad } = handle.props;
+    return (
+      <div aria-hidden="true" mix={heroFramesStyle}>
+        {images.map((image, index) =>
+          index === 0 ? (
+            <FirstFrame
+              image={image}
+              key={image.id ?? image.url}
+              onLoad={onFirstFrameLoad}
+            />
+          ) : (
+            <img
+              key={image.id ?? image.url}
+              data-home-hero-frame={index}
+              src={frameUrls[index]}
+              alt=""
+              width={image.width ?? undefined}
+              height={image.height ?? undefined}
+              decoding="async"
+              style={{ visibility: "hidden" }}
+            />
+          ),
+        )}
+      </div>
+    );
+  };
+}
+
+function HeroLink(handle: Handle<{ cta: string; href: string }>) {
+  return () => (
+    <a
+      href={handle.props.href}
+      data-rmx-prefetch="intent"
+      mix={[pillLinkStyle, heroLinkStyle]}
+    >
+      <span aria-hidden="true" data-link-hit-area="true" />
+      <PillIcon name="fast-forward" />
+      <span>{handle.props.cta}</span>
+    </a>
+  );
+}
+
+// The animation finishes two thirds of the way through the hero's scroll.
+const SCROLL_FRAMES_RATE = 1.5;
+
+/** The frame to show once the hero has scrolled `top` pixels off screen. */
+function scrollFrame(top: number, height: number, frames: number): number {
+  let progress = Math.max(0, Math.min(1, -top / height));
+  return Math.min(
+    Math.floor(progress * SCROLL_FRAMES_RATE * frames),
+    frames - 1,
+  );
+}
+
+/** How many frames can play: those before the first one still missing. */
+function playableFrames(loaded: boolean[]): number {
+  let missing = loaded.indexOf(false);
+  return missing === -1 ? loaded.length : missing;
+}
+
+/**
+ * Calls `onLeave` when a navigation starts that will replace the page, then
+ * `onSettled` once that navigation succeeds (keeping this page mounted) or
+ * fails or is cancelled.
+ */
+function watchPageExit(options: {
+  lifetime: AbortSignal;
+  pageUrl: () => string;
+  signal: AbortSignal;
+  onLeave: () => void;
+  onSettled: (succeeded: boolean) => void;
+}): void {
+  let navigation = remixNavigation();
+  if (!navigation) return;
+  let { lifetime, onLeave, onSettled } = options;
+  navigation.addEventListener(
+    "navigate",
+    (event) => {
+      if (!leavesPage(event, options.pageUrl())) return;
+      onLeave();
+      navigation.addEventListener("navigatesuccess", () => onSettled(true), {
+        once: true,
+        signal: lifetime,
+      });
+      navigation.addEventListener("navigateerror", () => onSettled(false), {
+        once: true,
+        signal: lifetime,
+      });
+    },
+    { signal: options.signal },
+  );
+}
 
 // Frames cover the screen, so each orientation gets a crop of its shape,
 // and `sizes` asks for whichever side the cover fit is limited by. Landscape

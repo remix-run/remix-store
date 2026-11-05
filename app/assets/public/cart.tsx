@@ -337,6 +337,10 @@ function CartIcon() {
 function cartDialogTitle(viewState: CartViewState): string {
   let quantity = viewState.cart?.totalQuantity;
   if (!quantity) return viewState.loading ? "Loading cart" : "Your cart";
+  return cartCountLabel(quantity);
+}
+
+function cartCountLabel(quantity: number): string {
   return `${quantity} item(s) in cart`;
 }
 
@@ -397,12 +401,10 @@ function CartView(handle: Handle<CartViewProps>) {
       store,
     } = handle.props;
     let lines = cart?.lines.nodes ?? [];
-    let bannerMessages = errors
-      ? getBannerMessages(
-          errors,
-          lines.map((line) => line.id),
-        )
-      : [];
+    let bannerMessages = getBannerMessages(
+      errors,
+      lines.map((line) => line.id),
+    );
     let banner =
       errors &&
       bannerMessages.length > 0 &&
@@ -452,25 +454,12 @@ function CartView(handle: Handle<CartViewProps>) {
           drawer ? drawerContentStyle : pageCartContentStyle,
           on("submit", (event) => {
             event.preventDefault();
-            if (!store) return;
-
-            void store.handleFormSubmit(event).catch((error) => {
-              if (!(error instanceof Error && error.name === "AbortError")) {
-                console.error("[hydrogen] cart update failed", error);
-              }
-            });
+            if (store) submitCartForm(store, event);
           }),
         ]}
       >
         {!drawer ? (
-          <>
-            <div mix={pageTitleStyle}>
-              <PageTitle title="Cart" />
-            </div>
-            <div aria-hidden="true" mix={mobileCartSpacerStyle} />
-            <h1 mix={mobileCartTitleStyle}>Cart</h1>
-            <h2 mix={cartCountStyle}>{cart.totalQuantity} item(s) in cart</h2>
-          </>
+          <CartPageHeading totalQuantity={cart.totalQuantity} />
         ) : null}
         {banner}
 
@@ -508,6 +497,28 @@ function CartView(handle: Handle<CartViewProps>) {
   };
 }
 
+// Failed updates surface in the cart error state; the log keeps the cause.
+function submitCartForm(store: CartStore, event: SubmitEvent): void {
+  void store.handleFormSubmit(event).catch((error) => {
+    if (!(error instanceof Error && error.name === "AbortError")) {
+      console.error("[hydrogen] cart update failed", error);
+    }
+  });
+}
+
+function CartPageHeading(handle: Handle<{ totalQuantity: number }>) {
+  return () => (
+    <>
+      <div mix={pageTitleStyle}>
+        <PageTitle title="Cart" />
+      </div>
+      <div aria-hidden="true" mix={mobileCartSpacerStyle} />
+      <h1 mix={mobileCartTitleStyle}>Cart</h1>
+      <h2 mix={cartCountStyle}>{cartCountLabel(handle.props.totalQuantity)}</h2>
+    </>
+  );
+}
+
 type CartLineData = CartData["lines"]["nodes"][number];
 
 function CartLine(
@@ -522,8 +533,10 @@ function CartLine(
   return () => {
     let { drawer, line, market, messages, pending } = handle.props;
     let merchandise = line.merchandise;
-    let href = merchandise?.product.handle
-      ? productHref(merchandise.product.handle, market.pathPrefix)
+    let product = merchandise?.product;
+    let productTitle = product?.title ?? "Product";
+    let href = product?.handle
+      ? productHref(product.handle, market.pathPrefix)
       : undefined;
     let errorId = `${handle.id}-errors`;
     let compareAtPrice = getLineCompareAtPrice(line);
@@ -552,7 +565,7 @@ function CartLine(
           href ? (
             <a
               href={href}
-              aria-label={`View ${merchandise!.product.title}`}
+              aria-label={`View ${productTitle}`}
               mix={[imageLinkStyle, closeOnClick]}
             >
               {thumbnail}
@@ -565,10 +578,10 @@ function CartLine(
           <h2 mix={lineTitleStyle}>
             {href ? (
               <a href={href} mix={closeOnClick}>
-                {merchandise!.product.title}
+                {productTitle}
               </a>
             ) : (
-              (merchandise?.product.title ?? "Product")
+              productTitle
             )}
           </h2>
           {merchandise?.title && merchandise.title !== "Default Title" ? (
@@ -828,9 +841,10 @@ function getErrorGroupMessages(group?: CartErrorGroup): string[] {
 }
 
 function getBannerMessages(
-  errors: CartErrorState,
+  errors: CartErrorState | undefined,
   visibleLineIds: string[],
 ): string[] {
+  if (!errors) return [];
   let lineIds = new Set(visibleLineIds);
   let messages = [
     ...errors.network.map((error) => error.message),
@@ -1310,8 +1324,8 @@ const errorStyle = css({
 });
 const errorBannerStyle = css({
   alignItems: "start",
-  background: "#fff0f0",
-  border: "1px solid #a40000",
+  background: "var(--color-red-50)",
+  border: "1px solid var(--color-red-800)",
   display: "flex",
   gap: "16px",
   justifyContent: "space-between",
