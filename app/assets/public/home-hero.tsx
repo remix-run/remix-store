@@ -339,6 +339,9 @@ function prefersReducedData(): boolean {
 /** Resolves once the page has loaded and the browser has a quiet moment. */
 function whenPageIsIdle(signal: AbortSignal): Promise<void> {
   return new Promise((resolve) => {
+    // An abort settles the promise so the caller's post-await guard runs.
+    if (signal.aborted) return resolve();
+    signal.addEventListener("abort", () => resolve(), { once: true });
     let afterLoad = () => {
       if (signal.aborted) return;
       if ("requestIdleCallback" in window) {

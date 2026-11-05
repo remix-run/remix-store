@@ -23,6 +23,15 @@ async function until(condition: () => boolean) {
   assert.ok(condition(), "condition never became true");
 }
 
+/**
+ * Lets every queued microtask run. Image decoding, the preload bookkeeping
+ * and component updates all chain microtasks after a load or idle callback,
+ * and the microtask queue drains completely before the next task starts.
+ */
+function drainMicrotasks() {
+  return new Promise((resolve) => setTimeout(resolve, 0));
+}
+
 /** Tracks frame preloads and holds idle callbacks until `settle` runs them. */
 function mockBrowser(t: TestContext) {
   let preloads: PendingImage[] = [];
@@ -39,6 +48,8 @@ function mockBrowser(t: TestContext) {
   );
   return {
     preloads,
+    /** Idle callbacks requested and not yet run. */
+    pendingIdle: () => idle.length,
     settle() {
       for (let callback of idle.splice(0)) {
         callback({ didTimeout: false, timeRemaining: () => 50 });
@@ -124,7 +135,7 @@ describe("home hero frames", () => {
     // A frame joins the animation once every frame before it has loaded,
     // rendered from the URL it was preloaded from.
     preloads[1]!.dispatchEvent(new Event("load"));
-    await new Promise((resolve) => setTimeout(resolve, 50));
+    await drainMicrotasks();
     assert.equal(frames().length, 1);
     preloads[0]!.dispatchEvent(new Event("load"));
     await until(() => frames().length === 3);
@@ -195,7 +206,7 @@ describe("home hero frames", () => {
   });
 
   it("stays stopped when the visitor clicks the same link again while it loads", async (t) => {
-    let { preloads, settle } = mockBrowser(t);
+    let { preloads, pendingIdle, settle } = mockBrowser(t);
     let { navigate, fail } = mockNavigation(t);
     let { firstFrame } = renderHero(t, 3);
     await until(() => firstFrame.currentSrc !== "");
@@ -211,9 +222,11 @@ describe("home hero frames", () => {
 
     // The second click interrupts the first navigation, which fails it.
     fail();
+    // The failure resumed the preload, which now waits for the page to idle.
+    assert.equal(pendingIdle(), 1);
     navigate(destination);
     settle();
-    await new Promise((resolve) => setTimeout(resolve, 50));
+    await drainMicrotasks();
     assert.equal(preloads.length, 2);
     assert.ok(preloads.every((image) => image.src === ""));
   });
@@ -233,7 +246,7 @@ describe("home hero frames", () => {
   });
 
   it("skips preloading when the visitor saves data", async (t) => {
-    let { preloads, settle } = mockBrowser(t);
+    let { preloads, pendingIdle } = mockBrowser(t);
     Object.defineProperty(navigator, "connection", {
       configurable: true,
       value: { saveData: true },
@@ -241,9 +254,10 @@ describe("home hero frames", () => {
     t.after(() => {
       delete (navigator as Navigator & { connection?: unknown }).connection;
     });
-    renderHero(t, 3);
-    settle();
-    await new Promise((resolve) => setTimeout(resolve, 50));
+    let { firstFrame } = renderHero(t, 3);
+    await until(() => firstFrame.currentSrc !== "");
+    // Preloads only start from an idle callback, and none was requested.
+    assert.equal(pendingIdle(), 0);
     assert.equal(preloads.length, 0);
   });
 });
