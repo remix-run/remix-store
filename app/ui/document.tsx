@@ -69,6 +69,7 @@ export function Document(handle: Handle<DocumentProps>) {
     let shopifyScripts = getShopifyScripts(
       shellData.analyticsShop,
       shellData.market,
+      assets.nonce,
     );
 
     return (
@@ -132,9 +133,13 @@ export function Document(handle: Handle<DocumentProps>) {
           ))}
           <ImportMap value={assets.scriptEntry.importMap} />
           {assets.scriptEntry.preloads.map((href) => (
-            <link href={href} rel="modulepreload" />
+            <link href={href} rel="modulepreload" nonce={assets.nonce} />
           ))}
-          <script src={assets.scriptEntry.href} type="module"></script>
+          <script
+            src={assets.scriptEntry.href}
+            type="module"
+            nonce={assets.nonce}
+          ></script>
           {shopifyScripts.links.map((descriptor) => (
             <ShopifyTag descriptor={descriptor} />
           ))}
@@ -173,6 +178,7 @@ const EMPTY_SHOPIFY_SCRIPT_TAGS: ShopifyScriptTagDescriptors = {
 function getShopifyScripts(
   analyticsShop: AnalyticsShop | null | undefined,
   market: ActiveMarket,
+  nonce: string | undefined,
 ): ShopifyScriptTagDescriptors {
   if (!analyticsShop?.shopId || !analyticsShop.myshopifyDomain) {
     return EMPTY_SHOPIFY_SCRIPT_TAGS;
@@ -186,6 +192,7 @@ function getShopifyScripts(
       currency: analyticsShop.currency,
       pathPrefix: market.pathPrefix,
     },
+    nonce,
     shop: {
       myshopifyDomain: analyticsShop.myshopifyDomain,
       shopId: analyticsShop.shopId,

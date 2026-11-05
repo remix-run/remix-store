@@ -79,6 +79,7 @@ Fly setup, secrets, local image verification, and continuous deployment are docu
 - `app/node.ts` composes Node static files, Remix Assets, rendering, and routing.
 - `app/middleware/storefront.ts` creates a request-scoped Hydrogen Storefront client.
 - `app/middleware/render.tsx` contains runtime-neutral streaming SSR.
+- `app/middleware/csp.ts` enforces a nonce-based Content Security Policy on HTML responses. Remix's renderer stamps the nonce on generated tags; `app/ui/document.tsx` stamps authored and Shopify scripts. Add new third-party origins to its directives.
 - `app/runtime.ts` binds environment, cache, and `waitUntil` values to each request.
 - `server.node.ts` owns the Node/Fly-compatible HTTP lifecycle.
 - `app/entry.oxygen.ts` composes and serves the Oxygen Worker runtime.

@@ -20,6 +20,7 @@ import {
   type SubscribeControllerOptions,
 } from "./actions/subscribe/controller.tsx";
 import { ErrorPage, NotFoundPage } from "./actions/pages.tsx";
+import { csp, type CspOptions } from "./middleware/csp.ts";
 import { market } from "./middleware/market.tsx";
 import { render } from "./middleware/render.tsx";
 import { storefront, type StorefrontOptions } from "./middleware/storefront.ts";
@@ -27,6 +28,7 @@ import { routes } from "./routes.ts";
 import { fetchWithRuntime, type Runtime } from "./runtime.ts";
 
 export interface AppOptions {
+  csp?: CspOptions;
   platform?: Middleware;
   renderer: ReturnType<typeof render>;
   storefront?: StorefrontOptions;
@@ -39,6 +41,8 @@ const passThrough: Middleware = (_context, next) => next();
 function createAppMiddleware(options: AppOptions) {
   return createMiddleware(
     options.platform ?? passThrough,
+    // The renderer reads the nonce when it is installed, so CSP runs first.
+    csp(options.csp),
     ...options.renderer,
     errorPages(),
     market(),

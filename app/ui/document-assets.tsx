@@ -14,17 +14,23 @@ export interface DocumentAssets {
   fonts: DocumentFonts;
 }
 
-interface DocumentAssetsProviderProps extends DocumentAssets {
+interface RequestDocumentAssets extends DocumentAssets {
+  /** The response's CSP nonce, for authored script and preload tags. */
+  nonce?: string;
+}
+
+interface DocumentAssetsProviderProps extends RequestDocumentAssets {
   children?: RemixNode;
 }
 
 export function DocumentAssetsProvider(
-  handle: Handle<DocumentAssetsProviderProps, DocumentAssets>,
+  handle: Handle<DocumentAssetsProviderProps, RequestDocumentAssets>,
 ) {
   handle.context.set({
     scriptEntry: handle.props.scriptEntry,
     stylesheets: handle.props.stylesheets,
     fonts: handle.props.fonts,
+    nonce: handle.props.nonce,
   });
   return () => <>{handle.props.children}</>;
 }

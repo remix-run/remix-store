@@ -23,6 +23,7 @@ export const snowFieldEntryHref = await assets.getHref(
 );
 
 export const app = createApp({
+  csp: { development: process.env.NODE_ENV === "development" },
   platform: nodePlatform(),
   renderer: render({ assets, documentAssets }),
 });
