@@ -1,4 +1,4 @@
-import { expect, test } from "playwright/test";
+import { expect, test } from "./test.ts";
 
 test("serves document assets and preserves every rendered hydration export", async ({
   page,

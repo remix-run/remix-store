@@ -216,7 +216,8 @@ app without starting an HTTP listener. Runtime adapters call the app's
 - HTML responses enforce a nonce-based CSP. Authored `<script>` and
   `<link rel="modulepreload">` tags need the `nonce` from
   `DocumentAssetsProvider`; inline event-handler attributes never run. New
-  third-party origins go in `app/middleware/csp.ts`.
+  third-party origins go in `app/middleware/csp.ts`. End-to-end tests import
+  `test` from `e2e/test.ts`, which fails on any CSP violation.
 - Raw HTML rendered by JSX must be explicitly authorized with `unsafeHTML()`.
   Sanitize untrusted HTML first; `unsafeHTML()` preserves input and does not
   sanitize it. Direct DOM properties such as `template.innerHTML` are not JSX

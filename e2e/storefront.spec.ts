@@ -1,9 +1,16 @@
-import { expect, test, type Page } from "playwright/test";
+import type { Page } from "playwright/test";
+
+import { expect, test } from "./test.ts";
 
 test("renders the current storefront skeleton", async ({ page }) => {
   let response = await page.goto("/");
 
   expect(response?.status()).toBe(200);
+  // Every test fails on CSP violations, which only proves something while the
+  // policy is enforced.
+  expect(response?.headers()["content-security-policy"]).toMatch(
+    /script-src 'nonce-[^']+' 'strict-dynamic'/,
+  );
   await expect(page.locator("main")).toBeVisible();
   await expect(
     page.getByRole("heading", { name: "Remix 3 Racing Team Collection" }),
