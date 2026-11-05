@@ -36,47 +36,7 @@ export const Footer = clientEntry(
       <footer
         data-storefront-footer="true"
         data-visible="true"
-        mix={[
-          footerStyle,
-          ref((element, signal) => {
-            let observer: IntersectionObserver | undefined;
-            let motionPreference = window.matchMedia(
-              "(prefers-reduced-motion: reduce)",
-            );
-
-            function setVisible(visible: boolean) {
-              if (visible) element.setAttribute("data-visible", "true");
-              else element.removeAttribute("data-visible");
-            }
-
-            function observe() {
-              observer?.disconnect();
-              observer = undefined;
-
-              if (
-                motionPreference.matches ||
-                !("IntersectionObserver" in window)
-              ) {
-                setVisible(true);
-                return;
-              }
-
-              observer = new IntersectionObserver(
-                ([entry]) =>
-                  setVisible(Boolean(entry && entry.intersectionRatio >= 0.35)),
-                { threshold: [0, 0.35, 1] },
-              );
-              observer.observe(element);
-            }
-
-            observe();
-            motionPreference.addEventListener("change", observe);
-            signal.addEventListener("abort", () => {
-              observer?.disconnect();
-              motionPreference.removeEventListener("change", observe);
-            });
-          }),
-        ]}
+        mix={[footerStyle, revealWhenInView()]}
       >
         <FooterGradientStrips />
         <div data-footer-content="true" mix={footerContentStyle}>
@@ -88,89 +48,16 @@ export const Footer = clientEntry(
               <p>Designed in USA</p>
             </div>
 
-            <div data-footer-brand="true" mix={brandStyle}>
-              <svg
-                aria-label="Remix Logo"
-                role="img"
-                viewBox="0 0 1280 126"
-                mix={brandLogoStyle}
-              >
-                <use href="#remix-logo" />
-              </svg>
-
-              <div mix={brandGlyphGroupStyle}>
-                <div mix={runnerCircleStyle}>
-                  <div data-runner-border="true" />
-                  <img
-                    data-runner-static="true"
-                    src="/brand/remix-runner.svg"
-                    alt=""
-                    aria-hidden="true"
-                    width="326"
-                    height="206"
-                    loading="eager"
-                  />
-                  <img
-                    data-runner-animated="true"
-                    src="/brand/remix-runner-animated.svg"
-                    alt=""
-                    aria-hidden="true"
-                    width="326"
-                    height="206"
-                    loading="eager"
-                  />
-                </div>
-                <svg aria-hidden="true" viewBox="0 0 146 70" mix={glyphsStyle}>
-                  <use href="#remix-glyphs" />
-                </svg>
-              </div>
-            </div>
+            <FooterBrand />
 
             <div mix={footerLinksStyle}>
               <div mix={statementColumnStyle}>
                 <p>Remix is for everyone</p>
                 <p>Remix is an engineering team</p>
                 <p>Remix builds tools for a better web</p>
-
-                <nav aria-label="Remix community" mix={socialNavStyle}>
-                  <a
-                    href="https://www.remix.run"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    mix={remixLinkStyle}
-                  >
-                    remix.run
-                  </a>
-                  {SOCIALS.map((social) => (
-                    <a
-                      key={social.name}
-                      href={social.href}
-                      aria-label={social.label}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      data-social-link="true"
-                    >
-                      <FooterIcon name={social.name} />
-                    </a>
-                  ))}
-                </nav>
+                <CommunityLinks />
               </div>
-
-              <nav aria-label="Store policies" mix={policyNavStyle}>
-                {handle.props.menu.items.map((item) => {
-                  let external = /^https?:\/\//i.test(item.url);
-                  return (
-                    <a
-                      key={item.id}
-                      href={item.url}
-                      target={external ? "_blank" : undefined}
-                      rel={external ? "noopener noreferrer" : undefined}
-                    >
-                      {item.title}
-                    </a>
-                  );
-                })}
-              </nav>
+              <PolicyLinks menu={handle.props.menu} />
             </div>
 
             <div mix={copyrightStyle}>
@@ -186,6 +73,140 @@ export const Footer = clientEntry(
     );
   },
 );
+
+const REVEAL_RATIO = 0.35;
+
+/**
+ * Marks the element `data-visible` while at least 35% of it is on
+ * screen, so its entrance animation replays. It stays visible under reduced
+ * motion or without IntersectionObserver.
+ */
+function revealWhenInView() {
+  return ref((element, signal) => {
+    let observer: IntersectionObserver | undefined;
+    let motionPreference = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    );
+
+    function setVisible(visible: boolean) {
+      if (visible) element.setAttribute("data-visible", "true");
+      else element.removeAttribute("data-visible");
+    }
+
+    function observe() {
+      observer?.disconnect();
+      observer = undefined;
+
+      if (motionPreference.matches || !("IntersectionObserver" in window)) {
+        setVisible(true);
+        return;
+      }
+
+      observer = new IntersectionObserver(
+        ([entry]) =>
+          setVisible(Boolean(entry && entry.intersectionRatio >= REVEAL_RATIO)),
+        { threshold: [0, REVEAL_RATIO, 1] },
+      );
+      observer.observe(element);
+    }
+
+    observe();
+    motionPreference.addEventListener("change", observe);
+    signal.addEventListener("abort", () => {
+      observer?.disconnect();
+      motionPreference.removeEventListener("change", observe);
+    });
+  });
+}
+
+function FooterBrand() {
+  return () => (
+    <div data-footer-brand="true" mix={brandStyle}>
+      <svg
+        aria-label="Remix Logo"
+        role="img"
+        viewBox="0 0 1280 126"
+        mix={brandLogoStyle}
+      >
+        <use href="#remix-logo" />
+      </svg>
+
+      <div mix={brandGlyphGroupStyle}>
+        <div mix={runnerCircleStyle}>
+          <div data-runner-border="true" />
+          <img
+            data-runner-static="true"
+            src="/brand/remix-runner.svg"
+            alt=""
+            aria-hidden="true"
+            width="326"
+            height="206"
+            loading="eager"
+          />
+          <img
+            data-runner-animated="true"
+            src="/brand/remix-runner-animated.svg"
+            alt=""
+            aria-hidden="true"
+            width="326"
+            height="206"
+            loading="eager"
+          />
+        </div>
+        <svg aria-hidden="true" viewBox="0 0 146 70" mix={glyphsStyle}>
+          <use href="#remix-glyphs" />
+        </svg>
+      </div>
+    </div>
+  );
+}
+
+function CommunityLinks() {
+  return () => (
+    <nav aria-label="Remix community" mix={socialNavStyle}>
+      <a
+        href="https://www.remix.run"
+        target="_blank"
+        rel="noopener noreferrer"
+        mix={remixLinkStyle}
+      >
+        remix.run
+      </a>
+      {SOCIALS.map((social) => (
+        <a
+          key={social.name}
+          href={social.href}
+          aria-label={social.label}
+          target="_blank"
+          rel="noopener noreferrer"
+          data-social-link="true"
+        >
+          <FooterIcon name={social.name} />
+        </a>
+      ))}
+    </nav>
+  );
+}
+
+function PolicyLinks(handle: Handle<{ menu: NavigationMenuData }>) {
+  return () => (
+    <nav aria-label="Store policies" mix={policyNavStyle}>
+      {handle.props.menu.items.map((item) => {
+        let external = /^https?:\/\//i.test(item.url);
+        return (
+          <a
+            key={item.id}
+            href={item.url}
+            target={external ? "_blank" : undefined}
+            rel={external ? "noopener noreferrer" : undefined}
+          >
+            {item.title}
+          </a>
+        );
+      })}
+    </nav>
+  );
+}
 
 function FooterGradientStrips() {
   let centerIndex = Math.floor(FOOTER_GRADIENT_STRIP_COUNT / 2);

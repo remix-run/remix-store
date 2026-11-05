@@ -38,70 +38,62 @@ export function SubscribeFormComponent(handle: Handle<SubscribeFormProps>) {
   let result = handle.props.initialResult;
   let submission = 0;
 
+  async function submit(form: HTMLFormElement, signal: AbortSignal) {
+    if (pending || result?.success) return;
+    let body = urlEncodedForm(form);
+    let current = ++submission;
+    pending = true;
+    result = undefined;
+    await handle.update();
+    try {
+      let response = await fetch(form.action, {
+        method: "POST",
+        body,
+        headers: { Accept: "application/json" },
+        signal,
+      });
+      let next = parse(SubscribeResponseSchema, await response.json());
+      if (current === submission) result = next;
+    } catch {
+      if (!signal.aborted && current === submission) {
+        result = {
+          error: "Something went wrong. Please try again.",
+          success: false,
+        };
+      }
+    } finally {
+      if (current === submission) {
+        pending = false;
+        await handle.update();
+      }
+    }
+  }
+
   return () => {
-    let backInStock = handle.props.mode === "back-in-stock";
+    let mode = formMode(handle.props.mode);
     let complete = result?.success === true;
     return (
-      <section
-        aria-label={backInStock ? "Notify me when it’s back" : undefined}
-        mix={backInStock ? backInStockSectionStyle : formSectionStyle}
-      >
+      <section aria-label={mode.sectionLabel} mix={mode.sectionStyle}>
         <form
           action={handle.props.action}
           method="post"
           aria-busy={pending ? "true" : undefined}
           mix={[
-            backInStock ? backInStockFormStyle : formStyle,
-            on("submit", async (event, signal) => {
+            mode.formStyle,
+            on("submit", (event, signal) => {
               event.preventDefault();
               // Capture currentTarget synchronously: browsers clear it after
               // event dispatch, before the first awaited render completes.
-              let form = event.currentTarget;
-              if (pending || complete) return;
-              let body = urlEncodedForm(form);
-              let current = ++submission;
-              pending = true;
-              result = undefined;
-              await handle.update();
-              try {
-                let response = await fetch(form.action, {
-                  method: "POST",
-                  body,
-                  headers: { Accept: "application/json" },
-                  signal,
-                });
-                let next = parse(
-                  SubscribeResponseSchema,
-                  await response.json(),
-                );
-                if (current === submission) result = next;
-              } catch {
-                if (!signal.aborted && current === submission) {
-                  result = {
-                    error: "Something went wrong. Please try again.",
-                    success: false,
-                  };
-                }
-              } finally {
-                if (current === submission) {
-                  pending = false;
-                  await handle.update();
-                }
-              }
+              return submit(event.currentTarget, signal);
             }),
           ]}
         >
-          <label
-            for={backInStock ? "back-in-stock-email" : "subscribe-email"}
-            mix={visuallyHiddenStyle}
-          >
-            {backInStock
-              ? "Email address for stock notifications"
-              : "Email address"}
+          <label for={mode.inputId} mix={visuallyHiddenStyle}>
+            {mode.inputLabel}
           </label>
-          <div mix={backInStock ? notifyRowStyle : newsletterRowStyle}>
+          <div mix={mode.rowStyle}>
             <input
-              id={backInStock ? "back-in-stock-email" : "subscribe-email"}
+              id={mode.inputId}
               type="email"
               name="email"
               autoComplete="email"
@@ -111,7 +103,7 @@ export function SubscribeFormComponent(handle: Handle<SubscribeFormProps>) {
               required
               disabled={pending}
               mix={[
-                backInStock ? backInStockInputStyle : emailInputStyle,
+                mode.inputStyle,
                 complete ? successInputStyle : undefined,
                 on("input", () => {
                   if (!result) return;
@@ -124,27 +116,21 @@ export function SubscribeFormComponent(handle: Handle<SubscribeFormProps>) {
               type="submit"
               disabled={pending || complete}
               mix={[
-                backInStock ? notifyButtonStyle : subscribeButtonStyle,
+                mode.buttonStyle,
                 complete ? successButtonStyle : undefined,
               ]}
             >
               {pending ? (
-                backInStock ? (
-                  "Signing up…"
-                ) : (
-                  "Subscribing…"
-                )
-              ) : result?.success ? (
+                mode.pendingLabel
+              ) : complete ? (
                 <Icon name="check" />
-              ) : backInStock ? (
-                "Notify me"
               ) : (
-                "Subscribe"
+                mode.submitLabel
               )}
             </button>
           </div>
           <input type="hidden" name="consent" value="yes" />
-          {backInStock ? (
+          {handle.props.mode === "back-in-stock" ? (
             <>
               <input
                 type="hidden"
@@ -166,16 +152,45 @@ export function SubscribeFormComponent(handle: Handle<SubscribeFormProps>) {
             <p role="alert" mix={errorStyle}>
               {result.error}
             </p>
-          ) : backInStock ? (
-            <p mix={helperStyle}>
-              This size is currently out of stock. Sign up to be notified by
-              email when restock this size.
-            </p>
+          ) : mode.helper ? (
+            <p mix={helperStyle}>{mode.helper}</p>
           ) : null}
         </form>
       </section>
     );
   };
+}
+
+/** Copy, field ids, and styles for each form placement. */
+function formMode(mode: SubscribeFormProps["mode"]) {
+  return mode === "back-in-stock"
+    ? {
+        buttonStyle: notifyButtonStyle,
+        formStyle: backInStockFormStyle,
+        helper:
+          "This size is currently out of stock. Sign up to be notified by email when restock this size.",
+        inputId: "back-in-stock-email",
+        inputLabel: "Email address for stock notifications",
+        inputStyle: backInStockInputStyle,
+        pendingLabel: "Signing up…",
+        rowStyle: notifyRowStyle,
+        sectionLabel: "Notify me when it’s back",
+        sectionStyle: backInStockSectionStyle,
+        submitLabel: "Notify me",
+      }
+    : {
+        buttonStyle: subscribeButtonStyle,
+        formStyle,
+        helper: undefined,
+        inputId: "subscribe-email",
+        inputLabel: "Email address",
+        inputStyle: emailInputStyle,
+        pendingLabel: "Subscribing…",
+        rowStyle: newsletterRowStyle,
+        sectionLabel: undefined,
+        sectionStyle: formSectionStyle,
+        submitLabel: "Subscribe",
+      };
 }
 
 function urlEncodedForm(form: HTMLFormElement): URLSearchParams {

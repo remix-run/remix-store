@@ -94,6 +94,7 @@ export function createAdminCustomerClient(options: AdminClientOptions) {
   if (!storeDomain || !options.accessToken) {
     throw new AdminApiError("configuration");
   }
+  let accessToken: string = options.accessToken;
   let requestFetch = options.fetch ?? globalThis.fetch;
   let endpoint = `https://${storeDomain}/admin/api/${ADMIN_API_VERSION}/graphql.json`;
 
@@ -109,7 +110,7 @@ export function createAdminCustomerClient(options: AdminClientOptions) {
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
-          "X-Shopify-Access-Token": options.accessToken!,
+          "X-Shopify-Access-Token": accessToken,
         },
         body: JSON.stringify({ query, variables }),
         signal: options.signal,
@@ -158,10 +159,7 @@ export function createAdminCustomerClient(options: AdminClientOptions) {
       },
       CustomerCreateSchema,
     );
-    if (data.customerCreate.userErrors.length) {
-      throw new AdminApiError("user");
-    }
-    if (!data.customerCreate.customer) throw new AdminApiError("response");
+    assertMutationApplied(data.customerCreate, data.customerCreate.customer);
   }
 
   async function addTags(customerId: string, tags: string[]): Promise<void> {
@@ -171,8 +169,7 @@ export function createAdminCustomerClient(options: AdminClientOptions) {
       { id: customerId, tags },
       TagsAddSchema,
     );
-    if (data.tagsAdd.userErrors.length) throw new AdminApiError("user");
-    if (!data.tagsAdd.node) throw new AdminApiError("response");
+    assertMutationApplied(data.tagsAdd, data.tagsAdd.node);
   }
 
   async function updateConsent(
@@ -189,12 +186,8 @@ export function createAdminCustomerClient(options: AdminClientOptions) {
       },
       CustomerConsentUpdateSchema,
     );
-    if (data.customerEmailMarketingConsentUpdate.userErrors.length) {
-      throw new AdminApiError("user");
-    }
-    if (!data.customerEmailMarketingConsentUpdate.customer) {
-      throw new AdminApiError("response");
-    }
+    let result = data.customerEmailMarketingConsentUpdate;
+    assertMutationApplied(result, result.customer);
   }
 
   return { addTags, createCustomer, getCustomerByEmail, updateConsent };
@@ -226,6 +219,15 @@ export async function subscribeCustomer(
   if (customer.marketingOptInLevel !== "CONFIRMED_OPT_IN") {
     await client.updateConsent(customer.id, input.consentUpdatedAt);
   }
+}
+
+/** Rejected input is a user error; a missing result node is a bad response. */
+function assertMutationApplied(
+  result: { userErrors: unknown[] },
+  node: unknown,
+): void {
+  if (result.userErrors.length) throw new AdminApiError("user");
+  if (!node) throw new AdminApiError("response");
 }
 
 function consentInput(consentUpdatedAt: string) {
