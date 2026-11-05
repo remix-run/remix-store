@@ -6,6 +6,7 @@ import {
   ShopifyImage,
   shopifyImageUrl,
 } from "../../ui/public/shopify-image.tsx";
+import { throttleToAnimationFrame } from "./animation-frame.ts";
 
 interface ProductGalleryProps {
   /** Renders the mobile arrows and dots, which only work with scripts. */
@@ -286,22 +287,6 @@ function cssPixels(element: Element, property: string, fallback: number) {
     Number.parseInt(getComputedStyle(element).getPropertyValue(property)) ||
     fallback
   );
-}
-
-function throttleToAnimationFrame(callback: () => void) {
-  let frame = 0;
-  return {
-    request: () => {
-      frame ||= requestAnimationFrame(() => {
-        frame = 0;
-        callback();
-      });
-    },
-    cancel: () => {
-      if (frame) cancelAnimationFrame(frame);
-      frame = 0;
-    },
-  };
 }
 
 function orderedImages(

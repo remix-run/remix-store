@@ -98,13 +98,8 @@ function renderNode(
 ): RemixNode {
   let children = renderNodes(node.children ?? [], pathPrefix);
   switch (node.type) {
-    case "text": {
-      let content: RemixNode = node.value ?? "";
-      if (node.bold) content = <strong>{content}</strong>;
-      if (node.italic) content = <em>{content}</em>;
-      if (node.underline) content = <u>{content}</u>;
-      return <span key={key}>{content}</span>;
-    }
+    case "text":
+      return <span key={key}>{formattedText(node)}</span>;
     case "paragraph":
       return <p key={key}>{children.length ? children : <br />}</p>;
     case "heading":
@@ -114,16 +109,13 @@ function renderNode(
         <h2 key={key}>{children}</h2>
       );
     case "list":
-      // Shopify's rich text schema marks list kind with listType.
-      return node.listType === "ordered" ? (
+    case "ordered-list":
+    case "unordered-list":
+      return isOrderedList(node) ? (
         <ol key={key}>{children}</ol>
       ) : (
         <ul key={key}>{children}</ul>
       );
-    case "unordered-list":
-      return <ul key={key}>{children}</ul>;
-    case "ordered-list":
-      return <ol key={key}>{children}</ol>;
     case "list-item":
       return <li key={key}>{children}</li>;
     case "link": {
@@ -143,6 +135,22 @@ function renderNode(
     default:
       return <span key={key}>{children}</span>;
   }
+}
+
+function formattedText(node: RichTextNode): RemixNode {
+  let content: RemixNode = node.value ?? "";
+  if (node.bold) content = <strong>{content}</strong>;
+  if (node.italic) content = <em>{content}</em>;
+  if (node.underline) content = <u>{content}</u>;
+  return content;
+}
+
+// Shopify's rich text schema marks list kind with listType.
+function isOrderedList(node: RichTextNode): boolean {
+  return (
+    node.type === "ordered-list" ||
+    (node.type === "list" && node.listType === "ordered")
+  );
 }
 
 function safeHref(

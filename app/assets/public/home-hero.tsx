@@ -9,6 +9,7 @@ import {
 
 import type { ImageData } from "../../data/public/types.ts";
 import { PillIcon, pillLinkStyle } from "../../ui/public/pill-link.tsx";
+import { throttleToAnimationFrame } from "./animation-frame.ts";
 import { remixNavigation } from "./remix-navigation.ts";
 
 export interface HomeHeroProps extends SerializableObject {
@@ -36,7 +37,6 @@ export const HomeHero = clientEntry(
     // already shows the destination while this page is still on screen.
     let pageUrl = "";
     let reducedMotion: MediaQueryList | undefined;
-    let animationFrame = 0;
 
     function showFrame(index: number) {
       if (!section) return;
@@ -47,18 +47,16 @@ export const HomeHero = clientEntry(
         });
     }
 
-    function updateFrame() {
-      cancelAnimationFrame(animationFrame);
-      animationFrame = requestAnimationFrame(() => {
-        if (!section || loadedFrames < 2 || reducedMotion?.matches) return;
-        let target = scrollFrame(
-          section.getBoundingClientRect().top,
-          section.offsetHeight,
-          handle.props.assetImages.length,
-        );
-        showFrame(Math.min(target, loadedFrames - 1));
-      });
-    }
+    let frameUpdate = throttleToAnimationFrame(() => {
+      if (!section || loadedFrames < 2 || reducedMotion?.matches) return;
+      let target = scrollFrame(
+        section.getBoundingClientRect().top,
+        section.offsetHeight,
+        handle.props.assetImages.length,
+      );
+      showFrame(Math.min(target, loadedFrames - 1));
+    });
+    let updateFrame = frameUpdate.request;
 
     function firstFrameSrc() {
       return section?.querySelector<HTMLImageElement>(
@@ -166,7 +164,7 @@ export const HomeHero = clientEntry(
               motion.addEventListener("change", onMotionChange, { signal });
               signal.addEventListener("abort", () => {
                 section = null;
-                cancelAnimationFrame(animationFrame);
+                frameUpdate.cancel();
               });
 
               if (!motion.matches) preloadFrames();

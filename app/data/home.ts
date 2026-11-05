@@ -202,57 +202,65 @@ function toHomeHeroData(hero: HomeQueryData["hero"]): HomeHeroData | null {
   return { assetImages, collectionHandle };
 }
 
+type LookbookReferences = NonNullable<
+  NonNullable<NonNullable<HomeQueryData["lookbook"]>["entries"]>["references"]
+>;
+type LookbookEntry = Extract<
+  LookbookReferences["nodes"][number],
+  { __typename: "Metaobject" }
+>;
+
 function toHomeLookbookEntries(
   lookbook: HomeQueryData["lookbook"],
 ): HomeLookbookEntryData[] {
   return (
     lookbook?.entries?.references?.nodes.flatMap((entry, index) => {
       if (entry.__typename !== "Metaobject") return [];
-
-      let imageReference = entry.fields.find(
-        (field) => field.reference?.__typename === "MediaImage",
-      )?.reference;
-      if (
-        imageReference?.__typename !== "MediaImage" ||
-        !imageReference.image
-      ) {
-        return [];
-      }
-
-      let productReference = entry.fields.find(
-        (field) => field.reference?.__typename === "Product",
-      )?.reference;
-      let product =
-        productReference?.__typename === "Product"
-          ? {
-              handle: productReference.handle,
-              price: {
-                amount: productReference.priceRange.minVariantPrice.amount,
-                currencyCode:
-                  productReference.priceRange.minVariantPrice.currencyCode,
-              },
-              title: productReference.title,
-            }
-          : null;
+      let media = lookbookMedia(entry);
+      if (!media) return [];
+      let { image, presentation } = media;
 
       return [
         {
-          id: entry.id ?? imageReference.image.id ?? `lookbook-${index}`,
+          id: entry.id ?? image.id ?? `lookbook-${index}`,
           image: {
-            id: imageReference.image.id,
-            url: imageReference.image.url,
-            altText: imageReference.image.altText,
-            width: imageReference.image.width,
-            height: imageReference.image.height,
+            id: image.id,
+            url: image.url,
+            altText: image.altText,
+            width: image.width,
+            height: image.height,
           },
           focalPoint: toSerializableFocalPoint(
-            getFocalPoint(imageReference.presentation?.asJson),
+            getFocalPoint(presentation?.asJson),
           ),
-          product,
+          product: lookbookProduct(entry),
         },
       ];
     }) ?? []
   );
+}
+
+function lookbookMedia(entry: LookbookEntry) {
+  let reference = entry.fields.find(
+    (field) => field.reference?.__typename === "MediaImage",
+  )?.reference;
+  if (reference?.__typename !== "MediaImage" || !reference.image) return null;
+  return { image: reference.image, presentation: reference.presentation };
+}
+
+function lookbookProduct(
+  entry: LookbookEntry,
+): HomeLookbookEntryData["product"] {
+  let reference = entry.fields.find(
+    (field) => field.reference?.__typename === "Product",
+  )?.reference;
+  if (reference?.__typename !== "Product") return null;
+  let { amount, currencyCode } = reference.priceRange.minVariantPrice;
+  return {
+    handle: reference.handle,
+    price: { amount, currencyCode },
+    title: reference.title,
+  };
 }
 
 function toSerializableFocalPoint(

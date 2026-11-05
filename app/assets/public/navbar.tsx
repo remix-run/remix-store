@@ -9,6 +9,7 @@ import {
 
 import type { NavigationMenuData } from "../../data/public/types.ts";
 import { isCurrentPage } from "../../lib/public/navigation.ts";
+import { throttleToAnimationFrame } from "./animation-frame.ts";
 
 export const RemixLogo = clientEntry(
   import.meta.url,
@@ -24,27 +25,20 @@ export const RemixLogo = clientEntry(
         mix={[
           logoStyle,
           ref((_element, signal) => {
-            let animationFrame = 0;
-
-            function update() {
-              animationFrame = 0;
+            let update = () => {
               let nextExpanded = window.scrollY > 20;
               if (nextExpanded === expanded) return;
               expanded = nextExpanded;
               handle.update();
-            }
-
-            function requestUpdate() {
-              if (!animationFrame)
-                animationFrame = requestAnimationFrame(update);
-            }
+            };
+            let frame = throttleToAnimationFrame(update);
 
             update();
-            window.addEventListener("scroll", requestUpdate, { passive: true });
-            signal.addEventListener("abort", () => {
-              window.removeEventListener("scroll", requestUpdate);
-              if (animationFrame) cancelAnimationFrame(animationFrame);
+            window.addEventListener("scroll", frame.request, {
+              passive: true,
+              signal,
             });
+            signal.addEventListener("abort", frame.cancel);
           }),
         ]}
       >
@@ -120,24 +114,7 @@ export const MobileMenu = clientEntry(
             // click to whatever is underneath. Swallow that click, which
             // follows in the same task; a new press or task disarms.
             on("beforetoggle", (event) => {
-              if (event.newState !== "closed") return;
-              let armed = new AbortController();
-              let options = { capture: true, signal: armed.signal };
-              document.addEventListener(
-                "click",
-                (click) => {
-                  click.preventDefault();
-                  click.stopPropagation();
-                  armed.abort();
-                },
-                options,
-              );
-              document.addEventListener(
-                "pointerdown",
-                () => armed.abort(),
-                options,
-              );
-              setTimeout(() => armed.abort());
+              if (event.newState === "closed") swallowNextClick();
             }),
             // Client navigation keeps this element, so close it explicitly.
             on("click", (event) => {
@@ -192,6 +169,23 @@ export const MobileMenu = clientEntry(
     );
   },
 );
+
+/** Cancels a click that follows in the same task, before any new press. */
+function swallowNextClick(): void {
+  let armed = new AbortController();
+  let options = { capture: true, signal: armed.signal };
+  document.addEventListener(
+    "click",
+    (click) => {
+      click.preventDefault();
+      click.stopPropagation();
+      armed.abort();
+    },
+    options,
+  );
+  document.addEventListener("pointerdown", () => armed.abort(), options);
+  setTimeout(() => armed.abort());
+}
 
 function hide(popover: HTMLElement) {
   if (popover.matches(":popover-open")) popover.hidePopover();
