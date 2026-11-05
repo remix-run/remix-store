@@ -74,7 +74,7 @@ describe("subscribe routes", () => {
     assert.equal(adminCalls, 0);
   });
 
-  it("returns a controlled 503 without Storefront or Admin when trusted IP is missing", async (t) => {
+  it("fails closed without Storefront or Admin when trusted IP is missing", async (t) => {
     let storefrontCalls = 0;
     let adminCalls = 0;
     let logs: unknown[][] = [];
@@ -102,28 +102,12 @@ describe("subscribe routes", () => {
     });
     let body = await response.text();
 
-    assert.equal(response.status, 503);
+    assert.equal(response.status, 500);
     assert.equal(response.headers.get("Cache-Control"), "private, no-store");
-    assert.match(body, /Something went wrong/);
     assert.doesNotMatch(body, /member@example\.com/);
     assert.equal(storefrontCalls, 0);
     assert.equal(adminCalls, 0);
     assert.doesNotMatch(JSON.stringify(logs), /member@example\.com/);
-
-    let htmlRequest = formRequest({
-      consent: "yes",
-      email: "member@example.com",
-    });
-    htmlRequest.headers.delete("Accept");
-    let htmlResponse = await app.fetch(htmlRequest);
-    let html = await htmlResponse.text();
-    assert.equal(htmlResponse.status, 503);
-    assert.match(htmlResponse.headers.get("Content-Type") ?? "", /text\/html/);
-    assert.match(html, /role="alert"/);
-    assert.match(html, /Something went wrong/);
-    assert.doesNotMatch(html, /member@example\.com/);
-    assert.equal(storefrontCalls, 0);
-    assert.equal(adminCalls, 0);
   });
 
   it("rejects oversized and unexpected form bodies before Admin", async () => {

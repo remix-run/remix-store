@@ -1,6 +1,7 @@
 import { SuperHeaders } from "remix/headers";
 import { createController } from "remix/router";
 
+import { loadAnalyticsShopOrNull } from "../../data/analytics-shop.ts";
 import {
   querySitemapPageCounts,
   querySitemapResources,
@@ -18,8 +19,8 @@ import { routes } from "../../routes.ts";
 
 export default createController(routes.seo, {
   actions: {
-    async robots({ shellData, url }) {
-      let { analyticsShop } = await shellData;
+    async robots({ storefrontClient, url }) {
+      let analyticsShop = await loadAnalyticsShopOrNull(storefrontClient);
       return robotsResponse({
         origin: url.origin,
         shopId: analyticsShop?.shopId,

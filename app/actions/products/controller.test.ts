@@ -61,7 +61,7 @@ describe("product routes", () => {
     let shopPayHref = shopPayTag.match(/href="([^"]+)"/)?.[1];
     assert.ok(shopPayHref);
     let shopPayUrl = new URL(shopPayHref.replaceAll("&amp;", "&"));
-    assert.equal(shopPayUrl.origin, "https://checkout.example.com");
+    assert.equal(shopPayUrl.origin, "https://example.myshopify.com");
     assert.equal(shopPayUrl.pathname, "/cart/111:1");
     assert.equal(shopPayUrl.searchParams.get("payment"), "shop_pay");
     assert.match(

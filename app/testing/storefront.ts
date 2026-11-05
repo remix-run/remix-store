@@ -20,10 +20,9 @@ import { createApp, type AppOptions } from "../router.ts";
 import { graphqlResponse } from "./storefront-client.ts";
 
 export const testEnv = {
-  PUBLIC_CHECKOUT_DOMAIN: "checkout.example.com",
   PUBLIC_STORE_DOMAIN: "example.myshopify.com",
-  ["PUBLIC" + "_STOREFRONT_" + "ID"]: "test-storefront-id",
-  ["PRIVATE_" + "STOREFRONT_API_TOKEN"]: "test-token",
+  PUBLIC_STOREFRONT_ID: "test-storefront-id",
+  PRIVATE_STOREFRONT_API_TOKEN: "test-token",
 };
 
 export function createTestApp(
@@ -72,7 +71,7 @@ export function createTestApp(
     fetch(request: Request) {
       return app.fetch(request, {
         buyerIp: "buyerIp" in options ? options.buyerIp : "127.0.0.1",
-        env: { ...testEnv, ["ADMIN" + "_ACCESS_TOKEN"]: "test-admin-token" },
+        env: { ...testEnv, ADMIN_ACCESS_TOKEN: "test-admin-token" },
       });
     },
   };

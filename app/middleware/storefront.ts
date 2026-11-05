@@ -1,36 +1,23 @@
 import {
   createShopifyRequestContext,
   createStorefrontClient,
-  handleShopifyRedirects,
-  handleShopifyRoutes,
   type CacheInstance,
 } from "@shopify/hydrogen";
-import { SuperHeaders } from "remix/headers";
-import { createMultiMatcher } from "remix/route-pattern/match";
 import { createContextKey, type Middleware } from "remix/router";
-import { redirect } from "remix/response/redirect";
 
-import { cartHandlers, getCartData } from "../data/cart.server.ts";
-import { applyDiscountCode } from "../data/discount.server.ts";
 import { getStorefrontCache } from "../data/storefront-cache.ts";
 import { createRetryingStorefrontFetch } from "../data/storefront-fetch.ts";
-import { loadAnalyticsShopOrNull } from "../data/analytics-shop.ts";
-import {
-  FALLBACK_FOOTER_MENU,
-  FALLBACK_NAVIGATION_MENU,
-  loadShellMenusOrFallback,
-} from "../data/menus.ts";
 import type { AppStorefrontClient } from "../data/storefront.ts";
-import {
-  localizeInternalUrl,
-  type ActiveMarket,
-} from "../lib/public/market.ts";
-import { cacheControl } from "../lib/cache-control.ts";
-import { routeTemplates } from "../lib/public/route-templates.ts";
-import { routes } from "../routes.ts";
+import type { ActiveMarket } from "../lib/public/market.ts";
 import { getRuntime, type Env } from "../runtime.ts";
-import type { ShellData } from "../ui/shell-data.tsx";
 import { MarketConfig } from "./market.tsx";
+import { loadShellData, type StorefrontShellData } from "./shell-data.ts";
+import {
+  applyResponseHeaders,
+  handleShopifyCompatibilityRoute,
+  withShopifyRedirect,
+  type ShopifyRouteContext,
+} from "./shopify-routes.ts";
 
 export interface StorefrontOptions {
   cache?: CacheInstance;
@@ -38,25 +25,16 @@ export interface StorefrontOptions {
   fetch?: typeof globalThis.fetch;
 }
 
-/** The Storefront part of the page shell: menus, sale, cart, analytics. */
-export type StorefrontShellData = Omit<ShellData, "currentPath" | "market">;
-
-export const FALLBACK_SHELL_DATA: StorefrontShellData = {
-  analyticsShop: null,
-  cartInitialData: { cart: null },
-  footerMenu: FALLBACK_FOOTER_MENU,
-  navigationMenu: FALLBACK_NAVIGATION_MENU,
-  storeWideSale: null,
-};
-
 export const StorefrontClient = createContextKey<AppStorefrontClient>();
 /**
  * Shell data starts loading before the route runs, so controllers query their
  * own data in parallel instead of after it. The renderer awaits it.
  */
 export const ShellDataConfig = createContextKey<Promise<StorefrontShellData>>();
-const storefrontProperty = { property: "storefrontClient" } as const;
-const shellDataProperty = { property: "shellData" } as const;
+/** Adapter bindings merged with app-level overrides. */
+export const RequestEnv = createContextKey<Env>();
+/** The adapter-supplied, trusted buyer IP. Every app request has one. */
+export const BuyerIp = createContextKey<string>();
 
 export function storefront(options: StorefrontOptions = {}): Middleware<
   readonly [
@@ -70,6 +48,8 @@ export function storefront(options: StorefrontOptions = {}): Middleware<
       value: Promise<StorefrontShellData>;
       property: "shellData";
     },
+    { key: typeof RequestEnv; value: Env; property: "env" },
+    { key: typeof BuyerIp; value: string; property: "buyerIp" },
   ]
 > {
   return async (context, next) => {
@@ -78,368 +58,93 @@ export function storefront(options: StorefrontOptions = {}): Middleware<
     if (context.url.pathname.startsWith("/assets/")) return next();
 
     let runtime = getRuntime(context.request);
-    let env = { ...runtime.env, ...options.env };
-
-    if (
-      !runtime.buyerIp &&
-      context.request.method === "POST" &&
-      context.url.pathname === routes.subscribe.action.href()
-    ) {
-      // Subscription abuse controls require an adapter-supplied, trusted IP.
-      // Fail closed before Storefront/Admin work, without logging request data.
-      let headers = new SuperHeaders({
-        cacheControl: cacheControl.privateNoStore,
-      });
-      let body = {
-        error: "Something went wrong. Please try again.",
-        success: false,
-      };
-      if (context.request.headers.get("Accept")?.includes("application/json")) {
-        return Response.json(body, { status: 503, headers });
-      }
-      headers.contentType = "text/html; charset=utf-8";
-      return new Response(
-        '<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Subscribe unavailable</title></head><body><main><h1>Subscribe</h1><p role="alert">Something went wrong. Please try again.</p></main></body></html>',
-        { status: 503, headers },
-      );
-    }
-
-    let storeDomain = env.PUBLIC_STORE_DOMAIN;
-    let storefrontId = env["PUBLIC" + "_STOREFRONT_" + "ID"];
-
-    let privateStorefrontToken = env["PRIVATE" + "_STOREFRONT_" + "API_TOKEN"];
-    if (!storeDomain || !privateStorefrontToken) {
-      throw new Error(
-        "PUBLIC_STORE_DOMAIN and PRIVATE_STOREFRONT_API_TOKEN are required to query Shopify.",
-      );
-    }
-
+    let env: Env = { ...runtime.env, ...options.env };
+    // Storefront requests and subscription abuse controls both depend on a
+    // trusted IP, so fail closed before any route runs.
     let buyerIp = runtime.buyerIp;
     if (!buyerIp) {
       throw new Error("The runtime adapter must provide a trusted buyer IP.");
     }
 
-    let activeMarket = context.get(MarketConfig);
-    let requestContext = createShopifyRequestContext({
-      request: context.request,
-      i18n: activeMarket,
+    let market = context.get(MarketConfig);
+    let { requestContext, storefrontClient } = createRequestStorefrontClient({
       buyerIp,
-    });
-    let storefrontFetch = createRetryingStorefrontFetch({
+      cache: options.cache ?? getStorefrontCache(context.request),
+      env,
       fetch: options.fetch,
+      market,
+      request: context.request,
+      waitUntil: runtime.waitUntil,
     });
-    let cache = options.cache ?? getStorefrontCache(context.request);
-    let storefrontClient = createStorefrontClient({
-      type: "private",
+    let routeContext: ShopifyRouteContext = {
+      market,
+      request: context.request,
       requestContext,
-      config: {
-        storeDomain,
-        storefrontId,
-        privateStorefrontToken,
-        cache,
-        waitUntil: runtime.waitUntil,
-        fetch: storefrontFetch,
-      },
-    });
-
-    context.set(StorefrontClient, storefrontClient, storefrontProperty);
-    // Responses that render no page shell keep the fallback.
-    let shellData = Promise.resolve(FALLBACK_SHELL_DATA);
-    context.set(ShellDataConfig, shellData, shellDataProperty);
-
-    let seoRoute = matchSeoRoute(context.url);
-    if (seoRoute) {
-      if (seoRoute === routes.seo.robots) {
-        shellData = loadAnalyticsShopOrNull(storefrontClient).then(
-          (analyticsShop) => ({ ...FALLBACK_SHELL_DATA, analyticsShop }),
-        );
-        context.set(ShellDataConfig, shellData, shellDataProperty);
-      }
-      let [response] = await Promise.all([next(), shellData]);
-      return applyResponseHeaders(requestContext, response);
-    }
-
-    // Shopify-owned checkout, permalink, AJAX cart, and /api/cart routes must
-    // run before the app router. Match them against the prefix-free app path
-    // while retaining the active market on the request-scoped client.
-    let routingRequest = requestWithUrl(context.request, context.url);
-    let shopifyRoute = handleShopifyRoutes({
-      request: routingRequest,
-      requestContext,
-      sessionManager:
-        createEphemeralHydrogenRouteSessionManager(routingRequest),
       storefrontClient,
-      routeTemplates,
-      handlers: [cartHandlers],
+      url: context.url,
+    };
+
+    let shopifyResponse = await handleShopifyCompatibilityRoute(routeContext);
+    if (shopifyResponse) return shopifyResponse;
+
+    let shellData = loadShellData(
+      context.request,
+      context.url,
+      storefrontClient,
+    );
+    context.set(RequestEnv, env, { property: "env" });
+    context.set(BuyerIp, buyerIp, { property: "buyerIp" });
+    context.set(StorefrontClient, storefrontClient, {
+      property: "storefrontClient",
     });
-    if (shopifyRoute) {
-      return noStore(
-        localizeRedirect(await shopifyRoute, activeMarket, context.url),
-      );
-    }
-
-    let discount = getDiscountRequest(routingRequest);
-    if (discount) {
-      let location = localizeInternalUrl(
-        discount.location,
-        activeMarket.pathPrefix,
-      );
-      let headers = new SuperHeaders({
-        Location: location,
-        cacheControl: cacheControl.privateNoStore,
-      });
-
-      if (discount.code && context.request.method === "GET") {
-        try {
-          let discountHeaders = await applyDiscountCode(
-            context.request,
-            storefrontClient,
-            discount.code,
-          );
-          for (let [name, value] of discountHeaders)
-            headers.append(name, value);
-        } catch (error) {
-          if (
-            context.request.signal.aborted &&
-            error === context.request.signal.reason
-          )
-            throw error;
-          console.error("[hydrogen] Discount application failed");
-        }
-      }
-
-      return applyResponseHeaders(
-        requestContext,
-        redirect(location, { status: 303, headers }),
-      );
-    }
-
-    // Subscription POSTs need the request-scoped Storefront client for fresh
-    // variant verification, and product grid fragments render only cards, so
-    // neither needs shell/cart network requests.
-    if (
-      (context.request.method === "POST" &&
-        context.url.pathname === routes.subscribe.action.href()) ||
-      isProductGridFragment(context.url)
-    ) {
-      return applyResponseHeaders(requestContext, await next());
-    }
-
-    shellData = Promise.all([
-      loadShellMenusOrFallback(storefrontClient),
-      isClientNavigation(context.request)
-        ? undefined
-        : getCartData(context.request, storefrontClient),
-      loadAnalyticsShopOrNull(storefrontClient),
-    ]).then(([shellMenus, cartInitialData, analyticsShop]) => ({
-      ...shellMenus,
-      cartInitialData,
-      analyticsShop,
-    }));
-    context.set(ShellDataConfig, shellData, shellDataProperty);
+    context.set(ShellDataConfig, shellData, { property: "shellData" });
 
     // Apply Shopify's response headers once the route and shell queries finish.
     let [response] = await Promise.all([next(), shellData]);
-    if (response.status === 404) {
-      response =
-        (await handleShopifyRedirects({
-          request: routingRequest,
-          storefrontClient,
-          routeTemplates,
-        })) ?? response;
-      response = localizeRedirect(response, activeMarket, context.url);
-    }
-    return applyResponseHeaders(requestContext, noStoreRedirect(response));
+    return applyResponseHeaders(
+      requestContext,
+      await withShopifyRedirect(routeContext, response),
+    );
   };
 }
 
-/**
- * Requests from Remix's browser runtime. The page that sends them has already
- * hydrated, so client-owned state such as the cart is live in the browser.
- */
-export function isClientNavigation(request: Request): boolean {
-  return request.headers.get("X-Remix-Frame") === "true";
+interface RequestStorefrontClientOptions {
+  buyerIp: string;
+  cache: CacheInstance;
+  env: Env;
+  fetch?: typeof globalThis.fetch;
+  market: ActiveMarket;
+  request: Request;
+  waitUntil?: (promise: Promise<unknown>) => void;
 }
 
-function requestWithUrl(request: Request, url: URL): Request {
-  if (request.url === url.href) return request;
-  // Share the body: Hydrogen consumes it only when a route matches; otherwise
-  // the app controller reads it. Cloning would leave an unread stream branch.
-  return new Request(url, request);
-}
-
-function localizeRedirect(
-  response: Response,
-  market: ActiveMarket,
-  requestUrl: URL,
-): Response {
-  if (!market.pathPrefix || response.status < 300 || response.status >= 400) {
-    return response;
-  }
-  let location = response.headers.get("Location");
-  if (!location) return response;
-
-  let target: URL;
-  try {
-    target = new URL(location, requestUrl);
-  } catch {
-    return response;
-  }
-  if (target.origin !== requestUrl.origin) return response;
-
-  let localized = localizeInternalUrl(
-    `${target.pathname}${target.search}${target.hash}`,
-    market.pathPrefix,
-  );
-  if (localized === location) return response;
-  let mutable = new Response(response.body, response);
-  mutable.headers.set("Location", localized);
-  return mutable;
-}
-
-interface DiscountRequest {
-  code: string | null;
-  location: string;
-}
-
-function getDiscountRequest(request: Request): DiscountRequest | null {
-  if (request.method !== "GET" && request.method !== "HEAD") return null;
-
-  let url = new URL(request.url);
-  let discountPath = url.pathname.match(/^\/discount\/([^/]+)\/?$/);
-  if (discountPath) {
-    let code = decodePathSegment(discountPath[1]!);
-    let candidate =
-      url.searchParams.get("redirect") ??
-      url.searchParams.get("return_to") ??
-      "/";
-    let target = safeSameOriginUrl(url, candidate);
-
-    for (let [name, value] of url.searchParams) {
-      if (name !== "redirect" && name !== "return_to" && name !== "discount") {
-        target.searchParams.append(name, value);
-      }
-    }
-
-    return { code, location: relativeUrl(target) };
+function createRequestStorefrontClient(
+  options: RequestStorefrontClientOptions,
+) {
+  let storeDomain = options.env.PUBLIC_STORE_DOMAIN;
+  let privateStorefrontToken = options.env.PRIVATE_STOREFRONT_API_TOKEN;
+  if (!storeDomain || !privateStorefrontToken) {
+    throw new Error(
+      "PUBLIC_STORE_DOMAIN and PRIVATE_STOREFRONT_API_TOKEN are required to query Shopify.",
+    );
   }
 
-  if (!url.searchParams.has("discount")) return null;
-  let code = normalizeDiscountCode(url.searchParams.get("discount"));
-  url.searchParams.delete("discount");
-  return { code, location: relativeUrl(url) };
-}
-
-function decodePathSegment(value: string): string | null {
-  try {
-    return normalizeDiscountCode(decodeURIComponent(value));
-  } catch {
-    return null;
-  }
-}
-
-function normalizeDiscountCode(value: string | null): string | null {
-  return value && value.length <= 255 ? value : null;
-}
-
-function safeSameOriginUrl(requestUrl: URL, candidate: string): URL {
-  try {
-    let target = new URL(candidate, requestUrl);
-    return target.origin === requestUrl.origin
-      ? target
-      : new URL("/", requestUrl);
-  } catch {
-    return new URL("/", requestUrl);
-  }
-}
-
-function relativeUrl(url: URL): string {
-  return `${url.pathname}${url.search}${url.hash}`;
-}
-
-function noStoreRedirect(response: Response): Response {
-  return response.status >= 300 && response.status < 400
-    ? noStore(response)
-    : response;
-}
-
-function noStore(response: Response): Response {
-  // Copying the headers also covers responses whose headers are immutable.
-  let headers = new SuperHeaders(response.headers);
-  headers.cacheControl = cacheControl.privateNoStore;
-  return new Response(response.body, {
-    headers,
-    status: response.status,
-    statusText: response.statusText,
+  let requestContext = createShopifyRequestContext({
+    request: options.request,
+    i18n: options.market,
+    buyerIp: options.buyerIp,
   });
-}
-
-type SeoRoute = (typeof routes.seo)[keyof typeof routes.seo];
-
-const seoRouteMatcher = createMultiMatcher<SeoRoute>();
-for (let route of Object.values(routes.seo)) {
-  seoRouteMatcher.add(route.pattern, route);
-}
-
-function matchSeoRoute(url: URL): SeoRoute | null {
-  return seoRouteMatcher.match(url)?.data ?? null;
-}
-
-const productGridFragmentMatcher = createMultiMatcher<true>();
-productGridFragmentMatcher.add(routes.collections.products.pattern, true);
-productGridFragmentMatcher.add(routes.collections.loadMore.pattern, true);
-
-function isProductGridFragment(url: URL): boolean {
-  return productGridFragmentMatcher.match(url) != null;
-}
-
-type EphemeralHydrogenRouteSessionManager = Parameters<
-  typeof handleShopifyRoutes
->[0]["sessionManager"];
-type EphemeralSessionItem = Parameters<
-  EphemeralHydrogenRouteSessionManager["setSessionItem"]
->[1];
-
-/**
- * Request-local scratch state required by Hydrogen compatibility routes.
- * Values never survive the request and are never committed to a cookie. This
- * is not a durable session boundary and is unsafe for Customer Account API
- * authentication, OAuth state/PKCE/nonces, or any cross-request state.
- */
-function createEphemeralHydrogenRouteSessionManager(
-  request: Request,
-): EphemeralHydrogenRouteSessionManager {
-  let values = new Map<string, EphemeralSessionItem>();
-
-  return {
-    getSessionOrigin() {
-      return new URL(request.url).origin;
+  let storefrontClient: AppStorefrontClient = createStorefrontClient({
+    type: "private",
+    requestContext,
+    config: {
+      storeDomain,
+      storefrontId: options.env.PUBLIC_STOREFRONT_ID,
+      privateStorefrontToken,
+      cache: options.cache,
+      waitUntil: options.waitUntil,
+      fetch: createRetryingStorefrontFetch({ fetch: options.fetch }),
     },
-    getSessionItem(key: string) {
-      return values.get(key);
-    },
-    setSessionItem(key: string, value: EphemeralSessionItem) {
-      values.set(key, value);
-    },
-    removeSessionItem(key: string) {
-      values.delete(key);
-    },
-  };
-}
-
-function applyResponseHeaders(
-  requestContext: ReturnType<typeof createShopifyRequestContext>,
-  response: Response,
-): Response {
-  try {
-    requestContext.applyResponseHeaders(response.headers);
-    return response;
-  } catch (error) {
-    if (!(error instanceof TypeError)) throw error;
-    // Some runtimes expose immutable response headers. Recreate the response so
-    // Hydrogen can append its request-context headers at the final boundary.
-    let mutableResponse = new Response(response.body, response);
-    requestContext.applyResponseHeaders(mutableResponse.headers);
-    return mutableResponse;
-  }
+  });
+  return { requestContext, storefrontClient };
 }

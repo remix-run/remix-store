@@ -15,11 +15,8 @@ import { runtimeDispatch } from "../runtime.ts";
 import { cacheControl } from "../lib/cache-control.ts";
 import { US_MARKET } from "../lib/public/market.ts";
 import { MarketConfig } from "./market.tsx";
-import {
-  FALLBACK_SHELL_DATA,
-  isClientNavigation,
-  ShellDataConfig,
-} from "./storefront.ts";
+import { FALLBACK_SHELL_DATA, isClientNavigation } from "./shell-data.ts";
+import { ShellDataConfig } from "./storefront.ts";
 import {
   DocumentAssetsProvider,
   type DocumentAssets,

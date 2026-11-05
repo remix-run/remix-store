@@ -20,7 +20,6 @@ import {
 import { queryBackInStockEligibleVariant } from "../../data/product.ts";
 import { cacheControl } from "../../lib/cache-control.ts";
 import { marketPath, type ActiveMarket } from "../../lib/public/market.ts";
-import { getRuntime } from "../../runtime.ts";
 import { routes } from "../../routes.ts";
 import { SubscribePage } from "./page.tsx";
 
@@ -58,7 +57,15 @@ export function createSubscribeController(
           },
         );
       },
-      async action({ market, render, request, storefrontClient, url }) {
+      async action({
+        buyerIp,
+        env,
+        market,
+        render,
+        request,
+        storefrontClient,
+        url,
+      }) {
         let headers = new SuperHeaders({
           cacheControl: cacheControl.privateNoStore,
         });
@@ -94,21 +101,7 @@ export function createSubscribeController(
           return respond({ error: parsed.message, success: false }, 400);
         }
 
-        let runtime = getRuntime(request);
-        if (!runtime.buyerIp) {
-          console.error("[subscribe] Trusted buyer IP unavailable");
-          return respond(
-            {
-              error: "Something went wrong. Please try again.",
-              success: false,
-            },
-            503,
-          );
-        }
-        let [ipKey, emailKey] = await rateLimitKeys(
-          runtime.buyerIp,
-          parsed.email,
-        );
+        let [ipKey, emailKey] = await rateLimitKeys(buyerIp, parsed.email);
         let limiter = options.rateLimiter ?? subscriptionRateLimiter;
         let limit = await limiter.consumeMany([ipKey, emailKey]);
         if (!limit.allowed) {
@@ -148,10 +141,9 @@ export function createSubscribeController(
           message = "Thanks! We’ll let you know when it’s back in stock.";
         }
 
-        let env = runtime.env ?? {};
         try {
           let admin = createAdminCustomerClient({
-            accessToken: env[["ADMIN", "ACCESS", "TOKEN"].join("_")],
+            accessToken: env.ADMIN_ACCESS_TOKEN,
             fetch: options.adminFetch,
             signal: request.signal,
             storeDomain: env.ADMIN_STORE_DOMAIN ?? env.PUBLIC_STORE_DOMAIN,
