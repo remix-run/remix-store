@@ -1,5 +1,6 @@
 import { css, type Handle } from "remix/component";
 
+import { routes } from "../../routes.ts";
 import type { ProductCardData } from "../../data/public/types.ts";
 import { marketPath, type MarketPathPrefix } from "../../lib/public/market.ts";
 import {
@@ -26,7 +27,7 @@ export function ProductCard(
       <article mix={cardStyle}>
         <a
           href={marketPath(
-            `/products/${encodeURIComponent(product.handle)}`,
+            routes.products.show.href({ handle: product.handle }),
             pathPrefix ?? "",
           )}
           data-rmx-prefetch="intent"

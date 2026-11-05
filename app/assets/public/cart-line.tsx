@@ -5,6 +5,7 @@ import {
 } from "@shopify/hydrogen";
 import { css, on, type Handle } from "remix/component";
 
+import { routes } from "../../routes.ts";
 import { cartApiPath } from "../../lib/public/cart-routes.ts";
 import {
   marketPath,
@@ -18,13 +19,11 @@ import { formatCartMoney, pendingValueStyle } from "./cart-format.ts";
 
 const register = createCartFormRegister();
 
-// Mirrors the product route in app/routes.ts, which browser entries cannot
-// import. Keep them in sync.
 function productHref(
   handle: string,
   pathPrefix: MarketPathPrefix = "",
 ): string {
-  return marketPath(`/products/${encodeURIComponent(handle)}`, pathPrefix);
+  return marketPath(routes.products.show.href({ handle }), pathPrefix);
 }
 
 export type CartLineData = CartData["lines"]["nodes"][number];

@@ -6,6 +6,7 @@ import {
   type SerializableObject,
 } from "remix/component";
 
+import { routes } from "../../routes.ts";
 import type { NavigationMenuData } from "../../data/public/types.ts";
 import { marketPath, type MarketPathPrefix } from "../../lib/public/market.ts";
 import { Icon } from "../../ui/public/icon.tsx";
@@ -42,7 +43,12 @@ export const Footer = clientEntry(
         <div data-footer-content="true" mix={footerContentStyle}>
           <div mix={footerInnerStyle}>
             <div mix={catalogStyle}>
-              <a href={marketPath("/collections/all", handle.props.pathPrefix)}>
+              <a
+                href={marketPath(
+                  routes.collections.show.href({ handle: "all" }),
+                  handle.props.pathPrefix,
+                )}
+              >
                 Remix Soft Wear Catalog V.1.4
               </a>
               <p>Designed in USA</p>

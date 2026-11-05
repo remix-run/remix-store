@@ -44,7 +44,10 @@ export function Navbar(handle: Handle<NavbarProps>) {
         ) : null}
         <header mix={navbarStyle}>
           <a
-            href={marketPath("/", handle.props.market.pathPrefix)}
+            href={marketPath(
+              routes.home.href(),
+              handle.props.market.pathPrefix,
+            )}
             aria-label="Remix Store home"
             data-rmx-prefetch="intent"
             mix={homeLinkStyle}

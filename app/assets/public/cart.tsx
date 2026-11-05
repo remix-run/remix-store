@@ -7,6 +7,7 @@ import {
 } from "@shopify/hydrogen";
 import { clientEntry, css, navigate, on, type Handle } from "remix/component";
 
+import { routes } from "../../routes.ts";
 import {
   documentMarketPathPrefix,
   marketPath,
@@ -32,20 +33,11 @@ const CART_DRAWER_ID = "cart-drawer";
 let openCartActionConfigured = false;
 let openCartActionRetryQueued = false;
 
-// Browser entries cannot import the server-side route contract (app/routes.ts
-// is outside the public asset boundary), so this mirrors the collection route
-// declared there. Keep it in sync with app/routes.ts.
-function collectionHref(
-  handle: string,
-  pathPrefix: MarketPathPrefix = "",
-): string {
-  return marketPath(`/collections/${encodeURIComponent(handle)}`, pathPrefix);
-}
 function openCartDrawer() {
   if (!globalThis.document) return;
   if (window.matchMedia("(max-width: 809px)").matches) {
     let prefix = documentMarketPathPrefix();
-    navigate(marketPath("/cart", prefix));
+    navigate(marketPath(routes.cart.href(), prefix));
     return;
   }
   let drawer = document.getElementById(CART_DRAWER_ID);
@@ -269,7 +261,10 @@ function CartTrigger(
     if (loading || !cart || quantity === 0) {
       return (
         <a
-          href={collectionHref("all", handle.props.pathPrefix)}
+          href={marketPath(
+            routes.collections.show.href({ handle: "all" }),
+            handle.props.pathPrefix,
+          )}
           data-rmx-prefetch="intent"
           mix={[triggerBaseStyle, shopTriggerStyle]}
         >
@@ -296,7 +291,7 @@ function CartTrigger(
     return (
       <>
         <a
-          href={marketPath("/cart", handle.props.pathPrefix)}
+          href={marketPath(routes.cart.href(), handle.props.pathPrefix)}
           mix={[triggerBaseStyle, cartTriggerStyle, mobileCartTriggerStyle]}
         >
           {label}
@@ -426,7 +421,10 @@ function CartView(handle: Handle<CartViewProps>) {
             kind="empty"
             heading="No items in cart"
             copy="Please browse our catalog and add items before checking out."
-            href={collectionHref("all", market.pathPrefix)}
+            href={marketPath(
+              routes.collections.show.href({ handle: "all" }),
+              market.pathPrefix,
+            )}
             linkLabel="Shop All"
             icon="cart"
           />

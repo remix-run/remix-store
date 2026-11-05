@@ -72,7 +72,7 @@ Fly setup, secrets, local image verification, and continuous deployment are docu
 
 ## Architecture
 
-- `app/routes.ts` defines the typed route contract.
+- `app/routes.ts` defines the typed route contract. Browser modules may import it, so islands build links with `routes.*.href()` too.
 - `app/router.ts` owns the shared Fetch app, routes, middleware, and runtime boundary.
 - `app/assets.ts` defines the shared metadata contract, document asset sources, and document asset factory.
 - `app/assets.node.ts` constructs the native Remix asset server; `app/assets.oxygen.ts` constructs Pitlane's Worker-safe manifest resolver.

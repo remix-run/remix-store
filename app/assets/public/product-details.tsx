@@ -11,6 +11,7 @@ import {
 } from "@shopify/hydrogen";
 import { clientEntry, css, navigate, on, type Handle } from "remix/component";
 
+import { routes } from "../../routes.ts";
 import type { ProductData } from "../../data/public/product.ts";
 import type { NavigationMenuData } from "../../data/public/types.ts";
 import { cartApiPath } from "../../lib/public/cart-routes.ts";
@@ -151,7 +152,10 @@ export const ProductDetails = clientEntry(
               !selectedVariant.availableForSale &&
               productSubscriptionsEnabled(product) ? (
                 <SubscribeForm
-                  action={marketPath("/subscribe", market.pathPrefix)}
+                  action={marketPath(
+                    routes.subscribe.action.href(),
+                    market.pathPrefix,
+                  )}
                   mode="back-in-stock"
                   productHandle={product.handle}
                   variantId={selectedVariant.id}
@@ -578,7 +582,7 @@ export function variantHref(
   });
   let query = search.toString();
   return marketPath(
-    `/products/${encodeURIComponent(handle)}${query ? `?${query}` : ""}`,
+    `${routes.products.show.href({ handle })}${query ? `?${query}` : ""}`,
     pathPrefix,
   );
 }
