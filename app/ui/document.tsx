@@ -215,6 +215,9 @@ function ShopifyTag(
       <script
         {...attributes}
         crossOrigin={crossorigin || undefined}
+        // SAFETY: script bodies are raw text, so they can't be escaped as
+        // HTML. Hydrogen builds them from fixed code plus JSON.stringify data
+        // with `<`, U+2028 and U+2029 escaped, so no value can close the tag.
         innerHTML={
           descriptor.innerHTML === undefined
             ? undefined

@@ -207,7 +207,13 @@ export type StorefrontRequestBody = InferOutput<
 function parseStorefrontRequestBody(
   body: BodyInit | null | undefined,
 ): StorefrontRequestBody {
-  let result = parseSafe(storefrontRequestBodySchema, JSON.parse(String(body)));
+  let json: unknown;
+  try {
+    json = JSON.parse(String(body));
+  } catch (error) {
+    throw new Error("Storefront request body is not JSON", { cause: error });
+  }
+  let result = parseSafe(storefrontRequestBodySchema, json);
   if (!result.success) {
     throw new Error("Invalid Storefront request body");
   }

@@ -8,14 +8,13 @@ import { css, ref, unsafeHTML, type Handle } from "remix/component";
 // isolated override in sync with its internal `.shop-pay-button` class when
 // upgrading Hydrogen so the local renderer keeps the previous height.
 const HEIGHT_OVERRIDE_ATTRIBUTE = "data-remix-height-override";
-const HEIGHT_OVERRIDE = `
-  <style ${HEIGHT_OVERRIDE_ATTRIBUTE}>
-    .shop-pay-button { height: 64px; }
-    @media (min-width: 1400px) {
-      .shop-pay-button { height: 66px; }
-    }
-  </style>
+const HEIGHT_OVERRIDE_CSS = `
+  .shop-pay-button { height: 64px; }
+  @media (min-width: 1400px) {
+    .shop-pay-button { height: 66px; }
+  }
 `;
+const HEIGHT_OVERRIDE = `<style ${HEIGHT_OVERRIDE_ATTRIBUTE}>${HEIGHT_OVERRIDE_CSS}</style>`;
 
 /** A Shop Pay button that buys one of the variant directly. */
 export function ExpressShopPayButton(
@@ -44,9 +43,10 @@ export function ExpressShopPayButton(
       ) {
         return;
       }
-      let template = document.createElement("template");
-      template.innerHTML = HEIGHT_OVERRIDE;
-      shadowRoot.append(template.content);
+      let style = document.createElement("style");
+      style.setAttribute(HEIGHT_OVERRIDE_ATTRIBUTE, "");
+      style.textContent = HEIGHT_OVERRIDE_CSS;
+      shadowRoot.append(style);
     });
 
     return (
