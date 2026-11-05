@@ -28,6 +28,7 @@ import { createApp, type AppOptions } from "../router.ts";
 import { graphqlResponse } from "./storefront-client.ts";
 
 export const testEnv = {
+  PUBLIC_CHECKOUT_DOMAIN: "checkout.example.com",
   PUBLIC_STORE_DOMAIN: "example.myshopify.com",
   PUBLIC_STOREFRONT_ID: "test-storefront-id",
   PRIVATE_STOREFRONT_API_TOKEN: "test-token",
@@ -37,6 +38,7 @@ export function createTestApp(
   fetch: typeof globalThis.fetch,
   options: Pick<AppOptions, "csp" | "seasonalSnow" | "subscribe"> & {
     buyerIp?: string;
+    env?: Partial<typeof testEnv>;
   } = {},
 ) {
   let app = createApp({
@@ -71,7 +73,7 @@ export function createTestApp(
     subscribe: options.subscribe,
     storefront: {
       cache: new MemoryStorefrontCache(),
-      env: testEnv,
+      env: { ...testEnv, ...options.env },
       fetch,
     },
   });

@@ -25,8 +25,8 @@ supplies `fly-client-ip`, or behind Fastly, `x-cdn-client-ip` authenticated by
 Remix's HTTP adapter from the socket or, when explicitly configured behind a
 trusted proxy with `TRUST_PROXY=true`, overwritten proxy headers. Never forward
 platform buyer-IP headers outside their runtime. Checkout uses Shopify's
-authoritative `cart.checkoutUrl`, and Shop Pay links use the configured store
-domain. The app does not use durable application
+authoritative `cart.checkoutUrl`, and Shop Pay links use `PUBLIC_CHECKOUT_DOMAIN`
+(falling back to the store domain). The app does not use durable application
 sessions or require `SESSION_SECRET`.
 
 `pnpm dev` runs the framework-native Node server with `remix/assets`. For UI-heavy work, use `pnpm hmr` to preserve browser state while hot-updating client and server modules. Use `pnpm dev:oxygen` when testing the same application under MiniOxygen's Worker runtime.

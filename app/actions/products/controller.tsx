@@ -11,7 +11,7 @@ import { ProductPage } from "./page.tsx";
 
 export default createController(routes.products, {
   actions: {
-    async show({ market, params, render, storefrontClient, url }) {
+    async show({ env, market, params, render, storefrontClient, url }) {
       let [product, productNavigation] = await Promise.all([
         queryProduct(storefrontClient, params.handle, url.searchParams),
         loadProductNavigationOrEmpty(storefrontClient),
@@ -28,7 +28,9 @@ export default createController(routes.products, {
           menu={productNavigation}
           product={product}
           search={url.search}
-          shopPayStoreUrl={storefrontClient.storeUrl}
+          shopPayStoreUrl={
+            env.PUBLIC_CHECKOUT_DOMAIN?.trim() || storefrontClient.storeUrl
+          }
         />,
         { headers: new SuperHeaders({ cacheControl: cacheControl.browsing }) },
       );

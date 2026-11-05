@@ -13,6 +13,34 @@ import {
 } from "../../testing/storefront.ts";
 
 describe("product routes", () => {
+  it("sends Shop Pay to the store domain without a checkout domain", async () => {
+    let app = createTestApp(
+      createStorefrontFetch({
+        RemixAnalyticsShop: analyticsShopData,
+        RemixNavigation: navigationData,
+        RemixProductNavigation: () => ({
+          menu: null,
+          shop: { primaryDomain: { url: "https://example.com" } },
+        }),
+        RemixProduct: () => ({ product: productData() }),
+      }),
+      { env: { PUBLIC_CHECKOUT_DOMAIN: undefined } },
+    );
+
+    let response = await app.fetch(
+      new Request(
+        `https://example.com${routes.products.show.href({ handle: "test-product" })}`,
+      ),
+    );
+    let html = await response.text();
+
+    let shopPayHref = html
+      .match(/<a [^>]*aria-label="Buy with Shop Pay"[^>]*>/)?.[0]
+      .match(/href="([^"]+)"/)?.[1];
+    assert.ok(shopPayHref);
+    assert.equal(new URL(shopPayHref).origin, "https://example.myshopify.com");
+  });
+
   it("resolves URL options and renders safe, no-JS variant and cart controls", async () => {
     let variables: StorefrontRequestBody["variables"] | undefined;
     let app = createTestApp(
@@ -63,7 +91,7 @@ describe("product routes", () => {
     let shopPayHref = shopPayTag.match(/href="([^"]+)"/)?.[1];
     assert.ok(shopPayHref);
     let shopPayUrl = new URL(shopPayHref.replaceAll("&amp;", "&"));
-    assert.equal(shopPayUrl.origin, "https://example.myshopify.com");
+    assert.equal(shopPayUrl.origin, "https://checkout.example.com");
     assert.equal(shopPayUrl.pathname, "/cart/111:1");
     assert.equal(shopPayUrl.searchParams.get("payment"), "shop_pay");
     assert.match(
