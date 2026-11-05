@@ -387,7 +387,15 @@ function CartView(handle: Handle<CartViewProps>) {
   let dismissedAt = 0;
 
   return () => {
-    let { cart, drawer = false, errors, loading, state, store } = handle.props;
+    let {
+      cart,
+      drawer = false,
+      errors,
+      loading,
+      market,
+      state,
+      store,
+    } = handle.props;
     let lines = cart?.lines.nodes ?? [];
     let bannerMessages = errors
       ? getBannerMessages(
@@ -395,9 +403,18 @@ function CartView(handle: Handle<CartViewProps>) {
           lines.map((line) => line.id),
         )
       : [];
-    let showBanner = Boolean(
-      errors && bannerMessages.length > 0 && errors.lastUpdatedAt > dismissedAt,
-    );
+    let banner =
+      errors &&
+      bannerMessages.length > 0 &&
+      errors.lastUpdatedAt > dismissedAt ? (
+        <CartErrorBanner
+          messages={bannerMessages}
+          onDismiss={() => {
+            dismissedAt = errors.lastUpdatedAt;
+            handle.update();
+          }}
+        />
+      ) : null;
 
     if (loading) {
       return (
@@ -416,34 +433,18 @@ function CartView(handle: Handle<CartViewProps>) {
 
       return (
         <section>
-          {showBanner ? (
-            <CartErrorBanner
-              messages={bannerMessages}
-              onDismiss={() => {
-                dismissedAt = errors?.lastUpdatedAt ?? Date.now();
-                handle.update();
-              }}
-            />
-          ) : null}
+          {banner}
           <BrandedState
             kind="empty"
             heading="No items in cart"
             copy="Please browse our catalog and add items before checking out."
-            href={collectionHref("all", handle.props.market.pathPrefix)}
+            href={collectionHref("all", market.pathPrefix)}
             linkLabel="Shop All"
             icon="cart"
           />
         </section>
       );
     }
-
-    let cartPending = hasPendingCartWork(state);
-    let discountAllocation = getCartDiscountAllocation(cart);
-    let hasFinalTotal =
-      Number(cart.cost.subtotalAmount.amount) !==
-      Number(cart.cost.totalAmount.amount);
-    let automaticDiscountLabel =
-      handle.props.automaticDiscountLabel?.trim() || "Automatic discount";
 
     return (
       <section
@@ -471,15 +472,7 @@ function CartView(handle: Handle<CartViewProps>) {
             <h2 mix={cartCountStyle}>{cart.totalQuantity} item(s) in cart</h2>
           </>
         ) : null}
-        {showBanner ? (
-          <CartErrorBanner
-            messages={bannerMessages}
-            onDismiss={() => {
-              dismissedAt = errors?.lastUpdatedAt ?? Date.now();
-              handle.update();
-            }}
-          />
-        ) : null}
+        {banner}
 
         <ul
           mix={[
@@ -487,235 +480,219 @@ function CartView(handle: Handle<CartViewProps>) {
             drawer ? drawerLineListStyle : pageLineListStyle,
           ]}
         >
-          {lines.map((line, index) => {
-            let merchandise = line.merchandise;
-            let linePending = state?.pending.lines.has(line.id) ?? false;
-            let lineMessages = errors
-              ? getErrorGroupMessages(errors.lines.get(line.id))
-              : [];
-            let lineErrorId = `${handle.id}-line-${index}-errors`;
-            let compareAtPrice = getLineCompareAtPrice(line);
-            // The drawer is a closed dialog until opened, so its thumbnails
-            // wait to load until then.
-            let thumbnail = merchandise?.image ? (
-              <img
-                src={shopifyImageUrl(merchandise.image.url, drawer ? 160 : 240)}
-                alt={merchandise.image.altText ?? merchandise.product.title}
-                width={merchandise.image.width ?? undefined}
-                height={merchandise.image.height ?? undefined}
-                loading={drawer ? "lazy" : "eager"}
-              />
-            ) : null;
-
-            return (
-              <li
-                key={line.id}
-                aria-busy={linePending ? "true" : undefined}
-                mix={drawer ? drawerLineStyle : lineStyle}
-              >
-                {merchandise && thumbnail ? (
-                  merchandise.product.handle ? (
-                    <a
-                      href={productHref(
-                        merchandise.product.handle,
-                        handle.props.market.pathPrefix,
-                      )}
-                      aria-label={`View ${merchandise.product.title}`}
-                      mix={[
-                        drawer ? drawerLineImageLinkStyle : lineImageLinkStyle,
-                        drawer ? on("click", closeCartDrawer) : undefined,
-                      ]}
-                    >
-                      {thumbnail}
-                    </a>
-                  ) : (
-                    <span
-                      mix={
-                        drawer ? drawerLineImageLinkStyle : lineImageLinkStyle
-                      }
-                    >
-                      {thumbnail}
-                    </span>
-                  )
-                ) : null}
-                <div mix={lineInfoStyle}>
-                  <h2 mix={lineTitleStyle}>
-                    {merchandise?.product.handle ? (
-                      <a
-                        href={productHref(
-                          merchandise.product.handle,
-                          handle.props.market.pathPrefix,
-                        )}
-                        mix={drawer ? on("click", closeCartDrawer) : undefined}
-                      >
-                        {merchandise.product.title}
-                      </a>
-                    ) : (
-                      (merchandise?.product.title ?? "Product")
-                    )}
-                  </h2>
-                  {merchandise?.title &&
-                  merchandise.title !== "Default Title" ? (
-                    <p mix={detailStyle}>{merchandise.title}</p>
-                  ) : null}
-                  <form
-                    action={cartApiPath(handle.props.market.pathPrefix)}
-                    method="post"
-                    aria-busy={linePending ? "true" : undefined}
-                    mix={quantityFormStyle}
-                  >
-                    <button {...register("set")} data-set-quantity="true">
-                      Update quantity
-                    </button>
-                    <input
-                      type="hidden"
-                      {...register("lineId", { value: line.id })}
-                    />
-                    <button
-                      type="submit"
-                      {...(line.quantity === 1
-                        ? register("remove")
-                        : register("decrease"))}
-                      aria-label={
-                        line.quantity === 1
-                          ? "Remove item"
-                          : "Decrease quantity"
-                      }
-                    >
-                      <Icon name="circle-minus" />
-                    </button>
-                    <input
-                      {...register("quantity", {
-                        value: line.quantity,
-                        interactive: true,
-                      })}
-                      aria-label="Quantity"
-                      data-pending={linePending || undefined}
-                      aria-invalid={lineMessages.length ? "true" : undefined}
-                      aria-describedby={
-                        lineMessages.length ? lineErrorId : undefined
-                      }
-                    />
-                    <button
-                      type="submit"
-                      {...register("increase")}
-                      aria-label="Increase quantity"
-                    >
-                      <Icon name="circle-plus" />
-                    </button>
-                  </form>
-                  {lineMessages.length ? (
-                    <ErrorMessages id={lineErrorId} messages={lineMessages} />
-                  ) : null}
-                </div>
-                <div
-                  data-line-price="true"
-                  mix={[
-                    linePriceGroupStyle,
-                    linePending ? pendingValueStyle : undefined,
-                  ]}
-                >
-                  {compareAtPrice ? (
-                    <s>
-                      {money(compareAtPrice, handle.props.market.locale)} each
-                    </s>
-                  ) : null}
-                  <p mix={linePriceStyle}>
-                    {money(line.cost.totalAmount, handle.props.market.locale)}
-                  </p>
-                </div>
-              </li>
-            );
-          })}
+          {lines.map((line) => (
+            <CartLine
+              key={line.id}
+              drawer={drawer}
+              line={line}
+              market={market}
+              messages={
+                errors ? getErrorGroupMessages(errors.lines.get(line.id)) : []
+              }
+              pending={state?.pending.lines.has(line.id) ?? false}
+            />
+          ))}
         </ul>
 
-        <div mix={drawer ? drawerSummaryStyle : summaryStyle}>
-          {drawer ? (
-            <>
-              <div mix={drawerTotalsStyle}>
-                <div mix={drawerSubtotalStyle}>
-                  <strong>Subtotal</strong>
-                  <span mix={cartPending ? pendingValueStyle : undefined}>
-                    {money(
-                      cart.cost.subtotalAmount,
-                      handle.props.market.locale,
-                    )}
-                  </span>
-                </div>
-                {discountAllocation ? (
-                  <div mix={allocationStyle}>
-                    <span>{automaticDiscountLabel}</span>
-                    <span>
-                      -{money(discountAllocation, handle.props.market.locale)}
-                    </span>
-                  </div>
-                ) : null}
-                {hasFinalTotal ? (
-                  <div mix={finalTotalStyle}>
-                    <strong>Total</strong>
-                    <span mix={cartPending ? pendingValueStyle : undefined}>
-                      {money(cart.cost.totalAmount, handle.props.market.locale)}
-                    </span>
-                  </div>
-                ) : null}
-                <FreeShippingNotice
-                  market={handle.props.market}
-                  subtotal={cart.cost.subtotalAmount}
-                />
-              </div>
-              {cart.checkoutUrl ? (
-                <a href={cart.checkoutUrl} mix={drawerCheckoutStyle}>
-                  <span>{cartPending ? "Updating cart…" : "Check out"}</span>
-                  {cartPending ? null : <Icon name="fast-forward" />}
-                </a>
-              ) : null}
-            </>
+        <CartSummary
+          automaticDiscountLabel={
+            handle.props.automaticDiscountLabel?.trim() || "Automatic discount"
+          }
+          cart={cart}
+          drawer={drawer}
+          market={market}
+          pending={hasPendingCartWork(state)}
+        />
+      </section>
+    );
+  };
+}
+
+type CartLineData = CartData["lines"]["nodes"][number];
+
+function CartLine(
+  handle: Handle<{
+    drawer: boolean;
+    line: CartLineData;
+    market: ActiveMarket;
+    messages: string[];
+    pending: boolean;
+  }>,
+) {
+  return () => {
+    let { drawer, line, market, messages, pending } = handle.props;
+    let merchandise = line.merchandise;
+    let href = merchandise?.product.handle
+      ? productHref(merchandise.product.handle, market.pathPrefix)
+      : undefined;
+    let errorId = `${handle.id}-errors`;
+    let compareAtPrice = getLineCompareAtPrice(line);
+    let imageLinkStyle = drawer ? drawerLineImageLinkStyle : lineImageLinkStyle;
+    let closeOnClick = drawer
+      ? on<HTMLAnchorElement>("click", closeCartDrawer)
+      : undefined;
+    // The drawer is a closed dialog until opened, so its thumbnails wait to
+    // load until then.
+    let thumbnail = merchandise?.image ? (
+      <img
+        src={shopifyImageUrl(merchandise.image.url, drawer ? 160 : 240)}
+        alt={merchandise.image.altText ?? merchandise.product.title}
+        width={merchandise.image.width ?? undefined}
+        height={merchandise.image.height ?? undefined}
+        loading={drawer ? "lazy" : "eager"}
+      />
+    ) : null;
+
+    return (
+      <li
+        aria-busy={pending ? "true" : undefined}
+        mix={drawer ? drawerLineStyle : lineStyle}
+      >
+        {thumbnail ? (
+          href ? (
+            <a
+              href={href}
+              aria-label={`View ${merchandise!.product.title}`}
+              mix={[imageLinkStyle, closeOnClick]}
+            >
+              {thumbnail}
+            </a>
           ) : (
-            <>
-              <div mix={pageTotalsStyle}>
-                <div mix={pageSubtotalStyle}>
-                  <strong>Subtotal</strong>
-                  <span mix={cartPending ? pendingValueStyle : undefined}>
-                    {money(
-                      cart.cost.subtotalAmount,
-                      handle.props.market.locale,
-                    )}
-                  </span>
-                </div>
-                {discountAllocation ? (
-                  <div mix={allocationStyle}>
-                    <span>{automaticDiscountLabel}</span>
-                    <span>
-                      -{money(discountAllocation, handle.props.market.locale)}
-                    </span>
-                  </div>
-                ) : null}
-                {hasFinalTotal ? (
-                  <div mix={finalTotalStyle}>
-                    <strong>Total</strong>
-                    <span mix={cartPending ? pendingValueStyle : undefined}>
-                      {money(cart.cost.totalAmount, handle.props.market.locale)}
-                    </span>
-                  </div>
-                ) : null}
-                <FreeShippingNotice
-                  market={handle.props.market}
-                  subtotal={cart.cost.subtotalAmount}
-                />
-                <p mix={taxNoteStyle}>
-                  Taxes &amp; Shipping details at checkout
-                </p>
-              </div>
-              {cart.checkoutUrl ? (
-                <a href={cart.checkoutUrl} mix={checkoutStyle}>
-                  <span>{cartPending ? "Updating cart…" : "Check out"}</span>
-                  {cartPending ? null : <Icon name="fast-forward" />}
-                </a>
-              ) : null}
-            </>
+            <span mix={imageLinkStyle}>{thumbnail}</span>
+          )
+        ) : null}
+        <div mix={lineInfoStyle}>
+          <h2 mix={lineTitleStyle}>
+            {href ? (
+              <a href={href} mix={closeOnClick}>
+                {merchandise!.product.title}
+              </a>
+            ) : (
+              (merchandise?.product.title ?? "Product")
+            )}
+          </h2>
+          {merchandise?.title && merchandise.title !== "Default Title" ? (
+            <p mix={detailStyle}>{merchandise.title}</p>
+          ) : null}
+          <form
+            action={cartApiPath(market.pathPrefix)}
+            method="post"
+            aria-busy={pending ? "true" : undefined}
+            mix={quantityFormStyle}
+          >
+            <button {...register("set")} data-set-quantity="true">
+              Update quantity
+            </button>
+            <input type="hidden" {...register("lineId", { value: line.id })} />
+            <button
+              type="submit"
+              {...(line.quantity === 1
+                ? register("remove")
+                : register("decrease"))}
+              aria-label={
+                line.quantity === 1 ? "Remove item" : "Decrease quantity"
+              }
+            >
+              <Icon name="circle-minus" />
+            </button>
+            <input
+              {...register("quantity", {
+                value: line.quantity,
+                interactive: true,
+              })}
+              aria-label="Quantity"
+              data-pending={pending || undefined}
+              aria-invalid={messages.length ? "true" : undefined}
+              aria-describedby={messages.length ? errorId : undefined}
+            />
+            <button
+              type="submit"
+              {...register("increase")}
+              aria-label="Increase quantity"
+            >
+              <Icon name="circle-plus" />
+            </button>
+          </form>
+          {messages.length ? (
+            <ErrorMessages id={errorId} messages={messages} />
+          ) : null}
+        </div>
+        <div
+          data-line-price="true"
+          mix={[linePriceGroupStyle, pending ? pendingValueStyle : undefined]}
+        >
+          {compareAtPrice ? (
+            <s>{money(compareAtPrice, market.locale)} each</s>
+          ) : null}
+          <p mix={linePriceStyle}>
+            {money(line.cost.totalAmount, market.locale)}
+          </p>
+        </div>
+      </li>
+    );
+  };
+}
+
+/** Totals and checkout link. The page adds a tax note; the drawer is compact. */
+function CartSummary(
+  handle: Handle<{
+    automaticDiscountLabel: string;
+    cart: CartData;
+    drawer: boolean;
+    market: ActiveMarket;
+    pending: boolean;
+  }>,
+) {
+  return () => {
+    let { automaticDiscountLabel, cart, drawer, market, pending } =
+      handle.props;
+    let discountAllocation = getCartDiscountAllocation(cart);
+    let hasFinalTotal =
+      Number(cart.cost.subtotalAmount.amount) !==
+      Number(cart.cost.totalAmount.amount);
+    let pendingStyle = pending ? pendingValueStyle : undefined;
+
+    return (
+      <div mix={drawer ? drawerSummaryStyle : summaryStyle}>
+        <div mix={drawer ? drawerTotalsStyle : pageTotalsStyle}>
+          <div mix={drawer ? drawerSubtotalStyle : pageSubtotalStyle}>
+            <strong>Subtotal</strong>
+            <span mix={pendingStyle}>
+              {money(cart.cost.subtotalAmount, market.locale)}
+            </span>
+          </div>
+          {discountAllocation ? (
+            <div mix={allocationStyle}>
+              <span>{automaticDiscountLabel}</span>
+              <span>-{money(discountAllocation, market.locale)}</span>
+            </div>
+          ) : null}
+          {hasFinalTotal ? (
+            <div mix={finalTotalStyle}>
+              <strong>Total</strong>
+              <span mix={pendingStyle}>
+                {money(cart.cost.totalAmount, market.locale)}
+              </span>
+            </div>
+          ) : null}
+          <FreeShippingNotice
+            market={market}
+            subtotal={cart.cost.subtotalAmount}
+          />
+          {drawer ? null : (
+            <p mix={taxNoteStyle}>Taxes &amp; Shipping details at checkout</p>
           )}
         </div>
-      </section>
+        {cart.checkoutUrl ? (
+          <a
+            href={cart.checkoutUrl}
+            mix={drawer ? drawerCheckoutStyle : checkoutStyle}
+          >
+            <span>{pending ? "Updating cart…" : "Check out"}</span>
+            {pending ? null : <Icon name="fast-forward" />}
+          </a>
+        ) : null}
+      </div>
     );
   };
 }
