@@ -4,7 +4,7 @@ import type {
   SerializablePrimitive,
 } from "remix/component";
 
-import type { cartHandlers } from "./cart.server.ts";
+import type { cartHandlers } from "../cart.server.ts";
 
 type SerializableCartValue<Value> = Value extends SerializablePrimitive
   ? Value

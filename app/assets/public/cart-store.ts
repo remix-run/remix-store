@@ -6,11 +6,12 @@ import {
   type MoneyV2,
 } from "@shopify/hydrogen";
 
-import type { CartInitialData, SerializedCartData } from "../../data/cart.ts";
+import type {
+  CartInitialData,
+  SerializedCartData,
+} from "../../data/public/cart.ts";
 import { cartApiPath } from "../../lib/public/cart-routes.ts";
 import type { MarketPathPrefix } from "../../lib/public/market.ts";
-
-export type { CartInitialData } from "../../data/cart.ts";
 
 type StoreCartLine = CartData["lines"]["nodes"][number];
 

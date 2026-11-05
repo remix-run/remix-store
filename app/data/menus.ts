@@ -131,7 +131,7 @@ type MenuQueryData = {
  * Storefront outage falls back to the built-in menus so every page still
  * renders its shell; partial GraphQL errors keep whatever data arrived.
  */
-export async function queryShellMenus(
+export async function loadShellMenusOrFallback(
   storefront: AppStorefrontClient,
 ): Promise<ShellMenusData> {
   let pathPrefix = storefrontPathPrefix(storefront);
@@ -184,7 +184,7 @@ export async function queryShellMenus(
 }
 
 /** Loads the product page sidebar menu, or an empty menu during an outage. */
-export async function queryProductNavigation(
+export async function loadProductNavigationOrEmpty(
   storefront: AppStorefrontClient,
 ): Promise<NavigationMenuData> {
   let result;

@@ -14,11 +14,11 @@ import { cartHandlers, getCartData } from "../data/cart.server.ts";
 import { applyDiscountCode } from "../data/discount.server.ts";
 import { getStorefrontCache } from "../data/storefront-cache.ts";
 import { createRetryingStorefrontFetch } from "../data/storefront-fetch.ts";
-import { queryAnalyticsShop } from "../data/analytics-shop.ts";
+import { loadAnalyticsShopOrNull } from "../data/analytics-shop.ts";
 import {
   FALLBACK_FOOTER_MENU,
   FALLBACK_NAVIGATION_MENU,
-  queryShellMenus,
+  loadShellMenusOrFallback,
 } from "../data/menus.ts";
 import type { AppStorefrontClient } from "../data/storefront.ts";
 import {
@@ -150,7 +150,7 @@ export function storefront(options: StorefrontOptions = {}): Middleware<
     let seoRoute = matchSeoRoute(context.url);
     if (seoRoute) {
       if (seoRoute === routes.seo.robots) {
-        shellData = queryAnalyticsShop(storefrontClient).then(
+        shellData = loadAnalyticsShopOrNull(storefrontClient).then(
           (analyticsShop) => ({ ...FALLBACK_SHELL_DATA, analyticsShop }),
         );
         context.set(ShellDataConfig, shellData, shellDataProperty);
@@ -226,11 +226,11 @@ export function storefront(options: StorefrontOptions = {}): Middleware<
     }
 
     shellData = Promise.all([
-      queryShellMenus(storefrontClient),
+      loadShellMenusOrFallback(storefrontClient),
       isClientNavigation(context.request)
         ? undefined
         : getCartData(context.request, storefrontClient),
-      queryAnalyticsShop(storefrontClient),
+      loadAnalyticsShopOrNull(storefrontClient),
     ]).then(([shellMenus, cartInitialData, analyticsShop]) => ({
       ...shellMenus,
       cartInitialData,

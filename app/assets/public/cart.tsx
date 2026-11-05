@@ -26,11 +26,8 @@ import {
   publishCartViewedWhenSettled,
 } from "./analytics.tsx";
 import { PageTitle } from "./page-title.tsx";
-import {
-  appCartData,
-  connectBrowserCartStore,
-  type CartInitialData,
-} from "./cart-store.ts";
+import { appCartData, connectBrowserCartStore } from "./cart-store.ts";
+import type { CartInitialData } from "../../data/public/cart.ts";
 import { Icon } from "../../ui/public/icon.tsx";
 
 const CART_DRAWER_ID = "cart-drawer";

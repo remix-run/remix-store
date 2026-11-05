@@ -3,7 +3,7 @@ import { createMultiMatcher } from "remix/route-pattern/match";
 
 import { CartShell } from "../assets/public/cart.tsx";
 import { MobileMenu, RemixLogo } from "../assets/public/navbar.tsx";
-import type { CartInitialData } from "../data/cart.ts";
+import type { CartInitialData } from "../data/public/cart.ts";
 import {
   marketPath,
   resolveMarketPath,

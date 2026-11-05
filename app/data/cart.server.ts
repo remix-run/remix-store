@@ -5,7 +5,7 @@ import {
   type StorefrontClient,
 } from "@shopify/hydrogen";
 
-import type { CartInitialData } from "./cart.ts";
+import type { CartInitialData } from "./public/cart.ts";
 
 const CART_FRAGMENT = gql(`
   fragment CartFragment on Cart {

@@ -37,7 +37,7 @@ const ANALYTICS_SHOP_QUERY = gql(`
  * during a Storefront outage so it never blocks the cart — the no-JS form
  * path still works without the scripts.
  */
-export async function queryAnalyticsShop(
+export async function loadAnalyticsShopOrNull(
   storefront: AppStorefrontClient,
 ): Promise<AnalyticsShop | null> {
   let result;

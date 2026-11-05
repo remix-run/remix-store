@@ -8,8 +8,8 @@ import {
 } from "../testing/storefront-client.ts";
 import {
   FALLBACK_NAVIGATION_MENU,
-  queryProductNavigation,
-  queryShellMenus,
+  loadProductNavigationOrEmpty,
+  loadShellMenusOrFallback,
   toActiveStoreWideSale,
 } from "./menus.ts";
 
@@ -65,7 +65,7 @@ describe("Storefront menus", () => {
       }),
     );
 
-    let result = await queryShellMenus(client);
+    let result = await loadShellMenusOrFallback(client);
 
     assert.deepEqual(result.navigationMenu.items, [
       {
@@ -142,7 +142,7 @@ describe("Storefront menus", () => {
       }),
     );
 
-    let result = await queryProductNavigation(client);
+    let result = await loadProductNavigationOrEmpty(client);
 
     assert.deepEqual(result.items, [
       { id: "all", title: "All products", url: "/collections/all" },
@@ -176,7 +176,7 @@ describe("Storefront menus", () => {
       }),
     );
 
-    let result = await queryShellMenus(client);
+    let result = await loadShellMenusOrFallback(client);
 
     assert.deepEqual(result.navigationMenu.items, [
       { id: "all", title: "All Products", url: "/collections/all" },
@@ -189,8 +189,8 @@ describe("Storefront menus", () => {
       throw new TypeError("connection lost");
     });
 
-    let shell = await queryShellMenus(client);
-    let productMenu = await queryProductNavigation(client);
+    let shell = await loadShellMenusOrFallback(client);
+    let productMenu = await loadProductNavigationOrEmpty(client);
 
     assert.deepEqual(shell.navigationMenu, FALLBACK_NAVIGATION_MENU);
     assert.equal(shell.storeWideSale, null);
@@ -203,14 +203,17 @@ describe("Storefront menus", () => {
       throw abort;
     });
 
-    await assert.rejects(queryShellMenus(client), (error: unknown) => {
+    await assert.rejects(loadShellMenusOrFallback(client), (error: unknown) => {
       assert.equal(error, abort);
       assert.ok(!(error instanceof StorefrontApiError));
       return true;
     });
-    await assert.rejects(queryProductNavigation(client), (error: unknown) => {
-      assert.equal(error, abort);
-      return true;
-    });
+    await assert.rejects(
+      loadProductNavigationOrEmpty(client),
+      (error: unknown) => {
+        assert.equal(error, abort);
+        return true;
+      },
+    );
   });
 });

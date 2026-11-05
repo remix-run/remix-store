@@ -1,6 +1,6 @@
 import { type Handle, type RemixNode } from "remix/component";
 
-import type { CartInitialData } from "../data/cart.ts";
+import type { CartInitialData } from "../data/public/cart.ts";
 import type { ActiveMarket } from "../lib/public/market.ts";
 import type { AnalyticsShop } from "../data/analytics-shop.ts";
 import type {

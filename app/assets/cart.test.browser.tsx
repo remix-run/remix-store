@@ -6,7 +6,7 @@ import { createRoot } from "remix/component";
 import { renderToString } from "remix/component/server";
 import { render } from "remix/component/test";
 
-import type { SerializedCartData } from "../data/cart.ts";
+import type { SerializedCartData } from "../data/public/cart.ts";
 import { CA_MARKET } from "../lib/public/market.ts";
 import {
   createCart,

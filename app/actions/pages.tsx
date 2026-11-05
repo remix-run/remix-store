@@ -4,7 +4,7 @@ import { CartPageContent } from "../assets/public/cart.tsx";
 import { CollectionProducts } from "../ui/collection-products.tsx";
 import { HomeHero } from "../assets/public/home-hero.tsx";
 import { SnowField } from "../assets/public/snow-field.tsx";
-import type { CartInitialData } from "../data/cart.ts";
+import type { CartInitialData } from "../data/public/cart.ts";
 import type { HomeHeroData, HomeLookbookEntryData } from "../data/home.ts";
 import type {
   ProductCardData,

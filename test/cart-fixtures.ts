@@ -1,4 +1,7 @@
-import type { CartInitialData, SerializedCartData } from "../app/data/cart.ts";
+import type {
+  CartInitialData,
+  SerializedCartData,
+} from "../app/data/public/cart.ts";
 
 export const CART_ID = "gid://shopify/Cart/test-cart";
 export const CART_LINE_ID = "gid://shopify/CartLine/test-line";

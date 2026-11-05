@@ -83,14 +83,17 @@ describe("queryCollection", () => {
       graphqlResponse(null, [{ message: "Upstream failure" }]),
     );
 
-    await assert.rejects(queryCollection(client, "racing"), (error: unknown) => {
-      assert.ok(error instanceof StorefrontQueryError);
-      assert.equal(
-        error.message,
-        "The Storefront API did not return collection data.",
-      );
-      return true;
-    });
+    await assert.rejects(
+      queryCollection(client, "racing"),
+      (error: unknown) => {
+        assert.ok(error instanceof StorefrontQueryError);
+        assert.equal(
+          error.message,
+          "The Storefront API did not return collection data.",
+        );
+        return true;
+      },
+    );
   });
 });
 

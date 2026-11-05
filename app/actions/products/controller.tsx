@@ -1,7 +1,7 @@
 import { SuperHeaders } from "remix/headers";
 import { createController } from "remix/router";
 
-import { queryProductNavigation } from "../../data/menus.ts";
+import { loadProductNavigationOrEmpty } from "../../data/menus.ts";
 import { queryProduct } from "../../data/product.ts";
 import { cacheControl } from "../../lib/cache-control.ts";
 import { marketPath } from "../../lib/public/market.ts";
@@ -15,7 +15,7 @@ export default createController(routes.products, {
     async show({ market, params, render, request, storefrontClient, url }) {
       let [product, productNavigation] = await Promise.all([
         queryProduct(storefrontClient, params.handle, url.searchParams),
-        queryProductNavigation(storefrontClient),
+        loadProductNavigationOrEmpty(storefrontClient),
       ]);
       if (!product) return render(<NotFoundPage />, { status: 404 });
 
