@@ -232,6 +232,25 @@ describe("collection routes", () => {
     assert.match(html, /<h1>Racing collection<\/h1>/);
   });
 
+  it("tells shoppers when a collection has no products", async () => {
+    let app = createTestApp(
+      storefrontFetch(() => {
+        let data = collectionData({ hasNextPage: false, endCursor: null });
+        data.collection.products.nodes = [];
+        return data;
+      }),
+    );
+
+    let response = await app.fetch(
+      new Request("https://example.com/collections/racing"),
+    );
+    let html = await response.text();
+
+    assert.equal(response.status, 200);
+    assert.match(html, /No products found in this collection\./);
+    assert.doesNotMatch(html, /Load more/);
+  });
+
   it("renders a branded 404 when the collection is missing", async () => {
     let app = createTestApp(storefrontFetch(() => ({ collection: null })));
 
