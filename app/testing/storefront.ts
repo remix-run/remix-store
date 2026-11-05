@@ -35,7 +35,7 @@ export const testEnv = {
 
 export function createTestApp(
   fetch: typeof globalThis.fetch,
-  options: Pick<AppOptions, "seasonalSnow" | "subscribe"> & {
+  options: Pick<AppOptions, "csp" | "seasonalSnow" | "subscribe"> & {
     buyerIp?: string;
   } = {},
 ) {
@@ -66,6 +66,7 @@ export function createTestApp(
         },
       },
     }),
+    csp: options.csp,
     seasonalSnow: options.seasonalSnow,
     subscribe: options.subscribe,
     storefront: {

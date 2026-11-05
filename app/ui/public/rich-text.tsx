@@ -114,6 +114,12 @@ function renderNode(
         <h2 key={key}>{children}</h2>
       );
     case "list":
+      // Shopify's rich text schema marks list kind with listType.
+      return node.listType === "ordered" ? (
+        <ol key={key}>{children}</ol>
+      ) : (
+        <ul key={key}>{children}</ul>
+      );
     case "unordered-list":
       return <ul key={key}>{children}</ul>;
     case "ordered-list":
