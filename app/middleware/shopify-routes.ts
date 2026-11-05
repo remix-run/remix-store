@@ -8,7 +8,10 @@ import { redirect } from "remix/response/redirect";
 
 import { cartHandlers } from "../data/cart-handlers.ts";
 import { applyDiscountCode } from "../data/discount.ts";
-import type { AppStorefrontClient } from "../data/storefront.ts";
+import {
+  isStorefrontFailure,
+  type AppStorefrontClient,
+} from "../data/storefront.ts";
 import { cacheControl } from "../lib/cache-control.ts";
 import {
   localizeInternalUrl,
@@ -157,7 +160,9 @@ async function discountRedirect(
       );
       for (let [name, value] of discountHeaders) headers.append(name, value);
     } catch (error) {
-      if (isRequestAbort(request, error)) throw error;
+      if (isRequestAbort(request, error) || !isStorefrontFailure(error)) {
+        throw error;
+      }
       console.error("[hydrogen] Discount application failed");
     }
   }

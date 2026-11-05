@@ -205,6 +205,18 @@ describe("platform skeleton", () => {
     assert.match(html, /Test catalog product/);
   });
 
+  it("links lookbook products in the request's market with their price", async () => {
+    let app = createHomeApp(() => new Date("2026-06-01T00:00:00Z"));
+    let html = await (
+      await app.fetch(new Request("https://example.com/en-ca"))
+    ).text();
+
+    assert.match(
+      html,
+      /<a href="\/en-ca\/products\/racing-shirt" aria-label="Racing Shirt, US\$42"/,
+    );
+  });
+
   it("server-renders static snow only on December home requests", async () => {
     let decemberApp = createHomeApp(() => new Date("2026-12-01T00:00:00Z"));
     let decemberResponse = await decemberApp.fetch(
@@ -362,6 +374,39 @@ function homeData(): StorefrontOperations["RemixHomeEditorial"] {
                       altText: "Lookbook",
                       width: 1200,
                       height: 1600,
+                    },
+                  },
+                },
+              ],
+            },
+            {
+              __typename: "Metaobject",
+              id: "lookbook-product-entry",
+              fields: [
+                {
+                  key: "image",
+                  reference: {
+                    __typename: "MediaImage",
+                    id: "lookbook-product-media",
+                    presentation: null,
+                    image: {
+                      id: "lookbook-product-image",
+                      url: "https://cdn.shopify.com/lookbook-product.jpg",
+                      altText: "Racing shirt",
+                      width: 1200,
+                      height: 1600,
+                    },
+                  },
+                },
+                {
+                  key: "product",
+                  reference: {
+                    __typename: "Product",
+                    id: "gid://shopify/Product/racing-shirt",
+                    handle: "racing-shirt",
+                    title: "Racing Shirt",
+                    priceRange: {
+                      minVariantPrice: { amount: "42.00", currencyCode: "USD" },
                     },
                   },
                 },

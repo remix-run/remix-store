@@ -442,6 +442,37 @@ describe("discount compatibility links", () => {
     );
     assert.equal(response.headers.get("Set-Cookie"), null);
   });
+
+  it("redirects at full price when Shopify rejects the code or errors", async (t) => {
+    t.mock.method(console, "error", () => {});
+    let rejecting = createTestApp(
+      createStorefrontFetch({
+        RemixDiscountCartCreate: () => ({
+          cartCreate: {
+            cart: null,
+            userErrors: [{ message: "Discount code is invalid" }],
+            warnings: [],
+          },
+        }),
+      }),
+    );
+    let erroring = createTestApp(
+      async () =>
+        new Response(JSON.stringify({ errors: [{ message: "Throttled" }] }), {
+          headers: { "Content-Type": "application/json" },
+        }),
+    );
+
+    for (let app of [rejecting, erroring]) {
+      let response = await app.fetch(
+        new Request(`${origin}/discount/EXPIRED?redirect=%2Fcollections%2Fall`),
+      );
+
+      assert.equal(response.status, 303);
+      assert.equal(response.headers.get("Location"), "/collections/all");
+      assert.equal(response.headers.get("Set-Cookie"), null);
+    }
+  });
 });
 
 function unexpectedStorefrontFetch(): typeof globalThis.fetch {

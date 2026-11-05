@@ -6,6 +6,8 @@ import {
   type StorefrontClient,
 } from "@shopify/hydrogen";
 
+import { StorefrontQueryError, requireStorefrontData } from "./storefront.ts";
+
 const DISCOUNT_CART_CREATE_MUTATION = gql(`
   mutation RemixDiscountCartCreate(
     $discountCodes: [String!]
@@ -64,7 +66,10 @@ const CART_DISCOUNT_CODES_UPDATE_MUTATION = gql(`
   }
 `);
 
-/** Applies one compatibility-link discount, creating a cart when necessary. */
+/**
+ * Applies one compatibility-link discount, creating a cart when necessary.
+ * Throws a Storefront failure when the API errors or rejects the code.
+ */
 export async function applyDiscountCode(
   request: Request,
   storefrontClient: StorefrontClient,
@@ -74,40 +79,37 @@ export async function applyDiscountCode(
   let payload;
 
   if (cartId) {
-    let cartResult = await storefrontClient.graphql(DISCOUNT_CART_QUERY, {
-      variables: { cartId },
-    });
-    if (cartResult.errors || !cartResult.data) {
-      throw new Error(
-        cartResult.errors?.[0]?.message ?? "Discount cart request failed",
-      );
-    }
+    let { cart } = requireStorefrontData(
+      await storefrontClient.graphql(DISCOUNT_CART_QUERY, {
+        variables: { cartId },
+      }),
+      "Discount cart request failed",
+    );
     let discountCodes = [
-      ...(cartResult.data.cart?.discountCodes.map(({ code }) => code) ?? []),
+      ...(cart?.discountCodes.map(({ code }) => code) ?? []),
       code,
     ];
-    let result = await storefrontClient.graphql(
-      CART_DISCOUNT_CODES_UPDATE_MUTATION,
-      { variables: { cartId, discountCodes } },
-    );
-    if (result.errors || !result.data) {
-      throw new Error(result.errors?.[0]?.message ?? "Discount request failed");
-    }
-    payload = result.data.cartDiscountCodesUpdate;
+    payload = requireStorefrontData(
+      await storefrontClient.graphql(CART_DISCOUNT_CODES_UPDATE_MUTATION, {
+        variables: { cartId, discountCodes },
+      }),
+      "Discount request failed",
+    ).cartDiscountCodesUpdate;
   } else {
-    let result = await storefrontClient.graphql(DISCOUNT_CART_CREATE_MUTATION, {
-      variables: { discountCodes: [code] },
-    });
-    if (result.errors || !result.data) {
-      throw new Error(result.errors?.[0]?.message ?? "Discount request failed");
-    }
-    payload = result.data.cartCreate;
+    payload = requireStorefrontData(
+      await storefrontClient.graphql(DISCOUNT_CART_CREATE_MUTATION, {
+        variables: { discountCodes: [code] },
+      }),
+      "Discount request failed",
+    ).cartCreate;
   }
   let nextCartId = payload?.cart?.id;
   let userError = payload?.userErrors[0];
 
   if (userError || !nextCartId) {
-    throw new Error(userError?.message ?? "Discount request returned no cart");
+    throw new StorefrontQueryError(
+      userError?.message ?? "Discount request returned no cart",
+    );
   }
 
   let headers = new Headers();
