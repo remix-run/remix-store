@@ -1,8 +1,9 @@
 import { css, type Handle } from "remix/component";
 import { createMultiMatcher } from "remix/route-pattern/match";
 
-import { CartShell } from "../assets/public/cart.tsx";
-import { MobileMenu, RemixLogo } from "../assets/public/navbar.tsx";
+import { CartShell } from "./public/cart/cart.tsx";
+import { MobileMenu } from "./public/mobile-menu.tsx";
+import { RemixLogo } from "./public/remix-logo.tsx";
 import type { CartInitialData } from "../data/public/cart.ts";
 import {
   marketPath,

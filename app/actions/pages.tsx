@@ -1,10 +1,10 @@
 import { formatMoney } from "@shopify/hydrogen";
 import { css, type Handle } from "remix/component";
 
-import { CartPageContent } from "../assets/public/cart.tsx";
+import { CartPageContent } from "../ui/public/cart/cart.tsx";
 import { CollectionProducts } from "../ui/collection-products.tsx";
-import { HomeHero } from "../assets/public/home-hero.tsx";
-import { SnowField } from "../assets/public/snow-field.tsx";
+import { HomeHero } from "./public/home-hero.tsx";
+import { SnowField } from "./public/snow-field.tsx";
 import type { CartInitialData } from "../data/public/cart.ts";
 import type { HomeHeroData, HomeLookbookEntryData } from "../data/home.ts";
 import type {

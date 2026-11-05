@@ -6,7 +6,7 @@ import {
 import { css, unsafeHTML, type Handle, type RemixNode } from "remix/component";
 import { ImportMap } from "remix/component/server";
 
-import { Footer } from "../assets/public/footer.tsx";
+import { Footer } from "./public/footer.tsx";
 import type { AnalyticsShop } from "../data/analytics-shop.ts";
 import {
   FALLBACK_FOOTER_MENU,

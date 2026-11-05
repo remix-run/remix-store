@@ -82,8 +82,12 @@ describe("node platform", () => {
     assert.equal(await response.text(), "Not Found");
   });
 
-  it("does not expose server-only application sources", async () => {
-    for (let path of ["app/data/storefront.ts", "app/entry.oxygen.ts"]) {
+  it("does not expose server-only sources or tests beside public modules", async () => {
+    for (let path of [
+      "app/data/storefront.ts",
+      "app/entry.oxygen.ts",
+      "app/ui/public/cart/cart.test.browser.tsx",
+    ]) {
       let response = await app.fetch(
         new Request(`http://localhost/assets/${path}`),
       );
@@ -95,7 +99,9 @@ describe("node platform", () => {
 
   it("keeps stale asset fingerprints out of shared caches", async () => {
     let response = await app.fetch(
-      new Request("http://localhost/assets/app/assets/public/cart.@stale0.tsx"),
+      new Request(
+        "http://localhost/assets/app/ui/public/cart/cart.@stale0.tsx",
+      ),
     );
 
     assert.equal(response.status, 404);

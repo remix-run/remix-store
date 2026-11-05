@@ -40,10 +40,10 @@ export async function createNodeApp({
     browserEntryHref: documentAssets.scriptEntry.href,
     fonts: documentAssets.fonts,
     productDetailsEntryHref: await assets.getHref(
-      "app/assets/public/product-details.tsx",
+      "app/actions/products/public/product-details.tsx",
     ),
     snowFieldEntryHref: await assets.getHref(
-      "app/assets/public/snow-field.tsx",
+      "app/actions/public/snow-field.tsx",
     ),
     close: () => assets.close(),
   };

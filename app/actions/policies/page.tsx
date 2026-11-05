@@ -1,6 +1,6 @@
 import { css, unsafeHTML, type Handle } from "remix/component";
 
-import { PageTitle } from "../../assets/public/page-title.tsx";
+import { PageTitle } from "../../ui/public/page-title.tsx";
 import type { PolicyData } from "../../data/policies.ts";
 import {
   localizeInternalUrl,

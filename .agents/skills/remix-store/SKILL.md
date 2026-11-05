@@ -200,7 +200,9 @@ app without starting an HTTP listener. Runtime adapters call the app's
 - Keep exact versions in `package.json` unless the user requests an
   upgrade. Do not run `hydrogen setup` on this existing app; use
   `hydrogen skills sync` when only the packaged skills need updating.
-- Put hydratable browser components under `app/assets/` and export them with
+- Put browser code in a `public/` directory beside its narrowest owner:
+  route-only islands next to their controller (`app/actions/products/public/`),
+  shared ones in `app/ui/public/`. Export hydratable components with
   `clientEntry(import.meta.url, component)`. Keep that `import.meta.url` shape;
   both asset pipelines resolve it.
 - Treat browser-reachable modules as public. Keep secrets and trusted server

@@ -2,7 +2,7 @@ import { SuperHeaders } from "remix/headers";
 import { createController } from "remix/router";
 import { redirect } from "remix/response/redirect";
 
-import { LoadMoreProducts } from "../../assets/public/load-more-products.tsx";
+import { LoadMoreProducts } from "./public/load-more-products.tsx";
 import { queryCollection } from "../../data/collection.ts";
 import { isStorefrontFailure } from "../../data/storefront.ts";
 import { cacheControl } from "../../lib/cache-control.ts";

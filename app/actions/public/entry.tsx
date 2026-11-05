@@ -9,9 +9,9 @@ import {
 } from "remix/multiple-import-maps-polyfill";
 import { navigate as remixNavigate, run } from "remix/component";
 
-import { createPageViewPublisher } from "../../assets/public/analytics.tsx";
-import { connectBrowserCartStore } from "../../assets/public/cart-store.ts";
-import { configureOpenCartAction } from "../../assets/public/cart.tsx";
+import { createPageViewPublisher } from "../../ui/public/analytics.tsx";
+import { connectBrowserCartStore } from "../../ui/public/cart/cart-store.ts";
+import { configureOpenCartAction } from "../../ui/public/cart/cart.tsx";
 import { documentMarketPathPrefix } from "../../lib/public/market.ts";
 import { routeTemplates } from "../../lib/public/route-templates.ts";
 

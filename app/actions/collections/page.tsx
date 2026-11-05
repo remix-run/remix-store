@@ -1,12 +1,12 @@
 import { type Handle } from "remix/component";
 
-import { CollectionViewed } from "../../assets/public/analytics.tsx";
+import { CollectionViewed } from "../../ui/public/analytics.tsx";
 import { CollectionProducts } from "../../ui/collection-products.tsx";
 import type {
   ProductCardData,
   ProductPageInfoData,
 } from "../../data/public/types.ts";
-import { PageTitle } from "../../assets/public/page-title.tsx";
+import { PageTitle } from "../../ui/public/page-title.tsx";
 import { Document } from "../../ui/document.tsx";
 import { shellMarket } from "../../ui/shell-data.tsx";
 

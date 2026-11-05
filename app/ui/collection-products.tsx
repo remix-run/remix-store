@@ -1,6 +1,6 @@
 import { css, Frame, type Handle } from "remix/component";
 
-import { ProductCard } from "../assets/public/product-card.tsx";
+import { ProductCard } from "./public/product-card.tsx";
 import type {
   ProductCardData,
   ProductPageInfoData,

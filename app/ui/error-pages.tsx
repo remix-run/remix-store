@@ -3,7 +3,7 @@ import type { Handle } from "remix/component";
 import { marketPath } from "../lib/public/market.ts";
 import { routes } from "../routes.ts";
 import { Document } from "./document.tsx";
-import { BrandedState } from "../assets/public/branded-state.tsx";
+import { BrandedState } from "./public/branded-state.tsx";
 import { shellMarket } from "./shell-data.tsx";
 
 export function NotFoundPage(handle: Handle) {

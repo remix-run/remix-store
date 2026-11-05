@@ -1,7 +1,7 @@
 import { type Handle } from "remix/component";
 
-import { ProductViewed } from "../../assets/public/analytics.tsx";
-import { ProductDetails } from "../../assets/public/product-details.tsx";
+import { ProductViewed } from "../../ui/public/analytics.tsx";
+import { ProductDetails } from "./public/product-details.tsx";
 import type { ProductData } from "../../data/public/product.ts";
 import type { NavigationMenuData } from "../../data/public/types.ts";
 import { Document } from "../../ui/document.tsx";
