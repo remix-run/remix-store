@@ -422,12 +422,16 @@ function OptionMenu(
   };
 }
 
-// The green check is the only confirmation that the item was added.
+// The add-to-cart button doesn't open the cart, so the check is the visual
+// confirmation. Hold it long enough to notice.
 const ADD_TO_CART_CHECK_MS = 2000;
 
 /**
  * Posts to the cart route without scripts. With them, it adds through the
- * product store and shows a green check for at least two seconds.
+ * product store. The green check appears optimistically as soon as the add
+ * starts and stays for at least two seconds after it succeeds; a failure
+ * clears it and shows an error. Screen readers hear "Adding to cart", then
+ * "Added to cart" once the store confirms.
  */
 function AddToCartForm(
   handle: Handle<{

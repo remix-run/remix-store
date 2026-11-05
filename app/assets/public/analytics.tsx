@@ -81,24 +81,10 @@ export function publishCartViewed(store?: CartStore): boolean {
 }
 
 /**
- * Returns `true` when the cart store (or a raw state) has in-flight optimistic
- * work that has not yet been confirmed by the server.
- *
- * Accepts either a `CartStore` or a `CartState` so every call site can use one
- * helper instead of re-deriving the same pending check.
+ * Returns `true` when the cart state has in-flight optimistic work that has
+ * not yet been confirmed by the server.
  */
-export function hasPendingCartWork(
-  source: CartState | CartStore | undefined,
-): boolean {
-  let state: CartState | undefined;
-  if (source === undefined) {
-    state = undefined;
-  } else if ("getState" in source) {
-    state = source.getState();
-  } else {
-    state = source;
-  }
-  if (!state) return false;
+export function hasPendingCartWork(state: CartState): boolean {
   let pendingCost =
     state.pending.cost ??
     (state.pending.lines.size > 0 || state.pending.discountCodes.size > 0);

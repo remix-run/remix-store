@@ -1,3 +1,4 @@
+import { formatMoney } from "@shopify/hydrogen";
 import { css, type Handle } from "remix/component";
 
 import { CartPageContent } from "../assets/public/cart.tsx";
@@ -156,14 +157,8 @@ function lookbookPrice(
   price: ProductMoney,
   locale: ActiveMarket["locale"],
 ): string {
-  let amount = Number(price.amount);
-  if (!Number.isFinite(amount)) return "Price unavailable";
-  return new Intl.NumberFormat(locale, {
-    style: "currency",
-    currency: price.currencyCode,
-    minimumFractionDigits: Number.isInteger(amount) ? 0 : 2,
-    maximumFractionDigits: 2,
-  }).format(amount);
+  if (!Number.isFinite(Number(price.amount))) return "Price unavailable";
+  return formatMoney(price, { locale, withoutTrailingZeros: true }).toString();
 }
 
 export function CartPage(

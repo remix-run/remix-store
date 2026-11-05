@@ -10,7 +10,7 @@ import { createRetryingStorefrontFetch } from "../data/storefront-fetch.ts";
 import type { AppStorefrontClient } from "../data/storefront.ts";
 import type { ActiveMarket } from "../lib/public/market.ts";
 import { getRuntime, type Env } from "../runtime.ts";
-import { MarketConfig } from "./market.tsx";
+import { MarketConfig } from "./market.ts";
 import { loadShellData, type StorefrontShellData } from "./shell-data.ts";
 import {
   applyResponseHeaders,

@@ -13,7 +13,7 @@ import {
 } from "../../lib/public/market.ts";
 import { Icon } from "../../ui/public/icon.tsx";
 import { shopifyImageUrl } from "../../ui/public/shopify-image.tsx";
-import { money, pendingValueStyle } from "./cart-format.ts";
+import { formatCartMoney, pendingValueStyle } from "./cart-format.ts";
 
 const register = createCartFormRegister();
 
@@ -144,10 +144,10 @@ export function CartLine(
           mix={[linePriceGroupStyle, pending ? pendingValueStyle : undefined]}
         >
           {compareAtPrice ? (
-            <s>{money(compareAtPrice, market.locale)} each</s>
+            <s>{formatCartMoney(compareAtPrice, market.locale)} each</s>
           ) : null}
           <p mix={linePriceStyle}>
-            {money(line.cost.totalAmount, market.locale)}
+            {formatCartMoney(line.cost.totalAmount, market.locale)}
           </p>
         </div>
       </li>

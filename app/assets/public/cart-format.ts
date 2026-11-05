@@ -3,7 +3,7 @@ import { css } from "remix/component";
 
 import type { MarketLocale } from "../../lib/public/market.ts";
 
-export function money(value: MoneyV2, locale: MarketLocale): string {
+export function formatCartMoney(value: MoneyV2, locale: MarketLocale): string {
   return formatMoney(value, { locale }).toString();
 }
 

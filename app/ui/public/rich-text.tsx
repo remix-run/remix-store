@@ -36,20 +36,29 @@ type RichTextNode = {
 };
 
 export function RichText(handle: Handle<RichTextProps>) {
-  let root = parseRichText(handle.props.value);
-  return () => (
-    <div
-      data-rich-text="true"
-      mix={[
-        richTextStyle,
-        handle.props.variant === "product-description"
-          ? productDescriptionStyle
-          : undefined,
-      ]}
-    >
-      {renderNodes(root.children ?? [], handle.props.pathPrefix ?? "")}
-    </div>
-  );
+  // Reparse only when the value changes; client navigation can reuse this
+  // instance for another product.
+  let parsedValue: string | undefined;
+  let root: RichTextNode = { children: [] };
+  return () => {
+    if (handle.props.value !== parsedValue) {
+      parsedValue = handle.props.value;
+      root = parseRichText(parsedValue);
+    }
+    return (
+      <div
+        data-rich-text="true"
+        mix={[
+          richTextStyle,
+          handle.props.variant === "product-description"
+            ? productDescriptionStyle
+            : undefined,
+        ]}
+      >
+        {renderNodes(root.children ?? [], handle.props.pathPrefix ?? "")}
+      </div>
+    );
+  };
 }
 
 function parseRichText(value: string): RichTextNode {

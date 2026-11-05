@@ -84,9 +84,14 @@ export class MemoryStorefrontCache {
     this.#entries.delete(key);
   }
 
+  /** The number of unexpired entries. Reading it does not prune. */
   get size(): number {
-    this.#pruneExpired();
-    return this.#entries.size;
+    let now = this.#now();
+    let live = 0;
+    for (let entry of this.#entries.values()) {
+      if (entry.expiresAt > now) live++;
+    }
+    return live;
   }
 
   #pruneExpired() {

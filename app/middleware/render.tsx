@@ -8,7 +8,7 @@ import type { Assets } from "../assets.ts";
 import { runtimeDispatch } from "../runtime.ts";
 
 import { cacheControl } from "../lib/cache-control.ts";
-import { MarketConfig } from "./market.tsx";
+import { MarketConfig } from "./market.ts";
 import { getPageRenderer } from "./page-renderer.ts";
 import { FALLBACK_SHELL_DATA, isClientNavigation } from "./shell-data.ts";
 import { ShellDataConfig } from "./storefront.ts";

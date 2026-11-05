@@ -27,7 +27,6 @@ import type { CartInitialData } from "../../data/public/cart.ts";
 import { Icon } from "../../ui/public/icon.tsx";
 
 const CART_DRAWER_ID = "cart-drawer";
-const STANDARD_ACTIONS_READY_EVENT = "DOMContentLoaded";
 
 let openCartActionConfigured = false;
 let openCartActionRetryQueued = false;
@@ -75,12 +74,17 @@ function setCartTriggerExpanded(expanded: boolean) {
 
 /**
  * Wires `window.Shopify.actions.openCart` (the ShopifyScripts Standard Action)
- * to the app’s cart dialog. The handler is page-lifetime configuration, so it
- * delegates to the stable DOM helper instead of closing over component state.
+ * to the app’s cart dialog. The browser entry calls this at startup. The
+ * Standard Actions module is deferred at the end of the body and can finish
+ * after the entry, so an early call retries once the document has parsed,
+ * by which point every deferred module has run.
+ *
+ * The handler is page-lifetime configuration, so it delegates to the stable
+ * DOM helper instead of closing over component state.
  */
 export function configureOpenCartAction(): boolean {
-  if (!globalThis.document) return false;
   if (openCartActionConfigured) return true;
+  if (!globalThis.document) return false;
 
   let openCart = window.Shopify?.actions?.openCart;
   if (openCart) {
@@ -93,7 +97,7 @@ export function configureOpenCartAction(): boolean {
   if (!openCartActionRetryQueued && document.readyState === "loading") {
     openCartActionRetryQueued = true;
     document.addEventListener(
-      STANDARD_ACTIONS_READY_EVENT,
+      "DOMContentLoaded",
       () => {
         openCartActionRetryQueued = false;
         configureOpenCartAction();
@@ -101,11 +105,8 @@ export function configureOpenCartAction(): boolean {
       { once: true },
     );
   }
-
   return false;
 }
-
-configureOpenCartAction();
 
 export const CartShell = clientEntry(
   import.meta.url,
@@ -367,12 +368,8 @@ function resolveCartViewState(
     };
   }
 
-  return {
-    cart: null,
-    errors: state?.errors,
-    loading: state?.loading ?? true,
-    state,
-  };
+  // No store yet and no server data: the cart is still loading.
+  return { cart: null, loading: true };
 }
 
 function CartView(handle: Handle<CartViewProps>) {
@@ -479,7 +476,7 @@ function CartView(handle: Handle<CartViewProps>) {
           cart={cart}
           drawer={drawer}
           market={market}
-          pending={hasPendingCartWork(state)}
+          pending={state ? hasPendingCartWork(state) : false}
         />
       </section>
     );

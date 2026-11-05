@@ -9,14 +9,14 @@ import {
   type ActiveMarket,
 } from "../lib/public/market.ts";
 import { createCart } from "../testing/cart-fixtures.ts";
-import { money } from "./public/cart-format.ts";
+import { formatCartMoney } from "./public/cart-format.ts";
 import { CartSummary } from "./public/cart-summary.tsx";
 
-describe("money", () => {
+describe("formatCartMoney", () => {
   it("formats amounts for the market's locale", () => {
     let usd = { amount: "10", currencyCode: "USD" };
-    assert.equal(money(usd, US_MARKET.locale), "$10.00");
-    assert.equal(money(usd, CA_MARKET.locale), "US$10.00");
+    assert.equal(formatCartMoney(usd, US_MARKET.locale), "$10.00");
+    assert.equal(formatCartMoney(usd, CA_MARKET.locale), "US$10.00");
   });
 });
 

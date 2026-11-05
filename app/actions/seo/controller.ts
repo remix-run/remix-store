@@ -15,7 +15,7 @@ import {
   sitemapResponse,
   type SitemapUrl,
 } from "../../lib/sitemap.ts";
-import { marketPath } from "../../lib/public/market.ts";
+import { CA_MARKET, marketUrl, US_MARKET } from "../../lib/public/market.ts";
 import { routes } from "../../routes.ts";
 
 export default createController(routes.seo, {
@@ -31,8 +31,8 @@ export default createController(routes.seo, {
     async sitemapIndex({ storefrontClient, url }) {
       try {
         let [usCounts, caCounts] = await Promise.all([
-          querySitemapPageCounts(storefrontClient, "US"),
-          querySitemapPageCounts(storefrontClient, "CA"),
+          querySitemapPageCounts(storefrontClient, US_MARKET.country),
+          querySitemapPageCounts(storefrontClient, CA_MARKET.country),
         ]);
         let locations = [url.origin + routes.seo.sitemapStatic.href()];
 
@@ -53,11 +53,15 @@ export default createController(routes.seo, {
       }
     },
     sitemapStatic({ url }) {
-      let home = url.origin + routes.home.href();
-      let canadianHome = url.origin + marketPath(routes.home.href(), "/en-ca");
+      let home = marketUrl(url, routes.home.href(), US_MARKET.pathPrefix);
+      let canadianHome = marketUrl(
+        url,
+        routes.home.href(),
+        CA_MARKET.pathPrefix,
+      );
       let alternates = [
-        { href: home, hreflang: "en-US" as const },
-        { href: canadianHome, hreflang: "en-CA" as const },
+        { href: home, hreflang: US_MARKET.locale },
+        { href: canadianHome, hreflang: CA_MARKET.locale },
       ];
       return sitemapResponse(
         [
@@ -74,8 +78,18 @@ export default createController(routes.seo, {
 
       try {
         let [usSitemap, caSitemap] = await Promise.all([
-          querySitemapResources(storefrontClient, type, page, "US"),
-          querySitemapResources(storefrontClient, type, page, "CA"),
+          querySitemapResources(
+            storefrontClient,
+            type,
+            page,
+            US_MARKET.country,
+          ),
+          querySitemapResources(
+            storefrontClient,
+            type,
+            page,
+            CA_MARKET.country,
+          ),
         ]);
         let usByHandle = new Map(
           usSitemap.items.map((item) => [item.handle, item]),
@@ -91,13 +105,13 @@ export default createController(routes.seo, {
             type === "products"
               ? routes.products.show.href({ handle })
               : routes.collections.show.href({ handle });
-          let usLocation = url.origin + pathname;
-          let caLocation = url.origin + marketPath(pathname, "/en-ca");
+          let usLocation = marketUrl(url, pathname, US_MARKET.pathPrefix);
+          let caLocation = marketUrl(url, pathname, CA_MARKET.pathPrefix);
           let alternates =
             usItem && caItem
               ? [
-                  { href: usLocation, hreflang: "en-US" as const },
-                  { href: caLocation, hreflang: "en-CA" as const },
+                  { href: usLocation, hreflang: US_MARKET.locale },
+                  { href: caLocation, hreflang: CA_MARKET.locale },
                 ]
               : undefined;
           let sitemapUrl = (

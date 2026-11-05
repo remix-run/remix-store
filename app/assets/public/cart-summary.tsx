@@ -3,7 +3,7 @@ import { css, type Handle } from "remix/component";
 
 import type { ActiveMarket } from "../../lib/public/market.ts";
 import { Icon } from "../../ui/public/icon.tsx";
-import { money, pendingValueStyle } from "./cart-format.ts";
+import { formatCartMoney, pendingValueStyle } from "./cart-format.ts";
 import { appCartData } from "./cart-store.ts";
 
 /** Totals and checkout link. The page adds a tax note; the drawer is compact. */
@@ -31,20 +31,20 @@ export function CartSummary(
           <div mix={drawer ? drawerSubtotalStyle : pageSubtotalStyle}>
             <strong>Subtotal</strong>
             <span mix={pendingStyle}>
-              {money(cart.cost.subtotalAmount, market.locale)}
+              {formatCartMoney(cart.cost.subtotalAmount, market.locale)}
             </span>
           </div>
           {discountAllocation ? (
             <div mix={allocationStyle}>
               <span>{automaticDiscountLabel}</span>
-              <span>-{money(discountAllocation, market.locale)}</span>
+              <span>-{formatCartMoney(discountAllocation, market.locale)}</span>
             </div>
           ) : null}
           {hasFinalTotal ? (
             <div mix={finalTotalStyle}>
               <strong>Total</strong>
               <span mix={pendingStyle}>
-                {money(cart.cost.totalAmount, market.locale)}
+                {formatCartMoney(cart.cost.totalAmount, market.locale)}
               </span>
             </div>
           ) : null}
@@ -115,7 +115,7 @@ function FreeShippingNotice(
             <p>
               {achieved
                 ? "You've reached the US$75 free shipping minimum."
-                : `Add ${money(
+                : `Add ${formatCartMoney(
                     {
                       amount: (threshold - amount).toFixed(2),
                       currencyCode: "USD",

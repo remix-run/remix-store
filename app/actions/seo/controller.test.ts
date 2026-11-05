@@ -326,6 +326,13 @@ describe("SEO resource routes", () => {
   });
 });
 
+function sitemapIndex(): StorefrontOperations["RemixSitemapIndex"] {
+  return {
+    products: { pagesCount: { count: 2 } },
+    collections: { pagesCount: { count: 1 } },
+  };
+}
+
 function seoApp(
   resourceHandler: StorefrontHandler<"RemixSitemapResources"> = () => ({
     sitemap: { resources: { hasNextPage: false, items: [] } },
@@ -346,11 +353,11 @@ function seoApp(
         onShellQuery();
         return navigationData();
       },
-      RemixSitemapIndex: () => ({
-        products: { pagesCount: { count: 2 } },
-        collections: { pagesCount: { count: 1 } },
-      }),
+      RemixSitemapIndex: sitemapIndex,
+      RemixCanadianSitemapIndex: sitemapIndex,
       RemixSitemapResources: resourceHandler,
+      // Both markets share fixtures; the query documents differ only in context.
+      RemixCanadianSitemapResources: (body) => resourceHandler(body),
     }),
   );
 }

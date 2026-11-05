@@ -20,7 +20,7 @@ import {
 } from "./actions/subscribe/controller.tsx";
 import { ErrorPage, NotFoundPage } from "./ui/error-pages.tsx";
 import { csp, type CspOptions } from "./middleware/csp.ts";
-import { market } from "./middleware/market.tsx";
+import { market } from "./middleware/market.ts";
 import { getPageRenderer } from "./middleware/page-renderer.ts";
 import { render } from "./middleware/render.tsx";
 import { storefront, type StorefrontOptions } from "./middleware/storefront.ts";

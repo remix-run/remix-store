@@ -10,7 +10,7 @@ export const CART_UPDATED_AT = "2026-01-01T00:00:00.000Z";
 
 const USD = "USD";
 
-function money(amount: string): SerializedCartData["cost"]["totalAmount"] {
+function moneyV2(amount: string): SerializedCartData["cost"]["totalAmount"] {
   return { amount, currencyCode: USD };
 }
 
@@ -25,9 +25,9 @@ export function createCart(quantity = 1): SerializedCartData {
     note: null,
     attributes: [],
     cost: {
-      checkoutChargeAmount: money(amount),
-      subtotalAmount: money(amount),
-      totalAmount: money(amount),
+      checkoutChargeAmount: moneyV2(amount),
+      subtotalAmount: moneyV2(amount),
+      totalAmount: moneyV2(amount),
     },
     lines: {
       nodes: quantity
@@ -38,10 +38,10 @@ export function createCart(quantity = 1): SerializedCartData {
               quantity,
               attributes: [],
               cost: {
-                amountPerQuantity: money("10"),
+                amountPerQuantity: moneyV2("10"),
                 compareAtAmountPerQuantity: null,
-                subtotalAmount: money(amount),
-                totalAmount: money(amount),
+                subtotalAmount: moneyV2(amount),
+                totalAmount: moneyV2(amount),
               },
               merchandise: {
                 id: VARIANT_ID,
