@@ -6,16 +6,12 @@ import { createRetryingStorefrontFetch } from "./storefront-fetch.ts";
 const endpoint = "https://example.myshopify.com/api/graphql.json";
 
 describe("Storefront API fetch", () => {
-  it("retries a query once after a transport failure", async () => {
-    let calls = 0;
-    let storefrontFetch = createRetryingStorefrontFetch({
-      delayMs: 0,
-      fetch: async () => {
-        calls++;
-        if (calls === 1) throw new TypeError("connection lost");
-        return new Response("{}");
-      },
+  it("retries a query once after a transport failure", async (t) => {
+    let fetch = t.mock.fn(async () => new Response("{}"));
+    fetch.mock.mockImplementationOnce(async () => {
+      throw new TypeError("connection lost");
     });
+    let storefrontFetch = createRetryingStorefrontFetch({ delayMs: 0, fetch });
 
     let response = await storefrontFetch(
       endpoint,
@@ -23,20 +19,15 @@ describe("Storefront API fetch", () => {
     );
 
     assert.equal(response.status, 200);
-    assert.equal(calls, 2);
+    assert.equal(fetch.mock.callCount(), 2);
   });
 
-  it("retries a query once after a transient response", async () => {
-    let calls = 0;
-    let storefrontFetch = createRetryingStorefrontFetch({
-      delayMs: 0,
-      fetch: async () => {
-        calls++;
-        return calls === 1
-          ? new Response(null, { status: 503 })
-          : new Response("{}");
-      },
-    });
+  it("retries a query once after a transient response", async (t) => {
+    let fetch = t.mock.fn(async () => new Response("{}"));
+    fetch.mock.mockImplementationOnce(
+      async () => new Response(null, { status: 503 }),
+    );
+    let storefrontFetch = createRetryingStorefrontFetch({ delayMs: 0, fetch });
 
     let response = await storefrontFetch(
       endpoint,
@@ -44,20 +35,16 @@ describe("Storefront API fetch", () => {
     );
 
     assert.equal(response.status, 200);
-    assert.equal(calls, 2);
+    assert.equal(fetch.mock.callCount(), 2);
   });
 
-  it("does not retry aborted queries", async () => {
-    let calls = 0;
+  it("does not retry aborted queries", async (t) => {
     let controller = new AbortController();
-    let storefrontFetch = createRetryingStorefrontFetch({
-      delayMs: 0,
-      fetch: async () => {
-        calls++;
-        controller.abort(new DOMException("Aborted", "AbortError"));
-        throw controller.signal.reason;
-      },
+    let fetch = t.mock.fn(async (): Promise<Response> => {
+      controller.abort(new DOMException("Aborted", "AbortError"));
+      throw controller.signal.reason;
     });
+    let storefrontFetch = createRetryingStorefrontFetch({ delayMs: 0, fetch });
 
     await assert.rejects(
       storefrontFetch(endpoint, {
@@ -65,18 +52,15 @@ describe("Storefront API fetch", () => {
         signal: controller.signal,
       }),
     );
-    assert.equal(calls, 1);
+    assert.equal(fetch.mock.callCount(), 1);
   });
 
-  it("stops before retrying when aborted during the delay", async () => {
-    let calls = 0;
+  it("stops before retrying when aborted during the delay", async (t) => {
     let controller = new AbortController();
+    let fetch = t.mock.fn(async () => new Response(null, { status: 503 }));
     let storefrontFetch = createRetryingStorefrontFetch({
       delayMs: 10_000,
-      fetch: async () => {
-        calls++;
-        return new Response(null, { status: 503 });
-      },
+      fetch,
     });
     let request = storefrontFetch(endpoint, {
       ...graphqlRequest("query Test { shop { id } }"),
@@ -88,18 +72,14 @@ describe("Storefront API fetch", () => {
     controller.abort(reason);
 
     assert.equal(await rejectedError(request), reason);
-    assert.equal(calls, 1);
+    assert.equal(fetch.mock.callCount(), 1);
   });
 
-  it("does not retry mutations", async () => {
-    let calls = 0;
-    let storefrontFetch = createRetryingStorefrontFetch({
-      delayMs: 0,
-      fetch: async () => {
-        calls++;
-        throw new TypeError("connection lost");
-      },
+  it("does not retry mutations", async (t) => {
+    let fetch = t.mock.fn(async (): Promise<Response> => {
+      throw new TypeError("connection lost");
     });
+    let storefrontFetch = createRetryingStorefrontFetch({ delayMs: 0, fetch });
 
     await assert.rejects(
       storefrontFetch(
@@ -107,7 +87,7 @@ describe("Storefront API fetch", () => {
         graphqlRequest("mutation Test { cartCreate { cart { id } } }"),
       ),
     );
-    assert.equal(calls, 1);
+    assert.equal(fetch.mock.callCount(), 1);
   });
 });
 
