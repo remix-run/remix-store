@@ -11,3 +11,13 @@ minimumReleaseAgeStrict: true
 # lifecycle scripts otherwise try to prepare the fetched monorepo package.
 ignoreScripts: true
 trustPolicy: no-downgrade
+# Security floors for dev-only transitive dependencies. @shopify/mini-oxygen
+# still pulls miniflare 3, which asks for undici ^5 and ws 8.18.0, plus
+# youch's cookie ^0.5 and body-parser's qs ~6.14. These lift them to newer,
+# patched releases. Check `pnpm audit` before bumping, and drop the overrides
+# once mini-oxygen moves past miniflare 3.
+overrides:
+  undici: 7.30.0
+  qs: 6.16.0
+  ws: 8.22.0
+  cookie: 1.1.1
