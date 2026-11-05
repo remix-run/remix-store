@@ -10,7 +10,7 @@ import { marketPath, type MarketPathPrefix } from "../../lib/public/market.ts";
 import { routes } from "../../routes.ts";
 import {
   collectionPageHref,
-  ProductPage,
+  CollectionProductsPage,
 } from "../../ui/collection-products.tsx";
 import { NotFoundPage } from "../../ui/error-pages.tsx";
 import { CollectionPage } from "./page.tsx";
@@ -86,7 +86,7 @@ export default createController(routes.collections, {
       }
 
       return render(
-        <ProductPage
+        <CollectionProductsPage
           collectionHandle={params.handle}
           pageInfo={collection.products.pageInfo}
           pathPrefix={market.pathPrefix}
