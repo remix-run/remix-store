@@ -2,6 +2,8 @@ import { AnalyticsEvent } from "@shopify/hydrogen";
 import * as assert from "remix/assert";
 import * as s from "remix/data-schema";
 import { describe, it, type TestContext } from "remix/test";
+import { createRoot } from "remix/component";
+import { renderToString } from "remix/component/server";
 import { render } from "remix/component/test";
 
 import type { SerializedCartData } from "../data/cart.ts";
@@ -11,7 +13,10 @@ import {
   createCartInitialData,
   VARIANT_ID,
 } from "../../test/cart-fixtures.ts";
-import { resetBrowserCartStore } from "./public/cart-store.ts";
+import {
+  getBrowserCartStore,
+  resetBrowserCartStore,
+} from "./public/cart-store.ts";
 import {
   CartPageContent,
   CartShell,
@@ -679,6 +684,35 @@ describe("cart interactions", () => {
     t.after(cartPage.cleanup);
     await flushAsync(cartPage.act);
     assert.match(cartPage.container.textContent, /Test Product/);
+  });
+
+  it("hydrates frame markup without a mismatch when the cart has already loaded", async (t) => {
+    t.after(resetBrowserCartStore);
+    // Frame responses skip the cart query, so the server renders the shell's
+    // loading state. Render that markup before any cart data exists.
+    let html = await renderToString(<CartShell />);
+    assert.match(html, /Loading cart/);
+    resetBrowserCartStore();
+    getBrowserCartStore({ cart: createCart() });
+
+    let container = document.createElement("div");
+    container.innerHTML = html;
+    document.body.append(container);
+    t.after(() => container.remove());
+    let errors = t.mock.method(console, "error", () => {});
+
+    let root = createRoot(container);
+    t.after(root.dispose);
+    root.render(<CartShell />);
+    root.flush();
+
+    let messages = errors.mock.calls.map((call) => call.arguments.join(" "));
+    assert.deepEqual(messages, [], messages.join("\n"));
+    await waitFor(
+      () => /1 item\(s\) in cart/.test(container.textContent),
+      async () => root.flush(),
+    );
+    assert.ok(container.querySelector('button[aria-controls="cart-drawer"]'));
   });
 
   it("keeps the dialog closed and reports rejected add-to-cart errors inline", async (t) => {

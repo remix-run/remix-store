@@ -142,6 +142,17 @@ export const CartShell = clientEntry(
     let state: CartState | undefined;
     let drawerState: CartState | undefined;
     let cartHadItems = false;
+    // Frame responses skip the cart query, so the server renders the loading
+    // state. A shell hydrated from one renders that state first to match the
+    // server HTML, then switches to the live store.
+    let matchServerHtml = handle.props.initialData === undefined;
+    if (matchServerHtml) {
+      handle.queueTask((signal) => {
+        if (signal.aborted) return;
+        matchServerHtml = false;
+        handle.update();
+      });
+    }
 
     if (store) {
       let unsubscribe = store.subscribe((nextState) => {
@@ -163,9 +174,12 @@ export const CartShell = clientEntry(
     return () => {
       market = handle.props.market ?? US_MARKET;
 
-      let viewState = resolveCartViewState(state, handle.props.initialData);
+      let viewState = resolveCartViewState(
+        matchServerHtml ? undefined : state,
+        handle.props.initialData,
+      );
       let drawerViewState = resolveCartViewState(
-        drawerState,
+        matchServerHtml ? undefined : drawerState,
         handle.props.initialData,
       );
       let cartIsEmpty =
