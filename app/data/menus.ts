@@ -7,9 +7,10 @@ import {
 } from "../lib/public/market.ts";
 import type { NavigationMenuData, StoreWideSaleData } from "./public/types.ts";
 import {
-  isStorefrontFailure,
+  logPartialStorefrontData,
   STABLE_CACHE,
   storefrontPathPrefix,
+  withStorefrontFallback,
   type AppStorefrontClient,
 } from "./storefront.ts";
 
@@ -135,80 +136,67 @@ export async function loadShellMenusOrFallback(
   storefront: AppStorefrontClient,
 ): Promise<ShellMenusData> {
   let pathPrefix = storefrontPathPrefix(storefront);
-  let result;
-  try {
-    result = await storefront.graphql(NAVIGATION_QUERY, {
-      cache: STABLE_CACHE,
-    });
-  } catch (error) {
-    if (!isStorefrontFailure(error)) throw error;
-    console.error("[hydrogen] Navigation query failed", error);
-    return {
+  return withStorefrontFallback(
+    "Navigation query",
+    () => ({
       navigationMenu: localizeNavigationMenu(
         FALLBACK_NAVIGATION_MENU,
         pathPrefix,
       ),
       footerMenu: localizeNavigationMenu(FALLBACK_FOOTER_MENU, pathPrefix),
       storeWideSale: null,
-    };
-  }
-  if (result.errors) {
-    console.error(
-      "[hydrogen] Navigation query returned partial data",
-      result.errors,
-    );
-  }
+    }),
+    async () => {
+      let result = await storefront.graphql(NAVIGATION_QUERY, {
+        cache: STABLE_CACHE,
+      });
+      logPartialStorefrontData("Navigation query", result.errors);
 
-  let internalHosts = storeHosts(
-    storefront,
-    result.data?.shop?.primaryDomain?.url,
+      let internalHosts = storeHosts(
+        storefront,
+        result.data?.shop?.primaryDomain?.url,
+      );
+      return {
+        navigationMenu: mapNavigationMenu(
+          result.data?.menu,
+          internalHosts,
+          FALLBACK_NAVIGATION_MENU,
+          pathPrefix,
+        ),
+        footerMenu: mapFooterMenu(
+          result.data?.footerMenu,
+          internalHosts,
+          pathPrefix,
+        ),
+        // Recheck expiration after the cache lookup so a stale cached sale
+        // disappears as soon as its merchant-configured end time passes.
+        storeWideSale: toActiveStoreWideSale(
+          result.data?.shop?.storeWideSale?.reference,
+        ),
+      };
+    },
   );
-  return {
-    navigationMenu: mapNavigationMenu(
-      result.data?.menu,
-      internalHosts,
-      FALLBACK_NAVIGATION_MENU,
-      pathPrefix,
-    ),
-    footerMenu: mapFooterMenu(
-      result.data?.footerMenu,
-      internalHosts,
-      pathPrefix,
-    ),
-    // Recheck expiration after the cache lookup so a stale cached sale
-    // disappears as soon as its merchant-configured end time passes.
-    storeWideSale: toActiveStoreWideSale(
-      result.data?.shop?.storeWideSale?.reference,
-    ),
-  };
 }
 
 /** Loads the product page sidebar menu, or an empty menu during an outage. */
 export async function loadProductNavigationOrEmpty(
   storefront: AppStorefrontClient,
 ): Promise<NavigationMenuData> {
-  let result;
-  try {
-    result = await storefront.graphql(PRODUCT_NAVIGATION_QUERY, {
-      cache: STABLE_CACHE,
-    });
-  } catch (error) {
-    if (!isStorefrontFailure(error)) throw error;
-    console.error("[hydrogen] Product navigation query failed", error);
-    return { items: [] };
-  }
-  if (result.errors) {
-    console.error(
-      "[hydrogen] Product navigation query returned partial data",
-      result.errors,
-    );
-  }
-
-  return mapNavigationMenu(
-    result.data?.menu,
-    storeHosts(storefront, result.data?.shop?.primaryDomain?.url),
-    { items: [] },
-    storefrontPathPrefix(storefront),
+  return withStorefrontFallback(
+    "Product navigation query",
+    () => ({ items: [] }),
+    async () => {
+      let result = await storefront.graphql(PRODUCT_NAVIGATION_QUERY, {
+        cache: STABLE_CACHE,
+      });
+      logPartialStorefrontData("Product navigation query", result.errors);
+      return mapNavigationMenu(
+        result.data?.menu,
+        storeHosts(storefront, result.data?.shop?.primaryDomain?.url),
+        { items: [] },
+        storefrontPathPrefix(storefront),
+      );
+    },
   );
 }
 

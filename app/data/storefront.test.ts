@@ -6,6 +6,7 @@ import {
   isStorefrontFailure,
   requireStorefrontData,
   StorefrontQueryError,
+  withStorefrontFallback,
 } from "./storefront.ts";
 
 describe("requireStorefrontData", () => {
@@ -40,5 +41,37 @@ describe("isStorefrontFailure", () => {
 
     assert.ok(!isStorefrontFailure(new DOMException("aborted", "AbortError")));
     assert.ok(!isStorefrontFailure(new TypeError("bug")));
+  });
+});
+
+describe("withStorefrontFallback", () => {
+  it("logs Storefront failures and returns the fallback", async (t) => {
+    let logs: unknown[][] = [];
+    t.mock.method(console, "error", (...args: unknown[]) => logs.push(args));
+
+    let value = await withStorefrontFallback(
+      "Menu query",
+      () => "fallback",
+      async () => {
+        throw new StorefrontQueryError("no data");
+      },
+    );
+
+    assert.equal(value, "fallback");
+    assert.equal(logs[0]?.[0], "[hydrogen] Menu query failed");
+  });
+
+  it("rethrows aborts and programming errors", async () => {
+    let bug = new TypeError("bug");
+    await assert.rejects(
+      withStorefrontFallback(
+        "Menu query",
+        () => "fallback",
+        async () => {
+          throw bug;
+        },
+      ),
+      (error: unknown) => error === bug,
+    );
   });
 });

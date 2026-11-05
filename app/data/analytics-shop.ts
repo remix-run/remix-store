@@ -2,8 +2,9 @@ import { gql, type StorefrontApi } from "@shopify/hydrogen";
 import type { SerializableObject } from "remix/component";
 
 import {
-  isStorefrontFailure,
+  requireStorefrontData,
   STABLE_CACHE,
+  withStorefrontFallback,
   type AppStorefrontClient,
 } from "./storefront.ts";
 
@@ -40,32 +41,26 @@ const ANALYTICS_SHOP_QUERY = gql(`
 export async function loadAnalyticsShopOrNull(
   storefront: AppStorefrontClient,
 ): Promise<AnalyticsShop | null> {
-  let result;
-  try {
-    result = await storefront.graphql(ANALYTICS_SHOP_QUERY, {
-      cache: STABLE_CACHE,
-    });
-  } catch (error) {
-    if (!isStorefrontFailure(error)) throw error;
-    console.error("[hydrogen] Analytics shop query failed", error);
-    return null;
-  }
-
-  let shopId = result.data?.shop?.id;
-  let currency = result.data?.localization?.country?.currency.isoCode;
-  if (result.errors || !shopId || !currency) {
-    if (result.errors) {
-      console.error("[hydrogen] Analytics shop query failed", result.errors);
-    }
-    return null;
-  }
-  return {
-    channel: "hydrogen",
-    currency,
-    myshopifyDomain: new URL(storefront.storeUrl).host,
-    shopId,
-    storefrontId: storefront.storefrontId ?? "0",
-  };
+  return withStorefrontFallback(
+    "Analytics shop query",
+    () => null,
+    async () => {
+      let data = requireStorefrontData(
+        await storefront.graphql(ANALYTICS_SHOP_QUERY, { cache: STABLE_CACHE }),
+        "The Storefront API did not return analytics shop data.",
+      );
+      let shopId = data.shop?.id;
+      let currency = data.localization?.country?.currency.isoCode;
+      if (!shopId || !currency) return null;
+      return {
+        channel: "hydrogen",
+        currency,
+        myshopifyDomain: new URL(storefront.storeUrl).host,
+        shopId,
+        storefrontId: storefront.storefrontId ?? "0",
+      };
+    },
+  );
 }
 
 /** Response data of this module's Storefront operations, by operation name. */

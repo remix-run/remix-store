@@ -1,4 +1,4 @@
-import type { ProductData } from "../data/product.ts";
+import type { ProductData } from "../data/public/product.ts";
 
 export const RED_VARIANT_ID = "gid://shopify/ProductVariant/111";
 export const BLUE_VARIANT_ID = "gid://shopify/ProductVariant/222";

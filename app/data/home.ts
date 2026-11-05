@@ -10,9 +10,9 @@ import type {
   ProductPageInfoData,
 } from "./public/types.ts";
 import {
-  isStorefrontFailure,
   requireStorefrontData,
   STABLE_CACHE,
+  withStorefrontFallback,
   type AppStorefrontClient,
 } from "./storefront.ts";
 
@@ -145,7 +145,7 @@ export async function queryHome(
 ): Promise<HomeData> {
   let [result, catalog] = await Promise.all([
     storefront.graphql(HOME_QUERY, { cache: STABLE_CACHE }),
-    queryHomeCatalog(storefront),
+    loadHomeCatalogOrEmpty(storefront),
   ]);
   let data = requireStorefrontData(
     result,
@@ -160,21 +160,21 @@ export async function queryHome(
   };
 }
 
-async function queryHomeCatalog(
+function loadHomeCatalogOrEmpty(
   storefront: AppStorefrontClient,
 ): Promise<Pick<HomeData, "pageInfo" | "products">> {
-  try {
-    let collection = await queryCollection(storefront, "all");
-    if (!collection) return EMPTY_CATALOG;
-    return {
-      products: collection.products.nodes,
-      pageInfo: collection.products.pageInfo,
-    };
-  } catch (error) {
-    if (!isStorefrontFailure(error)) throw error;
-    console.error("[hydrogen] Home catalog query failed", error);
-    return EMPTY_CATALOG;
-  }
+  return withStorefrontFallback(
+    "Home catalog query",
+    () => EMPTY_CATALOG,
+    async () => {
+      let collection = await queryCollection(storefront, "all");
+      if (!collection) return EMPTY_CATALOG;
+      return {
+        products: collection.products.nodes,
+        pageInfo: collection.products.pageInfo,
+      };
+    },
+  );
 }
 
 function toHomeHeroData(hero: HomeQueryData["hero"]): HomeHeroData | null {

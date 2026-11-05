@@ -11,7 +11,7 @@ import {
 } from "@shopify/hydrogen";
 import { clientEntry, css, navigate, on, type Handle } from "remix/component";
 
-import type { ProductData } from "../../data/product.ts";
+import type { ProductData } from "../../data/public/product.ts";
 import type { NavigationMenuData } from "../../data/public/types.ts";
 import { cartApiPath } from "../../lib/public/cart-routes.ts";
 import {

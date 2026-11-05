@@ -39,6 +39,35 @@ export function isStorefrontFailure(
 }
 
 /**
+ * Runs a Storefront read for content the page can render without. A
+ * Storefront failure is logged under `label` and answered with `fallback()`;
+ * aborts and programming errors still throw.
+ */
+export async function withStorefrontFallback<Data>(
+  label: string,
+  fallback: () => Data,
+  read: () => Promise<Data>,
+): Promise<Data> {
+  try {
+    return await read();
+  } catch (error) {
+    if (!isStorefrontFailure(error)) throw error;
+    console.error(`[hydrogen] ${label} failed`, error);
+    return fallback();
+  }
+}
+
+/** Logs GraphQL errors that arrived alongside data the caller still uses. */
+export function logPartialStorefrontData(
+  label: string,
+  errors: readonly GraphQLFormattedError[] | undefined,
+): void {
+  if (errors?.length) {
+    console.error(`[hydrogen] ${label} returned partial data`, errors);
+  }
+}
+
+/**
  * Returns the response data, or throws a StorefrontQueryError when the API
  * reported errors or returned nothing. Transport failures already throw from
  * `storefront.graphql()`, so every query read either has data or throws.

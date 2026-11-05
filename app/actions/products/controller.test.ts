@@ -1,7 +1,7 @@
 import * as assert from "remix/assert";
 import { describe, it } from "remix/test";
 
-import type { ProductData } from "../../data/product.ts";
+import type { ProductData } from "../../data/public/product.ts";
 import { routes } from "../../routes.ts";
 import {
   analyticsShopData,
