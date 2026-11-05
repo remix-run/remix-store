@@ -96,7 +96,7 @@ describe("content security policy", () => {
 
     assert.notEqual(frameNonce, documentNonce);
     // The browser runtime rewrites the frame's nonce to the document's.
-    assert.match(await frame.text(), new RegExp(`nonce="${frameNonce}"`));
+    assert.ok((await frame.text()).includes(`nonce="${frameNonce}"`));
   });
 
   it("allows local HMR connections only in development", async () => {
