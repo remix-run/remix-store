@@ -2,7 +2,7 @@ import * as assert from "remix/assert";
 import * as s from "remix/data-schema";
 import { describe, it } from "remix/test";
 
-import type { RateLimiter } from "../../data/rate-limit.ts";
+import type { RateLimiter } from "./rate-limit.ts";
 import {
   analyticsShopData,
   createStorefrontFetch,
@@ -10,7 +10,7 @@ import {
   navigationData,
   type StorefrontJsonObject,
   type StorefrontRequestBody,
-} from "../../testing/storefront.ts";
+} from "../../testing/fake-storefront.ts";
 
 const shellHandlers = {
   RemixAnalyticsShop: analyticsShopData,
@@ -74,7 +74,7 @@ describe("subscribe routes", () => {
     assert.equal(adminCalls, 0);
   });
 
-  it("returns a controlled 503 without Storefront or Admin when trusted IP is missing", async (t) => {
+  it("fails closed without Storefront or Admin when trusted IP is missing", async (t) => {
     let storefrontCalls = 0;
     let adminCalls = 0;
     let logs: unknown[][] = [];
@@ -102,28 +102,12 @@ describe("subscribe routes", () => {
     });
     let body = await response.text();
 
-    assert.equal(response.status, 503);
+    assert.equal(response.status, 500);
     assert.equal(response.headers.get("Cache-Control"), "private, no-store");
-    assert.match(body, /Something went wrong/);
     assert.doesNotMatch(body, /member@example\.com/);
     assert.equal(storefrontCalls, 0);
     assert.equal(adminCalls, 0);
     assert.doesNotMatch(JSON.stringify(logs), /member@example\.com/);
-
-    let htmlRequest = formRequest({
-      consent: "yes",
-      email: "member@example.com",
-    });
-    htmlRequest.headers.delete("Accept");
-    let htmlResponse = await app.fetch(htmlRequest);
-    let html = await htmlResponse.text();
-    assert.equal(htmlResponse.status, 503);
-    assert.match(htmlResponse.headers.get("Content-Type") ?? "", /text\/html/);
-    assert.match(html, /role="alert"/);
-    assert.match(html, /Something went wrong/);
-    assert.doesNotMatch(html, /member@example\.com/);
-    assert.equal(storefrontCalls, 0);
-    assert.equal(adminCalls, 0);
   });
 
   it("rejects oversized and unexpected form bodies before Admin", async () => {
@@ -431,6 +415,61 @@ describe("subscribe routes", () => {
     assert.match(body, /Something went wrong/);
     assert.doesNotMatch(body, /member@example\.com|customer/);
     assert.doesNotMatch(JSON.stringify(logs), /member@example\.com|customer/);
+  });
+
+  it("logs the safe Admin error code", async (t) => {
+    let logs: unknown[][] = [];
+    t.mock.method(console, "error", (...args: unknown[]) => logs.push(args));
+    let app = createTestApp(createStorefrontFetch(shellHandlers), {
+      subscribe: {
+        adminFetch: async () => new Response("unavailable", { status: 503 }),
+        rateLimiter: allowAll(),
+      },
+    });
+
+    let response = await post(app, {
+      consent: "yes",
+      email: "member@example.com",
+    });
+    assert.equal(response.status, 502);
+    assert.deepEqual(logs, [
+      ["[subscribe] Shopify Admin subscription failed:", "response"],
+    ]);
+  });
+
+  it("reports a Storefront outage as a failure, not an ineligible product", async (t) => {
+    let logs: unknown[][] = [];
+    t.mock.method(console, "error", (...args: unknown[]) => logs.push(args));
+    let adminCalls = 0;
+    let app = createTestApp(
+      createStorefrontFetch({
+        ...shellHandlers,
+        RemixBackInStockSubscription: () => {
+          throw new TypeError("connection lost");
+        },
+      }),
+      {
+        subscribe: {
+          adminFetch: async () => {
+            adminCalls += 1;
+            throw new Error("must not call Admin");
+          },
+          rateLimiter: allowAll(),
+        },
+      },
+    );
+
+    let response = await post(app, {
+      consent: "yes",
+      email: "member@example.com",
+      "product-handle": "test-product",
+      "variant-id": "gid://shopify/ProductVariant/222",
+    });
+
+    assert.equal(response.status, 502);
+    assert.match(await response.text(), /Something went wrong/);
+    assert.equal(adminCalls, 0);
+    assert.match(String(logs[0]?.[0]), /Back-in-stock variant lookup failed/);
   });
 });
 

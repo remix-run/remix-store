@@ -8,7 +8,8 @@ import {
   createTestApp,
   testEnv,
   type StorefrontRequestBody,
-} from "../testing/storefront.ts";
+  type StorefrontOperations,
+} from "../testing/fake-storefront.ts";
 
 const shellMenuFetch = createStorefrontFetch({
   RemixAnalyticsShop: analyticsShopData,
@@ -204,6 +205,18 @@ describe("platform skeleton", () => {
     assert.match(html, /Test catalog product/);
   });
 
+  it("links lookbook products in the request's market with their price", async () => {
+    let app = createHomeApp(() => new Date("2026-06-01T00:00:00Z"));
+    let html = await (
+      await app.fetch(new Request("https://example.com/en-ca"))
+    ).text();
+
+    assert.match(
+      html,
+      /<a href="\/en-ca\/products\/racing-shirt" aria-label="Racing Shirt, US\$42"/,
+    );
+  });
+
   it("server-renders static snow only on December home requests", async () => {
     let decemberApp = createHomeApp(() => new Date("2026-12-01T00:00:00Z"));
     let decemberResponse = await decemberApp.fetch(
@@ -281,7 +294,7 @@ function createHomeApp(clock: () => Date) {
   );
 }
 
-function navigationData() {
+function navigationData(): StorefrontOperations["RemixNavigation"] {
   return {
     menu: {
       items: [
@@ -307,7 +320,7 @@ function navigationData() {
   };
 }
 
-function homeData() {
+function homeData(): StorefrontOperations["RemixHomeEditorial"] {
   return {
     shop: {
       name: "Test Remix Store",
@@ -349,7 +362,11 @@ function homeData() {
                     __typename: "MediaImage",
                     id: "lookbook-media",
                     presentation: {
-                      asJson: { focalPoint: { x: 0.4, y: 0.6 } },
+                      // SAFETY: The Storefront JSON scalar arrives as an
+                      // object; Hydrogen's generated types call it a string.
+                      asJson: {
+                        focalPoint: { x: 0.4, y: 0.6 },
+                      } as unknown as string,
                     },
                     image: {
                       id: "lookbook-image",
@@ -362,6 +379,39 @@ function homeData() {
                 },
               ],
             },
+            {
+              __typename: "Metaobject",
+              id: "lookbook-product-entry",
+              fields: [
+                {
+                  key: "image",
+                  reference: {
+                    __typename: "MediaImage",
+                    id: "lookbook-product-media",
+                    presentation: null,
+                    image: {
+                      id: "lookbook-product-image",
+                      url: "https://cdn.shopify.com/lookbook-product.jpg",
+                      altText: "Racing shirt",
+                      width: 1200,
+                      height: 1600,
+                    },
+                  },
+                },
+                {
+                  key: "product",
+                  reference: {
+                    __typename: "Product",
+                    id: "gid://shopify/Product/racing-shirt",
+                    handle: "racing-shirt",
+                    title: "Racing Shirt",
+                    priceRange: {
+                      minVariantPrice: { amount: "42.00", currencyCode: "USD" },
+                    },
+                  },
+                },
+              ],
+            },
           ],
         },
       },
@@ -369,7 +419,7 @@ function homeData() {
   };
 }
 
-function collectionData() {
+function collectionData(): StorefrontOperations["RemixCollection"] {
   return {
     collection: {
       id: "gid://shopify/Collection/1",
@@ -386,7 +436,6 @@ function collectionData() {
             images: { nodes: [] },
             selectedOrFirstAvailableVariant: null,
             priceRange: {
-              minVariantPrice: { amount: "20.00", currencyCode: "USD" },
               maxVariantPrice: { amount: "20.00", currencyCode: "USD" },
             },
           },

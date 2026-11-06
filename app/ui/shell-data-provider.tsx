@@ -1,0 +1,50 @@
+import { type Handle, type RemixNode } from "remix/component";
+
+import type { CartInitialData } from "../data/public/cart.ts";
+import { US_MARKET, type ActiveMarket } from "../lib/public/market.ts";
+import type { AnalyticsShop } from "../data/analytics-shop.ts";
+import type {
+  NavigationMenuData,
+  StoreWideSaleData,
+} from "../data/public/types.ts";
+
+type ShellDataProviderProps = ShellData & { children?: RemixNode };
+
+export interface ShellData {
+  analyticsShop?: AnalyticsShop | null;
+  /**
+   * Seeds the browser cart store on document requests. Undefined on client
+   * navigations, where the hydrated cart store already owns the cart.
+   */
+  cartInitialData?: CartInitialData;
+  /** The requested pathname, including any market prefix. */
+  currentPath: string;
+  footerMenu: NavigationMenuData;
+  market: ActiveMarket;
+  navigationMenu: NavigationMenuData;
+  storeWideSale: StoreWideSaleData | null;
+}
+
+export function ShellDataProvider(
+  handle: Handle<ShellDataProviderProps, ShellData>,
+) {
+  handle.context.set({
+    analyticsShop: handle.props.analyticsShop,
+    cartInitialData: handle.props.cartInitialData,
+    currentPath: handle.props.currentPath,
+    footerMenu: handle.props.footerMenu,
+    market: handle.props.market,
+    navigationMenu: handle.props.navigationMenu,
+    storeWideSale: handle.props.storeWideSale,
+  });
+  return () => <>{handle.props.children}</>;
+}
+
+/**
+ * The request's market. The render middleware wraps every page in
+ * ShellDataProvider, so server components read it here instead of taking a
+ * prop. Hydrated islands still need it passed explicitly.
+ */
+export function shellMarket(handle: Pick<Handle, "context">): ActiveMarket {
+  return handle.context.get(ShellDataProvider)?.market ?? US_MARKET;
+}

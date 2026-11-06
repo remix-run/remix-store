@@ -1,14 +1,14 @@
 import { css, Frame, type Handle } from "remix/component";
 
-import { ProductCard } from "../assets/public/product-card.tsx";
+import { ProductCard } from "./public/product-card.tsx";
 import type {
   ProductCardData,
   ProductPageInfoData,
-} from "../data/storefront.ts";
+} from "../data/public/types.ts";
 import { marketPath, type MarketPathPrefix } from "../lib/public/market.ts";
 import { routes } from "../routes.ts";
 
-interface ProductPageProps {
+interface CollectionProductsPageProps {
   collectionHandle: string;
   /** Leading cards whose images load eagerly; the first is fetched first. */
   eagerImageCount?: number;
@@ -18,18 +18,22 @@ interface ProductPageProps {
 }
 
 /** A collection's first page of cards. Later pages load into nested frames. */
-export function CollectionProducts(handle: Handle<ProductPageProps>) {
+export function CollectionProducts(
+  handle: Handle<CollectionProductsPageProps>,
+) {
   return () => (
     <section aria-label="Collection products">
       <ul mix={productGridStyle}>
-        <ProductPage {...handle.props} />
+        <CollectionProductsPage {...handle.props} />
       </ul>
     </section>
   );
 }
 
 /** Grid items for one page, ending in a frame for the next page's control. */
-export function ProductPage(handle: Handle<ProductPageProps>) {
+export function CollectionProductsPage(
+  handle: Handle<CollectionProductsPageProps>,
+) {
   return () => {
     let {
       collectionHandle,

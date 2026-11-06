@@ -1,7 +1,8 @@
 import { css, type Handle } from "remix/component";
 
-import type { StoreWideSaleData } from "../data/storefront.ts";
+import type { StoreWideSaleData } from "../data/public/types.ts";
 import type { MarketLocale } from "../lib/public/market.ts";
+import { visuallyHiddenStyle } from "./public/visually-hidden.ts";
 
 // Two identical groups animate by exactly one group width. Ten compact
 // messages per group is enough to cover the storefront's widest viewport.
@@ -23,7 +24,7 @@ export function StoreWideSaleMarquee(
         data-store-wide-sale="true"
         mix={marqueeStyle}
       >
-        <p mix={screenReaderOnlyStyle}>{accessibleText}</p>
+        <p mix={visuallyHiddenStyle}>{accessibleText}</p>
         <div aria-hidden="true" mix={trackStyle}>
           <MarqueeGroup sale={sale} endDate={endDate} />
           <MarqueeGroup sale={sale} endDate={endDate} />
@@ -119,14 +120,4 @@ const messageStyle = css({
     fontSize: ".875rem",
     gap: "32px",
   },
-});
-
-const screenReaderOnlyStyle = css({
-  clip: "rect(0, 0, 0, 0)",
-  clipPath: "inset(50%)",
-  height: "1px",
-  overflow: "hidden",
-  position: "absolute",
-  whiteSpace: "nowrap",
-  width: "1px",
 });

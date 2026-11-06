@@ -24,9 +24,9 @@ supplies `fly-client-ip`, or behind Fastly, `x-cdn-client-ip` authenticated by
 `CDN_ORIGIN_SECRET` (see [`FLY_DEPLOYMENT.md`](./FLY_DEPLOYMENT.md#fastly-cdn)). Other Node runtimes use the client address resolved by
 Remix's HTTP adapter from the socket or, when explicitly configured behind a
 trusted proxy with `TRUST_PROXY=true`, overwritten proxy headers. Never forward
-platform buyer-IP headers outside their runtime. `PUBLIC_CHECKOUT_DOMAIN` is not
-a runtime input; checkout uses Shopify's
-authoritative `cart.checkoutUrl`. The app does not use durable application
+platform buyer-IP headers outside their runtime. Checkout uses Shopify's
+authoritative `cart.checkoutUrl`, and Shop Pay links use `PUBLIC_CHECKOUT_DOMAIN`
+(falling back to the store domain). The app does not use durable application
 sessions or require `SESSION_SECRET`.
 
 `pnpm dev` runs the framework-native Node server with `remix/assets`. For UI-heavy work, use `pnpm hmr` to preserve browser state while hot-updating client and server modules. Use `pnpm dev:oxygen` when testing the same application under MiniOxygen's Worker runtime.
@@ -72,18 +72,20 @@ Fly setup, secrets, local image verification, and continuous deployment are docu
 
 ## Architecture
 
-- `app/routes.ts` defines the typed route contract.
+- `app/routes.ts` defines the typed route contract. Browser modules may import it, so islands build links with `routes.*.href()` too.
 - `app/router.ts` owns the shared Fetch app, routes, middleware, and runtime boundary.
 - `app/assets.ts` defines the shared metadata contract, document asset sources, and document asset factory.
 - `app/assets.node.ts` constructs the native Remix asset server; `app/assets.oxygen.ts` constructs Pitlane's Worker-safe manifest resolver.
-- `app/node.ts` composes Node static files, Remix Assets, rendering, and routing.
-- `app/middleware/storefront.ts` creates a request-scoped Hydrogen Storefront client.
+- `app/node.ts` exports `createNodeApp()`, which composes Node static files, Remix Assets, rendering, and routing. `server.node.ts` resolves the run mode once and passes it in.
+- `app/middleware/storefront.ts` requires a trusted buyer IP, creates a request-scoped Hydrogen Storefront client, and publishes it with the merged env and buyer IP.
+- `app/middleware/shopify-routes.ts` answers Shopify-owned cart, checkout, and discount-link URLs and follows Shopify redirects for app 404s.
+- `app/middleware/shell-data.ts` loads menus, cart, and analytics for responses that render the page shell.
 - `app/middleware/render.tsx` contains runtime-neutral streaming SSR.
 - `app/middleware/csp.ts` enforces a nonce-based Content Security Policy on HTML responses. Remix's renderer stamps the nonce on generated tags; `app/ui/document.tsx` stamps authored and Shopify scripts. Add new third-party origins to its directives.
 - `app/runtime.ts` binds environment, cache, and `waitUntil` values to each request.
 - `server.node.ts` owns the Node/Fly-compatible HTTP lifecycle.
 - `app/entry.oxygen.ts` composes and serves the Oxygen Worker runtime.
-- `app/actions/public/entry.tsx` hydrates browser components on both targets.
+- `app/actions/public/entry.ts` hydrates browser components on both targets.
 - `vite/remix-oxygen.ts` composes [Pitlane's Remix Vite plugin](https://pitlane.tools/guides/vite-plugin) with MiniOxygen, then bundles Pitlane's asset manifest into the single `index.js` Worker that Oxygen deploys. Deploy builds serve assets from the deployment's CDN prefix (`HYDROGEN_ASSET_BASE_URL`), so they stay reachable after later deployments.
 
 Pitlane's resolver implements the metadata interface consumed by Remix's `render({ assets })` middleware. Remix owns streaming, frames, and hydration; Pitlane rewrites `clientEntry(import.meta.url, ...)` to portable `file:app/…#Export` identities and resolves them to built browser modules. The installed Remix asset server compiles from the filesystem in Node, so Oxygen needs this build-time bridge. `browserBoundary` in `app/assets.ts` defines which sources are public: the Node asset server refuses to serve anything outside it, and the Oxygen build and dev server fail when a browser module imports something outside it.

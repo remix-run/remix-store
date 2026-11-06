@@ -2,16 +2,21 @@ import { SuperHeaders } from "remix/headers";
 import { createController } from "remix/router";
 import { redirect } from "remix/response/redirect";
 
-import { LoadMoreProducts } from "../../assets/public/load-more-products.tsx";
-import { queryCollection } from "../../data/storefront.ts";
+import { LoadMoreProducts } from "./public/load-more-products.tsx";
+import { queryCollection } from "../../data/collection.ts";
+import { isStorefrontFailure } from "../../data/storefront.ts";
 import { cacheControl } from "../../lib/cache-control.ts";
-import { marketPath, type MarketPathPrefix } from "../../lib/public/market.ts";
+import {
+  marketPath,
+  marketUrl,
+  type MarketPathPrefix,
+} from "../../lib/public/market.ts";
 import { routes } from "../../routes.ts";
 import {
   collectionPageHref,
-  ProductPage,
+  CollectionProductsPage,
 } from "../../ui/collection-products.tsx";
-import { NotFoundPage } from "../pages.tsx";
+import { NotFoundPage } from "../../ui/error-pages.tsx";
 import { CollectionPage } from "./page.tsx";
 
 const MAX_CURSOR_LENGTH = 2_048;
@@ -39,32 +44,29 @@ export default createController(routes.collections, {
         after: cursor,
         first: cursor ? NEXT_PAGE_SIZE : FIRST_PAGE_SIZE,
       });
-      if (!collection.ok) {
-        throw new Error(collection.message, { cause: collection.errors });
-      }
-      if (!collection.data) {
+      if (!collection) {
         return render(<NotFoundPage />, { status: 404 });
       }
 
       return render(
         <CollectionPage
-          canonicalUrl={
-            url.origin +
-            marketPath(routes.collections.show.href(params), market.pathPrefix)
-          }
-          market={market}
-          id={collection.data.id}
-          handle={collection.data.handle}
-          title={collection.data.title}
-          seoTitle={collection.data.seoTitle}
-          description={collection.data.description}
-          products={collection.data.products.nodes}
-          pageInfo={collection.data.products.pageInfo}
+          canonicalUrl={marketUrl(
+            url,
+            routes.collections.show.href(params),
+            market.pathPrefix,
+          )}
+          id={collection.id}
+          handle={collection.handle}
+          title={collection.title}
+          seoTitle={collection.seoTitle}
+          description={collection.description}
+          products={collection.products.nodes}
+          pageInfo={collection.products.pageInfo}
         />,
         { headers: new SuperHeaders({ cacheControl: cacheControl.browsing }) },
       );
     },
-    async products({ market, params, render, request, storefrontClient, url }) {
+    async products({ market, params, render, storefrontClient, url }) {
       let cursor = readCursor(url);
       if (cursor instanceof Response) return cursor;
       if (!cursor) return new Response("Missing cursor", { status: 400 });
@@ -76,25 +78,23 @@ export default createController(routes.collections, {
           first: NEXT_PAGE_SIZE,
         });
       } catch (error) {
-        if (request.signal.aborted) throw error;
+        if (!isStorefrontFailure(error)) throw error;
         console.error("[collection] Unable to load a product page", error);
-      }
-      if (!collection?.ok) {
         return render(
           loadMoreControl(params.handle, cursor, market.pathPrefix, true),
           { headers: FRAGMENT_HEADERS },
         );
       }
-      if (!collection.data) {
+      if (!collection) {
         return render(null, { status: 404, headers: FRAGMENT_HEADERS });
       }
 
       return render(
-        <ProductPage
+        <CollectionProductsPage
           collectionHandle={params.handle}
-          pageInfo={collection.data.products.pageInfo}
+          pageInfo={collection.products.pageInfo}
           pathPrefix={market.pathPrefix}
-          products={collection.data.products.nodes}
+          products={collection.products.nodes}
         />,
         {
           headers: new SuperHeaders({

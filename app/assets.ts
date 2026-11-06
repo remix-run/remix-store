@@ -11,12 +11,12 @@ export type Assets = Pick<AssetServer, "getScriptEntry" | "getHref"> & {
 
 /** Browser files every document links. The Vite config registers these too. */
 export const documentAssetSources = {
-  scriptEntry: "app/actions/public/entry.tsx",
-  stylesheet: "app/assets/public/site.css",
+  scriptEntry: "app/actions/public/entry.ts",
+  stylesheet: "app/ui/public/site.css",
   fonts: {
-    interRoman: "app/assets/public/font/inter-roman-latin-var.woff2",
-    jetBrainsMono: "app/assets/public/font/jet-brains-mono.woff2",
-    lexendZetta: "app/assets/public/font/lexend-zetta-black.woff2",
+    interRoman: "app/ui/public/font/inter-roman-latin-var.woff2",
+    jetBrainsMono: "app/ui/public/font/jet-brains-mono.woff2",
+    lexendZetta: "app/ui/public/font/lexend-zetta-black.woff2",
   },
 } as const;
 
@@ -25,7 +25,7 @@ export const documentAssetSources = {
  * and the Vite config fails Oxygen builds and dev requests that cross it.
  */
 export const browserBoundary = {
-  allowFiles: ["app/**/public/**"],
+  allowFiles: ["app/routes.ts", "app/**/public/**"],
   allowPackages: ["remix", "@shopify/hydrogen"],
   denyFiles: ["app/**/*.test.*", "app/**/*.spec.*"],
 };

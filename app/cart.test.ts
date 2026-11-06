@@ -2,15 +2,17 @@ import { createCartCookie } from "@shopify/hydrogen";
 import * as assert from "remix/assert";
 import { describe, it } from "remix/test";
 
-import { CART_API_PATH, routes } from "./routes.ts";
+import { CART_API_PATH } from "./ui/public/cart/cart-routes.ts";
+import { routes } from "./routes.ts";
 import {
   analyticsShopData,
   createStorefrontFetch,
   createTestApp,
   navigationData,
   type StorefrontRequestBody,
-} from "./testing/storefront.ts";
-import { CART_ID, createCart } from "../test/cart-fixtures.ts";
+  type StorefrontOperations,
+} from "./testing/fake-storefront.ts";
+import { CART_ID, createCart } from "./testing/cart-fixtures.ts";
 
 const origin = "https://storefront.example";
 
@@ -320,7 +322,7 @@ describe("cart routes", () => {
   });
 });
 
-function saleNavigationData() {
+function saleNavigationData(): StorefrontOperations["RemixNavigation"] {
   let data = navigationData();
   return {
     ...data,

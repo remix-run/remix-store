@@ -25,6 +25,26 @@ export const CA_MARKET: ActiveMarket = {
   pathPrefix: "/en-ca",
 };
 
+const MARKETS: readonly ActiveMarket[] = [US_MARKET, CA_MARKET];
+
+export function isMarketPathPrefix(value: unknown): value is MarketPathPrefix {
+  return MARKETS.some((market) => market.pathPrefix === value);
+}
+
+/** The market whose country matches, falling back to the default US market. */
+export function marketForCountry(country: string): ActiveMarket {
+  return MARKETS.find((market) => market.country === country) ?? US_MARKET;
+}
+
+/**
+ * The market prefix the server rendered on `<html data-market-prefix>`.
+ * Browser-only; unknown values fall back to the default market.
+ */
+export function documentMarketPathPrefix(): MarketPathPrefix {
+  let value = document.documentElement.dataset.marketPrefix;
+  return isMarketPathPrefix(value) ? value : "";
+}
+
 const APP_PATH_PREFIXES = new Set([
   "account",
   "admin",
@@ -96,8 +116,13 @@ export function marketPath(
   return value === "/" ? `${pathPrefix}/` : `${pathPrefix}${value}`;
 }
 
-export function cartApiPath(pathPrefix: MarketPathPrefix): string {
-  return marketPath("/api/cart", pathPrefix);
+/** The absolute URL of an app path in a market, on the request's origin. */
+export function marketUrl(
+  requestUrl: URL,
+  path: string,
+  pathPrefix: MarketPathPrefix,
+): string {
+  return requestUrl.origin + marketPath(path, pathPrefix);
 }
 
 export function localizeInternalUrl(

@@ -1,5 +1,4 @@
-import { Renderer } from "remix/middleware/render";
-import { createElement, type RemixNode } from "remix/component";
+import { createElement } from "remix/component";
 import {
   createMiddleware,
   createRouter,
@@ -19,13 +18,19 @@ import {
   createSubscribeController,
   type SubscribeControllerOptions,
 } from "./actions/subscribe/controller.tsx";
-import { ErrorPage, NotFoundPage } from "./actions/pages.tsx";
+import { ErrorPage, NotFoundPage } from "./ui/error-pages.tsx";
 import { csp, type CspOptions } from "./middleware/csp.ts";
-import { market } from "./middleware/market.tsx";
+import { market } from "./middleware/market.ts";
+import { getPageRenderer } from "./middleware/page-renderer.ts";
 import { render } from "./middleware/render.tsx";
 import { storefront, type StorefrontOptions } from "./middleware/storefront.ts";
 import { routes } from "./routes.ts";
-import { fetchWithRuntime, type Runtime } from "./runtime.ts";
+import {
+  fetchWithRuntime,
+  isRequestAbort,
+  runtimeDispatch,
+  type Runtime,
+} from "./runtime.ts";
 
 export interface AppOptions {
   csp?: CspOptions;
@@ -41,6 +46,9 @@ const passThrough: Middleware = (_context, next) => next();
 function createAppMiddleware(options: AppOptions) {
   return createMiddleware(
     options.platform ?? passThrough,
+    // Frame and redirect dispatch through context.router reuses the runtime
+    // bindings, so it must wrap the router before anything can dispatch.
+    runtimeDispatch(),
     // The renderer reads the nonce when it is installed, so CSP runs first.
     csp(options.csp),
     ...options.renderer,
@@ -56,16 +64,11 @@ function errorPages(): Middleware {
       return await next();
     } catch (error) {
       if (error instanceof Response) return error;
-      if (
-        context.request.signal.aborted &&
-        error === context.request.signal.reason
-      )
-        throw error;
+      if (isRequestAbort(context.request, error)) throw error;
       console.error(error);
-      // SAFETY: createAppMiddleware installs the UI renderer before this error
-      // boundary runs; Remix's generic Renderer key erases its input type.
-      let renderPage = context.get(Renderer) as Renderer<RemixNode>;
-      return renderPage(createElement(ErrorPage, {}), { status: 500 });
+      return getPageRenderer(context)(createElement(ErrorPage, {}), {
+        status: 500,
+      });
     }
   };
 }

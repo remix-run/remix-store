@@ -1,39 +1,35 @@
 import { SuperHeaders } from "remix/headers";
 import { createController } from "remix/router";
 
-import { queryProduct, queryProductNavigation } from "../../data/storefront.ts";
+import { loadProductNavigationOrEmpty } from "../../data/menus.ts";
+import { queryProduct } from "../../data/product.ts";
 import { cacheControl } from "../../lib/cache-control.ts";
-import { marketPath } from "../../lib/public/market.ts";
-import { getRuntime } from "../../runtime.ts";
+import { marketUrl } from "../../lib/public/market.ts";
 import { routes } from "../../routes.ts";
-import { NotFoundPage } from "../pages.tsx";
+import { NotFoundPage } from "../../ui/error-pages.tsx";
 import { ProductPage } from "./page.tsx";
 
 export default createController(routes.products, {
   actions: {
-    async show({ market, params, render, request, storefrontClient, url }) {
+    async show({ env, market, params, render, storefrontClient, url }) {
       let [product, productNavigation] = await Promise.all([
         queryProduct(storefrontClient, params.handle, url.searchParams),
-        queryProductNavigation(storefrontClient, url.host),
+        loadProductNavigationOrEmpty(storefrontClient),
       ]);
-      if (!product.ok) {
-        throw new Error(product.message, { cause: product.errors });
-      }
-      if (!product.data) return render(<NotFoundPage />, { status: 404 });
+      if (!product) return render(<NotFoundPage />, { status: 404 });
 
       return render(
         <ProductPage
-          canonicalUrl={
-            url.origin +
-            marketPath(routes.products.show.href(params), market.pathPrefix)
-          }
-          market={market}
+          canonicalUrl={marketUrl(
+            url,
+            routes.products.show.href(params),
+            market.pathPrefix,
+          )}
           menu={productNavigation}
-          product={product.data}
+          product={product}
           search={url.search}
           shopPayStoreUrl={
-            getRuntime(request).env?.PUBLIC_CHECKOUT_DOMAIN?.trim() ||
-            storefrontClient.storeUrl
+            env.PUBLIC_CHECKOUT_DOMAIN?.trim() || storefrontClient.storeUrl
           }
         />,
         { headers: new SuperHeaders({ cacheControl: cacheControl.browsing }) },

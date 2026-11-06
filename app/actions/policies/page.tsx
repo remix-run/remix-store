@@ -1,18 +1,17 @@
 import { css, unsafeHTML, type Handle } from "remix/component";
 
-import { PageTitle } from "../../assets/public/page-title.tsx";
-import type { PolicyData } from "../../data/policies.ts";
+import { PageTitle } from "../../ui/public/page-title.tsx";
 import {
   localizeInternalUrl,
-  type ActiveMarket,
   type MarketPathPrefix,
 } from "../../lib/public/market.ts";
+import type { PolicyData } from "./data.ts";
 import { Document } from "../../ui/document.tsx";
+import { shellMarket } from "../../ui/shell-data-provider.tsx";
 
 export function PolicyPage(
   handle: Handle<{
     canonicalUrl: string;
-    market: ActiveMarket;
     policy: PolicyData;
   }>,
 ) {
@@ -28,7 +27,7 @@ export function PolicyPage(
           innerHTML={unsafeHTML(
             localizePolicyLinks(
               handle.props.policy.body,
-              handle.props.market.pathPrefix,
+              shellMarket(handle).pathPrefix,
             ),
           )}
         />

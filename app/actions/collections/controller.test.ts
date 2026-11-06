@@ -8,7 +8,9 @@ import {
   createTestApp,
   navigationData,
   type StorefrontRequestBody,
-} from "../../testing/storefront.ts";
+  type StorefrontHandler,
+  type StorefrontOperations,
+} from "../../testing/fake-storefront.ts";
 
 describe("collection routes", () => {
   it("renders catalog cards and keeps load more as a GET fallback", async () => {
@@ -230,6 +232,25 @@ describe("collection routes", () => {
     assert.match(html, /<h1>Racing collection<\/h1>/);
   });
 
+  it("tells shoppers when a collection has no products", async () => {
+    let app = createTestApp(
+      storefrontFetch(() => {
+        let data = collectionData({ hasNextPage: false, endCursor: null });
+        data.collection.products.nodes = [];
+        return data;
+      }),
+    );
+
+    let response = await app.fetch(
+      new Request("https://example.com/collections/racing"),
+    );
+    let html = await response.text();
+
+    assert.equal(response.status, 200);
+    assert.match(html, /No products found in this collection\./);
+    assert.doesNotMatch(html, /Load more/);
+  });
+
   it("renders a branded 404 when the collection is missing", async () => {
     let app = createTestApp(storefrontFetch(() => ({ collection: null })));
 
@@ -265,7 +286,7 @@ describe("collection routes", () => {
 });
 
 function storefrontFetch(
-  collection: Parameters<typeof createStorefrontFetch>[0][string],
+  collection: StorefrontHandler<"RemixCollection">,
 ): typeof globalThis.fetch {
   return createStorefrontFetch({
     RemixAnalyticsShop: analyticsShopData,
@@ -277,14 +298,18 @@ function storefrontFetch(
 function collectionData(pageInfo: {
   hasNextPage: boolean;
   endCursor: string | null;
-}) {
+}): {
+  collection: NonNullable<
+    StorefrontOperations["RemixCollection"]["collection"]
+  >;
+} {
   return {
     collection: {
       id: "gid://shopify/Collection/1",
       handle: "racing",
       title: "Racing collection",
       description: "Racing apparel",
-      seo: { title: null as string | null },
+      seo: { title: null },
       products: {
         nodes: [
           {
@@ -307,7 +332,6 @@ function collectionData(pageInfo: {
               compareAtPrice: { amount: "30.00", currencyCode: "USD" },
             },
             priceRange: {
-              minVariantPrice: { amount: "20.00", currencyCode: "USD" },
               maxVariantPrice: { amount: "20.00", currencyCode: "USD" },
             },
           },

@@ -1,14 +1,14 @@
 import { type Handle } from "remix/component";
 
-import { CollectionViewed } from "../../assets/public/analytics.tsx";
+import { CollectionViewed } from "../../ui/public/analytics.tsx";
 import { CollectionProducts } from "../../ui/collection-products.tsx";
 import type {
   ProductCardData,
   ProductPageInfoData,
-} from "../../data/storefront.ts";
-import { PageTitle } from "../../assets/public/page-title.tsx";
-import type { ActiveMarket } from "../../lib/public/market.ts";
+} from "../../data/public/types.ts";
+import { PageTitle } from "../../ui/public/page-title.tsx";
 import { Document } from "../../ui/document.tsx";
+import { shellMarket } from "../../ui/shell-data-provider.tsx";
 
 // The grid shows up to three columns below 2000px wide.
 const FIRST_ROW_PRODUCTS = 3;
@@ -19,7 +19,6 @@ export function CollectionPage(
     description: string;
     handle: string;
     id: string;
-    market: ActiveMarket;
     pageInfo: ProductPageInfoData;
     products: ProductCardData[];
     /** The document title, when it differs from the visible heading. */
@@ -44,7 +43,7 @@ export function CollectionPage(
           <CollectionProducts
             collectionHandle={handle.props.handle}
             eagerImageCount={FIRST_ROW_PRODUCTS}
-            pathPrefix={handle.props.market.pathPrefix}
+            pathPrefix={shellMarket(handle).pathPrefix}
             products={handle.props.products}
             pageInfo={handle.props.pageInfo}
           />

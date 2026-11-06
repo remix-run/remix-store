@@ -1,0 +1,484 @@
+import * as assert from "remix/assert";
+import { describe, it } from "remix/test";
+import { render } from "remix/component/test";
+
+import {
+  BLUE_VARIANT_ID,
+  RED_VARIANT_ID,
+  createProduct,
+} from "../../../testing/product-fixtures.ts";
+import { flushAsync, waitFor } from "../../../testing/browser.ts";
+import { CA_MARKET } from "../../../lib/public/market.ts";
+import { resetBrowserCartStore } from "../../../ui/public/cart/cart-store.ts";
+import { ProductDetails, variantHref } from "./product-details.tsx";
+
+type ProductCartUpdatePayload = {
+  lines?: Array<{
+    merchandiseId?: string;
+    quantity: number;
+  }>;
+};
+
+type ProductCartUpdateResult = {
+  cart: null;
+};
+
+type UpdateCartConfig = {
+  eventTarget(meta: { type: string; action?: string }): EventTarget | null;
+  handler(
+    defaultHandler: () => Promise<ProductCartUpdateResult>,
+    payload: ProductCartUpdatePayload,
+  ): Promise<ProductCartUpdateResult>;
+};
+
+const shopPayStoreUrl = "https://example.myshopify.com";
+
+let updateCartConfig: UpdateCartConfig | undefined;
+
+async function updateCart(
+  payload: ProductCartUpdatePayload,
+): Promise<ProductCartUpdateResult> {
+  if (!updateCartConfig) throw new Error("updateCart was not configured");
+  return updateCartConfig.handler(async () => ({ cart: null }), payload);
+}
+
+Object.assign(updateCart, {
+  configure(config: UpdateCartConfig) {
+    updateCartConfig = config;
+    return true;
+  },
+  isDefault() {
+    return false;
+  },
+});
+
+Object.defineProperty(window, "Shopify", {
+  configurable: true,
+  value: {
+    actions: {
+      getCart: async () => ({ cart: null }),
+      updateCart,
+    },
+  },
+});
+
+describe("product form", () => {
+  it("updates variant media and price immediately while preserving URL state", async (t) => {
+    let product = createProduct();
+    let navigatedTo = "";
+    t.after(resetBrowserCartStore);
+    t.mock.method(window.navigation, "navigate", (url: string | URL) => {
+      navigatedTo = String(url);
+      return { committed: Promise.resolve(), finished: Promise.resolve() };
+    });
+
+    let { $, act, cleanup } = render(
+      <ProductDetails
+        product={product}
+        search="?ref=campaign&Color=Red"
+        shopPayStoreUrl={shopPayStoreUrl}
+      />,
+    );
+    t.after(cleanup);
+    await flushAsync(act);
+
+    let redButton = $('a[href*="Color=Red"]');
+    let blueButton = $('a[href*="Color=Blue"]');
+    let missingButton = $("button:disabled");
+    assert.ok(redButton instanceof HTMLAnchorElement);
+    assert.ok(blueButton instanceof HTMLAnchorElement);
+    assert.ok(missingButton instanceof HTMLButtonElement);
+    assert.equal(redButton.getAttribute("aria-current"), "true");
+    let shopPayLink = getShopPayLink($);
+    assert.ok(shopPayLink);
+    assert.equal(shopPayLink.getAttribute("aria-label"), "Buy with Shop Pay");
+    let checkoutUrl = new URL(shopPayLink.href);
+    assert.equal(checkoutUrl.origin, shopPayStoreUrl);
+    assert.equal(checkoutUrl.pathname, "/cart/111:1");
+    assert.equal(getComputedStyle(shopPayLink).height, "64px");
+    assert.match(blueButton.textContent ?? "", /Sold out/);
+    assert.equal(missingButton.disabled, true);
+
+    let optionMenu = $("details");
+    let optionSummary = $("summary");
+    assert.ok(optionMenu instanceof HTMLDetailsElement);
+    assert.ok(optionSummary instanceof HTMLElement);
+    await act(() => optionSummary.click());
+    assert.equal(optionMenu.open, true);
+    await act(() =>
+      document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" })),
+    );
+    assert.equal(optionMenu.open, false);
+    assert.equal(document.activeElement, optionSummary);
+
+    await act(() => optionSummary.click());
+    let addToCartButton = $('button[name="add-to-cart"]');
+    assert.ok(addToCartButton instanceof HTMLButtonElement);
+    await act(() => addToCartButton.focus());
+    assert.equal(optionMenu.open, false);
+
+    await act(() => optionSummary.click());
+    assert.equal(optionMenu.open, true);
+    await act(() => blueButton.click());
+    assert.equal(optionMenu.open, false);
+    // The chosen link is hidden with the menu, so focus returns to the summary.
+    assert.equal(document.activeElement, $("summary"));
+    let updatedRedButton = $('a[href*="Color=Red"]');
+    let updatedBlueButton = $('a[href*="Color=Blue"]');
+    assert.ok(updatedRedButton instanceof HTMLAnchorElement);
+    assert.ok(updatedBlueButton instanceof HTMLAnchorElement);
+
+    assert.equal(updatedBlueButton.getAttribute("aria-current"), "true");
+    assert.equal(updatedRedButton.getAttribute("aria-current"), null);
+    assert.equal(
+      $('input[name="merchandiseId"]')?.getAttribute("value"),
+      BLUE_VARIANT_ID,
+    );
+    assert.match(
+      $('img[alt="Blue product"]')?.getAttribute("src") ?? "",
+      /blue\.jpg\?width=1200/,
+    );
+    assert.match($("h1")?.closest("section")?.textContent ?? "", /\$15\.00/);
+    assert.equal($('button[name="add-to-cart"]')?.textContent, "Sold out");
+    assert.equal(getShopPayLink($), null);
+    assert.equal(navigatedTo, "/products/test-product?ref=campaign&Color=Blue");
+
+    let combinedListing = $('a[href*="related-product"]');
+    assert.ok(combinedListing instanceof HTMLAnchorElement);
+    assert.equal(
+      combinedListing.getAttribute("href"),
+      "/products/related-product?ref=campaign&Color=Green",
+    );
+
+    await act(() => updatedRedButton.click());
+    assert.equal(
+      $('input[name="merchandiseId"]')?.getAttribute("value"),
+      RED_VARIANT_ID,
+    );
+    assert.equal(getShopPayLink($)?.hasAttribute("href"), true);
+  });
+
+  it("loads each gallery's first image first, and nothing for the hidden copy", async (t) => {
+    t.after(resetBrowserCartStore);
+    let { act, cleanup, container } = render(
+      <ProductDetails
+        product={createProduct()}
+        search=""
+        shopPayStoreUrl={shopPayStoreUrl}
+      />,
+    );
+    t.after(cleanup);
+    await flushAsync(act);
+
+    let imagesNamed = (alt: string) => [
+      ...container.querySelectorAll<HTMLImageElement>(`img[alt="${alt}"]`),
+    ];
+    let firstImages = imagesNamed("Red product");
+    let laterImages = imagesNamed("Test product");
+    assert.deepEqual(
+      firstImages.map((image) => [image.loading, image.fetchPriority]),
+      [
+        ["eager", "high"],
+        ["eager", "high"],
+      ],
+    );
+    assert.deepEqual(
+      laterImages.map((image) => [image.loading, image.fetchPriority]),
+      [
+        ["lazy", "auto"],
+        ["lazy", "auto"],
+      ],
+    );
+
+    await Promise.all(
+      firstImages.map((image) => image.decode().catch(() => {})),
+    );
+    let hidden = firstImages.find((image) => !image.checkVisibility());
+    let shown = firstImages.find((image) => image.checkVisibility());
+    assert.ok(hidden && shown);
+    assert.match(hidden.currentSrc, /^data:/);
+    assert.match(shown.currentSrc, /^https:\/\/cdn\.shopify\.com\//);
+  });
+
+  it("preserves the Shop Pay height when changing available variants", async (t) => {
+    let product = createProduct();
+    let blueVariant = product.options[0]?.optionValues.find(
+      (value) => value.name === "Blue",
+    )?.firstSelectableVariant;
+    assert.ok(blueVariant);
+    blueVariant.availableForSale = true;
+    t.after(resetBrowserCartStore);
+    t.mock.method(window.navigation, "navigate", () => ({
+      committed: Promise.resolve(),
+      finished: Promise.resolve(),
+    }));
+
+    let { $, act, cleanup } = render(
+      <ProductDetails
+        product={product}
+        search=""
+        shopPayStoreUrl={shopPayStoreUrl}
+      />,
+    );
+    t.after(cleanup);
+    await flushAsync(act);
+
+    let blueButton = $('a[href*="Color=Blue"]');
+    assert.ok(blueButton instanceof HTMLAnchorElement);
+    await act(() => blueButton.click());
+
+    let shopPayLink = getShopPayLink($);
+    assert.ok(shopPayLink);
+    assert.equal(new URL(shopPayLink.href).pathname, "/cart/222:1");
+    assert.equal(getComputedStyle(shopPayLink).height, "64px");
+  });
+
+  it("hydrates and submits only verified identifiers for the selected sold-out variant", async (t) => {
+    let product = createProduct();
+    let requestBody: URLSearchParams | undefined;
+    t.after(resetBrowserCartStore);
+    t.mock.method(window.navigation, "navigate", () => ({
+      committed: Promise.resolve(),
+      finished: Promise.resolve(),
+    }));
+    t.mock.method(
+      globalThis,
+      "fetch",
+      async (_input: RequestInfo | URL, init?: RequestInit) => {
+        requestBody = parseUrlEncodedBody(init?.body);
+        return Response.json({ message: "Notification saved", success: true });
+      },
+    );
+
+    let { $, act, cleanup } = render(
+      <ProductDetails
+        product={product}
+        search="?Color=Red"
+        shopPayStoreUrl={shopPayStoreUrl}
+      />,
+    );
+    t.after(cleanup);
+    await flushAsync(act);
+    assert.equal($("#back-in-stock-email"), null);
+
+    let blue = $('a[href*="Color=Blue"]');
+    assert.ok(blue instanceof HTMLAnchorElement);
+    await act(() => blue.click());
+    assert.equal(
+      $('input[name="product-handle"]')?.getAttribute("value"),
+      "test-product",
+    );
+    assert.equal(
+      $('input[name="variant-id"]')?.getAttribute("value"),
+      "gid://shopify/ProductVariant/222",
+    );
+    assert.equal($('input[name="variant-title"]'), null);
+
+    let email = $("#back-in-stock-email");
+    let form = email?.closest("form");
+    assert.ok(email instanceof HTMLInputElement);
+    assert.ok(form instanceof HTMLFormElement);
+    email.value = "member@example.com";
+    await act(() =>
+      form.dispatchEvent(
+        new SubmitEvent("submit", { bubbles: true, cancelable: true }),
+      ),
+    );
+    await waitFor(() => $('[role="status"]') !== null, { act });
+
+    assert.ok(requestBody);
+    assert.deepEqual(
+      [...requestBody.keys()].sort((a, b) => a.localeCompare(b)),
+      ["consent", "email", "product-handle", "variant-id"],
+    );
+    assert.equal(requestBody?.get("product-handle"), "test-product");
+    assert.equal(
+      requestBody?.get("variant-id"),
+      "gid://shopify/ProductVariant/222",
+    );
+    assert.equal($('[role="status"]')?.textContent, "Notification saved");
+  });
+
+  it("hides Shopify’s default-only variant selector", async (t) => {
+    let product = createDefaultVariantProduct();
+    t.after(resetBrowserCartStore);
+
+    let { $, act, cleanup } = render(
+      <ProductDetails
+        product={product}
+        search=""
+        shopPayStoreUrl={shopPayStoreUrl}
+      />,
+    );
+    t.after(cleanup);
+    await flushAsync(act);
+
+    assert.equal($("details"), null);
+    assert.equal($('button[name="Title"]'), null);
+    assert.equal(
+      $('input[name="merchandiseId"]')?.getAttribute("value"),
+      RED_VARIANT_ID,
+    );
+    let addButton = $('button[name="add-to-cart"]');
+    assert.ok(addButton instanceof HTMLButtonElement);
+    assert.equal(addButton.disabled, false);
+    assert.equal(addButton.textContent, "Add to cart");
+  });
+
+  it("hides options that have only one value, but keeps them in variant URLs", async (t) => {
+    let product = createProductWithSingleValueOption();
+    t.after(resetBrowserCartStore);
+
+    let { $, $$, act, cleanup } = render(
+      <ProductDetails
+        product={product}
+        search=""
+        shopPayStoreUrl={shopPayStoreUrl}
+      />,
+    );
+    t.after(cleanup);
+    await flushAsync(act);
+
+    assert.equal($$("details").length, 1);
+    assert.match($("summary")?.textContent ?? "", /^Color: Red/);
+    assert.equal(
+      $('a[href*="Color=Blue"]')?.getAttribute("href"),
+      "/products/test-product?Fit=Classic&Color=Blue",
+    );
+  });
+
+  it("disables add-to-cart until a variant is resolved", async (t) => {
+    let product = createProduct();
+    product.selectedOrFirstAvailableVariant = null;
+    t.after(resetBrowserCartStore);
+
+    let { $, act, cleanup } = render(
+      <ProductDetails
+        product={product}
+        search=""
+        shopPayStoreUrl={shopPayStoreUrl}
+      />,
+    );
+    t.after(cleanup);
+    await flushAsync(act);
+
+    let addButton = $('button[name="add-to-cart"]');
+    assert.ok(addButton instanceof HTMLButtonElement);
+    assert.equal(addButton.disabled, true);
+    assert.equal(addButton.textContent, "Select options");
+    assert.equal($('input[name="merchandiseId"]')?.getAttribute("value"), "");
+    assert.equal($('a[aria-current="true"]'), null);
+    assert.equal(getShopPayLink($), null);
+  });
+
+  it("retains the Canadian prefix in variant and form navigation", async (t) => {
+    let product = createProduct();
+    t.after(resetBrowserCartStore);
+    let { $, act, cleanup } = render(
+      <ProductDetails
+        market={CA_MARKET}
+        product={product}
+        search="?ref=campaign&Color=Red"
+        shopPayStoreUrl={shopPayStoreUrl}
+      />,
+    );
+    t.after(cleanup);
+    await flushAsync(act);
+
+    assert.match(
+      $('a[href*="Color=Blue"]')?.getAttribute("href") ?? "",
+      /^\/en-ca\/products\/test-product\?/,
+    );
+    assert.equal($("form")?.getAttribute("action"), "/en-ca/api/cart");
+    assert.equal(
+      variantHref(
+        "test-product",
+        [{ name: "Color", value: "Blue" }],
+        [{ name: "Color" }],
+        "",
+        "/en-ca",
+      ),
+      "/en-ca/products/test-product?Color=Blue",
+    );
+  });
+
+  it("builds variant URLs by replacing only product option parameters", () => {
+    assert.equal(
+      variantHref(
+        "other-product",
+        [
+          { name: "Size", value: "Large" },
+          { name: "Color", value: "Green" },
+        ],
+        [{ name: "Color" }, { name: "Size" }],
+        "?Color=Red&ref=campaign&Size=Small&variant=123",
+      ),
+      "/products/other-product?ref=campaign&Size=Large&Color=Green",
+    );
+  });
+});
+
+function parseUrlEncodedBody(
+  body: BodyInit | null | undefined,
+): URLSearchParams {
+  if (body instanceof URLSearchParams) return body;
+  throw new Error("Expected a URL-encoded subscription request body");
+}
+
+function getShopPayLink(
+  query: (selector: string) => Element | null,
+): HTMLAnchorElement | null {
+  let link = query("hydrogen-shop-pay-button")?.shadowRoot?.querySelector("a");
+  return link instanceof HTMLAnchorElement ? link : null;
+}
+
+function createDefaultVariantProduct() {
+  let product = createProduct();
+  let variant = product.selectedOrFirstAvailableVariant!;
+  variant.title = "Default Title";
+  variant.selectedOptions = [{ name: "Title", value: "Default Title" }];
+  product.options = [
+    {
+      name: "Title",
+      optionValues: [
+        { name: "Default Title", firstSelectableVariant: variant },
+      ],
+    },
+  ];
+  product.adjacentVariants = [variant];
+  product.encodedVariantExistence = "v1_0";
+  product.encodedVariantAvailability = "v1_0";
+  return product;
+}
+
+/** Like a T-shirt sold in one color but several sizes. */
+function createProductWithSingleValueOption() {
+  let product = createProduct();
+  let variants = [
+    product.selectedOrFirstAvailableVariant!,
+    ...product.adjacentVariants,
+    ...product.options[0]!.optionValues.map(
+      (value) => value.firstSelectableVariant,
+    ),
+  ];
+  for (let variant of new Set(variants)) {
+    if (variant) {
+      variant.selectedOptions = [
+        { name: "Fit", value: "Classic" },
+        ...variant.selectedOptions,
+      ];
+    }
+  }
+  product.options.unshift({
+    name: "Fit",
+    optionValues: [
+      {
+        name: "Classic",
+        firstSelectableVariant: product.selectedOrFirstAvailableVariant,
+      },
+    ],
+  });
+  product.encodedVariantExistence = "v1_0:0 2 3";
+  product.encodedVariantAvailability = "v1_0:0 3";
+  return product;
+}

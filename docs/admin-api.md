@@ -8,7 +8,7 @@
 | Required scopes     | `read_customers`, `write_customers`                                   |
 | Additional approval | Shopify protected customer data                                       |
 
-`pnpm typecheck` runs `scripts/check-admin-graphql.mjs`. It parses the four Admin documents in `app/data/admin.server.ts`, checks the exact expected operation set, and validates each document against the pinned Admin schema. This is separate from Hydrogen's Storefront/Customer Account `gql.tada` setup, so Admin types cannot contaminate Storefront `gql()` validation.
+`pnpm typecheck` runs `scripts/check-admin-graphql.mjs`. It parses the four Admin documents in `app/actions/subscribe/admin.ts`, checks the exact expected operation set, and validates each document against the pinned Admin schema. This is separate from Hydrogen's Storefront/Customer Account `gql.tada` setup, so Admin types cannot contaminate Storefront `gql()` validation.
 
 The validated operations are `RemixCustomerByEmail`, `RemixCustomerCreate`, `RemixCustomerTagsAdd`, and `RemixCustomerConsentUpdate`. Runtime tests additionally verify endpoint, headers, variables, safe response handling, and no customer data in errors.
 

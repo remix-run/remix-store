@@ -2,40 +2,59 @@ import { createAssetServer } from "remix/assets";
 
 import { browserBoundary } from "./assets.ts";
 
-const nodeEnv = process.env.NODE_ENV ?? "development";
-const isDevelopment = nodeEnv === "development";
-const isProduction = nodeEnv === "production";
-const isHmr = Boolean(isDevelopment && process.env.REMIX_NODE_HMR);
+/** How the Node server runs, resolved once from the environment. */
+export interface NodeMode {
+  /** NODE_ENV, defaulting to "development" when unset. */
+  nodeEnv: string;
+  development: boolean;
+  production: boolean;
+  /** Development under the HMR proxy (`pnpm hmr`). */
+  hmr: boolean;
+}
 
-const assetServerOptions: Parameters<typeof createAssetServer>[0] = {
-  basePath: "/assets",
-  mounts: {
-    app: "app",
-    node_modules: "node_modules",
-  },
-  ...browserBoundary,
-  files: { extensions: [".woff2"] },
-  sourceMaps: isDevelopment ? "external" : undefined,
-  minify: !isDevelopment,
-  watch: isDevelopment
-    ? { ignore: ["dist/**", "node_modules/**", "test-results/**"] }
-    : false,
-  // Content fingerprints need files that stay put, so only production uses them.
-  fingerprint: isProduction,
-  hmr: isHmr
-    ? {
-        channel: async () =>
-          (await import("remix/node-hmr/runtime")).createBrowserHmrChannel(),
-        moduleImporter: "remix/multiple-import-maps-polyfill",
-      }
-    : undefined,
-  scripts: {
-    define: {
-      "process.env.NODE_ENV": JSON.stringify(nodeEnv),
+export function resolveNodeMode(
+  env: Record<string, string | undefined>,
+): NodeMode {
+  let nodeEnv = env.NODE_ENV ?? "development";
+  let development = nodeEnv === "development";
+  return {
+    nodeEnv,
+    development,
+    production: nodeEnv === "production",
+    hmr: development && Boolean(env.REMIX_NODE_HMR),
+  };
+}
+
+export async function createNodeAssetServer(mode: NodeMode) {
+  return createAssetServer({
+    basePath: "/assets",
+    mounts: {
+      app: "app",
+      node_modules: "node_modules",
     },
-    loaders: isHmr
-      ? [(await import("remix/component-hmr/assets")).componentHmr()]
+    ...browserBoundary,
+    files: { extensions: [".woff2"] },
+    sourceMaps: mode.development ? "external" : undefined,
+    minify: !mode.development,
+    watch: mode.development
+      ? { ignore: ["dist/**", "node_modules/**", "test-results/**"] }
+      : false,
+    // Content fingerprints need files that stay put, so only production uses them.
+    fingerprint: mode.production,
+    hmr: mode.hmr
+      ? {
+          channel: async () =>
+            (await import("remix/node-hmr/runtime")).createBrowserHmrChannel(),
+          moduleImporter: "remix/multiple-import-maps-polyfill",
+        }
       : undefined,
-  },
-};
-export const assets = createAssetServer(assetServerOptions);
+    scripts: {
+      define: {
+        "process.env.NODE_ENV": JSON.stringify(mode.nodeEnv),
+      },
+      loaders: mode.hmr
+        ? [(await import("remix/component-hmr/assets")).componentHmr()]
+        : undefined,
+    },
+  });
+}

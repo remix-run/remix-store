@@ -1,9 +1,10 @@
 import { css, type Handle } from "remix/component";
 import { createMultiMatcher } from "remix/route-pattern/match";
 
-import { CartShell } from "../assets/public/cart.tsx";
-import { MobileMenu, RemixLogo } from "../assets/public/navbar.tsx";
-import type { CartInitialData } from "../data/cart.ts";
+import { CartShell } from "./public/cart/cart.tsx";
+import { MobileMenu } from "./public/mobile-menu.tsx";
+import { RemixLogo } from "./public/remix-logo.tsx";
+import type { CartInitialData } from "../data/public/cart.ts";
 import {
   marketPath,
   resolveMarketPath,
@@ -14,7 +15,7 @@ import { routes } from "../routes.ts";
 import type {
   NavigationMenuData,
   StoreWideSaleData,
-} from "../data/storefront.ts";
+} from "../data/public/types.ts";
 import { StoreWideSaleMarquee } from "./store-wide-sale.tsx";
 
 interface NavbarProps {
@@ -44,7 +45,10 @@ export function Navbar(handle: Handle<NavbarProps>) {
         ) : null}
         <header mix={navbarStyle}>
           <a
-            href={marketPath("/", handle.props.market.pathPrefix)}
+            href={marketPath(
+              routes.home.href(),
+              handle.props.market.pathPrefix,
+            )}
             aria-label="Remix Store home"
             data-rmx-prefetch="intent"
             mix={homeLinkStyle}

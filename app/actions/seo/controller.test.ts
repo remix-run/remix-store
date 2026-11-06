@@ -9,7 +9,8 @@ import {
   navigationData,
   type StorefrontHandler,
   type StorefrontRequestBody,
-} from "../../testing/storefront.ts";
+  type StorefrontOperations,
+} from "../../testing/fake-storefront.ts";
 
 describe("SEO resource routes", () => {
   it("publishes crawler rules while loading only the required shop identity", async () => {
@@ -83,7 +84,9 @@ describe("SEO resource routes", () => {
       operation: string;
       variables: StorefrontRequestBody["variables"];
     }> = [];
-    let resource = (handle: string) => ({
+    let resource = (
+      handle: string,
+    ): StorefrontOperations["RemixSitemapResources"] => ({
       sitemap: {
         resources: {
           hasNextPage: false,
@@ -323,8 +326,15 @@ describe("SEO resource routes", () => {
   });
 });
 
+function sitemapIndex(): StorefrontOperations["RemixSitemapIndex"] {
+  return {
+    products: { pagesCount: { count: 2 } },
+    collections: { pagesCount: { count: 1 } },
+  };
+}
+
 function seoApp(
-  resourceHandler: StorefrontHandler = () => ({
+  resourceHandler: StorefrontHandler<"RemixSitemapResources"> = () => ({
     sitemap: { resources: { hasNextPage: false, items: [] } },
   }),
   onShellQuery: () => void = () => {},
@@ -343,11 +353,11 @@ function seoApp(
         onShellQuery();
         return navigationData();
       },
-      RemixSitemapIndex: () => ({
-        products: { pagesCount: { count: 2 } },
-        collections: { pagesCount: { count: 1 } },
-      }),
+      RemixSitemapIndex: sitemapIndex,
+      RemixCanadianSitemapIndex: sitemapIndex,
       RemixSitemapResources: resourceHandler,
+      // Both markets share fixtures; the query documents differ only in context.
+      RemixCanadianSitemapResources: (body) => resourceHandler(body),
     }),
   );
 }

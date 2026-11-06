@@ -1,6 +1,7 @@
 import * as assert from "remix/assert";
 import { describe, it } from "remix/test";
 
+import type { ProductData } from "../../data/public/product.ts";
 import { routes } from "../../routes.ts";
 import {
   analyticsShopData,
@@ -8,9 +9,38 @@ import {
   createTestApp,
   navigationData,
   type StorefrontRequestBody,
-} from "../../testing/storefront.ts";
+  type StorefrontOperations,
+} from "../../testing/fake-storefront.ts";
 
 describe("product routes", () => {
+  it("sends Shop Pay to the store domain without a checkout domain", async () => {
+    let app = createTestApp(
+      createStorefrontFetch({
+        RemixAnalyticsShop: analyticsShopData,
+        RemixNavigation: navigationData,
+        RemixProductNavigation: () => ({
+          menu: null,
+          shop: { primaryDomain: { url: "https://example.com" } },
+        }),
+        RemixProduct: () => ({ product: productData() }),
+      }),
+      { env: { PUBLIC_CHECKOUT_DOMAIN: undefined } },
+    );
+
+    let response = await app.fetch(
+      new Request(
+        `https://example.com${routes.products.show.href({ handle: "test-product" })}`,
+      ),
+    );
+    let html = await response.text();
+
+    let shopPayHref = html
+      .match(/<a [^>]*aria-label="Buy with Shop Pay"[^>]*>/)?.[0]
+      .match(/href="([^"]+)"/)?.[1];
+    assert.ok(shopPayHref);
+    assert.equal(new URL(shopPayHref).origin, "https://example.myshopify.com");
+  });
+
   it("resolves URL options and renders safe, no-JS variant and cart controls", async () => {
     let variables: StorefrontRequestBody["variables"] | undefined;
     let app = createTestApp(
@@ -99,7 +129,7 @@ describe("product routes", () => {
           localization: { country: { currency: { isoCode: "CAD" } } },
         }),
         RemixNavigation: navigationData,
-        RemixProductNavigation: () => ({ menu: null, shop: null }),
+        RemixProductNavigation: noProductMenu,
         RemixProduct(body) {
           variables = body.variables;
           return { product: data };
@@ -132,7 +162,7 @@ describe("product routes", () => {
       createStorefrontFetch({
         RemixAnalyticsShop: analyticsShopData,
         RemixNavigation: navigationData,
-        RemixProductNavigation: () => ({ menu: null, shop: null }),
+        RemixProductNavigation: noProductMenu,
         RemixProduct: () => ({ product: data }),
       }),
     );
@@ -162,7 +192,7 @@ describe("product routes", () => {
       createStorefrontFetch({
         RemixAnalyticsShop: analyticsShopData,
         RemixNavigation: navigationData,
-        RemixProductNavigation: () => ({ menu: null, shop: null }),
+        RemixProductNavigation: noProductMenu,
         RemixProduct: () => ({ product: null }),
       }),
     );
@@ -184,7 +214,7 @@ describe("product routes", () => {
       createStorefrontFetch({
         RemixAnalyticsShop: analyticsShopData,
         RemixNavigation: navigationData,
-        RemixProductNavigation: () => ({ menu: null, shop: null }),
+        RemixProductNavigation: noProductMenu,
         RemixProduct() {
           if (!shopifyAvailable) throw new TypeError("Shopify unavailable");
           return { product: productData() };
@@ -220,7 +250,7 @@ describe("product routes", () => {
           events.push("shell loaded");
           return navigationData();
         },
-        RemixProductNavigation: () => ({ menu: null, shop: null }),
+        RemixProductNavigation: noProductMenu,
         RemixProduct() {
           events.push("product requested");
           releaseShell();
@@ -240,7 +270,15 @@ describe("product routes", () => {
   });
 });
 
-function productData() {
+/** Product navigation for a store without a product menu. */
+function noProductMenu(): StorefrontOperations["RemixProductNavigation"] {
+  return {
+    menu: null,
+    shop: { primaryDomain: { url: "https://example.com" } },
+  };
+}
+
+function productData(): ProductData {
   let red = variant({
     availableForSale: true,
     id: "gid://shopify/ProductVariant/111",
@@ -307,6 +345,10 @@ function productData() {
   };
 }
 
+type ProductVariant = NonNullable<
+  ProductData["selectedOrFirstAvailableVariant"]
+>;
+
 type ProductImageFixture = {
   altText: string;
   height: number;
@@ -335,7 +377,7 @@ function variant({
   id: string;
   image: ProductImageFixture;
   selectedOptions: Array<{ name: string; value: string }>;
-}) {
+}): ProductVariant {
   return {
     availableForSale,
     compareAtPrice: null,

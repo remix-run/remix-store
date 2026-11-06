@@ -1,10 +1,10 @@
 import { css, type Handle } from "remix/component";
 
-import { PageTitle } from "../../assets/public/page-title.tsx";
+import { PageTitle } from "../../ui/public/page-title.tsx";
 import {
   SubscribeForm,
   type SubscribeResponse,
-} from "../../assets/public/subscribe-form.tsx";
+} from "../../ui/public/subscribe-form.tsx";
 import { Document } from "../../ui/document.tsx";
 
 export function SubscribePage(

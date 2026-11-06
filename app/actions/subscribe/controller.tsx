@@ -1,26 +1,27 @@
-import type { Renderer } from "remix/middleware/render";
 import { SuperHeaders } from "remix/headers";
 import { createController } from "remix/router";
 import { redirect } from "remix/response/redirect";
-import type { RemixNode, SerializableObject } from "remix/component";
+import type { SerializableObject } from "remix/component";
 
 import {
+  AdminApiError,
   createAdminCustomerClient,
   subscribeCustomer,
-} from "../../data/admin.server.ts";
-import {
-  type RateLimiter,
-  subscriptionRateLimiter,
-} from "../../data/rate-limit.ts";
+} from "./admin.ts";
+import { type RateLimiter, subscriptionRateLimiter } from "./rate-limit.ts";
 import {
   backInStockTags,
   isSubscriptionValidationError,
   parseSubscriptionForm,
-} from "../../data/subscription.ts";
-import { verifyBackInStockSubscription } from "../../data/storefront.ts";
+} from "./form.ts";
+import { queryBackInStockEligibleVariant } from "../../data/product.ts";
+import { isStorefrontFailure } from "../../data/storefront.ts";
 import { cacheControl } from "../../lib/cache-control.ts";
-import { marketPath, type ActiveMarket } from "../../lib/public/market.ts";
-import { getRuntime } from "../../runtime.ts";
+import {
+  marketPath,
+  marketUrl,
+  type ActiveMarket,
+} from "../../lib/public/market.ts";
 import { routes } from "../../routes.ts";
 import { SubscribePage } from "./page.tsx";
 
@@ -42,37 +43,37 @@ export function createSubscribeController(
   return createController(routes.subscribe, {
     actions: {
       async index({ market, render, url }) {
-        return render(
-          <SubscribePage
-            action={marketPath(
-              routes.subscribe.action.href(),
-              market.pathPrefix,
-            )}
-            canonicalUrl={
-              url.origin +
-              marketPath(routes.subscribe.index.href(), market.pathPrefix)
-            }
-          />,
-          {
-            headers: new SuperHeaders({ cacheControl: cacheControl.browsing }),
-          },
-        );
+        return render(subscribePage(url, market), {
+          headers: new SuperHeaders({ cacheControl: cacheControl.browsing }),
+        });
       },
-      async action({ market, render, request, storefrontClient, url }) {
+      async action({
+        buyerIp,
+        env,
+        market,
+        render,
+        request,
+        storefrontClient,
+        url,
+      }) {
         let headers = new SuperHeaders({
           cacheControl: cacheControl.privateNoStore,
         });
+        // JavaScript submissions get JSON. Without it, the form re-renders
+        // the page with the result, or follows a redirect on success.
         let respond = (
           body: SubscriptionBody,
           status: number,
           successRedirect?: string,
-        ) =>
-          subscriptionResponse(request, url, render, market, {
-            body,
-            headers,
-            status,
-            successRedirect,
-          });
+        ) => {
+          if (request.headers.get("Accept")?.includes("application/json")) {
+            return Response.json(body, { status, headers });
+          }
+          if (body.success && successRedirect) {
+            return redirect(successRedirect, { status: 303, headers });
+          }
+          return render(subscribePage(url, market, body), { status, headers });
+        };
 
         if (!isSameOriginRequest(request, url)) {
           return respond(
@@ -84,7 +85,8 @@ export function createSubscribeController(
         let parsed: ReturnType<typeof parseSubscriptionForm>;
         try {
           parsed = parseSubscriptionForm(await readBoundedForm(request));
-        } catch {
+        } catch (error) {
+          if (!(error instanceof InvalidSubscriptionFormError)) throw error;
           return respond(
             { error: "Invalid form submission.", success: false },
             400,
@@ -94,21 +96,7 @@ export function createSubscribeController(
           return respond({ error: parsed.message, success: false }, 400);
         }
 
-        let runtime = getRuntime(request);
-        if (!runtime.buyerIp) {
-          console.error("[subscribe] Trusted buyer IP unavailable");
-          return respond(
-            {
-              error: "Something went wrong. Please try again.",
-              success: false,
-            },
-            503,
-          );
-        }
-        let [ipKey, emailKey] = await rateLimitKeys(
-          runtime.buyerIp,
-          parsed.email,
-        );
+        let [ipKey, emailKey] = await rateLimitKeys(buyerIp, parsed.email);
         let limiter = options.rateLimiter ?? subscriptionRateLimiter;
         let limit = await limiter.consumeMany([ipKey, emailKey]);
         if (!limit.allowed) {
@@ -125,12 +113,23 @@ export function createSubscribeController(
         let tags: string[] = [];
         let message =
           "Thanks for subscribing! We’ll keep you updated on our latest news.";
-        if (parsed.productHandle && parsed.variantId) {
-          let verified = await verifyBackInStockSubscription(
-            storefrontClient,
-            parsed.productHandle,
-            parsed.variantId,
-          );
+        let { product } = parsed;
+        if (product) {
+          let verified;
+          try {
+            verified = await queryBackInStockEligibleVariant(
+              storefrontClient,
+              product.handle,
+              product.variantId,
+            );
+          } catch (error) {
+            if (!isStorefrontFailure(error)) throw error;
+            console.error(
+              "[subscribe] Back-in-stock variant lookup failed",
+              error,
+            );
+            return respond(SUBSCRIPTION_FAILED, 502);
+          }
           if (!verified) {
             return respond(
               {
@@ -143,15 +142,14 @@ export function createSubscribeController(
           tags = backInStockTags(
             verified.productHandle,
             verified.variantTitle,
-            parsed.variantId,
+            product.variantId,
           );
           message = "Thanks! We’ll let you know when it’s back in stock.";
         }
 
-        let env = runtime.env ?? {};
         try {
           let admin = createAdminCustomerClient({
-            accessToken: env[["ADMIN", "ACCESS", "TOKEN"].join("_")],
+            accessToken: env.ADMIN_ACCESS_TOKEN,
             fetch: options.adminFetch,
             signal: request.signal,
             storeDomain: env.ADMIN_STORE_DOMAIN ?? env.PUBLIC_STORE_DOMAIN,
@@ -164,24 +162,24 @@ export function createSubscribeController(
             tags,
           });
         } catch (error) {
-          if (request.signal.aborted && error === request.signal.reason)
-            throw error;
-          // Keep Admin details and customer data out of logs and responses.
-          console.error("[subscribe] Shopify Admin subscription failed");
-          return respond(
-            {
-              error: "Something went wrong. Please try again.",
-              success: false,
-            },
-            502,
+          // Anything else, including aborts, reaches the error boundary.
+          if (!(error instanceof AdminApiError)) throw error;
+          // The code is safe to log; Admin responses may hold customer data.
+          console.error(
+            "[subscribe] Shopify Admin subscription failed:",
+            error.code,
           );
+          return respond(SUBSCRIPTION_FAILED, 502);
         }
 
         return respond(
           { message, success: true },
           200,
-          parsed.productHandle
-            ? marketPath("/collections/all", market.pathPrefix)
+          product
+            ? marketPath(
+                routes.collections.show.href({ handle: "all" }),
+                market.pathPrefix,
+              )
             : undefined,
         );
       },
@@ -201,17 +199,31 @@ function isSameOriginRequest(request: Request, url: URL): boolean {
   }
 }
 
+const MAX_FORM_BYTES = 4096;
+
+const SUBSCRIPTION_FAILED: SubscriptionBody = {
+  error: "Something went wrong. Please try again.",
+  success: false,
+};
+
+/** The submission is not a small urlencoded form. */
+class InvalidSubscriptionFormError extends Error {
+  override name = "InvalidSubscriptionFormError";
+}
+
 async function readBoundedForm(request: Request): Promise<FormData> {
   let contentType = request.headers
     .get("Content-Type")
     ?.split(";", 1)[0]
     ?.trim();
   if (contentType !== "application/x-www-form-urlencoded") {
-    throw new TypeError("Unsupported subscription form content type");
+    throw new InvalidSubscriptionFormError(
+      "Unsupported subscription form content type",
+    );
   }
   let declaredLength = Number(request.headers.get("Content-Length"));
-  if (declaredLength > 4096)
-    throw new TypeError("Subscription form is too large");
+  if (declaredLength > MAX_FORM_BYTES)
+    throw new InvalidSubscriptionFormError("Subscription form is too large");
 
   let reader = request.body?.getReader();
   let chunks: Uint8Array[] = [];
@@ -221,9 +233,11 @@ async function readBoundedForm(request: Request): Promise<FormData> {
       let { done, value } = await reader.read();
       if (done || !value) break;
       total += value.byteLength;
-      if (total > 4096) {
+      if (total > MAX_FORM_BYTES) {
         await reader.cancel();
-        throw new TypeError("Subscription form is too large");
+        throw new InvalidSubscriptionFormError(
+          "Subscription form is too large",
+        );
       }
       chunks.push(value);
     }
@@ -243,7 +257,7 @@ async function readBoundedForm(request: Request): Promise<FormData> {
   return form;
 }
 
-async function rateLimitKeys(
+function rateLimitKeys(
   buyerIp: string,
   email: string,
 ): Promise<[string, string]> {
@@ -263,39 +277,20 @@ async function oneWayDigest(value: string): Promise<string> {
     .join("");
 }
 
-function subscriptionResponse(
-  request: Request,
+function subscribePage(
   url: URL,
-  render: Renderer<RemixNode>,
   market: ActiveMarket,
-  init: {
-    body: SubscriptionBody;
-    headers: Headers;
-    status: number;
-    successRedirect?: string;
-  },
-): Response | Promise<Response> {
-  if (request.headers.get("Accept")?.includes("application/json")) {
-    return Response.json(init.body, {
-      status: init.status,
-      headers: init.headers,
-    });
-  }
-  if (init.body.success && init.successRedirect) {
-    return redirect(init.successRedirect, {
-      status: 303,
-      headers: init.headers,
-    });
-  }
-  return render(
+  result?: SubscriptionBody,
+) {
+  return (
     <SubscribePage
       action={marketPath(routes.subscribe.action.href(), market.pathPrefix)}
-      canonicalUrl={
-        url.origin +
-        marketPath(routes.subscribe.index.href(), market.pathPrefix)
-      }
-      result={init.body}
-    />,
-    { status: init.status, headers: init.headers },
+      canonicalUrl={marketUrl(
+        url,
+        routes.subscribe.index.href(),
+        market.pathPrefix,
+      )}
+      result={result}
+    />
   );
 }

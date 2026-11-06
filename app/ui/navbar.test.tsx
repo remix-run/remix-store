@@ -7,7 +7,7 @@ import {
   createStorefrontFetch,
   createTestApp,
   navigationData,
-} from "../testing/storefront.ts";
+} from "../testing/fake-storefront.ts";
 
 describe("navbar", () => {
   it("prefetches only menu links that lead to catalog pages", async () => {

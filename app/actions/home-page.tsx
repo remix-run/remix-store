@@ -1,0 +1,245 @@
+import { formatMoney } from "@shopify/hydrogen";
+import { css, type Handle } from "remix/component";
+
+import { CollectionProducts } from "../ui/collection-products.tsx";
+import { HomeHero } from "./public/home-hero.tsx";
+import { SnowField } from "./public/snow-field.tsx";
+import type { HomeHeroData, HomeLookbookEntryData } from "./home-data.ts";
+import type {
+  ProductCardData,
+  ProductMoney,
+  ProductPageInfoData,
+} from "../data/public/types.ts";
+import { focalPointPosition } from "../lib/image-utils.ts";
+import { marketPath, type ActiveMarket } from "../lib/public/market.ts";
+import { routes } from "../routes.ts";
+import { Document } from "../ui/document.tsx";
+import { shellMarket } from "../ui/shell-data-provider.tsx";
+import { PillIcon, pillLinkStyle } from "../ui/public/pill-link.tsx";
+import { ShopifyImage } from "../ui/public/shopify-image.tsx";
+
+export function HomePage(
+  handle: Handle<{
+    canonicalUrl: string;
+    description?: string | null;
+    hero: HomeHeroData | null;
+    lookbookEntries: HomeLookbookEntryData[];
+    pageInfo: ProductPageInfoData;
+    products: ProductCardData[];
+    showSeasonalSnow: boolean;
+  }>,
+) {
+  return () => {
+    let { hero, lookbookEntries } = handle.props;
+    let market = shellMarket(handle);
+    let [firstEntry, ...remainingEntries] = lookbookEntries;
+    let collectionHandle = hero?.collectionHandle ?? "all";
+
+    return (
+      <Document
+        canonicalUrl={handle.props.canonicalUrl}
+        title="Home"
+        description={handle.props.description ?? undefined}
+      >
+        {handle.props.showSeasonalSnow ? <SnowField /> : null}
+        <main>
+          <HomeHero
+            assetImages={hero?.assetImages ?? []}
+            collectionHref={marketPath(
+              routes.collections.show.href({ handle: collectionHandle }),
+              market.pathPrefix,
+            )}
+            heading="Remix 3 Racing Team Collection"
+            cta="Shop New Items"
+          />
+          <div mix={editorialStyle}>
+            {firstEntry ? (
+              <LookbookEntry entry={firstEntry} market={market} />
+            ) : null}
+            <RunnerPanel />
+            {remainingEntries.map((entry) => (
+              <LookbookEntry key={entry.id} entry={entry} market={market} />
+            ))}
+            {handle.props.products.length ? (
+              <div data-home-catalog="true" mix={homeCatalogStyle}>
+                <CollectionProducts
+                  collectionHandle="all"
+                  pathPrefix={market.pathPrefix}
+                  products={handle.props.products}
+                  pageInfo={handle.props.pageInfo}
+                />
+              </div>
+            ) : null}
+          </div>
+        </main>
+      </Document>
+    );
+  };
+}
+
+function LookbookEntry(
+  handle: Handle<{ entry: HomeLookbookEntryData; market: ActiveMarket }>,
+) {
+  return () => {
+    let { entry } = handle.props;
+    let { product } = entry;
+    let price = product
+      ? lookbookPrice(product.price, handle.props.market.locale)
+      : null;
+
+    return (
+      <section aria-label={product?.title ?? "Coming soon"} mix={lookbookStyle}>
+        <div aria-hidden="true" mix={lookbookImageStyle}>
+          <ShopifyImage
+            image={entry.image}
+            alt=""
+            sizes="100vw"
+            loading="lazy"
+            objectPosition={focalPointPosition(entry.focalPoint ?? undefined)}
+          />
+        </div>
+        {product && price ? (
+          <a
+            href={marketPath(
+              routes.products.show.href({ handle: product.handle }),
+              handle.props.market.pathPrefix,
+            )}
+            aria-label={`${product.title}, ${price}`}
+            data-rmx-prefetch="intent"
+            mix={[pillLinkStyle, lookbookLinkStyle]}
+          >
+            <span aria-hidden="true" data-lookbook-hit-area="true" />
+            <PillIcon name="fast-forward" />
+            <span>{product.title}</span>
+            <span aria-hidden="true" mix={middleDotStyle}>
+              ·
+            </span>
+            <span>{price}</span>
+          </a>
+        ) : (
+          <span
+            aria-label="Coming soon"
+            mix={[pillLinkStyle, lookbookLinkStyle]}
+          >
+            <PillIcon name="mail" />
+            <span>Coming Soon</span>
+          </span>
+        )}
+      </section>
+    );
+  };
+}
+
+function RunnerPanel() {
+  return () => (
+    <section aria-label="Remix runner" mix={runnerPanelStyle}>
+      <div mix={runnerImageContainerStyle}>
+        <picture>
+          <source
+            media="(prefers-reduced-motion: reduce)"
+            srcSet="/brand/remix-runner.svg"
+          />
+          <img
+            src="/brand/remix-runner-animated.svg"
+            width="326"
+            height="206"
+            alt="Silhouette of a runner made of white circles"
+          />
+        </picture>
+      </div>
+    </section>
+  );
+}
+
+function lookbookPrice(
+  price: ProductMoney,
+  locale: ActiveMarket["locale"],
+): string {
+  if (!Number.isFinite(Number(price.amount))) return "Price unavailable";
+  return formatMoney(price, { locale, withoutTrailingZeros: true }).toString();
+}
+
+const editorialStyle = css({ position: "relative" });
+
+const homeCatalogStyle = css({
+  background: "linear-gradient(180deg, #2d2d38, var(--color-black))",
+  padding: "36px 0",
+  "@media (min-width: 810px)": { padding: "48px 0" },
+  "@media (min-width: 1400px)": { padding: "64px 0" },
+});
+
+const lookbookStyle = css({
+  background: "var(--color-black)",
+  height: "640px",
+  position: "relative",
+  "@media (min-width: 810px)": { height: "800px" },
+});
+
+const lookbookImageStyle = css({
+  inset: 0,
+  position: "absolute",
+  "& img": {
+    height: "100%",
+    objectFit: "cover",
+    width: "100%",
+  },
+});
+
+const lookbookLinkStyle = css({
+  bottom: "20px",
+  left: "20px",
+  maxWidth: "calc(100vw - 40px)",
+  position: "absolute",
+  whiteSpace: "nowrap",
+  zIndex: 1,
+  '& [data-lookbook-hit-area="true"]': {
+    bottom: "-20px",
+    height: "640px",
+    left: "-20px",
+    position: "absolute",
+    width: "100vw",
+  },
+  "@media (min-width: 810px)": {
+    bottom: "36px",
+    left: "36px",
+    maxWidth: "calc(100vw - 72px)",
+    '& [data-lookbook-hit-area="true"]': {
+      bottom: "-36px",
+      height: "800px",
+      left: "-36px",
+    },
+  },
+});
+
+const middleDotStyle = css({ fontSize: "1.75rem", lineHeight: 0 });
+
+const runnerPanelStyle = css({
+  alignItems: "center",
+  animation: "runner-brand-background 14s ease-in-out infinite",
+  background: "var(--color-blue-brand)",
+  display: "flex",
+  height: "390px",
+  justifyContent: "center",
+  "@media (min-width: 810px)": { height: "480px" },
+  "@media (min-width: 1400px)": { height: "800px" },
+  "@media (prefers-reduced-motion: reduce)": { animation: "none" },
+});
+
+const runnerImageContainerStyle = css({
+  height: "100%",
+  position: "relative",
+  width: "65%",
+  "@media (min-width: 1640px)": { width: "60%" },
+  "@media (min-width: 2000px)": { width: "55%" },
+  "@media (min-width: 2700px)": { width: "50%" },
+  "& img": {
+    height: "100%",
+    left: "50%",
+    maxWidth: "90%",
+    objectFit: "contain",
+    position: "absolute",
+    top: 0,
+    transform: "translateX(-50%)",
+    width: "100%",
+  },
+});
