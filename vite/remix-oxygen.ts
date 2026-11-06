@@ -29,7 +29,6 @@ export function remixOxygen({
         base: command === "build" && assetBase ? assetBase : undefined,
         environments: {
           ssr: {
-            optimizeDeps: { include: ["sanitize-html"] },
             build: {
               outDir: "dist/server",
               copyPublicDir: false,

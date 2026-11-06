@@ -218,9 +218,10 @@ app without starting an HTTP listener. Runtime adapters call the app's
   `DocumentAssetsProvider`; inline event-handler attributes never run. New
   third-party origins go in `app/middleware/csp.ts`. End-to-end tests import
   `test` from `e2e/test.ts`, which fails on any CSP violation.
-- Raw HTML rendered by JSX must be explicitly authorized with `unsafeHTML()`.
-  Sanitize untrusted HTML first; `unsafeHTML()` preserves input and does not
-  sanitize it. Direct DOM properties such as `template.innerHTML` are not JSX
+- Raw HTML rendered by JSX must be explicitly authorized with `unsafeHTML()`,
+  which preserves input and does not sanitize it. Staff-authored Shopify HTML,
+  such as policy bodies, renders as-is with the CSP as the backstop; sanitize
+  anything less trusted first. Direct DOM properties such as `template.innerHTML` are not JSX
   and remain ordinary browser APIs.
 
 ## Hydrogen Integration

@@ -11,3 +11,15 @@ minimumReleaseAgeStrict: true
 # lifecycle scripts otherwise try to prepare the fetched monorepo package.
 ignoreScripts: true
 trustPolicy: no-downgrade
+# Security floors for dev-only transitive dependencies. @shopify/mini-oxygen
+# still pulls miniflare 3, which asks for undici ^5 and ws 8.18.0, plus
+# youch's cookie ^0.5 and body-parser's qs ~6.14. These lift them to newer,
+# patched releases. Check `pnpm audit` before bumping. mini-oxygen 4.3.0
+# (Miniflare 4) makes the ws and cookie overrides unnecessary; undici (Miniflare
+# 4 pins 7.28.0) and qs (body-parser 1.20.4) still need them. AGENTS.md has
+# the cleanup steps.
+overrides:
+  undici: 7.30.1
+  qs: 6.16.2
+  ws: 8.22.0
+  cookie: 1.1.1

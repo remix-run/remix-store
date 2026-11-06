@@ -25,8 +25,7 @@
   "dependencies": {
     "@pitlane/assets": "0.2.0",
     "@shopify/hydrogen": "2026.10.0",
-    "remix": "3.2.0",
-    "sanitize-html": "2.18.0"
+    "remix": "3.2.0"
   },
   "devDependencies": {
     "@pitlane/vite-plugin-remix": "0.9.0",
@@ -34,7 +33,6 @@
     "@shopify/mini-oxygen": "4.2.3",
     "@shopify/oxygen-workers-types": "4.2.0",
     "@types/node": "24.19.0",
-    "@types/sanitize-html": "2.16.2",
     "@typescript/native": "npm:typescript@7.0.2",
     "graphql": "16.14.2",
     "oxfmt": "0.71.0",
@@ -46,13 +44,5 @@
   "engines": {
     "node": ">=24.3.0"
   },
-  "packageManager": "pnpm@10.33.3",
-  "pnpm": {
-    "overrides": {
-      "undici": "7.30.0",
-      "qs": "6.16.0",
-      "ws": "8.22.0",
-      "cookie": "1.1.1"
-    }
-  }
+  "packageManager": "pnpm@10.33.3"
 }

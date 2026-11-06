@@ -2,8 +2,11 @@ import { css, unsafeHTML, type Handle } from "remix/component";
 
 import { PageTitle } from "../../assets/public/page-title.tsx";
 import type { PolicyData } from "../../data/policies.ts";
-import { sanitizePolicyHtml } from "../../lib/policy-html.ts";
-import type { ActiveMarket } from "../../lib/public/market.ts";
+import {
+  localizeInternalUrl,
+  type ActiveMarket,
+  type MarketPathPrefix,
+} from "../../lib/public/market.ts";
 import { Document } from "../../ui/document.tsx";
 
 export function PolicyPage(
@@ -23,7 +26,7 @@ export function PolicyPage(
         <article
           mix={policyContentStyle}
           innerHTML={unsafeHTML(
-            sanitizePolicyHtml(
+            localizePolicyLinks(
               handle.props.policy.body,
               handle.props.market.pathPrefix,
             ),
@@ -31,6 +34,21 @@ export function PolicyPage(
         />
       </main>
     </Document>
+  );
+}
+
+/**
+ * Policy bodies are staff-authored in Shopify admin and rendered as-is; the
+ * enforced CSP keeps injected script from running. Shopify serializes links
+ * with double-quoted `href`s, so internal links can gain the market prefix
+ * without parsing the document.
+ */
+function localizePolicyLinks(html: string, pathPrefix: MarketPathPrefix) {
+  if (!pathPrefix) return html;
+  return html.replace(
+    /(<a\s[^>]*?\bhref=")([^"]*)"/gi,
+    (_, start: string, href: string) =>
+      `${start}${localizeInternalUrl(href, pathPrefix)}"`,
   );
 }
 
