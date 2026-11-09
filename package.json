@@ -24,8 +24,9 @@
   },
   "dependencies": {
     "@pitlane/assets": "0.2.0",
+    "@remix-run/ui": "https://github.com/remix-run/previews/releases/download/v0.20261106.203057-pr-12228/ui-ff682dc9.tgz",
     "@shopify/hydrogen": "2026.10.0",
-    "remix": "3.2.0"
+    "remix": "https://github.com/remix-run/previews/releases/download/v0.20261106.203057-pr-12228/remix-ff682dc9.tgz"
   },
   "devDependencies": {
     "@pitlane/vite-plugin-remix": "0.9.0",

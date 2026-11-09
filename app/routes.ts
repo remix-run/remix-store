@@ -27,3 +27,8 @@ export const routes = route({
     sitemapResource: get("/sitemap/:type/:page.xml"),
   },
 });
+
+/** Frame names, shared by the markup that names a frame and the code that reads `X-Remix-Target`. */
+export const frames = {
+  subscribe: "subscribe",
+} as const;

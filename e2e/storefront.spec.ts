@@ -595,3 +595,48 @@ test("adds a product to the cart from the product page", async ({ page }) => {
     page.getByRole("heading", { name: "1 item(s) in cart" }),
   ).toBeVisible();
 });
+
+test("submits the signup form in place without navigating", async ({
+  page,
+}) => {
+  await page.goto("/subscribe");
+  let email = page.getByLabel("Email address");
+  await email.fill("member@example.com");
+  let documentLoads = 0;
+  page.on("load", () => (documentLoads += 1));
+
+  await page.getByRole("button", { name: "Subscribe" }).click();
+
+  // The page answers with the form again, showing what happened.
+  await expect(page.getByRole("alert")).toBeVisible();
+  await expect(email).toHaveValue("member@example.com");
+  await expect(page).toHaveURL(/\/subscribe$/);
+  expect(documentLoads).toBe(0);
+});
+
+test("submits a back-in-stock signup through its frame", async ({ page }) => {
+  await page.goto("/products/sold-out-product");
+  let signup = page.getByRole("form", { name: "Notify me when it’s back" });
+  await signup
+    .getByLabel("Email address for stock notifications")
+    .fill("member@example.com");
+  let documentLoads = 0;
+  page.on("load", () => (documentLoads += 1));
+  let response = page.waitForResponse(
+    (response) =>
+      response.request().method() === "POST" &&
+      response.url().includes("/subscribe?product-handle=sold-out-product"),
+  );
+
+  await signup.getByRole("button", { name: "Notify me" }).click();
+
+  // The fixture Admin API fails, and the frame gets the form alone back,
+  // showing that.
+  expect((await response).status()).toBe(502);
+  await expect(signup.getByRole("alert")).toHaveText(/Something went wrong/);
+  await expect(page.getByRole("heading", { name: "Test product" })).toHaveCount(
+    1,
+  );
+  await expect(page).toHaveURL(/\/products\/sold-out-product$/);
+  expect(documentLoads).toBe(0);
+});

@@ -64,6 +64,8 @@ Object.defineProperty(window, "Shopify", {
 describe("product form", () => {
   it("updates variant media and price immediately while preserving URL state", async (t) => {
     let product = createProduct();
+    // The back-in-stock form is frame content, which needs a mounted app.
+    product.subscribeIfBackInStock = null;
     let navigatedTo = "";
     t.after(resetBrowserCartStore);
     t.mock.method(window.navigation, "navigate", (url: string | URL) => {
@@ -232,74 +234,6 @@ describe("product form", () => {
     assert.equal(getComputedStyle(shopPayLink).height, "64px");
   });
 
-  it("hydrates and submits only verified identifiers for the selected sold-out variant", async (t) => {
-    let product = createProduct();
-    let requestBody: URLSearchParams | undefined;
-    t.after(resetBrowserCartStore);
-    t.mock.method(window.navigation, "navigate", () => ({
-      committed: Promise.resolve(),
-      finished: Promise.resolve(),
-    }));
-    t.mock.method(
-      globalThis,
-      "fetch",
-      async (_input: RequestInfo | URL, init?: RequestInit) => {
-        requestBody = parseUrlEncodedBody(init?.body);
-        return Response.json({ message: "Notification saved", success: true });
-      },
-    );
-
-    let { $, act, cleanup } = render(
-      <ProductDetails
-        product={product}
-        search="?Color=Red"
-        shopPayStoreUrl={shopPayStoreUrl}
-      />,
-    );
-    t.after(cleanup);
-    await flushAsync(act);
-    assert.equal($("#back-in-stock-email"), null);
-
-    let blue = $('a[href*="Color=Blue"]');
-    assert.ok(blue instanceof HTMLAnchorElement);
-    await act(() => blue.click());
-    assert.equal(
-      $('input[name="product-handle"]')?.getAttribute("value"),
-      "test-product",
-    );
-    assert.equal(
-      $('input[name="variant-id"]')?.getAttribute("value"),
-      "gid://shopify/ProductVariant/222",
-    );
-    assert.equal($('input[name="variant-title"]'), null);
-
-    let email = $("#back-in-stock-email");
-    let form = email?.closest("form");
-    assert.ok(email instanceof HTMLInputElement);
-    assert.ok(form instanceof HTMLFormElement);
-    email.value = "member@example.com";
-    await act(() =>
-      form.dispatchEvent(
-        new SubmitEvent("submit", { bubbles: true, cancelable: true }),
-      ),
-    );
-    await waitFor(() => $('[role="status"]') !== null, act);
-
-    assert.ok(requestBody);
-    assert.deepEqual([...requestBody.keys()].sort(), [
-      "consent",
-      "email",
-      "product-handle",
-      "variant-id",
-    ]);
-    assert.equal(requestBody?.get("product-handle"), "test-product");
-    assert.equal(
-      requestBody?.get("variant-id"),
-      "gid://shopify/ProductVariant/222",
-    );
-    assert.equal($('[role="status"]')?.textContent, "Notification saved");
-  });
-
   it("hides Shopify’s default-only variant selector", async (t) => {
     let product = createDefaultVariantProduct();
     t.after(resetBrowserCartStore);
@@ -419,13 +353,6 @@ describe("product form", () => {
   });
 });
 
-function parseUrlEncodedBody(
-  body: BodyInit | null | undefined,
-): URLSearchParams {
-  if (body instanceof URLSearchParams) return body;
-  throw new Error("Expected a URL-encoded subscription request body");
-}
-
 function getShopPayLink(
   query: (selector: string) => Element | null,
 ): HTMLAnchorElement | null {
@@ -491,14 +418,4 @@ async function flushAsync(act: Act) {
     await Promise.resolve();
     await Promise.resolve();
   });
-}
-
-async function waitFor(predicate: () => boolean, act: Act) {
-  let deadline = Date.now() + 2_000;
-  while (!predicate()) {
-    if (Date.now() > deadline)
-      throw new Error("Timed out waiting for product form");
-    await new Promise((resolve) => setTimeout(resolve, 0));
-    await act(() => {});
-  }
 }

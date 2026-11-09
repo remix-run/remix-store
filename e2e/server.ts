@@ -214,7 +214,21 @@ function storefrontData(
     case "RemixProduct":
       return {
         product:
-          handle === "sized-product" ? sizedProduct(country) : product(country),
+          handle === "sized-product"
+            ? sizedProduct(country)
+            : handle === "sold-out-product"
+              ? soldOutProduct(country)
+              : product(country),
+      };
+    case "RemixBackInStockSubscription":
+      return {
+        node: {
+          ...soldOutProduct(country).selectedOrFirstAvailableVariant,
+          product: {
+            handle: "sold-out-product",
+            subscribeIfBackInStock: { value: "true" },
+          },
+        },
       };
     case "RemixAnalyticsShop":
       return {
@@ -362,6 +376,29 @@ function sizedProduct(country?: string) {
         height: 630,
       })),
     },
+  };
+}
+
+/** A product whose only variant can be subscribed to for restock news. */
+function soldOutProduct(country?: string) {
+  let soldOut = {
+    ...product(country).selectedOrFirstAvailableVariant,
+    availableForSale: false,
+  };
+  return {
+    ...product(country),
+    handle: "sold-out-product",
+    encodedVariantAvailability: "",
+    options: [
+      {
+        name: "Title",
+        optionValues: [
+          { name: "Default Title", firstSelectableVariant: soldOut },
+        ],
+      },
+    ],
+    selectedOrFirstAvailableVariant: soldOut,
+    subscribeIfBackInStock: { value: "true" },
   };
 }
 
