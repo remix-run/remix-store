@@ -25,8 +25,8 @@ export const documentAssetSources = {
  * and the Vite config fails Oxygen builds and dev requests that cross it.
  */
 export const browserBoundary = {
-  allowFiles: ["app/**/public/**"],
-  allowPackages: ["remix", "@shopify/hydrogen"],
+  allowFiles: ["app/routes.ts", "app/**/public/**"],
+  allowPackages: ["remix", "@remix-run/ui", "@shopify/hydrogen"],
   denyFiles: ["app/**/*.test.*", "app/**/*.spec.*"],
 };
 

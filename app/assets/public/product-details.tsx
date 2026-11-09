@@ -9,7 +9,14 @@ import {
   type ProductFormStoreState,
   type SelectedOption,
 } from "@shopify/hydrogen";
-import { clientEntry, css, navigate, on, type Handle } from "remix/component";
+import {
+  clientEntry,
+  css,
+  Frame,
+  navigate,
+  on,
+  type Handle,
+} from "remix/component";
 
 import type { NavigationMenuData, ProductData } from "../../data/storefront.ts";
 import { getCartApiPath } from "../../lib/public/cart-routes.ts";
@@ -19,6 +26,7 @@ import {
   type ActiveMarket,
 } from "../../lib/public/market.ts";
 import { productSubscriptionsEnabled } from "../../lib/public/subscription.ts";
+import { frames } from "../../routes.ts";
 import { dismissibleDetails } from "../../ui/public/dismissible-details.tsx";
 import { Icon } from "../../ui/public/icon.tsx";
 import { RichText } from "../../ui/public/rich-text.tsx";
@@ -26,7 +34,7 @@ import { getBrowserCartStore } from "./cart-store.ts";
 import { ProductGallery } from "./product-gallery.tsx";
 import { navigationSettled, replaceUrl } from "./remix-navigation.ts";
 import { ExpressShopPayButton } from "./shop-pay-button.tsx";
-import { SubscribeForm } from "./subscribe-form.tsx";
+import { subscribeFormSrc } from "../../lib/public/subscription-form.ts";
 
 type ProductDetailsProps = {
   market?: ActiveMarket;
@@ -253,11 +261,15 @@ export const ProductDetails = clientEntry(
               {selectedVariant &&
               !selectedVariant.availableForSale &&
               productSubscriptionsEnabled(product) ? (
-                <SubscribeForm
-                  action={marketPath("/subscribe", market.pathPrefix)}
-                  mode="back-in-stock"
-                  productHandle={product.handle}
-                  variantId={selectedVariant.id}
+                // Each variant has its own form, so changing variants loads
+                // a new frame instead of reloading this one.
+                <Frame
+                  key={selectedVariant.id}
+                  name={frames.subscribe}
+                  src={subscribeFormSrc(market.pathPrefix, {
+                    handle: product.handle,
+                    variantId: selectedVariant.id,
+                  })}
                 />
               ) : null}
             </div>

@@ -28,11 +28,34 @@ describe("subscribe routes", () => {
     assert.equal(response.status, 200);
     assert.equal(response.headers.get("Cache-Control"), "private, no-store");
     assert.match(html, /<title>Subscribe \| The Remix Store<\/title>/);
-    assert.match(html, /action="\/subscribe" method="post"/);
-    assert.match(html, /type="email" name="email"/);
     assert.match(html, /Enter your email below to subscribe\./);
-    assert.match(html, /type="hidden" name="consent" value="yes"/);
-    assert.doesNotMatch(html, /type="checkbox" name="consent"/);
+    assert.match(html, /action="\/subscribe" method="post"/);
+
+    // What a signup without scripts left behind shows in the same frame.
+    let thanks = await app.fetch(
+      new Request("https://example.com/subscribe?subscription=success"),
+    );
+    assert.match(await thanks.text(), /Thanks for subscribing/);
+    let limited = await app.fetch(
+      new Request("https://example.com/subscribe?subscription=limited"),
+    );
+    assert.match(await limited.text(), /Too many attempts/);
+
+    // The signup frame gets the form alone.
+    let fragment = await app.fetch(
+      new Request("https://example.com/subscribe", { headers: FRAME_HEADERS }),
+    );
+    let form = await fragment.text();
+    assert.equal(fragment.status, 200);
+    assert.equal(fragment.headers.get("X-Robots-Tag"), "noindex");
+    assert.doesNotMatch(form, /<html|<title>/);
+    assert.match(form, /action="\/subscribe" method="post"/);
+    assert.match(form, /type="email"/);
+    assert.match(form, /name="email"/);
+    assert.match(form, /type="hidden"/);
+    assert.match(form, /name="consent"/);
+    assert.match(form, /value="yes"/);
+    assert.doesNotMatch(form, /type="checkbox"/);
   });
 
   it("rejects invalid email, consent, origin, and rate limits before Admin", async () => {
@@ -114,7 +137,6 @@ describe("subscribe routes", () => {
       consent: "yes",
       email: "member@example.com",
     });
-    htmlRequest.headers.delete("Accept");
     let htmlResponse = await app.fetch(htmlRequest);
     let html = await htmlResponse.text();
     assert.equal(htmlResponse.status, 503);
@@ -141,6 +163,7 @@ describe("subscribe routes", () => {
       new Request("https://example.com/subscribe", {
         method: "POST",
         headers: {
+          ...FRAME_HEADERS,
           Origin: "https://example.com",
           "Content-Type": "application/x-www-form-urlencoded",
         },
@@ -163,14 +186,13 @@ describe("subscribe routes", () => {
     { timeout: 2_000 },
     async () => {
       let cancelled = false;
-      let app = createTestApp(async () => {
-        throw new Error("Invalid subscriptions must not query Shopify");
-      });
+      // Only the page shell may query Shopify.
+      let app = createTestApp(createStorefrontFetch(shellHandlers));
       let init: RequestInit & { duplex: "half" } = {
         method: "POST",
         headers: {
+          ...FRAME_HEADERS,
           Origin: "https://example.com",
-          Accept: "application/json",
           "Content-Type": "application/x-www-form-urlencoded",
         },
         duplex: "half",
@@ -197,21 +219,58 @@ describe("subscribe routes", () => {
     },
   );
 
-  it("renders validation errors as HTML without JavaScript", async () => {
+  it("sends a failed post without JavaScript back to the page with the outcome", async () => {
     let app = createTestApp(createStorefrontFetch(shellHandlers), {
       subscribe: { rateLimiter: allowAll() },
     });
-    let request = formRequest({ email: "member@example.com" });
-    request.headers.delete("Accept");
-    let response = await app.fetch(request);
-    let html = await response.text();
-    assert.equal(response.status, 400);
-    assert.match(response.headers.get("Content-Type") ?? "", /text\/html/);
+    let response = await app.fetch(
+      formRequest({ email: "member@example.com" }),
+    );
+    assert.equal(response.status, 303);
+    assert.equal(
+      response.headers.get("Location"),
+      "/subscribe?subscription=invalid",
+    );
+    assert.equal(response.headers.get("Cache-Control"), "private, no-store");
+
+    // The page's signup frame reads the outcome from its URL, not the email.
+    let page = await app.fetch(
+      new Request("https://example.com/subscribe?subscription=invalid"),
+    );
+    let html = await page.text();
+    assert.match(html, /<title>Subscribe \| The Remix Store<\/title>/);
     assert.match(html, /role="alert"/);
-    assert.match(html, /agree to receive emails/);
+    assert.match(html, /Please check your details/);
+    assert.doesNotMatch(html, /member@example\.com/);
   });
 
-  it("subscribes a newsletter customer and renders confirmation without JavaScript", async () => {
+  it("restores the submitted email after a validation error in the frame", async () => {
+    let app = createTestApp(createStorefrontFetch(shellHandlers), {
+      subscribe: { rateLimiter: allowAll() },
+    });
+    let fragment = await post(app, { email: 'Member+"test"@example.com' });
+    let form = await fragment.text();
+    assert.equal(fragment.status, 400);
+    assert.match(form, /value="Member\+&quot;test&quot;@example\.com"/);
+    assert.match(form, /agree to receive emails/);
+  });
+
+  it("does not echo a submitted value when the form itself is invalid", async () => {
+    let app = createTestApp(createStorefrontFetch(shellHandlers), {
+      subscribe: { rateLimiter: allowAll() },
+    });
+    let response = await post(app, {
+      consent: "yes",
+      email: "member@example.com",
+      unexpected: "field",
+    });
+    let html = await response.text();
+    assert.equal(response.status, 400);
+    assert.match(html, /The form submission is invalid\./);
+    assert.doesNotMatch(html, /member@example\.com/);
+  });
+
+  it("subscribes a newsletter customer and redirects to the confirmation without JavaScript", async () => {
     let bodies: AdminBody[] = [];
     let app = createTestApp(createStorefrontFetch(shellHandlers), {
       subscribe: {
@@ -224,14 +283,16 @@ describe("subscribe routes", () => {
       consent: "yes",
       email: "member@example.com",
     });
-    request.headers.delete("Accept");
     request.headers.set("Referer", "https://example.com/subscribe");
     request.headers.delete("Origin");
     let response = await app.fetch(request);
 
-    assert.equal(response.status, 200);
+    assert.equal(response.status, 303);
+    assert.equal(
+      response.headers.get("Location"),
+      "/subscribe?subscription=success",
+    );
     assert.equal(response.headers.get("Cache-Control"), "private, no-store");
-    assert.match(await response.text(), /Thanks for subscribing/);
     assert.equal(bodies.length, 2);
     assert.deepEqual(adminInputTags(bodies[1]!), []);
   });
@@ -333,7 +394,7 @@ describe("subscribe routes", () => {
     }
   });
 
-  it("redirects a successful no-JavaScript back-in-stock submission", async () => {
+  it("returns a successful no-JavaScript back-in-stock submission to its form", async () => {
     let storefrontFetch = createStorefrontFetch({
       ...shellHandlers,
       RemixBackInStockSubscription: () => ({
@@ -351,20 +412,26 @@ describe("subscribe routes", () => {
     let app = createTestApp(storefrontFetch, {
       subscribe: { adminFetch: adminFetch([]), rateLimiter: allowAll() },
     });
-    let request = formRequest({
-      consent: "yes",
-      email: "member@example.com",
-      "product-handle": "test-product",
-      "variant-id": "gid://shopify/ProductVariant/222",
-    });
-    request.headers.delete("Accept");
+    let request = formRequest(
+      {
+        consent: "yes",
+        email: "member@example.com",
+        "product-handle": "test-product",
+        "variant-id": "gid://shopify/ProductVariant/222",
+      },
+      {},
+      `?${BACK_IN_STOCK.replace("&subscription=success", "")}`,
+    );
     let response = await app.fetch(request);
     assert.equal(response.status, 303);
-    assert.equal(response.headers.get("Location"), "/collections/all");
+    assert.equal(
+      response.headers.get("Location"),
+      `/subscribe?${BACK_IN_STOCK}`,
+    );
     assert.equal(response.headers.get("Cache-Control"), "private, no-store");
   });
 
-  it("keeps localized no-JavaScript back-in-stock redirects in Canada", async () => {
+  it("keeps localized no-JavaScript back-in-stock outcomes in Canada", async () => {
     let variables: StorefrontRequestBody["variables"] | undefined;
     let app = createTestApp(
       createStorefrontFetch({
@@ -388,21 +455,27 @@ describe("subscribe routes", () => {
         subscribe: { adminFetch: adminFetch([]), rateLimiter: allowAll() },
       },
     );
-    let request = formRequest({
-      consent: "yes",
-      email: "member@example.com",
-      "product-handle": "test-product",
-      "variant-id": "gid://shopify/ProductVariant/222",
-    });
+    let request = formRequest(
+      {
+        consent: "yes",
+        email: "member@example.com",
+        "product-handle": "test-product",
+        "variant-id": "gid://shopify/ProductVariant/222",
+      },
+      {},
+      `?${BACK_IN_STOCK.replace("&subscription=success", "")}`,
+    );
     request = new Request(
       request.url.replace("/subscribe", "/en-ca/subscribe"),
       request,
     );
-    request.headers.delete("Accept");
 
     let response = await app.fetch(request);
     assert.equal(response.status, 303);
-    assert.equal(response.headers.get("Location"), "/en-ca/collections/all");
+    assert.equal(
+      response.headers.get("Location"),
+      `/en-ca/subscribe?${BACK_IN_STOCK}`,
+    );
     assert.equal(variables?.country, "CA");
     assert.equal(variables?.language, "EN");
   });
@@ -429,7 +502,7 @@ describe("subscribe routes", () => {
     let body = await response.text();
     assert.equal(response.status, 502);
     assert.match(body, /Something went wrong/);
-    assert.doesNotMatch(body, /member@example\.com|customer/);
+    assert.doesNotMatch(body, /customer/);
     assert.doesNotMatch(JSON.stringify(logs), /member@example\.com|customer/);
   });
 });
@@ -459,22 +532,32 @@ function verifiedVariant(
   };
 }
 
+const BACK_IN_STOCK =
+  "product-handle=test-product&variant-id=gid%3A%2F%2Fshopify%2FProductVariant%2F222&subscription=success";
+
+const FRAME_HEADERS = {
+  "X-Remix-Frame": "true",
+  "X-Remix-Target": "subscribe",
+};
+
+/** Posts from the signup form's frame, which answers with a fragment. */
 function post(
   app: ReturnType<typeof createTestApp>,
   fields: Record<string, string>,
   headers?: HeadersInit,
 ) {
-  return app.fetch(formRequest(fields, headers));
+  return app.fetch(formRequest(fields, { ...FRAME_HEADERS, ...headers }));
 }
 
-function formRequest(fields: Record<string, string>, headers?: HeadersInit) {
-  return new Request("https://example.com/subscribe", {
+/** A native form post, which answers with a whole page. */
+function formRequest(
+  fields: Record<string, string>,
+  headers?: HeadersInit,
+  query = "",
+) {
+  return new Request(`https://example.com/subscribe${query}`, {
     method: "POST",
-    headers: {
-      Accept: "application/json",
-      Origin: "https://example.com",
-      ...headers,
-    },
+    headers: { Origin: "https://example.com", ...headers },
     body: new URLSearchParams(fields),
   });
 }

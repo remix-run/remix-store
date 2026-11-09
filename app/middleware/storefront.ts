@@ -28,7 +28,7 @@ import {
 } from "../lib/public/market.ts";
 import { cacheControl } from "../lib/cache-control.ts";
 import { routeTemplates } from "../lib/public/route-templates.ts";
-import { routes } from "../routes.ts";
+import { frames, routes } from "../routes.ts";
 import { getRuntime, type Env } from "../runtime.ts";
 import type { ShellData } from "../ui/shell-data.tsx";
 import { MarketConfig } from "./market.tsx";
@@ -81,26 +81,23 @@ export function storefront(options: StorefrontOptions = {}): Middleware<
     let runtime = getRuntime(context.request);
     let env = { ...runtime.env, ...options.env };
 
-    if (
-      !runtime.buyerIp &&
+    let isSubscribePost =
       context.request.method === "POST" &&
-      context.url.pathname === routes.subscribe.action.href()
-    ) {
+      context.url.pathname === routes.subscribe.action.href();
+
+    if (!runtime.buyerIp && isSubscribePost) {
       // Subscription abuse controls require an adapter-supplied, trusted IP.
       // Fail closed before Storefront/Admin work, without logging request data.
       let headers = new SuperHeaders({
         cacheControl: cacheControl.privateNoStore,
+        contentType: "text/html; charset=utf-8",
       });
-      let body = {
-        error: "Something went wrong. Please try again.",
-        success: false,
-      };
-      if (context.request.headers.get("Accept")?.includes("application/json")) {
-        return Response.json(body, { status: 503, headers });
-      }
-      headers.contentType = "text/html; charset=utf-8";
+      let alert = '<p role="alert">Something went wrong. Please try again.</p>';
+      // The signup form's frame shows the alert in place of the form.
       return new Response(
-        '<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Subscribe unavailable</title></head><body><main><h1>Subscribe</h1><p role="alert">Something went wrong. Please try again.</p></main></body></html>',
+        isSubscribeFrame(context.request)
+          ? alert
+          : `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Subscribe unavailable</title></head><body><main><h1>Subscribe</h1>${alert}</main></body></html>`,
         { status: 503, headers },
       );
     }
@@ -217,13 +214,12 @@ export function storefront(options: StorefrontOptions = {}): Middleware<
       );
     }
 
-    // Subscription POSTs need the request-scoped Storefront client for fresh
-    // variant verification, and product grid fragments render only cards, so
-    // neither needs shell/cart network requests.
+    // Product grid and signup form fragments render only their own content,
+    // and signup posts only redirect, so they need no shell/cart requests.
     if (
-      (context.request.method === "POST" &&
-        context.url.pathname === routes.subscribe.action.href()) ||
-      isProductGridFragment(context.url)
+      isProductGridFragment(context.url) ||
+      isSubscribeFrame(context.request) ||
+      isSubscribePost
     ) {
       return applyResponseHeaders(requestContext, await next());
     }
@@ -266,6 +262,11 @@ export function storefront(options: StorefrontOptions = {}): Middleware<
  */
 export function isClientNavigation(request: Request): boolean {
   return request.headers.get("X-Remix-Frame") === "true";
+}
+
+/** Requests for the signup form alone, from its frame. */
+export function isSubscribeFrame(request: Request): boolean {
+  return request.headers.get("X-Remix-Target") === frames.subscribe;
 }
 
 function requestWithUrl(request: Request, url: URL): Request {

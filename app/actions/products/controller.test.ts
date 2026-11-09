@@ -120,7 +120,10 @@ describe("product routes", () => {
       /rel="canonical" href="https:\/\/example\.com\/en-ca\/products\/test-product"/,
     );
     assert.match(html, /action="\/en-ca\/api\/cart" method="post"/);
-    assert.match(html, /action="\/en-ca\/subscribe" method="post"/);
+    assert.match(
+      html,
+      /action="\/en-ca\/subscribe\?product-handle=[^"]+" method="post"/,
+    );
     assert.match(html, /href="\/en-ca\/products\/test-product\?/);
     assert.match(html, /currencyCode.{0,20}CAD/);
   });
@@ -148,11 +151,14 @@ describe("product routes", () => {
       html,
       /This size is currently out of stock\. Sign up to be notified by\s+email when restock this size\./,
     );
-    assert.match(html, /action="\/subscribe" method="post"/);
-    assert.match(html, /name="product-handle" value="test-product"/);
     assert.match(
       html,
-      /name="variant-id" value="gid:\/\/shopify\/ProductVariant\/222"/,
+      /action="\/subscribe\?product-handle=test-product&amp;variant-id=gid%3A%2F%2Fshopify%2FProductVariant%2F222" method="post"/,
+    );
+    assert.match(html, /value="test-product"[^>]*name="product-handle"/);
+    assert.match(
+      html,
+      /value="gid:\/\/shopify\/ProductVariant\/222"[^>]*name="variant-id"/,
     );
     assert.doesNotMatch(html, /name="variant-title"|name="tags"/);
   });

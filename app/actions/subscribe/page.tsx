@@ -1,18 +1,11 @@
-import { css, type Handle } from "remix/component";
+import { css, Frame, type Handle } from "remix/component";
 
+import { frames } from "../../routes.ts";
 import { PageTitle } from "../../assets/public/page-title.tsx";
-import {
-  SubscribeForm,
-  type SubscribeResponse,
-} from "../../assets/public/subscribe-form.tsx";
 import { Document } from "../../ui/document.tsx";
 
 export function SubscribePage(
-  handle: Handle<{
-    action: string;
-    canonicalUrl: string;
-    result?: SubscribeResponse;
-  }>,
+  handle: Handle<{ canonicalUrl: string; src: string }>,
 ) {
   return () => (
     <Document
@@ -27,11 +20,7 @@ export function SubscribePage(
             Stay up to date with our latest products, special offers, and news.
             Enter your email below to subscribe.
           </p>
-          <SubscribeForm
-            action={handle.props.action}
-            initialResult={handle.props.result}
-            mode="newsletter"
-          />
+          <Frame name={frames.subscribe} src={handle.props.src} />
         </div>
       </main>
     </Document>
