@@ -1,6 +1,7 @@
 import { SuperHeaders } from "remix/headers";
 import { createController, type RouterTypes } from "remix/router";
 import { redirect } from "remix/response/redirect";
+import type { FormSubmission } from "remix/data-schema/experimental/form";
 
 import {
   createAdminCustomerClient,
@@ -26,13 +27,6 @@ import { isSubscribeFrame } from "../../middleware/storefront.ts";
 import { getRuntime } from "../../runtime.ts";
 import { routes } from "../../routes.ts";
 import { SubscribeForm } from "../../assets/public/subscribe-form.tsx";
-import {
-  BACK_IN_STOCK_MESSAGE,
-  NEWSLETTER_MESSAGE,
-  outcomeFromKey,
-  outcomeKey,
-  type Outcome,
-} from "./outcome.ts";
 import { SubscribePage } from "./page.tsx";
 import {
   isSameOriginRequest,
@@ -58,7 +52,10 @@ export function createSubscribeController(
         let headers = new SuperHeaders({ cacheControl: cacheControl.browsing });
 
         if (isSubscribeFrame(request)) {
-          let { message, submission } = outcomeFromKey(outcome, product);
+          let { message, submission } = outcomeFromKey(
+            outcome,
+            Boolean(product),
+          );
           // Frame content is not a document to index.
           headers.set("X-Robots-Tag", "noindex");
           return render(
@@ -124,11 +121,50 @@ export function createSubscribeController(
 
 type Context = RouterTypes["context"];
 
+/** What the signup form shows: a confirmation, or what went wrong. */
+interface Outcome {
+  message?: string;
+  submission?: FormSubmission;
+}
+
 /** What came of a signup: the response to give, and what the form shows. */
 type SubscribeResult = {
   headers: SuperHeaders;
   status: number;
 } & Outcome;
+
+const NEWSLETTER_MESSAGE =
+  "Thanks for subscribing! We’ll keep you updated on our latest news.";
+const BACK_IN_STOCK_MESSAGE =
+  "Thanks! We’ll let you know when it’s back in stock.";
+
+const failures: Record<string, string> = {
+  invalid: "Please check your details and try again.",
+  limited: "Too many attempts. Please try again later.",
+  error: "Something went wrong. Please try again.",
+};
+
+/**
+ * A signup without scripts can't hand its result to the form's frame, so it
+ * goes in the page's URL as a key from the response status. No form data.
+ */
+function outcomeKey(status: number): string {
+  if (status === 200) return "success";
+  return status === 400 ? "invalid" : status === 429 ? "limited" : "error";
+}
+
+/** The reverse of `outcomeKey`: what the frame shows for a key in the URL. */
+function outcomeFromKey(key: string | null, backInStock: boolean): Outcome {
+  if (key === "success") {
+    return {
+      message: backInStock ? BACK_IN_STOCK_MESSAGE : NEWSLETTER_MESSAGE,
+    };
+  }
+  if (key && Object.hasOwn(failures, key)) {
+    return { submission: formFailure(failures[key]!) };
+  }
+  return {};
+}
 
 async function subscribe(
   { request, storefrontClient, url }: Context,

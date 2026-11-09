@@ -34,23 +34,26 @@ export const SubscribeForm = clientEntry(
     // The frame reloading is the pending state, however it was started.
     let activeReload: FrameReloadStartEvent | undefined;
     let failed = false;
-    handle.frame.addEventListener(
-      "reloadStart",
-      async (event) => {
-        activeReload = event;
-        failed = false;
-        handle.update();
-        try {
-          await event.finished;
-        } catch {
-          if (activeReload === event) failed = true;
-        }
-        if (handle.signal.aborted || activeReload !== event) return;
-        activeReload = undefined;
-        handle.update();
-      },
-      { signal: handle.signal },
-    );
+    // Listen once mounted: setup also runs while rendering on the server.
+    handle.queueTask(() => {
+      handle.frame.addEventListener(
+        "reloadStart",
+        async (event) => {
+          activeReload = event;
+          failed = false;
+          handle.update();
+          try {
+            await event.finished;
+          } catch {
+            if (activeReload === event) failed = true;
+          }
+          if (handle.signal.aborted || activeReload !== event) return;
+          activeReload = undefined;
+          handle.update();
+        },
+        { signal: handle.signal },
+      );
+    });
 
     // Client feedback waits for a blocked submit, so people aren't told their
     // email is wrong just for tabbing past the field.
