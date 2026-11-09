@@ -1,5 +1,6 @@
 import { SuperHeaders } from "remix/headers";
 import { createController, type RouterTypes } from "remix/router";
+import { parseFormData } from "remix/form-data-parser";
 import { redirect } from "remix/response/redirect";
 import type { FormSubmission } from "remix/data-schema/experimental/form";
 
@@ -28,11 +29,6 @@ import { getRuntime } from "../../runtime.ts";
 import { routes } from "../../routes.ts";
 import { SubscribeForm } from "../../assets/public/subscribe-form.tsx";
 import { SubscribePage } from "./page.tsx";
-import {
-  isSameOriginRequest,
-  rateLimitKeys,
-  readBoundedForm,
-} from "./request.ts";
 
 export interface SubscribeControllerOptions {
   adminFetch?: typeof globalThis.fetch;
@@ -185,7 +181,9 @@ async function subscribe(
 
   let parsed: ReturnType<typeof parseSubscriptionForm>;
   try {
-    parsed = parseSubscriptionForm(await readBoundedForm(request));
+    parsed = parseSubscriptionForm(
+      await parseFormData(request, { maxParts: 8, maxTotalSize: 4096 }),
+    );
   } catch {
     return fail(400, "Invalid form submission.");
   }
@@ -249,4 +247,36 @@ async function subscribe(
   }
 
   return { headers, message, status: 200 };
+}
+
+function isSameOriginRequest(request: Request, url: URL): boolean {
+  let origin = request.headers.get("Origin");
+  if (origin) return origin === url.origin;
+  let referer = request.headers.get("Referer");
+  if (!referer) return false;
+  try {
+    return new URL(referer).origin === url.origin;
+  } catch {
+    return false;
+  }
+}
+
+async function rateLimitKeys(
+  buyerIp: string,
+  email: string,
+): Promise<[string, string]> {
+  return Promise.all([
+    oneWayDigest(`ip:${buyerIp}`),
+    oneWayDigest(`email:${email}`),
+  ]);
+}
+
+async function oneWayDigest(value: string): Promise<string> {
+  let digest = await crypto.subtle.digest(
+    "SHA-256",
+    new TextEncoder().encode(value),
+  );
+  return [...new Uint8Array(digest)]
+    .map((byte) => byte.toString(16).padStart(2, "0"))
+    .join("");
 }
