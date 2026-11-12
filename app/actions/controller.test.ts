@@ -52,6 +52,35 @@ describe("platform skeleton", () => {
     assert.equal(response.headers.get("Cache-Control"), "private, no-store");
   });
 
+  it("allows Shopify's origins and the shop's domains in the CSP", async () => {
+    let response = await fetchHome();
+    let html = await response.text();
+    let policy = response.headers.get("Content-Security-Policy") ?? "";
+    let nonce = html.match(
+      /<script src="\/assets\/entry\.js"[^>]* nonce="([^"]+)"/,
+    )?.[1];
+    let directives = new Map(
+      policy.split(";").map((directive) => {
+        let [name = "", ...sources] = directive.trim().split(/\s+/);
+        return [name, sources];
+      }),
+    );
+
+    assert.deepEqual(directives.get("script-src"), [
+      `'nonce-${nonce}'`,
+      "'strict-dynamic'",
+    ]);
+    assert.deepEqual(directives.get("base-uri"), ["'none'"]);
+    for (let origin of [
+      "https://shop.app",
+      "https://example.myshopify.com",
+      "https://checkout.example.com",
+    ]) {
+      assert.ok(directives.get("frame-src")?.includes(origin), origin);
+      assert.ok(directives.get("connect-src")?.includes(origin), origin);
+    }
+  });
+
   it("inlines every sprite symbol the page references", async () => {
     let html = await (await fetchHome()).text();
     let symbols = new Set(
