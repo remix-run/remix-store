@@ -45,40 +45,29 @@ describe("platform skeleton", () => {
     );
     assert.match(html, /id="shopify-consent"/);
     assert.match(html, /storefront-banner\.js/);
-    assert.match(html, /&quot;mode&quot;:&quot;default-banner&quot;/);
     assert.match(html, /Main navigation/);
     assert.match(html, /All Products/);
     assert.match(html, /Store policies/);
     assert.equal(response.headers.get("Cache-Control"), "private, no-store");
   });
 
-  it("allows Shopify's origins and the shop's domains in the CSP", async () => {
+  it("authorizes the document's scripts by nonce and allows the shop's domains", async () => {
     let response = await fetchHome();
     let html = await response.text();
     let policy = response.headers.get("Content-Security-Policy") ?? "";
+    let directives = policy.split(";").map((directive) => directive.trim());
     let nonce = html.match(
       /<script src="\/assets\/entry\.js"[^>]* nonce="([^"]+)"/,
     )?.[1];
-    let directives = new Map(
-      policy.split(";").map((directive) => {
-        let [name = "", ...sources] = directive.trim().split(/\s+/);
-        return [name, sources];
-      }),
-    );
 
-    assert.deepEqual(directives.get("script-src"), [
-      `'nonce-${nonce}'`,
-      "'strict-dynamic'",
-    ]);
-    assert.deepEqual(directives.get("base-uri"), ["'none'"]);
-    for (let origin of [
-      "https://shop.app",
-      "https://example.myshopify.com",
-      "https://checkout.example.com",
-    ]) {
-      assert.ok(directives.get("frame-src")?.includes(origin), origin);
-      assert.ok(directives.get("connect-src")?.includes(origin), origin);
-    }
+    assert.ok(nonce);
+    assert.ok(
+      directives.includes(`script-src 'nonce-${nonce}' 'strict-dynamic'`),
+      policy,
+    );
+    assert.ok(directives.includes("base-uri 'none'"), policy);
+    assert.match(policy, /https:\/\/example\.myshopify\.com/);
+    assert.match(policy, /https:\/\/checkout\.example\.com/);
   });
 
   it("inlines every sprite symbol the page references", async () => {

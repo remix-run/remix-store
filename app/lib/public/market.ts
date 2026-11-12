@@ -34,10 +34,10 @@ export const MARKETS: readonly ActiveMarket[] = [US_MARKET, CA_MARKET];
  * must match the market's `pathPrefix`.
  */
 export const i18n = defineShopifyI18n({
-  defaultLocale: { language: "EN", country: "US" },
+  defaultLocale: { language: US_MARKET.language, country: US_MARKET.country },
   routing: {
     type: "pathname",
-    locales: [{ language: "EN", country: "CA" }],
+    locales: [{ language: CA_MARKET.language, country: CA_MARKET.country }],
   },
 });
 
