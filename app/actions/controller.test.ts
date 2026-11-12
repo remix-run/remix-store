@@ -45,7 +45,7 @@ describe("platform skeleton", () => {
     );
     assert.match(html, /id="shopify-consent"/);
     assert.match(html, /storefront-banner\.js/);
-    assert.match(html, /"mode":"default-banner"/);
+    assert.match(html, /&quot;mode&quot;:&quot;default-banner&quot;/);
     assert.match(html, /Main navigation/);
     assert.match(html, /All Products/);
     assert.match(html, /Store policies/);

@@ -24,13 +24,13 @@
   },
   "dependencies": {
     "@pitlane/assets": "0.2.0",
-    "@shopify/hydrogen": "2026.10.0",
+    "@shopify/hydrogen": "2026.10.3",
     "remix": "3.2.0"
   },
   "devDependencies": {
     "@pitlane/vite-plugin-remix": "0.9.0",
     "@shopify/cli": "4.9.0",
-    "@shopify/mini-oxygen": "4.2.3",
+    "@shopify/mini-oxygen": "4.3.0",
     "@shopify/oxygen-workers-types": "4.2.0",
     "@types/node": "24.19.0",
     "@typescript/native": "npm:typescript@7.0.2",

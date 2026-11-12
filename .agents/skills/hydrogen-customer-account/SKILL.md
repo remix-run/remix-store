@@ -7,7 +7,7 @@ description: >
   GraphQL queries.
 metadata:
   source: "@shopify/hydrogen"
-  version: "2026.10.0"
+  version: "2026.10.3"
   hash: "sha256:4765911d71ce84ef777d6c472b61fa17b25459cfbe00451845da32854304d73c"
 ---
 

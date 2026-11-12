@@ -5,7 +5,7 @@ import {
 import * as assert from "remix/assert";
 import { describe, it } from "remix/test";
 
-import { US_MARKET } from "../lib/public/market.ts";
+import { i18n } from "../lib/public/market.ts";
 import {
   queryCollection,
   queryHome,
@@ -465,7 +465,7 @@ function createTestClient(fetch: typeof globalThis.fetch) {
     type: "public",
     requestContext: createShopifyRequestContext({
       request: new Request("https://storefront.example/"),
-      i18n: US_MARKET,
+      i18n,
     }),
     config: {
       storeDomain: "example.myshopify.com",

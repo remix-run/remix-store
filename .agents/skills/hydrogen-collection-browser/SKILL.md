@@ -7,7 +7,7 @@ description: >
   browse state in storefront frameworks.
 metadata:
   source: "@shopify/hydrogen"
-  version: "2026.10.0"
+  version: "2026.10.3"
   hash: "sha256:2a4ed3e893d1bda96e3ba96b00a6a0444cdff78694248147772d2deec2b12896"
 ---
 

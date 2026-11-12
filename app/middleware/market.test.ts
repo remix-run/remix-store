@@ -1,8 +1,14 @@
+import {
+  getLocalePathSegment,
+  getSupportedLocales,
+  matchLocale,
+} from "@shopify/hydrogen";
 import * as assert from "remix/assert";
 import { describe, it } from "remix/test";
 
 import {
   CA_MARKET,
+  i18n,
   resolveMarketPath,
   US_MARKET,
 } from "../lib/public/market.ts";
@@ -22,7 +28,28 @@ describe("market routing", () => {
     });
   });
 
+  it("keeps Hydrogen's locale definition in step with the app markets", () => {
+    assert.deepEqual(
+      getSupportedLocales(i18n).map((locale) => {
+        let { language, country, pathPrefix } = matchLocale(
+          `/${getLocalePathSegment(locale)}/`,
+          i18n,
+        );
+        return { language, country, pathPrefix };
+      }),
+      [US_MARKET, CA_MARKET].map(({ language, country, pathPrefix }) => ({
+        language,
+        country,
+        pathPrefix,
+      })),
+    );
+  });
+
   it("canonicalizes supported market aliases", () => {
+    assert.deepEqual(resolveMarketPath("/EN-CA/products/shirt"), {
+      kind: "redirect",
+      pathname: "/en-ca/products/shirt",
+    });
     assert.deepEqual(resolveMarketPath("/en-us/products/shirt"), {
       kind: "redirect",
       pathname: "/products/shirt",
