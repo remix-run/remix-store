@@ -4,8 +4,8 @@ description: >
   End-to-end Hydrogen storefront setup orchestrator. Use whenever scaffolding a Hydrogen storefront from scratch into an existing application.
 metadata:
   source: "@shopify/hydrogen"
-  version: "2026.10.0"
-  hash: "sha256:0b1c52cec997cfca6a09eddfb3f1039f9f948847be8f65e01bed29ced83e3a03"
+  version: "2026.10.3"
+  hash: "sha256:7b9d4502bd6c6a1f60ce6507132e7f57130dee60d5c6ddc6e98a2edae3bb8f2a"
 ---
 
 # Setting Up Hydrogen
@@ -25,7 +25,7 @@ Read each step file and complete it fully before opening the next. Every step en
 - Setup is **not complete** until the final verify step's commands have been executed in this session and passed. If you are about to summarize results and have not just run them, stop and run them. Reporting success with failing or unrun checks is a failed setup, not a finished one.
 
 1. `steps/1-inspect-app.md` — verify basic compatibility, identify the styling approach, detect the framework and its reference files.
-2. `steps/2-scaffold.md` — route conventions, environment variable names, server-side env access, Storefront API client with `hydrogen gql check`, API route handlers, Customer Account API.
+2. `steps/2-scaffold.md` — route conventions, environment variable names, server-side env access, Storefront API client with `hydrogen gql check`, API route handlers, `robots.txt`, Customer Account API.
 3. `steps/3-build-home-page.md` — server-rendered home page listing collections and products.
 4. `steps/4-collection-and-search.md` — collection and search browsing with URL-synced filters.
 5. `steps/5-cart.md` — the `/cart` route with progressive enhancement.
@@ -42,7 +42,7 @@ Read each step file and complete it fully before opening the next. Every step en
 
 - **Account UI / session storage** — the `hydrogen-customer-account` skill wires sessions and OAuth handlers during scaffold, and the account-page step builds the minimal profile + logout UI, but the app owns the framework session adapter, richer account pages, and order history UI. Keep account tokens server-side or in encrypted HttpOnly cookies, and do not retry account mutations after a timeout unless the operation is externally idempotent.
 - **Image optimization** — use the framework's image component (or `<img srcset>`) with Shopify CDN URL transforms; do not expect a Hydrogen `Image` component.
-- **SEO** — render meta/Open Graph tags and JSON-LD `Product`/`BreadcrumbList` structured data with the framework's head/metadata API using Storefront API data.
+- **SEO** — render meta/Open Graph tags and JSON-LD `Product`/`BreadcrumbList` structured data with the framework's head/metadata API using Storefront API data. Serve `/robots.txt` with the `hydrogen-robots-txt` skill during scaffold.
 
 Mention these to the user when they are relevant to the storefront being built rather than skipping them silently.
 

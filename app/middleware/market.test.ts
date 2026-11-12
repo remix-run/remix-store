@@ -23,6 +23,10 @@ describe("market routing", () => {
   });
 
   it("canonicalizes supported market aliases", () => {
+    assert.deepEqual(resolveMarketPath("/EN-CA/products/shirt"), {
+      kind: "redirect",
+      pathname: "/en-ca/products/shirt",
+    });
     assert.deepEqual(resolveMarketPath("/en-us/products/shirt"), {
       kind: "redirect",
       pathname: "/products/shirt",

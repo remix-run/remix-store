@@ -1,3 +1,4 @@
+import { defineShopifyI18n, matchLocale } from "@shopify/hydrogen";
 import type { SerializableObject } from "remix/component";
 
 export type MarketCountry = "US" | "CA";
@@ -24,6 +25,21 @@ export const CA_MARKET: ActiveMarket = {
   locale: "en-CA",
   pathPrefix: "/en-ca",
 };
+
+export const MARKETS: readonly ActiveMarket[] = [US_MARKET, CA_MARKET];
+
+/**
+ * The locales Hydrogen resolves for Storefront API context. Pathname routing
+ * derives each prefix from the locale (`EN` + `CA` serves `/en-ca`), which
+ * must match the market's `pathPrefix`.
+ */
+export const i18n = defineShopifyI18n({
+  defaultLocale: { language: US_MARKET.language, country: US_MARKET.country },
+  routing: {
+    type: "pathname",
+    locales: [{ language: CA_MARKET.language, country: CA_MARKET.country }],
+  },
+});
 
 const APP_PATH_PREFIXES = new Set([
   "account",
@@ -69,14 +85,16 @@ export function resolveMarketPath(pathname: string): MarketPathResolution {
       pathname: `/en-ca${suffix === "/" ? "" : suffix}`,
     };
   }
-  if (normalized === "en-ca") {
+  let { pathPrefix } = matchLocale(pathname, i18n);
+  let market = MARKETS.find((candidate) => candidate.pathPrefix === pathPrefix);
+  if (pathPrefix && market) {
     if (first !== normalized) {
       return {
         kind: "redirect",
-        pathname: `/en-ca${suffix === "/" ? "" : suffix}`,
+        pathname: `${pathPrefix}${suffix === "/" ? "" : suffix}`,
       };
     }
-    return { kind: "market", market: CA_MARKET, pathname: suffix };
+    return { kind: "market", market, pathname: suffix };
   }
   if (!APP_PATH_PREFIXES.has(normalized) && BCP47ISH_PREFIX.test(first)) {
     return { kind: "unsupported" };

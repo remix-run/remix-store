@@ -929,7 +929,7 @@ export function toActiveStoreWideSale(
 function getMarketPathPrefix(
   storefront: AppStorefrontClient,
 ): MarketPathPrefix {
-  let pathPrefix = storefront.i18n.pathPrefix;
+  let pathPrefix = storefront.locale.pathPrefix;
   if (pathPrefix === "" || pathPrefix === "/en-ca") return pathPrefix;
   throw new Error("Unsupported market path prefix.");
 }
@@ -1172,7 +1172,7 @@ function toProductCardData(
 }
 
 function storefrontLocale(storefront: AppStorefrontClient): MarketLocale {
-  return storefront.i18n.country === "CA" ? "en-CA" : "en-US";
+  return storefront.locale.country === "CA" ? "en-CA" : "en-US";
 }
 
 function toSerializableFocalPoint(

@@ -7,8 +7,8 @@ description: >
   behavior.
 metadata:
   source: "@shopify/hydrogen"
-  version: "2026.10.0"
-  hash: "sha256:d93a69671cbf09bd1c5e9edd38a265d01b5123f34a648c94e9971b36322ca963"
+  version: "2026.10.3"
+  hash: "sha256:530fef2d3e893bac0d9d2a2e554d7ccb2c9ae8a989019c9af5bde98fc954ed4e"
 ---
 
 # Making A Hydrogen App Oxygen-Compatible

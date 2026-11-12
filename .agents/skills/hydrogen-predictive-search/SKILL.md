@@ -7,8 +7,8 @@ description: >
   predictive search bindings.
 metadata:
   source: "@shopify/hydrogen"
-  version: "2026.10.0"
-  hash: "sha256:0fc0870745982e0964fc4875ae12d16b9956e2cf7ba584340d9b0a9bbbaa88b5"
+  version: "2026.10.3"
+  hash: "sha256:6edd4b49ce1dcfa2712da20c581b55380d6a469856ef3c348fabf92ae6aff026"
 ---
 
 # Hydrogen Predictive Search
@@ -81,7 +81,7 @@ const predictiveSearchFragments = {
   `),
 };
 
-const predictiveSearchHandlers = createPredictiveSearchServerHandlers({
+export const predictiveSearchHandlers = createPredictiveSearchServerHandlers({
   fragments: predictiveSearchFragments,
 });
 
@@ -97,6 +97,23 @@ const data = await queryPredictiveSearch({
 ```
 
 Use the route-handler form for browser-backed autocomplete. Use `makePredictiveSearchQueries()` when querying directly from server code. Keep fragment names as documented by the API types. Hydrogen composes these with required base fields such as IDs, handles, titles, prices, images, and tracking parameters.
+
+Type client state from the same handlers so the UI sees the custom fields:
+
+```ts
+import type { PredictiveSearchDataFromHandlers } from "@shopify/hydrogen";
+import { usePredictiveSearch } from "@shopify/hydrogen/react"; // or "@shopify/hydrogen/vue"
+import type { predictiveSearchHandlers } from "./predictive-search-handlers";
+
+type SearchData = PredictiveSearchDataFromHandlers<typeof predictiveSearchHandlers>;
+
+// Call inside a component or setup().
+export function usePredictiveSearchState() {
+  return usePredictiveSearch<SearchData>();
+}
+```
+
+Import the handlers with `import type` so server code stays out of the client bundle. Derive the type from the handlers rather than writing it by hand, and point the provider at those handlers' route: the client doesn't validate responses, and when there's no response to show, the result only holds empty item arrays.
 
 ## Rules
 

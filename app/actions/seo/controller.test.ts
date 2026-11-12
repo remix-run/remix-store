@@ -39,6 +39,23 @@ describe("SEO resource routes", () => {
     assert.match(body, /Sitemap: https:\/\/preview\.example\/sitemap\.xml/);
   });
 
+  it("disallows market-prefixed cart pages for every crawler group without blocking products", async () => {
+    let body = await (
+      await seoApp().fetch(new Request("https://preview.example/robots.txt"))
+    ).text();
+    let group = (agent: string) =>
+      body
+        .split("\n\n")
+        .find((lines) => lines.split("\n").includes(`User-agent: ${agent}`)) ??
+      "";
+
+    assert.match(group("*"), /^Disallow: \/en-ca\/cart$/m);
+    assert.match(group("adsbot-google"), /^Disallow: \/en-ca\/cart$/m);
+    // `*` matches across slashes, so `/*/cart` would also block product
+    // handles such as `/products/cart-organizer`.
+    assert.doesNotMatch(body, /^Disallow: \/\*\/cart/m);
+  });
+
   it("indexes every Storefront sitemap page without loading HTML shell data", async () => {
     let shellQueries = 0;
     let app = seoApp(undefined, () => shellQueries++);

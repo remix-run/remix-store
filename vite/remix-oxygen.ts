@@ -1,8 +1,9 @@
-import { rm, writeFile } from "node:fs/promises";
+import { rm } from "node:fs/promises";
 import { resolve } from "node:path";
 
 import { ASSETS_MANIFEST_FILE } from "@pitlane/assets/vite-plugin";
 import { remix } from "@pitlane/vite-plugin-remix";
+import type { OxygenPlugin } from "@shopify/mini-oxygen/vite";
 import { build, type Plugin, type PluginOption } from "vite";
 
 import { browserBoundary, documentAssetSources } from "../app/assets.ts";
@@ -21,6 +22,17 @@ export function remixOxygen({
 
   const oxygenWorker: Plugin = {
     name: "remix-oxygen:worker",
+    configResolved(config) {
+      // MiniOxygen otherwise infers the date from the Hydrogen version. One
+      // pinned date keeps `vite dev`, `vite preview`, and the `oxygen.json` it
+      // emits for deployment on the same Workers runtime.
+      let oxygen = config.plugins.find(
+        (plugin): plugin is OxygenPlugin => plugin.name === "oxygen:main",
+      );
+      if (!oxygen?.api)
+        throw new Error("remixOxygen() requires MiniOxygen's oxygen() plugin.");
+      oxygen.api.registerPluginOptions({ compatibilityDate });
+    },
     config(_config, { command }) {
       // `shopify hydrogen deploy` passes each deployment's CDN prefix, so
       // assets stay at their own URLs after later deployments replace this one.
@@ -71,15 +83,6 @@ export function remixOxygen({
         if (chunks.length !== 1 || chunks[0]!.imports.length)
           throw new Error("Expected one self-contained Oxygen Worker module.");
         await rm(resolve(outDir, ASSETS_MANIFEST_FILE));
-        // Replaces the `oxygen.json` MiniOxygen emits with the pinned date.
-        await writeFile(
-          resolve(outDir, "oxygen.json"),
-          JSON.stringify(
-            { version: 1, compatibility_date: compatibilityDate },
-            null,
-            2,
-          ),
-        );
       },
     },
   };

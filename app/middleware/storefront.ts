@@ -23,6 +23,7 @@ import {
   type AppStorefrontClient,
 } from "../data/storefront.ts";
 import {
+  i18n,
   localizeInternalUrl,
   type ActiveMarket,
 } from "../lib/public/market.ts";
@@ -121,9 +122,11 @@ export function storefront(options: StorefrontOptions = {}): Middleware<
     }
 
     let activeMarket = context.get(MarketConfig);
+    // Hydrogen matches the locale from the original, still-prefixed URL; the
+    // market middleware has already redirected or rejected other prefixes.
     let requestContext = createShopifyRequestContext({
       request: context.request,
-      i18n: activeMarket,
+      i18n,
       buyerIp,
     });
     let storefrontFetch = createRetryingStorefrontFetch({

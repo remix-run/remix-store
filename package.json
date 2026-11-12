@@ -23,23 +23,23 @@
     "test:e2e:oxygen:dev": "E2E_RUNTIME=oxygen-dev playwright test"
   },
   "dependencies": {
-    "@pitlane/assets": "0.2.0",
-    "@shopify/hydrogen": "2026.10.0",
+    "@pitlane/assets": "0.2.1",
+    "@shopify/hydrogen": "2026.10.3",
     "remix": "3.2.0"
   },
   "devDependencies": {
-    "@pitlane/vite-plugin-remix": "0.9.0",
-    "@shopify/cli": "4.9.0",
-    "@shopify/mini-oxygen": "4.2.3",
+    "@pitlane/vite-plugin-remix": "0.9.1",
+    "@shopify/cli": "5.0.1",
+    "@shopify/mini-oxygen": "4.3.0",
     "@shopify/oxygen-workers-types": "4.2.0",
-    "@types/node": "24.19.0",
+    "@types/node": "24.19.2",
     "@typescript/native": "npm:typescript@7.0.2",
     "graphql": "16.14.2",
-    "oxfmt": "0.71.0",
-    "oxlint": "1.86.0",
+    "oxfmt": "0.76.0",
+    "oxlint": "1.91.0",
     "playwright": "1.64.1",
     "typescript": "npm:@typescript/typescript6@6.0.2",
-    "vite": "8.3.1"
+    "vite": "8.3.6"
   },
   "engines": {
     "node": ">=24.3.0"
