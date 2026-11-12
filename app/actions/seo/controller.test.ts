@@ -39,6 +39,42 @@ describe("SEO resource routes", () => {
     assert.match(body, /Sitemap: https:\/\/preview\.example\/sitemap\.xml/);
   });
 
+  it("keeps crawlers out of Hydrogen endpoints and market-prefixed buyer pages", async () => {
+    let body = await (
+      await seoApp().fetch(new Request("https://preview.example/robots.txt"))
+    ).text();
+    let groups = body.split("\n\n");
+    let general = groups[0] ?? "";
+    let adsBot =
+      groups.find((group) => group.includes("User-agent: adsbot-google")) ?? "";
+    let rules = (group: string) =>
+      new Set(
+        group
+          .split("\n")
+          .filter((line) => line.startsWith("Disallow: "))
+          .map((line) => line.slice("Disallow: ".length)),
+      );
+
+    for (let path of [
+      "/buy/",
+      "/api/",
+      "/__shopify",
+      "/en-ca/cart",
+      "/en-ca/account",
+      "/en-ca/checkout",
+      "/en-ca/api/",
+      "/en-ca/search",
+    ]) {
+      assert.ok(rules(general).has(path), path);
+    }
+    for (let path of ["/cart", "/account", "/en-ca/cart"]) {
+      assert.ok(rules(adsBot).has(path), path);
+    }
+    // `*` matches across slashes, so a wildcard market rule would also block
+    // product handles that contain "cart".
+    assert.doesNotMatch(body, /^Disallow: \/\*\/cart/m);
+  });
+
   it("indexes every Storefront sitemap page without loading HTML shell data", async () => {
     let shellQueries = 0;
     let app = seoApp(undefined, () => shellQueries++);

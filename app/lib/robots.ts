@@ -1,6 +1,7 @@
 import { SuperHeaders, type SuperHeadersPropertyInit } from "remix/headers";
 
 import { cacheControl } from "./cache-control.ts";
+import { MARKETS } from "./public/market.ts";
 
 const RESPONSE_HEADERS = {
   cacheControl: cacheControl.publicDay,
@@ -30,6 +31,15 @@ function robotsText({
   let shopRules = numericShopId
     ? `\nDisallow: /${encodeURIComponent(numericShopId)}/checkouts\nDisallow: /${encodeURIComponent(numericShopId)}/orders`
     : "";
+  // Market prefixes serve the same buyer-specific routes. `/*/cart` would also
+  // match product handles such as `/products/cart-organizer`, so list each.
+  let marketPrefixes = MARKETS.flatMap(({ pathPrefix }) =>
+    pathPrefix ? [pathPrefix] : [],
+  );
+  let marketRules = (paths: string[]) =>
+    marketPrefixes
+      .flatMap((prefix) => paths.map((path) => `\nDisallow: ${prefix}${path}`))
+      .join("");
   let generalRules = `Disallow: /admin
 Disallow: /cart
 Disallow: /orders
@@ -37,6 +47,9 @@ Disallow: /checkouts/
 Disallow: /checkout${shopRules}
 Disallow: /carts
 Disallow: /account
+Disallow: /buy/
+Disallow: /api/
+Disallow: /__shopify${marketRules(["/cart", "/account", "/checkout", "/api/", "/search", "/policies/"])}
 Disallow: /collections/*sort_by*
 Disallow: /*/collections/*sort_by*
 Disallow: /collections/*+*
@@ -73,8 +86,10 @@ ${generalRules}
 User-agent: adsbot-google
 Disallow: /checkouts/
 Disallow: /checkout
+Disallow: /cart
 Disallow: /carts
-Disallow: /orders${shopRules}
+Disallow: /account
+Disallow: /orders${shopRules}${marketRules(["/cart", "/account", "/checkout"])}
 Disallow: /*?*oseid=*
 Disallow: /*preview_theme_id*
 Disallow: /*preview_script_id*
