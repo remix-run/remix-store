@@ -4,12 +4,12 @@ import {
   on,
   ref,
   type Handle,
+  type NavigationEvent,
   type SerializableObject,
 } from "remix/component";
 
 import type { ImageData } from "../../data/storefront.ts";
 import { PillIcon, pillLinkStyle } from "../../ui/public/pill-link.tsx";
-import { remixNavigation } from "./remix-navigation.ts";
 
 export interface HomeHeroProps extends SerializableObject {
   assetImages: ImageData[];
@@ -37,6 +37,8 @@ export const HomeHero = clientEntry(
     let pageUrl = "";
     let reducedMotion: MediaQueryList | undefined;
     let animationFrame = 0;
+    // The navigation leaving the page, while one is in progress.
+    let leaving: Promise<AbortSignal> | undefined;
 
     function showFrame(index: number) {
       if (!section) return;
@@ -74,37 +76,6 @@ export const HomeHero = clientEntry(
       preload = new AbortController();
       let signal = AbortSignal.any([handle.signal, preload.signal]);
 
-      // Leaving the page: free the connection for the next page now, rather
-      // than when this component unmounts after that page has arrived. If the
-      // navigation fails or is cancelled, pick up where the preload left off.
-      let navigation = remixNavigation();
-      navigation?.addEventListener(
-        "navigate",
-        (event) => {
-          if (!leavesPage(event, pageUrl)) return;
-          preload?.abort();
-          preload = undefined;
-          let resume = () => {
-            if (!handle.signal.aborted && section && !reducedMotion?.matches)
-              preloadFrames();
-          };
-          navigation.addEventListener(
-            "navigatesuccess",
-            () => {
-              // The navigation kept the hero, so its page now has this URL.
-              if (section) pageUrl = location.href;
-              resume();
-            },
-            { once: true, signal: handle.signal },
-          );
-          navigation.addEventListener("navigateerror", resume, {
-            once: true,
-            signal: handle.signal,
-          });
-        },
-        { signal },
-      );
-
       await whenPageIsIdle(signal);
       if (signal.aborted || !section) return;
       // Later frames use whichever crop the browser chose for the first, so
@@ -131,6 +102,27 @@ export const HomeHero = clientEntry(
           handle.update().then(updateFrame);
         }),
       );
+    }
+
+    // Leaving the page: free the connection for the next page now, rather
+    // than when this component unmounts after that page has arrived. If the
+    // navigation fails or is cancelled, pick up where the preload left off.
+    async function onNavigation(event: NavigationEvent) {
+      // A redirect notifies again for the same navigation.
+      if (event.finished === leaving || !leavesPage(event.to, pageUrl)) return;
+      leaving = event.finished;
+      preload?.abort();
+      preload = undefined;
+      let completed = await event.finished.then(
+        (signal) => !signal.aborted,
+        () => false,
+      );
+      // A newer navigation took over, or this one left the page.
+      if (leaving !== event.finished || !section) return;
+      leaving = undefined;
+      // The navigation kept the hero, so its page now has this URL.
+      if (completed) pageUrl = location.href;
+      if (!reducedMotion?.matches) preloadFrames();
     }
 
     // A rotation or resize can switch the first frame to another crop. The
@@ -178,6 +170,9 @@ export const HomeHero = clientEntry(
                 signal,
               });
               window.addEventListener("resize", updateFrame, { signal });
+              window.addEventListener("rmx:navigation", onNavigation, {
+                signal,
+              });
               motion.addEventListener("change", onMotionChange, { signal });
               signal.addEventListener("abort", () => {
                 section = null;
@@ -319,10 +314,9 @@ function matchingCrop(source: string, chosen: string | undefined): string {
   }
 }
 
-/** Whether a navigation will replace this page, not just its hash or a download. */
-function leavesPage(event: NavigateEvent, pageUrl: string): boolean {
-  if (event.hashChange || event.downloadRequest !== null) return false;
-  let destination = new URL(event.destination.url);
+/** Whether a navigation will replace this page, not just change its hash. */
+function leavesPage(to: string, pageUrl: string): boolean {
+  let destination = new URL(to, location.href);
   let page = new URL(pageUrl || location.href);
   return (
     destination.pathname !== page.pathname || destination.search !== page.search
