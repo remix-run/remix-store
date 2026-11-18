@@ -43,14 +43,15 @@ function createAppMiddleware(options: AppOptions) {
     options.platform ?? passThrough,
     // The renderer reads the nonce when it is installed, so CSP runs first.
     csp(options.csp),
+    // Shell render failures reject in the renderer, so the boundary wraps it.
+    errorPages(options.renderer),
     ...options.renderer,
-    errorPages(),
     market(),
     storefront(options.storefront),
   );
 }
 
-function errorPages(): Middleware {
+function errorPages(renderer: AppOptions["renderer"]): Middleware {
   return async (context, next) => {
     try {
       return await next();
@@ -61,10 +62,19 @@ function errorPages(): Middleware {
       )
         throw error;
       console.error(error);
-      // SAFETY: createAppMiddleware installs the UI renderer before this error
-      // boundary runs; Remix's generic Renderer key erases its input type.
-      let renderPage = context.get(Renderer) as Renderer<RemixNode>;
-      return renderPage(createElement(ErrorPage, {}), { status: 500 });
+      // Render through the renderer middleware again so it still awaits the
+      // error page's shell; if that fails too, the runtime boundary's plain
+      // 500 takes over.
+      let renderErrorPage = renderer.reduceRight<() => Promise<Response>>(
+        (renderNext, middleware) => async () => middleware(context, renderNext),
+        async () => {
+          // SAFETY: The renderer middleware above installs the UI renderer;
+          // Remix's generic Renderer key erases its input type.
+          let renderPage = context.get(Renderer) as Renderer<RemixNode>;
+          return renderPage(createElement(ErrorPage, {}), { status: 500 });
+        },
+      );
+      return renderErrorPage();
     }
   };
 }
