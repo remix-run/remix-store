@@ -64,6 +64,18 @@ describe("subscribe routes", () => {
       { Origin: "https://attacker.example" },
     );
     assert.equal(wrongOrigin.status, 403);
+    assert.equal(wrongOrigin.headers.get("Cache-Control"), "private, no-store");
+    assert.deepEqual(await wrongOrigin.json(), {
+      error: "Invalid request origin.",
+      success: false,
+    });
+
+    let crossSite = await post(
+      app,
+      { consent: "yes", email: "member@example.com" },
+      { "Sec-Fetch-Site": "cross-site" },
+    );
+    assert.equal(crossSite.status, 403);
 
     let limited = await post(app, {
       consent: "yes",
