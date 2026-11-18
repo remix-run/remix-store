@@ -29,18 +29,16 @@ import { fetchWithRuntime, type Runtime } from "./runtime.ts";
 
 export interface AppOptions {
   csp?: CspOptions;
-  platform?: Middleware;
+  platform?: readonly Middleware[];
   renderer: ReturnType<typeof render>;
   storefront?: StorefrontOptions;
   subscribe?: SubscribeControllerOptions;
   seasonalSnow?: RootControllerOptions;
 }
 
-const passThrough: Middleware = (_context, next) => next();
-
 function createAppMiddleware(options: AppOptions) {
   return createMiddleware(
-    options.platform ?? passThrough,
+    ...(options.platform ?? []),
     // The renderer reads the nonce when it is installed, so CSP runs first.
     csp(options.csp),
     // Shell render failures reject in the renderer, so the boundary wraps it.
