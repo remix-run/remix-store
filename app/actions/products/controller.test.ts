@@ -205,10 +205,8 @@ describe("product routes", () => {
 
   it("queries the product while the shell data is still loading", async () => {
     let events: string[] = [];
-    let releaseShell!: () => void;
-    let shellReleased = new Promise<void>((resolve) => {
-      releaseShell = resolve;
-    });
+    let { promise: shellReleased, resolve: releaseShell } =
+      Promise.withResolvers<void>();
     // A sequential implementation never requests the product until the shell
     // finishes, so release it eventually and let the order fail the test.
     let fallback = setTimeout(releaseShell, 500);
