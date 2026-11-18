@@ -29,6 +29,7 @@ describe("navbar", () => {
                 title: "Blog",
                 url: "https://remix.run/collections",
               },
+              { id: "malformed", title: "Malformed", url: "//[" },
             ],
           },
         }),
@@ -40,6 +41,7 @@ describe("navbar", () => {
     );
     let html = await response.text();
 
+    assert.equal(response.status, 200);
     for (let nav of [
       /<nav aria-label="Main navigation"[\s\S]*?<\/nav>/,
       /<nav id="mobile-navigation"[\s\S]*?<\/nav>/,
