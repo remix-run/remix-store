@@ -133,7 +133,7 @@ export function createSubscribeController(
           let limiter = options.rateLimiter ?? subscriptionRateLimiter;
           let limit = await limiter.consumeMany([ipKey, emailKey]);
           if (!limit.allowed) {
-            headers.set("Retry-After", String(limit.retryAfterSeconds));
+            headers.retryAfter = String(limit.retryAfterSeconds);
             return respond(
               {
                 error: "Too many attempts. Please try again later.",

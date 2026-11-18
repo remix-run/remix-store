@@ -1,4 +1,4 @@
-import { SuperHeaders } from "remix/headers";
+import { SuperHeaders, type SuperHeadersInit } from "remix/headers";
 import { createController } from "remix/router";
 import { redirect } from "remix/response/redirect";
 
@@ -18,7 +18,9 @@ const MAX_CURSOR_LENGTH = 2_048;
 const FIRST_PAGE_SIZE = 15;
 const NEXT_PAGE_SIZE = 8;
 // Grid fragments are frame content, not documents to index.
-const FRAGMENT_HEADERS = { "X-Robots-Tag": "noindex" };
+function fragmentHeaders(init: SuperHeadersInit = {}): SuperHeaders {
+  return new SuperHeaders({ ...init, xRobotsTag: "noindex" });
+}
 
 export default createController(routes.collections, {
   actions: {
@@ -82,11 +84,11 @@ export default createController(routes.collections, {
       if (!collection?.ok) {
         return render(
           loadMoreControl(params.handle, cursor, market.pathPrefix, true),
-          { headers: FRAGMENT_HEADERS },
+          { headers: fragmentHeaders() },
         );
       }
       if (!collection.data) {
-        return render(null, { status: 404, headers: FRAGMENT_HEADERS });
+        return render(null, { status: 404, headers: fragmentHeaders() });
       }
 
       return render(
@@ -97,10 +99,7 @@ export default createController(routes.collections, {
           products={collection.data.products.nodes}
         />,
         {
-          headers: new SuperHeaders({
-            ...FRAGMENT_HEADERS,
-            cacheControl: cacheControl.browsing,
-          }),
+          headers: fragmentHeaders({ cacheControl: cacheControl.browsing }),
         },
       );
     },
@@ -110,10 +109,7 @@ export default createController(routes.collections, {
       if (!cursor) return new Response("Missing cursor", { status: 400 });
 
       return render(loadMoreControl(params.handle, cursor, market.pathPrefix), {
-        headers: new SuperHeaders({
-          ...FRAGMENT_HEADERS,
-          cacheControl: cacheControl.browsing,
-        }),
+        headers: fragmentHeaders({ cacheControl: cacheControl.browsing }),
       });
     },
   },
