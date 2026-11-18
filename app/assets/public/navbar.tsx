@@ -40,9 +40,11 @@ export const RemixLogo = clientEntry(
             }
 
             update();
-            window.addEventListener("scroll", requestUpdate, { passive: true });
+            window.addEventListener("scroll", requestUpdate, {
+              passive: true,
+              signal,
+            });
             signal.addEventListener("abort", () => {
-              window.removeEventListener("scroll", requestUpdate);
               if (animationFrame) cancelAnimationFrame(animationFrame);
             });
           }),

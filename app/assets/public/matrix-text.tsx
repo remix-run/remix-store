@@ -158,13 +158,14 @@ export const MatrixText = clientEntry(
               if (image.naturalWidth) updateScale(image.naturalWidth);
             });
             resizeObserver.observe(element);
-            motionPreference.addEventListener("change", startGlitch);
+            motionPreference.addEventListener("change", startGlitch, {
+              signal,
+            });
             signal.addEventListener("abort", () => {
               image.onerror = null;
               image.onload = null;
               stopGlitch();
               resizeObserver.disconnect();
-              motionPreference.removeEventListener("change", startGlitch);
             });
           }),
         ]}

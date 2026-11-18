@@ -40,13 +40,13 @@ export const PageTitle = clientEntry(
             }
 
             updateSpread();
-            window.addEventListener("scroll", requestUpdate, { passive: true });
-            window.addEventListener("resize", requestUpdate, { passive: true });
-            motionPreference.addEventListener("change", requestUpdate);
+            let listenerOptions = { passive: true, signal };
+            window.addEventListener("scroll", requestUpdate, listenerOptions);
+            window.addEventListener("resize", requestUpdate, listenerOptions);
+            motionPreference.addEventListener("change", requestUpdate, {
+              signal,
+            });
             signal.addEventListener("abort", () => {
-              window.removeEventListener("scroll", requestUpdate);
-              window.removeEventListener("resize", requestUpdate);
-              motionPreference.removeEventListener("change", requestUpdate);
               if (animationFrame) cancelAnimationFrame(animationFrame);
             });
           }),

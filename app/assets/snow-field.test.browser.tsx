@@ -197,8 +197,15 @@ function installCanvasHarness(
       },
       media: "(prefers-reduced-motion: reduce)",
       onchange: null,
-      addEventListener(_type: string, listener: MotionListener) {
+      addEventListener(
+        _type: string,
+        listener: MotionListener,
+        options?: AddEventListenerOptions,
+      ) {
         motionListeners.add(listener);
+        options?.signal?.addEventListener("abort", () =>
+          motionListeners.delete(listener),
+        );
       },
       removeEventListener(_type: string, listener: MotionListener) {
         motionListeners.delete(listener);

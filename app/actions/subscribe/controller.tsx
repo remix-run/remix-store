@@ -21,6 +21,7 @@ import {
 } from "../../data/subscription.ts";
 import { verifyBackInStockSubscription } from "../../data/storefront.ts";
 import { cacheControl } from "../../lib/cache-control.ts";
+import { prefersJson } from "../../lib/negotiation.ts";
 import { MarketConfig } from "../../middleware/market.tsx";
 import { marketPath, type ActiveMarket } from "../../lib/public/market.ts";
 import { getRuntime } from "../../runtime.ts";
@@ -201,7 +202,10 @@ export function createSubscribeController(
             { message, success: true },
             200,
             parsed.productHandle
-              ? marketPath("/collections/all", market.pathPrefix)
+              ? marketPath(
+                  routes.collections.show.href({ handle: "all" }),
+                  market.pathPrefix,
+                )
               : undefined,
           );
         },
@@ -250,7 +254,7 @@ function subscriptionResponse(
     successRedirect?: string;
   },
 ): Response | Promise<Response> {
-  if (request.headers.get("Accept")?.includes("application/json")) {
+  if (prefersJson(request)) {
     return Response.json(init.body, {
       status: init.status,
       headers: init.headers,

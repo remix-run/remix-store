@@ -28,6 +28,7 @@ import {
   type ActiveMarket,
 } from "../lib/public/market.ts";
 import { cacheControl } from "../lib/cache-control.ts";
+import { prefersJson } from "../lib/negotiation.ts";
 import { routeTemplates } from "../lib/public/route-templates.ts";
 import { routes } from "../routes.ts";
 import { getRuntime, type Env } from "../runtime.ts";
@@ -96,7 +97,7 @@ export function storefront(options: StorefrontOptions = {}): Middleware<
         error: "Something went wrong. Please try again.",
         success: false,
       };
-      if (context.request.headers.get("Accept")?.includes("application/json")) {
+      if (prefersJson(context.request)) {
         return Response.json(body, { status: 503, headers });
       }
       headers.contentType = "text/html; charset=utf-8";
@@ -191,7 +192,6 @@ export function storefront(options: StorefrontOptions = {}): Middleware<
         activeMarket.pathPrefix,
       );
       let headers = new SuperHeaders({
-        Location: location,
         cacheControl: cacheControl.privateNoStore,
       });
 

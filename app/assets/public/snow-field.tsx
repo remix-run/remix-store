@@ -157,11 +157,10 @@ export const SnowField = clientEntry(import.meta.url, function SnowField() {
             else startCanvas();
           }
 
-          motionPreference.addEventListener("change", onMotionChange);
-          signal.addEventListener("abort", () => {
-            stopCanvas();
-            motionPreference.removeEventListener("change", onMotionChange);
+          motionPreference.addEventListener("change", onMotionChange, {
+            signal,
           });
+          signal.addEventListener("abort", stopCanvas);
           syncMotionPreference();
           startCanvas();
         }),
