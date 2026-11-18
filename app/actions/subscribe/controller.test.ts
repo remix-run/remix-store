@@ -64,6 +64,18 @@ describe("subscribe routes", () => {
       { Origin: "https://attacker.example" },
     );
     assert.equal(wrongOrigin.status, 403);
+    assert.equal(wrongOrigin.headers.get("Cache-Control"), "private, no-store");
+    assert.deepEqual(await wrongOrigin.json(), {
+      error: "Invalid request origin.",
+      success: false,
+    });
+
+    let crossSite = await post(
+      app,
+      { consent: "yes", email: "member@example.com" },
+      { "Sec-Fetch-Site": "cross-site" },
+    );
+    assert.equal(crossSite.status, 403);
 
     let limited = await post(app, {
       consent: "yes",
@@ -201,8 +213,13 @@ describe("subscribe routes", () => {
     let app = createTestApp(createStorefrontFetch(shellHandlers), {
       subscribe: { rateLimiter: allowAll() },
     });
-    let request = formRequest({ email: "member@example.com" });
-    request.headers.delete("Accept");
+    let request = formRequest(
+      { email: "member@example.com" },
+      {
+        Accept:
+          "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+      },
+    );
     let response = await app.fetch(request);
     let html = await response.text();
     assert.equal(response.status, 400);

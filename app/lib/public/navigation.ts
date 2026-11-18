@@ -1,7 +1,10 @@
 /** Whether a menu link points at the page being viewed, ignoring its query. */
 export function isCurrentPage(href: string, pathname: string): boolean {
-  let target = new URL(href, "http://localhost").pathname;
-  return trimTrailingSlash(target) === trimTrailingSlash(pathname);
+  let target = URL.parse(href, "http://localhost")?.pathname;
+  return (
+    target !== undefined &&
+    trimTrailingSlash(target) === trimTrailingSlash(pathname)
+  );
 }
 
 function trimTrailingSlash(pathname: string): string {

@@ -18,15 +18,14 @@ export function createRootController(options: RootControllerOptions = {}) {
 
   return createController(routes, {
     actions: {
-      async home({ market, request, render, storefrontClient }) {
+      async home({ market, render, storefrontClient, url }) {
         let home = await queryHome(storefrontClient);
         if (!home.ok) throw new Error(home.message, { cause: home.errors });
 
         return render(
           <HomePage
             canonicalUrl={
-              new URL(request.url).origin +
-              marketPath(routes.home.href(), market.pathPrefix)
+              url.origin + marketPath(routes.home.href(), market.pathPrefix)
             }
             market={market}
             description={home.data.shop.description}
@@ -41,7 +40,14 @@ export function createRootController(options: RootControllerOptions = {}) {
           },
         );
       },
-      async cart({ market, render, request, shellData, storefrontClient }) {
+      async cart({
+        market,
+        render,
+        request,
+        shellData,
+        storefrontClient,
+        url,
+      }) {
         // The page title and server-rendered lines need the cart even when the
         // shell leaves it to the browser store on client navigations.
         let cartInitialData =
@@ -50,8 +56,7 @@ export function createRootController(options: RootControllerOptions = {}) {
         return render(
           <CartPage
             canonicalUrl={
-              new URL(request.url).origin +
-              marketPath(routes.cart.href(), market.pathPrefix)
+              url.origin + marketPath(routes.cart.href(), market.pathPrefix)
             }
             initialData={cartInitialData}
             market={market}

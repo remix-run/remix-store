@@ -70,11 +70,8 @@ export const Footer = clientEntry(
             }
 
             observe();
-            motionPreference.addEventListener("change", observe);
-            signal.addEventListener("abort", () => {
-              observer?.disconnect();
-              motionPreference.removeEventListener("change", observe);
-            });
+            motionPreference.addEventListener("change", observe, { signal });
+            signal.addEventListener("abort", () => observer?.disconnect());
           }),
         ]}
       >

@@ -133,7 +133,7 @@ function sitemapUnavailable(cause: unknown): Response {
     headers: new SuperHeaders({
       cacheControl: cacheControl.noStore,
       contentType: "text/plain; charset=utf-8",
-      "Retry-After": "60",
+      retryAfter: "60",
     }),
   });
 }

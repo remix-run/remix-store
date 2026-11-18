@@ -101,8 +101,8 @@ for (let route of [
  * discount codes or cart permalinks.
  */
 function isCatalogLink(href: string): boolean {
-  let url = new URL(href, "http://localhost");
-  if (url.origin !== "http://localhost") return false;
+  let url = URL.parse(href, "http://localhost");
+  if (url?.origin !== "http://localhost") return false;
   let resolution = resolveMarketPath(url.pathname);
   if (resolution.kind !== "market") return false;
   url.pathname = resolution.pathname;

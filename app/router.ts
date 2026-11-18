@@ -55,7 +55,6 @@ function errorPages(): Middleware {
     try {
       return await next();
     } catch (error) {
-      if (error instanceof Response) return error;
       if (
         context.request.signal.aborted &&
         error === context.request.signal.reason
