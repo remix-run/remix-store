@@ -1,6 +1,7 @@
 import * as assert from "remix/assert";
 import { describe, it } from "remix/test";
 
+import { advanceUntilSettled } from "../../test/advance-until-settled.ts";
 import { routes } from "../routes.ts";
 import {
   analyticsShopData,
@@ -297,9 +298,13 @@ describe("platform skeleton", () => {
         RemixNavigation: navigationData,
       }),
     );
+    // Queries the fixture doesn't answer are retried once, after a delay.
+    let timers = t.useFakeTimers();
 
-    let response = await app.fetch(
-      new Request("https://example.com" + routes.home.href()),
+    let response = await advanceUntilSettled(
+      t,
+      timers,
+      app.fetch(new Request("https://example.com" + routes.home.href())),
     );
     let html = await response.text();
 

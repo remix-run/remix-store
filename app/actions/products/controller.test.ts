@@ -176,8 +176,7 @@ describe("product routes", () => {
   });
 
   it("serves a cached product for a day while it refreshes in the background", async (t) => {
-    let now = Date.now();
-    t.mock.method(Date, "now", () => now);
+    let timers = t.useFakeTimers({ now: new Date("2026-06-01T00:00:00Z") });
     t.mock.method(console, "error", () => {});
     let shopifyAvailable = true;
     let app = createTestApp(
@@ -196,7 +195,7 @@ describe("product routes", () => {
     let first = await app.fetch(new Request(url));
     await first.text();
     shopifyAvailable = false;
-    now += 12 * 60 * 60 * 1000;
+    timers.advance(12 * 60 * 60 * 1000);
     let halfADayLater = await app.fetch(new Request(url));
 
     assert.equal(halfADayLater.status, 200);

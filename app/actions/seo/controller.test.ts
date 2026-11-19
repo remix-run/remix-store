@@ -2,6 +2,7 @@ import { createCartCookie } from "@shopify/hydrogen";
 import * as assert from "remix/assert";
 import { describe, it } from "remix/test";
 
+import { advanceUntilSettled } from "../../../test/advance-until-settled.ts";
 import {
   analyticsShopData,
   createStorefrontFetch,
@@ -314,9 +315,13 @@ describe("SEO resource routes", () => {
       throw new Error("Storefront unavailable");
     });
     t.mock.method(console, "error", () => {});
+    let timers = t.useFakeTimers();
 
-    let response = await app.fetch(
-      new Request("https://preview.example/sitemap/products/1.xml"),
+    // The Storefront fetch retries the failed query once, after a delay.
+    let response = await advanceUntilSettled(
+      t,
+      timers,
+      app.fetch(new Request("https://preview.example/sitemap/products/1.xml")),
     );
 
     assert.equal(response.status, 503);

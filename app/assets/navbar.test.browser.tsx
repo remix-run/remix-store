@@ -81,7 +81,7 @@ describe("navbar interactions", () => {
     assert.equal(document.activeElement, button);
   });
 
-  it("swallows only the click that dismisses the open menu", async (t) => {
+  it("swallows only the click that dismisses the open menu", (t) => {
     let { $, cleanup } = render(
       <>
         <MobileMenu menu={menu} />
@@ -107,7 +107,7 @@ describe("navbar interactions", () => {
       outside.dispatchEvent(
         new MouseEvent("click", { bubbles: true, cancelable: true }),
       );
-    let nextTask = () => new Promise((resolve) => setTimeout(resolve));
+    let timers = t.useFakeTimers();
 
     // Light dismiss hides the popover, then delivers the click in the same
     // task. hidePopover() fires the same synchronous beforetoggle.
@@ -130,7 +130,7 @@ describe("navbar interactions", () => {
     // So does the next task.
     nav.showPopover();
     nav.hidePopover();
-    await nextTask();
+    timers.advance(0);
     click();
     assert.equal(reached, 3);
   });
@@ -151,12 +151,13 @@ describe("navbar interactions", () => {
     assert.ok(link instanceof HTMLAnchorElement);
     assert.ok(outside instanceof HTMLButtonElement);
 
+    let timers = t.useFakeTimers();
     nav.showPopover();
     await act(() => link.focus());
     await act(() => outside.focus());
     assert.equal(nav.matches(":popover-open"), false);
     // Separate interactions run in separate tasks.
-    await new Promise((resolve) => setTimeout(resolve));
+    timers.advance(0);
 
     nav.showPopover();
     // Keep the test page in place; the menu closes for any followed link.
