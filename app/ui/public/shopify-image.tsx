@@ -20,6 +20,8 @@ export interface ShopifyImageProps
   image: ShopifyImageData;
   loading: NonNullable<ImgProps["loading"]>;
   objectPosition?: string;
+  /** Fetches this image whenever its page is prefetched. */
+  prefetchWithPage?: boolean;
   sizes: NonNullable<ImgProps["sizes"]>;
 }
 
@@ -30,8 +32,15 @@ const SHOPIFY_IMAGE_HOSTS = ["cdn.shopify.com", "mock.shop"];
 
 export function ShopifyImage(handle: Handle<ShopifyImageProps>) {
   return () => {
-    let { alt, fetchPriority, image, loading, objectPosition, sizes } =
-      handle.props;
+    let {
+      alt,
+      fetchPriority,
+      image,
+      loading,
+      objectPosition,
+      prefetchWithPage,
+      sizes,
+    } = handle.props;
     let widths = responsiveImageWidths(image.width);
     let isShopifyImage = isShopifyImageSource(image.url);
 
@@ -58,6 +67,7 @@ export function ShopifyImage(handle: Handle<ShopifyImageProps>) {
         loading={loading}
         fetchPriority={fetchPriority}
         decoding="async"
+        data-prefetch-with-page={prefetchWithPage || undefined}
         style={objectPosition ? { objectPosition } : undefined}
       />
     );
