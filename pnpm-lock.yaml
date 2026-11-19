@@ -19,12 +19,12 @@ importers:
         specifier: 2026.10.3
         version: 2026.10.3(@typescript/typescript6@6.0.2)(graphql@16.14.2)(react@19.2.8)(vite@8.3.6(@types/node@24.19.2)(esbuild@0.28.1)(jiti@2.7.0)(tsx@4.23.1)(yaml@2.9.0))
       remix:
-        specifier: 3.2.0
-        version: 3.2.0(@emnapi/core@2.0.0-alpha.3)(@emnapi/runtime@2.0.0-alpha.3)(playwright@1.64.1)
+        specifier: 3.3.0
+        version: 3.3.0(@emnapi/core@2.0.0-alpha.3)(@emnapi/runtime@2.0.0-alpha.3)(playwright@1.64.1)
     devDependencies:
       '@pitlane/vite-plugin-remix':
         specifier: 0.9.1
-        version: 0.9.1(remix@3.2.0(@emnapi/core@2.0.0-alpha.3)(@emnapi/runtime@2.0.0-alpha.3)(playwright@1.64.1))(vite@8.3.6(@types/node@24.19.2)(esbuild@0.28.1)(jiti@2.7.0)(tsx@4.23.1)(yaml@2.9.0))
+        version: 0.9.1(remix@3.3.0(@emnapi/core@2.0.0-alpha.3)(@emnapi/runtime@2.0.0-alpha.3)(playwright@1.64.1))(vite@8.3.6(@types/node@24.19.2)(esbuild@0.28.1)(jiti@2.7.0)(tsx@4.23.1)(yaml@2.9.0))
       '@shopify/cli':
         specifier: 5.0.1
         version: 5.0.1
@@ -1490,76 +1490,76 @@ packages:
   '@remix-run/assert@1.0.0':
     resolution: {integrity: sha512-ygVYpSz7uc7Wg72Ty0rN29J9Qtna30BVwwHF8K/M8WcSt28peoe8jRAAivUQe+7haSizemwUL3E7UxTCBycW9w==}
 
-  '@remix-run/assets@1.0.2':
-    resolution: {integrity: sha512-qBHzA/yid/4KJRVMcEol5OEoonPWE2JGIpD0V8NYpq9LzvyNLpRS2l7I6vPhwMAeotgOr/Iw8cnH5rBYOG+7Pg==}
+  '@remix-run/assets@1.0.3':
+    resolution: {integrity: sha512-rS2R/IGbqbY2ypaM/ieRoDgFmv7xo7rOvnPGSqRDDbbtpfljQB756thwyGBEasn3sKAnrzNNwBxRoMijK0XO6g==}
 
-  '@remix-run/async-context-middleware@1.0.0':
-    resolution: {integrity: sha512-/C1Qx5/R4OqP12RKXCxCRGkZmxc8ZYkvTo50P+5n0jL7SAf+LKP+0AtqcZrV2H5KAoGOoTL32+5odrbAz8oWqA==}
+  '@remix-run/async-context-middleware@1.0.1':
+    resolution: {integrity: sha512-EDZimyaLBRMAi14yzX9dMLzGdmB77FqxIQ1uMbuU2697ItpNBcjGAcqemgV5k0bmc9z9TSf7lNmGn3BNTWkEHA==}
 
-  '@remix-run/auth-middleware@1.0.1':
-    resolution: {integrity: sha512-GTSXLuTIyayLMElFW5MHlCW8NWsQsHJmxPbuC5JzLb8laTMQ1ZJM6dWUMg0LpOanBZVAaKHfFm7D9kXiVXR1ag==}
+  '@remix-run/auth-middleware@1.0.2':
+    resolution: {integrity: sha512-Hrx6JxP6VsMt18NZEP/e068oiVb3IYY/rP44lIyeeD+ce9tsieS5AGUNgoZ8o5HIG981n5n7fh2rXC2eaW3mXQ==}
 
-  '@remix-run/auth@1.0.1':
-    resolution: {integrity: sha512-UAmS3OTDVUuVPnc8CGt8P+PmB11GrXjcBoA/I7uVDodlVUkXoxUw+vMqvDzbXEcGxB1vXaSNGO46BeahcIAS8A==}
+  '@remix-run/auth@1.0.2':
+    resolution: {integrity: sha512-u1I5/idekRvSh3TmwXEyuTRXbMBrGTP6zBGD3K1d9CFoKrWXFjHG8btMcup5Wj/pIzeiZ2iLhLw/s8XaJnksaQ==}
 
-  '@remix-run/cli@1.0.2':
-    resolution: {integrity: sha512-w4PToihKydREumvMbYfZpaGca4O818uShUftPSG1uLCNsDggji9qA+iilmTxvQFwIZl5/TJ2tWBIhSwnXBKmOg==}
+  '@remix-run/cli@1.0.3':
+    resolution: {integrity: sha512-AYS07ohj/NMH+6wnJo0byHlCIxC1ljj+bVNFNv/nEqIUpsAk8lL77Ru1dsr1cVGxthtaBMtTW4ArnJadUGyyLQ==}
     engines: {node: '>=24.3.0'}
 
-  '@remix-run/component-hmr@1.0.1':
-    resolution: {integrity: sha512-HYatL72f/OShfa0G7X+VqPvvJ4bhuAqE6g9MWp3ejZmDTp2RlUzpSJIemrQR8/fswVh7KIvz+oydC6tLkLZsdA==}
+  '@remix-run/component-hmr@1.0.2':
+    resolution: {integrity: sha512-TBqEzLfS/dm+gsQbYfTAeYbOCUmwoHeiojLWgzt/TlXikfj+RF+rMFO4eCiQsebjAfUAd3HNcctW3e1pCZCIww==}
 
-  '@remix-run/component@1.2.0':
-    resolution: {integrity: sha512-LyPmhklZc9HQkzPYJH82vHSAq3OKC1fGmNwjS+qMYehdc7Dh0qPWI/3+H3x/J068hZ2WoV1fREGQvXcA16TTMA==}
+  '@remix-run/component@1.3.0':
+    resolution: {integrity: sha512-myId7o6wr5ZmoO1hrmwgTTO6j1tR6ubcekN9SvLpwk1x7dJkvrfSbkzBmYcyOiYoan4nm0Ft87yJ6OT0CvH3oQ==}
 
-  '@remix-run/compression-middleware@1.0.2':
-    resolution: {integrity: sha512-9nlyitfGIfCMS1BV5tWrTSOwoQ24SOUz6JSNog0PFbUI5TRc9wZUa8zi1QNEpQYUZ7lHXJRfBz//L+NugBQvvQ==}
+  '@remix-run/compression-middleware@1.0.3':
+    resolution: {integrity: sha512-OrSNwTGw92ujeSQQBAc7pHB4wmslTGE5iUB+kj5mzi+4x4wNExN1oZDGiUvDNlhzzjte9P8/5+FrYd0LHwPGdQ==}
 
-  '@remix-run/cookie@1.0.2':
-    resolution: {integrity: sha512-x8VHSWzF0f4Emzg+k4v1+UV0S+EkbhHLvW6WbHTOLMB1QOEqISn31VwZoFUvaHoHtpiUjjkdAbspzKPYhM1/fw==}
+  '@remix-run/cookie@1.0.3':
+    resolution: {integrity: sha512-nKccxKcTJ9Tx3NPWn2W+pa1oBEo1L8OVKbBwoP9m+SblEs6WzOhVS+FQP6CmO/q99agNezpTaCm3Y1Pu8BrcNw==}
 
-  '@remix-run/cop-middleware@1.0.0':
-    resolution: {integrity: sha512-yM+iAFg218cS1zLTwoPRUdxSqxmN27pexxg6z0eNRcTFXUcyrVe9lhbaYUGUuI316wGCoh1eiTGuUjkDDbv3qw==}
+  '@remix-run/cop-middleware@1.0.1':
+    resolution: {integrity: sha512-inNTKhsQkT+iCH3mqX7KsyVFF1GpgI6OKGrMod2EMFYmJcXTBuhgLYQRks41F0kLZqtG/Q3oIZCDq8uCZVWWxw==}
 
-  '@remix-run/cors-middleware@1.0.2':
-    resolution: {integrity: sha512-K7lRVKJfyopSiNtJkAVmiIRUCGS4qJqoElDZ6WSDY6OkuMBfj99ETytv61GFLyghiSaLiS/csSvTmnHLAhQ3UA==}
+  '@remix-run/cors-middleware@1.0.3':
+    resolution: {integrity: sha512-QX21X92usB3f6EyElNImXb5HWc24uy+HbEuD/B0IHdtNXT8PwUEjTDgvxKEeCEHDJRHm1FPDy+JEU0ym18BjCg==}
 
-  '@remix-run/csp-middleware@1.0.0':
-    resolution: {integrity: sha512-FV44lqHmAeLtlXQQr6/nQFhiLr9EBbk6Rqx6Q0njJtABg+TX2h4y0DSmcEuUbHmQo/KUJEDhMSpBOtSDBUH4aw==}
+  '@remix-run/csp-middleware@1.0.1':
+    resolution: {integrity: sha512-cxNNvW6VPNgZsw78l1rQTcZqpVnOKmdIJlE2F3ChC+jSiEjnlqDJU4hB2JmbgHT2HgI6liu3zhOLJDTYWqw2GQ==}
 
-  '@remix-run/csrf-middleware@1.0.1':
-    resolution: {integrity: sha512-uJHS9oCtpG6tQwLSw7rxce6LWgWbtoBo5pq5tMqv4BmaL2spshDPPX2/nS8CVVCheDjTdM6tK2XtuPiWlHxx5Q==}
+  '@remix-run/csrf-middleware@1.0.2':
+    resolution: {integrity: sha512-OdJntL1+4lj+DLBHmijhKU9eb8feu0sb3whyk+FoQfPbZ541sBq47CubCE+6TPbKy/2shgJm0xmZFNu566FW4g==}
 
-  '@remix-run/data-schema@1.0.0':
-    resolution: {integrity: sha512-xuJlVJiVLHLLb5eBUZjG3+Xb7F/DSYcTBFGdGvaqJ1HJTIxlthD2xXyfLTq1Y4pTWm7N7Vasq7p5Y+v7n/jzSQ==}
+  '@remix-run/data-schema@1.0.1':
+    resolution: {integrity: sha512-LaTgafuC23q8RyGb2g/FDl95qF0kxS4B5Mf2+yKTu+qH2PBH6bw6ybu/9ZhnoSihnzgYwVihN3Io0NJRJWkz3g==}
 
-  '@remix-run/data-table-mysql@1.0.0':
-    resolution: {integrity: sha512-jaJtYGpwWWbFMdXg4pZ6iQeG4RBKRpxLX96HP0hYm420Ad5hjPjPIk+WugSe96zbJHMs4RR6iCXKjf/Zmeu2ug==}
+  '@remix-run/data-table-mysql@1.1.0':
+    resolution: {integrity: sha512-MWrwNqICeRiZbTFb3Te09ozWwq6095mPD0vbJ+vx3vh+ZGFMwXt88W6OVt1o8RaFAMifwP7xWZAvT+IamWh06g==}
     peerDependencies:
       mysql2: ^3.15.3
     peerDependenciesMeta:
       mysql2:
         optional: true
 
-  '@remix-run/data-table-postgres@1.0.0':
-    resolution: {integrity: sha512-dB4qrkyqASHPEpqMwRI3n+v5JQfAYNrClYaL5sfhCw56WR4j+amBf4D3KynCvW+6W47ROKmXf6MWXd2UyUprwQ==}
+  '@remix-run/data-table-postgres@1.0.1':
+    resolution: {integrity: sha512-w30F+UH0xjhnPJlCeordjJRDammXxqRX6nnBWy00S8ESDg8YdFr1z/UimYJ3L3sbs+LiFFZ2yuqSkbIQTKrvog==}
     peerDependencies:
       pg: ^8.16.3
     peerDependenciesMeta:
       pg:
         optional: true
 
-  '@remix-run/data-table-sqlite@1.0.0':
-    resolution: {integrity: sha512-Z3dDBCv6vfWbCNS3dsQ0SiVJiiRMH4nEOFGCLcgw9lnaBrYhCao4jmF4wiikvZWnCjk0FcymR7D688LHlRMSJg==}
+  '@remix-run/data-table-sqlite@1.1.0':
+    resolution: {integrity: sha512-DTPfBkusMUg1ON+q67SPY+3+M3O7ZupYJbKTUDDxtFX1ohrs7ho//hbeOy7V1XEh3vhczCmSwWDGT51U9WP9Hw==}
 
-  '@remix-run/data-table@1.0.0':
-    resolution: {integrity: sha512-aFY0MxCH7NZp8HEJttGXsMQhdL5XeK9s34hW5stGdFfRST8WbGTApHMq78jahMBO6LaWgP/PNZRk9Mjr1GUYoA==}
+  '@remix-run/data-table@1.1.0':
+    resolution: {integrity: sha512-2/TvnVjKck+ykIi2NLHeD8Q0tGlOTYEeh3RHOmxqvxJPp9KPuGEoR+JjawiavGPFpm3g9AsJqvoDLXMPwUMnuw==}
 
-  '@remix-run/fetch-proxy@1.0.2':
-    resolution: {integrity: sha512-DbUfvE7JlKK6QO3pq9WRP5EsSlxL/NL0G+QhB0ld2SA96OJwFmZSdqqPvn513Uw65FaPfdc3KXJuC1ape2WfSQ==}
+  '@remix-run/fetch-proxy@1.0.3':
+    resolution: {integrity: sha512-rjqBO4Pyf+3uVTDbtA2uwTX6kMH2LfTm+G2TaXuqeQzIku53QLdikKbgiTJD139NV04uSMTi9TzqOSXQPYf4NQ==}
 
-  '@remix-run/fetch-router@1.0.0':
-    resolution: {integrity: sha512-rvtg1Gtz1oJKL4nk1Jlp5Qh0auTYQBrcaGr7dtSse6iERcEWdRFVqtXWuNYXuwJwXieJE179ZKZRxXEyyTq9og==}
+  '@remix-run/fetch-router@1.0.1':
+    resolution: {integrity: sha512-H/XUqYS0SqLy9Vs2l+7/wrWfA85wOfdpwtTnnmw/7RD7rgX8/8VaGN7Rua03MLjY5fAV70HtHwynWqGp4/LwtQ==}
 
   '@remix-run/file-storage-s3@1.1.1':
     resolution: {integrity: sha512-ZOdCiXLkYvKCBmZGHacY7nv3diXz6rn1+o5hx9Gp7QoJ1h82nObfKU450f7SdWXRcXLzfALtgUG9aAwZUjNNbA==}
@@ -1567,17 +1567,17 @@ packages:
   '@remix-run/file-storage@1.0.1':
     resolution: {integrity: sha512-Jj8/7UqYBl60jkxJehsYXA70gS8nmQlaA0SX36MzS/9tXTs/tSe6VPjCdZBewISkBZaPUg9DzyRitF2C+wUwSA==}
 
-  '@remix-run/form-data-middleware@1.1.1':
-    resolution: {integrity: sha512-upji+HWBtnceJV/BWOeAtvSj/D8MVmuhc2p++eswRAXVl3Tt478fJhDcPNx694geqFFk7DkaMS9kKj5gfjqWjQ==}
+  '@remix-run/form-data-middleware@1.1.2':
+    resolution: {integrity: sha512-nMN2uut/r5DPlviIuRplTSR9ZjXd5YJ/v+fp91RzDeo+qcWs6FNCoX0WllnHIIvcgIHoiS0a9IQSx4Um6b/pIA==}
 
-  '@remix-run/form-data-parser@1.1.1':
-    resolution: {integrity: sha512-LHT4ZxVlosFyPcjs5ubwP/TTBBYqj9Bk8mIznwcuki/AI1/uLp6UlVAgmjY44O+35eAp/E9YjVcmAyHv9aNr4g==}
+  '@remix-run/form-data-parser@1.1.2':
+    resolution: {integrity: sha512-E/Ks42fsu1O474mm/IqoYjhqoEozreR+HWv+UT0RVIebLpNiaCisc0R5oE6Sloz9BfC/4iaJ+CRdiYdU4n/t0Q==}
 
   '@remix-run/fs@1.0.0':
     resolution: {integrity: sha512-LW8oPMgyG075h/Dbq0tIrAHIYnR+gb/1RKYVNQQECij7dCua/mviHuSwGcTB73xSH+OKreSYDxxSgvvemK56Ig==}
 
-  '@remix-run/headers@1.1.0':
-    resolution: {integrity: sha512-Rmzn+WesET0EfVukEHYYKT6RV9HYQb9WGdda3oWedQJXCoHnrXgaQc39DdwZ2rztI05izBAOF1HEHmEpGtjKHQ==}
+  '@remix-run/headers@1.1.1':
+    resolution: {integrity: sha512-pIUErNdqYYx8zCVqMcLfZbrXC8BDufMliG2wvaYy57LJKz5OvkYHrqXl5yMlDcM/dac+DpM36A4nOzGx60ZfGg==}
 
   '@remix-run/html-template@1.0.0':
     resolution: {integrity: sha512-XX2VgVMf4d8Mk3bvcDkHqHQEfXLjny8SE5QApXaTbc7F2BpuQbtTVji2d8Aqlo7U4V5ZGOPZqdbGhwjI2Iknqw==}
@@ -1585,42 +1585,45 @@ packages:
   '@remix-run/lazy-file@5.0.8':
     resolution: {integrity: sha512-ZnmFucfv4tDgkXt8RA51NhfL7KUMoDiJ/yZP2cw/qMgSDYSGLWsnwiCOwSKL+aMEy6eHeY2pvP3KxKPBLfVh8g==}
 
-  '@remix-run/logger-middleware@1.0.0':
-    resolution: {integrity: sha512-TbnW95Bvcf5dCr1aZqQxLhB7gzirzucNOwY+jgRKY5eyOf+NqPrawtdbIPxowOB4GWc10D19FK7QwQyz5U2ncg==}
+  '@remix-run/logger-middleware@1.0.1':
+    resolution: {integrity: sha512-IXU2dwgp4gNhfu7RqmxafFmYs/4Rh79tWH91JMtfFa/iN0y2ep1qSR3nziFgR2baI1c5BdEV+qZbShgrS+uNxg==}
 
-  '@remix-run/method-override-middleware@1.0.0':
-    resolution: {integrity: sha512-SrctSE6kvKs1fISXB2JgJgxkDd30IrMF22JBh0glPQ/v0H5K4vtlLpY+GKB3nyn5bZphcufFz65fM1PKQm6PiA==}
+  '@remix-run/method-override-middleware@1.0.1':
+    resolution: {integrity: sha512-MN/2afh6yVbm6ip61cH3REc0kodiA7Iq8QZi8l67tdP2HlImt0nKIq20ExUtjVp7BUcGXhbLQG5wBkhhMXoneQ==}
 
   '@remix-run/mime@1.0.0':
     resolution: {integrity: sha512-oOPL/TMsNIbfNpSzjtZhTmIeqfgCYM3mQOYs13UsHKTmgLRgKfiNz4B1q/SN3juhCrtPwDwjwUEx1Vn8vp9SEg==}
 
-  '@remix-run/multipart-parser@1.1.1':
-    resolution: {integrity: sha512-ofIL0mdDH73NtiiowYf7yMlI9vv60Xe1jEzuJl2gGLnwScT7ai2wB0osvMmXJmumzxZ237YaMo2drM5hb7ULxg==}
+  '@remix-run/multipart-parser@1.1.2':
+    resolution: {integrity: sha512-LECkecmc1rmiF73uYxzoBLZOlLX+gTKmYz05yVgxljp+ePrjynKGVtniT797Tc5uo8gBRtoRqpkESmXAm0s8Ng==}
 
-  '@remix-run/multiple-import-maps-polyfill@1.0.1':
-    resolution: {integrity: sha512-WZWxJp+c8lGv7Q9fgXGfqkV7R2Oz05VtlKX2NJOmDEdAQIyPWFjg9nJRE0H9v2nGk45tuQpqIvn6/xQV3iTh9g==}
+  '@remix-run/multiple-import-maps-polyfill@1.0.2':
+    resolution: {integrity: sha512-ixqLrvllKHxek3yaGbt2//XjFs/vpZAgtGT/H/MFutZZwFS+TLb85hObnLeizDELTBL9DiWYDxhI7JKLbPGmng==}
 
   '@remix-run/node-fetch-server@1.0.0':
     resolution: {integrity: sha512-M/zI70dmLQdIae+mG95XecvoI3uw0o/ZwflsMAFtaQA/MceznyKaT8aSPvvGVK6yRufzQrY++Ohwei7EhyY3qw==}
 
-  '@remix-run/node-hmr@1.0.0':
-    resolution: {integrity: sha512-FXZqUf1THrxzs0t5Hau/tY8nQCCtS/P6tnGhz/QZfSpmh1Zn4CEzwe9LeJoYY3JNwVUCRZ1EcxQRRDk1jWRFKQ==}
+  '@remix-run/node-fetch-server@1.0.1':
+    resolution: {integrity: sha512-g3mcqTVDyg/i/mW4YJVt8N3bkw5zmhC45dqYPqL7O4eohAm8kT7ROxkc7Oo/9xkNjjBh6ijFbkuKgf8bNffnUg==}
+
+  '@remix-run/node-hmr@1.0.1':
+    resolution: {integrity: sha512-OBcaZ94yUGWRF90VyQNEXJAUBHJWfFzkaD8n0S+3wPPpKxe1tcf2EVXgzVWFW2iSQsUdHkINN/64O3HbIGbSKg==}
 
   '@remix-run/node-tsx@1.0.0':
     resolution: {integrity: sha512-K/HBHJLDLBpZFB0cBSjuqXdDeE6Q5m/S2yq3Xdzpcc6pDPEmKbmajsF0s8S+6aJnaujye58lnX4hfwVZXXWQCg==}
     engines: {node: '>=24.3.0'}
 
-  '@remix-run/render-middleware@1.1.0':
-    resolution: {integrity: sha512-A+/brZUXobXMtTqSsMC8DDML9cprrhsPKsdH5fzq3cmbpilb38qWwO30lSnepglj06aS+DuG6pAGlGCaJ1tbRA==}
+  '@remix-run/render-middleware@1.1.1':
+    resolution: {integrity: sha512-FOAuYWqjCjwu/9UUV7fhbGDRecf3SkYfg5kE0dsiLCiFMExVGGgabbXvFVR+EHXQesn5KN8tXrbDKKUdu+IsRw==}
 
-  '@remix-run/response@1.0.2':
-    resolution: {integrity: sha512-H2lThUxjV8+Ai0rdzEgctIVZDm9lGhp+HG3xvP2Og4GA+CZPsoBaCOctCRBxDLOTxW8enkB9/JONraYpmPMuhw==}
+  '@remix-run/response@1.0.3':
+    resolution: {integrity: sha512-uq/1JbZ8FaUyZhL+atu48gRNLg4dOrwp0071yjANfKTv50kSTtq0y8gha/Rmpeja5S6P+eRIr9yZz9XGHmGf3A==}
 
   '@remix-run/route-pattern@1.0.0':
     resolution: {integrity: sha512-EsI8J5AcDpnV76lGcpwPCqCN1Vj7X2eNPqgUr+RjInTsm4iTnrGzn0iIUxpUjQ5/Ba1cAd8CMMbsA2bjEjZiyQ==}
 
-  '@remix-run/session-middleware@1.0.2':
-    resolution: {integrity: sha512-yb4uThITtGfSd3OGieI4AeA/+qkesLVVUie12kFT2uuSXRhGCC2W2783NNuGSBbzqMGvbLXg2SRijDdYI/fx+w==}
+  '@remix-run/session-middleware@1.0.3':
+    resolution: {integrity: sha512-Z0ZaxUMU/Gi5LQLpyRXYA8i11B7SALdz5jZ3GrNEwEfStyqBR0PHpg3coQLRZRPPLzJ+QPI9gRz8Ah+BAjwKTA==}
 
   '@remix-run/session-storage-memcache@1.0.1':
     resolution: {integrity: sha512-LfKw8fpAsJJ7gsBAuF1iFJPA6yfzakRiS9u0dahYw8Jn4AetDMUEyk6ZeGpld2+mZ5DDzr0147M53f2F9/LiDw==}
@@ -1636,11 +1639,11 @@ packages:
   '@remix-run/session@1.0.1':
     resolution: {integrity: sha512-EA3jOeD1nuUagYGbh4XT30QrUgszVnPyny0Lj0XiZB1r2HTM1H8nNLy7NymeMwYUJGkxuiALQgDium9DaxygQg==}
 
-  '@remix-run/spa@1.0.2':
-    resolution: {integrity: sha512-Idwb8tY33brdYl2IAPw1IBSIgfmUZyslYmKv3jr+dkJKgj+1n2SdsqdhVDCxe9q+XXKhdrf2lQcIpWVvaQqn0Q==}
+  '@remix-run/spa@1.0.3':
+    resolution: {integrity: sha512-cPESgsnOc0rxKc8jJmCCetCZ1r3/o3PWvowHt3AIqhuR6LgqyPyWdTyqSb573+vu5r3A12XLUbUxrS5w3zMUZQ==}
 
-  '@remix-run/static-middleware@1.0.2':
-    resolution: {integrity: sha512-v+Aw/RZ3Zpf8ZUmeZaBLsHVedrR8NZiu9cEulq21E8ZABTpAEPIAEEePdm0vXvMSroy2GbkOvTrGXtrGN2GbTw==}
+  '@remix-run/static-middleware@1.0.3':
+    resolution: {integrity: sha512-nZ/3Jh40KpWrFSSTxlFlKmpiZQ4+troM4H+C0tYGBEODsv5n7jMEOy5mQn6NZFRwNSvxOAUCZA40matCs1KJeg==}
 
   '@remix-run/tar-parser@1.0.1':
     resolution: {integrity: sha512-NvdXpXMZg61vk3xtF+CSqiLKIh91c0R03/m6k2JQnEHN9YOCbYJRllpVh7GfR65RTudXrp5Ol9rmA0FFhLmM5w==}
@@ -1648,8 +1651,8 @@ packages:
   '@remix-run/terminal@1.0.0':
     resolution: {integrity: sha512-3O310KO1kIlAx6S1plIQ0z8nM3zbuEQc13+QBLeHJZ6+zqBqQePu3M4U/JLodYqqnhNCVUN9xALMP8QHEOgdEg==}
 
-  '@remix-run/test@1.1.0':
-    resolution: {integrity: sha512-jP8kECMrM18cjxi7RKaTznEwdX1txlNiNW/Mba5bsceWzbw2CY9HuHWP87ANnI5FvYaAF73HHo0UDdwTnGLFOw==}
+  '@remix-run/test@1.2.0':
+    resolution: {integrity: sha512-OLJYYHmJw8MYCutVNNUyHgYaAzyjaKdmEOXrL4GfZzxSoBHwr7q5xot5hU+z/l91P6YqV/H4Yo6hDN+1WROQwA==}
     engines: {node: '>=24.3.0'}
     peerDependencies:
       playwright: ^1.60.0
@@ -2460,8 +2463,8 @@ packages:
     resolution: {integrity: sha512-Kko+Y5XQ6fM+Ce3dq3m9YGxnacYZYl9cA1wZjaF3Vbry2L3i1qVg8+CAgNPsXRArPMUMCaOR7oa9Nqntc43JKA==}
     engines: {node: '>= 20.19.0'}
 
-  remix@3.2.0:
-    resolution: {integrity: sha512-qQ9/KYFIFvz1LCVEVl/sLL7ScBNnh5WZeh/FKu13/d/dOVPZv8YhsvOsCV2njo3HnxUN89MsNiRz36/ynxojPg==}
+  remix@3.3.0:
+    resolution: {integrity: sha512-k5HSwHSp5c62zgSTGqvirluoOSZb/gW3Kwb22n11pK6P8b8IbzrU2dqEhzMkFg81SxPThUhTP9MwOc20N1tZVQ==}
     engines: {node: '>=24.3.0'}
     hasBin: true
     peerDependencies:
@@ -3527,22 +3530,22 @@ snapshots:
     optionalDependencies:
       vite: 8.3.6(@types/node@24.19.2)(esbuild@0.28.1)(jiti@2.7.0)(tsx@4.23.1)(yaml@2.9.0)
 
-  '@pitlane/crawler@0.3.1(remix@3.2.0(@emnapi/core@2.0.0-alpha.3)(@emnapi/runtime@2.0.0-alpha.3)(playwright@1.64.1))':
+  '@pitlane/crawler@0.3.1(remix@3.3.0(@emnapi/core@2.0.0-alpha.3)(@emnapi/runtime@2.0.0-alpha.3)(playwright@1.64.1))':
     dependencies:
-      remix: 3.2.0(@emnapi/core@2.0.0-alpha.3)(@emnapi/runtime@2.0.0-alpha.3)(playwright@1.64.1)
+      remix: 3.3.0(@emnapi/core@2.0.0-alpha.3)(@emnapi/runtime@2.0.0-alpha.3)(playwright@1.64.1)
 
   '@pitlane/vite-plugin-fetch-server@0.1.1(vite@8.3.6(@types/node@24.19.2)(esbuild@0.28.1)(jiti@2.7.0)(tsx@4.23.1)(yaml@2.9.0))':
     dependencies:
       '@remix-run/node-fetch-server': 1.0.0
       vite: 8.3.6(@types/node@24.19.2)(esbuild@0.28.1)(jiti@2.7.0)(tsx@4.23.1)(yaml@2.9.0)
 
-  '@pitlane/vite-plugin-remix@0.9.1(remix@3.2.0(@emnapi/core@2.0.0-alpha.3)(@emnapi/runtime@2.0.0-alpha.3)(playwright@1.64.1))(vite@8.3.6(@types/node@24.19.2)(esbuild@0.28.1)(jiti@2.7.0)(tsx@4.23.1)(yaml@2.9.0))':
+  '@pitlane/vite-plugin-remix@0.9.1(remix@3.3.0(@emnapi/core@2.0.0-alpha.3)(@emnapi/runtime@2.0.0-alpha.3)(playwright@1.64.1))(vite@8.3.6(@types/node@24.19.2)(esbuild@0.28.1)(jiti@2.7.0)(tsx@4.23.1)(yaml@2.9.0))':
     dependencies:
       '@pitlane/assets': 0.2.1(vite@8.3.6(@types/node@24.19.2)(esbuild@0.28.1)(jiti@2.7.0)(tsx@4.23.1)(yaml@2.9.0))
-      '@pitlane/crawler': 0.3.1(remix@3.2.0(@emnapi/core@2.0.0-alpha.3)(@emnapi/runtime@2.0.0-alpha.3)(playwright@1.64.1))
+      '@pitlane/crawler': 0.3.1(remix@3.3.0(@emnapi/core@2.0.0-alpha.3)(@emnapi/runtime@2.0.0-alpha.3)(playwright@1.64.1))
       '@pitlane/vite-plugin-fetch-server': 0.1.1(vite@8.3.6(@types/node@24.19.2)(esbuild@0.28.1)(jiti@2.7.0)(tsx@4.23.1)(yaml@2.9.0))
       magic-string: 0.30.21
-      remix: 3.2.0(@emnapi/core@2.0.0-alpha.3)(@emnapi/runtime@2.0.0-alpha.3)(playwright@1.64.1)
+      remix: 3.3.0(@emnapi/core@2.0.0-alpha.3)(@emnapi/runtime@2.0.0-alpha.3)(playwright@1.64.1)
       vite: 8.3.6(@types/node@24.19.2)(esbuild@0.28.1)(jiti@2.7.0)(tsx@4.23.1)(yaml@2.9.0)
 
   '@poppinss/colors@4.1.6':
@@ -3559,11 +3562,11 @@ snapshots:
 
   '@remix-run/assert@1.0.0': {}
 
-  '@remix-run/assets@1.0.2(@emnapi/core@2.0.0-alpha.3)(@emnapi/runtime@2.0.0-alpha.3)':
+  '@remix-run/assets@1.0.3(@emnapi/core@2.0.0-alpha.3)(@emnapi/runtime@2.0.0-alpha.3)':
     dependencies:
       '@oxc-project/runtime': 0.121.0
       '@remix-run/file-storage': 1.0.1
-      '@remix-run/headers': 1.1.0
+      '@remix-run/headers': 1.1.1
       '@remix-run/mime': 1.0.0
       chokidar: 5.0.0
       es-module-lexer: 2.3.2
@@ -3580,29 +3583,29 @@ snapshots:
       - '@emnapi/core'
       - '@emnapi/runtime'
 
-  '@remix-run/async-context-middleware@1.0.0':
+  '@remix-run/async-context-middleware@1.0.1':
     dependencies:
-      '@remix-run/fetch-router': 1.0.0
+      '@remix-run/fetch-router': 1.0.1
 
-  '@remix-run/auth-middleware@1.0.1':
+  '@remix-run/auth-middleware@1.0.2':
     dependencies:
-      '@remix-run/fetch-router': 1.0.0
+      '@remix-run/fetch-router': 1.0.1
       '@remix-run/session': 1.0.1
 
-  '@remix-run/auth@1.0.1':
+  '@remix-run/auth@1.0.2':
     dependencies:
-      '@remix-run/fetch-router': 1.0.0
+      '@remix-run/fetch-router': 1.0.1
       '@remix-run/session': 1.0.1
 
-  '@remix-run/cli@1.0.2(@emnapi/core@2.0.0-alpha.3)(@emnapi/runtime@2.0.0-alpha.3)(playwright@1.64.1)':
+  '@remix-run/cli@1.0.3(@emnapi/core@2.0.0-alpha.3)(@emnapi/runtime@2.0.0-alpha.3)(playwright@1.64.1)':
     dependencies:
-      '@remix-run/assets': 1.0.2(@emnapi/core@2.0.0-alpha.3)(@emnapi/runtime@2.0.0-alpha.3)
-      '@remix-run/data-table': 1.0.0
-      '@remix-run/data-table-mysql': 1.0.0
-      '@remix-run/data-table-postgres': 1.0.0
-      '@remix-run/data-table-sqlite': 1.0.0
+      '@remix-run/assets': 1.0.3(@emnapi/core@2.0.0-alpha.3)(@emnapi/runtime@2.0.0-alpha.3)
+      '@remix-run/data-table': 1.1.0
+      '@remix-run/data-table-mysql': 1.1.0
+      '@remix-run/data-table-postgres': 1.0.1
+      '@remix-run/data-table-sqlite': 1.1.0
       '@remix-run/terminal': 1.0.0
-      '@remix-run/test': 1.1.0(@emnapi/core@2.0.0-alpha.3)(@emnapi/runtime@2.0.0-alpha.3)(playwright@1.64.1)
+      '@remix-run/test': 1.2.0(@emnapi/core@2.0.0-alpha.3)(@emnapi/runtime@2.0.0-alpha.3)(playwright@1.64.1)
       jsonc-parser: 3.3.1
       semver: 7.8.5
     transitivePeerDependencies:
@@ -3612,7 +3615,7 @@ snapshots:
       - pg
       - playwright
 
-  '@remix-run/component-hmr@1.0.1(@emnapi/core@2.0.0-alpha.3)(@emnapi/runtime@2.0.0-alpha.3)':
+  '@remix-run/component-hmr@1.0.2(@emnapi/core@2.0.0-alpha.3)(@emnapi/runtime@2.0.0-alpha.3)':
     dependencies:
       magic-string: 0.30.21
       oxc-parser: 0.121.0(@emnapi/core@2.0.0-alpha.3)(@emnapi/runtime@2.0.0-alpha.3)
@@ -3621,62 +3624,62 @@ snapshots:
       - '@emnapi/core'
       - '@emnapi/runtime'
 
-  '@remix-run/component@1.2.0':
+  '@remix-run/component@1.3.0':
     dependencies:
       '@types/dom-navigation': 1.0.7
 
-  '@remix-run/compression-middleware@1.0.2':
+  '@remix-run/compression-middleware@1.0.3':
     dependencies:
-      '@remix-run/fetch-router': 1.0.0
+      '@remix-run/fetch-router': 1.0.1
       '@remix-run/mime': 1.0.0
-      '@remix-run/response': 1.0.2
+      '@remix-run/response': 1.0.3
 
-  '@remix-run/cookie@1.0.2':
+  '@remix-run/cookie@1.0.3':
     dependencies:
-      '@remix-run/headers': 1.1.0
+      '@remix-run/headers': 1.1.1
 
-  '@remix-run/cop-middleware@1.0.0':
+  '@remix-run/cop-middleware@1.0.1':
     dependencies:
-      '@remix-run/fetch-router': 1.0.0
+      '@remix-run/fetch-router': 1.0.1
 
-  '@remix-run/cors-middleware@1.0.2':
+  '@remix-run/cors-middleware@1.0.3':
     dependencies:
-      '@remix-run/fetch-router': 1.0.0
-      '@remix-run/headers': 1.1.0
+      '@remix-run/fetch-router': 1.0.1
+      '@remix-run/headers': 1.1.1
 
-  '@remix-run/csp-middleware@1.0.0':
+  '@remix-run/csp-middleware@1.0.1':
     dependencies:
-      '@remix-run/fetch-router': 1.0.0
-      '@remix-run/headers': 1.1.0
+      '@remix-run/fetch-router': 1.0.1
+      '@remix-run/headers': 1.1.1
 
-  '@remix-run/csrf-middleware@1.0.1':
+  '@remix-run/csrf-middleware@1.0.2':
     dependencies:
-      '@remix-run/fetch-router': 1.0.0
+      '@remix-run/fetch-router': 1.0.1
       '@remix-run/session': 1.0.1
 
-  '@remix-run/data-schema@1.0.0':
+  '@remix-run/data-schema@1.0.1':
     dependencies:
       '@standard-schema/spec': 1.1.0
 
-  '@remix-run/data-table-mysql@1.0.0':
+  '@remix-run/data-table-mysql@1.1.0':
     dependencies:
-      '@remix-run/data-table': 1.0.0
+      '@remix-run/data-table': 1.1.0
 
-  '@remix-run/data-table-postgres@1.0.0':
+  '@remix-run/data-table-postgres@1.0.1':
     dependencies:
-      '@remix-run/data-table': 1.0.0
+      '@remix-run/data-table': 1.1.0
 
-  '@remix-run/data-table-sqlite@1.0.0':
+  '@remix-run/data-table-sqlite@1.1.0':
     dependencies:
-      '@remix-run/data-table': 1.0.0
+      '@remix-run/data-table': 1.1.0
 
-  '@remix-run/data-table@1.0.0': {}
+  '@remix-run/data-table@1.1.0': {}
 
-  '@remix-run/fetch-proxy@1.0.2':
+  '@remix-run/fetch-proxy@1.0.3':
     dependencies:
-      '@remix-run/headers': 1.1.0
+      '@remix-run/headers': 1.1.1
 
-  '@remix-run/fetch-router@1.0.0':
+  '@remix-run/fetch-router@1.0.1':
     dependencies:
       '@remix-run/route-pattern': 1.0.0
 
@@ -3690,23 +3693,23 @@ snapshots:
       '@remix-run/fs': 1.0.0
       '@remix-run/lazy-file': 5.0.8
 
-  '@remix-run/form-data-middleware@1.1.1':
+  '@remix-run/form-data-middleware@1.1.2':
     dependencies:
-      '@remix-run/fetch-router': 1.0.0
-      '@remix-run/form-data-parser': 1.1.1
-      '@remix-run/headers': 1.1.0
+      '@remix-run/fetch-router': 1.0.1
+      '@remix-run/form-data-parser': 1.1.2
+      '@remix-run/headers': 1.1.1
 
-  '@remix-run/form-data-parser@1.1.1':
+  '@remix-run/form-data-parser@1.1.2':
     dependencies:
-      '@remix-run/headers': 1.1.0
-      '@remix-run/multipart-parser': 1.1.1
+      '@remix-run/headers': 1.1.1
+      '@remix-run/multipart-parser': 1.1.2
 
   '@remix-run/fs@1.0.0':
     dependencies:
       '@remix-run/lazy-file': 5.0.8
       '@remix-run/mime': 1.0.0
 
-  '@remix-run/headers@1.1.0': {}
+  '@remix-run/headers@1.1.1': {}
 
   '@remix-run/html-template@1.0.0': {}
 
@@ -3714,28 +3717,30 @@ snapshots:
     dependencies:
       '@remix-run/mime': 1.0.0
 
-  '@remix-run/logger-middleware@1.0.0':
+  '@remix-run/logger-middleware@1.0.1':
     dependencies:
-      '@remix-run/fetch-router': 1.0.0
+      '@remix-run/fetch-router': 1.0.1
       '@remix-run/terminal': 1.0.0
 
-  '@remix-run/method-override-middleware@1.0.0':
+  '@remix-run/method-override-middleware@1.0.1':
     dependencies:
-      '@remix-run/fetch-router': 1.0.0
+      '@remix-run/fetch-router': 1.0.1
 
   '@remix-run/mime@1.0.0': {}
 
-  '@remix-run/multipart-parser@1.1.1':
+  '@remix-run/multipart-parser@1.1.2':
     dependencies:
-      '@remix-run/headers': 1.1.0
+      '@remix-run/headers': 1.1.1
 
-  '@remix-run/multiple-import-maps-polyfill@1.0.1':
+  '@remix-run/multiple-import-maps-polyfill@1.0.2':
     dependencies:
       es-module-lexer: 2.3.2
 
   '@remix-run/node-fetch-server@1.0.0': {}
 
-  '@remix-run/node-hmr@1.0.0(@emnapi/core@2.0.0-alpha.3)(@emnapi/runtime@2.0.0-alpha.3)':
+  '@remix-run/node-fetch-server@1.0.1': {}
+
+  '@remix-run/node-hmr@1.0.1(@emnapi/core@2.0.0-alpha.3)(@emnapi/runtime@2.0.0-alpha.3)':
     dependencies:
       '@remix-run/terminal': 1.0.0
       chokidar: 5.0.0
@@ -3753,29 +3758,29 @@ snapshots:
       - '@emnapi/core'
       - '@emnapi/runtime'
 
-  '@remix-run/render-middleware@1.1.0(@emnapi/core@2.0.0-alpha.3)(@emnapi/runtime@2.0.0-alpha.3)':
+  '@remix-run/render-middleware@1.1.1(@emnapi/core@2.0.0-alpha.3)(@emnapi/runtime@2.0.0-alpha.3)':
     dependencies:
-      '@remix-run/assets': 1.0.2(@emnapi/core@2.0.0-alpha.3)(@emnapi/runtime@2.0.0-alpha.3)
-      '@remix-run/component': 1.2.0
-      '@remix-run/csp-middleware': 1.0.0
-      '@remix-run/fetch-router': 1.0.0
-      '@remix-run/response': 1.0.2
+      '@remix-run/assets': 1.0.3(@emnapi/core@2.0.0-alpha.3)(@emnapi/runtime@2.0.0-alpha.3)
+      '@remix-run/component': 1.3.0
+      '@remix-run/csp-middleware': 1.0.1
+      '@remix-run/fetch-router': 1.0.1
+      '@remix-run/response': 1.0.3
     transitivePeerDependencies:
       - '@emnapi/core'
       - '@emnapi/runtime'
 
-  '@remix-run/response@1.0.2':
+  '@remix-run/response@1.0.3':
     dependencies:
-      '@remix-run/headers': 1.1.0
+      '@remix-run/headers': 1.1.1
       '@remix-run/html-template': 1.0.0
       '@remix-run/mime': 1.0.0
 
   '@remix-run/route-pattern@1.0.0': {}
 
-  '@remix-run/session-middleware@1.0.2':
+  '@remix-run/session-middleware@1.0.3':
     dependencies:
-      '@remix-run/cookie': 1.0.2
-      '@remix-run/fetch-router': 1.0.0
+      '@remix-run/cookie': 1.0.3
+      '@remix-run/fetch-router': 1.0.1
       '@remix-run/session': 1.0.1
 
   '@remix-run/session-storage-memcache@1.0.1':
@@ -3788,28 +3793,28 @@ snapshots:
 
   '@remix-run/session@1.0.1': {}
 
-  '@remix-run/spa@1.0.2(@emnapi/core@2.0.0-alpha.3)(@emnapi/runtime@2.0.0-alpha.3)':
+  '@remix-run/spa@1.0.3(@emnapi/core@2.0.0-alpha.3)(@emnapi/runtime@2.0.0-alpha.3)':
     dependencies:
-      '@remix-run/component': 1.2.0
-      '@remix-run/fetch-router': 1.0.0
-      '@remix-run/render-middleware': 1.1.0(@emnapi/core@2.0.0-alpha.3)(@emnapi/runtime@2.0.0-alpha.3)
+      '@remix-run/component': 1.3.0
+      '@remix-run/fetch-router': 1.0.1
+      '@remix-run/render-middleware': 1.1.1(@emnapi/core@2.0.0-alpha.3)(@emnapi/runtime@2.0.0-alpha.3)
     transitivePeerDependencies:
       - '@emnapi/core'
       - '@emnapi/runtime'
 
-  '@remix-run/static-middleware@1.0.2':
+  '@remix-run/static-middleware@1.0.3':
     dependencies:
-      '@remix-run/fetch-router': 1.0.0
+      '@remix-run/fetch-router': 1.0.1
       '@remix-run/fs': 1.0.0
       '@remix-run/html-template': 1.0.0
       '@remix-run/mime': 1.0.0
-      '@remix-run/response': 1.0.2
+      '@remix-run/response': 1.0.3
 
   '@remix-run/tar-parser@1.0.1': {}
 
   '@remix-run/terminal@1.0.0': {}
 
-  '@remix-run/test@1.1.0(@emnapi/core@2.0.0-alpha.3)(@emnapi/runtime@2.0.0-alpha.3)(playwright@1.64.1)':
+  '@remix-run/test@1.2.0(@emnapi/core@2.0.0-alpha.3)(@emnapi/runtime@2.0.0-alpha.3)(playwright@1.64.1)':
     dependencies:
       '@remix-run/node-tsx': 1.0.0(@emnapi/core@2.0.0-alpha.3)(@emnapi/runtime@2.0.0-alpha.3)
       '@remix-run/terminal': 1.0.0
@@ -4636,57 +4641,57 @@ snapshots:
 
   readdirp@5.1.1: {}
 
-  remix@3.2.0(@emnapi/core@2.0.0-alpha.3)(@emnapi/runtime@2.0.0-alpha.3)(playwright@1.64.1):
+  remix@3.3.0(@emnapi/core@2.0.0-alpha.3)(@emnapi/runtime@2.0.0-alpha.3)(playwright@1.64.1):
     dependencies:
       '@remix-run/assert': 1.0.0
-      '@remix-run/assets': 1.0.2(@emnapi/core@2.0.0-alpha.3)(@emnapi/runtime@2.0.0-alpha.3)
-      '@remix-run/async-context-middleware': 1.0.0
-      '@remix-run/auth': 1.0.1
-      '@remix-run/auth-middleware': 1.0.1
-      '@remix-run/cli': 1.0.2(@emnapi/core@2.0.0-alpha.3)(@emnapi/runtime@2.0.0-alpha.3)(playwright@1.64.1)
-      '@remix-run/component': 1.2.0
-      '@remix-run/component-hmr': 1.0.1(@emnapi/core@2.0.0-alpha.3)(@emnapi/runtime@2.0.0-alpha.3)
-      '@remix-run/compression-middleware': 1.0.2
-      '@remix-run/cookie': 1.0.2
-      '@remix-run/cop-middleware': 1.0.0
-      '@remix-run/cors-middleware': 1.0.2
-      '@remix-run/csp-middleware': 1.0.0
-      '@remix-run/csrf-middleware': 1.0.1
-      '@remix-run/data-schema': 1.0.0
-      '@remix-run/data-table': 1.0.0
-      '@remix-run/data-table-mysql': 1.0.0
-      '@remix-run/data-table-postgres': 1.0.0
-      '@remix-run/data-table-sqlite': 1.0.0
-      '@remix-run/fetch-proxy': 1.0.2
-      '@remix-run/fetch-router': 1.0.0
+      '@remix-run/assets': 1.0.3(@emnapi/core@2.0.0-alpha.3)(@emnapi/runtime@2.0.0-alpha.3)
+      '@remix-run/async-context-middleware': 1.0.1
+      '@remix-run/auth': 1.0.2
+      '@remix-run/auth-middleware': 1.0.2
+      '@remix-run/cli': 1.0.3(@emnapi/core@2.0.0-alpha.3)(@emnapi/runtime@2.0.0-alpha.3)(playwright@1.64.1)
+      '@remix-run/component': 1.3.0
+      '@remix-run/component-hmr': 1.0.2(@emnapi/core@2.0.0-alpha.3)(@emnapi/runtime@2.0.0-alpha.3)
+      '@remix-run/compression-middleware': 1.0.3
+      '@remix-run/cookie': 1.0.3
+      '@remix-run/cop-middleware': 1.0.1
+      '@remix-run/cors-middleware': 1.0.3
+      '@remix-run/csp-middleware': 1.0.1
+      '@remix-run/csrf-middleware': 1.0.2
+      '@remix-run/data-schema': 1.0.1
+      '@remix-run/data-table': 1.1.0
+      '@remix-run/data-table-mysql': 1.1.0
+      '@remix-run/data-table-postgres': 1.0.1
+      '@remix-run/data-table-sqlite': 1.1.0
+      '@remix-run/fetch-proxy': 1.0.3
+      '@remix-run/fetch-router': 1.0.1
       '@remix-run/file-storage': 1.0.1
       '@remix-run/file-storage-s3': 1.1.1
-      '@remix-run/form-data-middleware': 1.1.1
-      '@remix-run/form-data-parser': 1.1.1
+      '@remix-run/form-data-middleware': 1.1.2
+      '@remix-run/form-data-parser': 1.1.2
       '@remix-run/fs': 1.0.0
-      '@remix-run/headers': 1.1.0
+      '@remix-run/headers': 1.1.1
       '@remix-run/html-template': 1.0.0
       '@remix-run/lazy-file': 5.0.8
-      '@remix-run/logger-middleware': 1.0.0
-      '@remix-run/method-override-middleware': 1.0.0
+      '@remix-run/logger-middleware': 1.0.1
+      '@remix-run/method-override-middleware': 1.0.1
       '@remix-run/mime': 1.0.0
-      '@remix-run/multipart-parser': 1.1.1
-      '@remix-run/multiple-import-maps-polyfill': 1.0.1
-      '@remix-run/node-fetch-server': 1.0.0
-      '@remix-run/node-hmr': 1.0.0(@emnapi/core@2.0.0-alpha.3)(@emnapi/runtime@2.0.0-alpha.3)
+      '@remix-run/multipart-parser': 1.1.2
+      '@remix-run/multiple-import-maps-polyfill': 1.0.2
+      '@remix-run/node-fetch-server': 1.0.1
+      '@remix-run/node-hmr': 1.0.1(@emnapi/core@2.0.0-alpha.3)(@emnapi/runtime@2.0.0-alpha.3)
       '@remix-run/node-tsx': 1.0.0(@emnapi/core@2.0.0-alpha.3)(@emnapi/runtime@2.0.0-alpha.3)
-      '@remix-run/render-middleware': 1.1.0(@emnapi/core@2.0.0-alpha.3)(@emnapi/runtime@2.0.0-alpha.3)
-      '@remix-run/response': 1.0.2
+      '@remix-run/render-middleware': 1.1.1(@emnapi/core@2.0.0-alpha.3)(@emnapi/runtime@2.0.0-alpha.3)
+      '@remix-run/response': 1.0.3
       '@remix-run/route-pattern': 1.0.0
       '@remix-run/session': 1.0.1
-      '@remix-run/session-middleware': 1.0.2
+      '@remix-run/session-middleware': 1.0.3
       '@remix-run/session-storage-memcache': 1.0.1
       '@remix-run/session-storage-redis': 1.0.1
-      '@remix-run/spa': 1.0.2(@emnapi/core@2.0.0-alpha.3)(@emnapi/runtime@2.0.0-alpha.3)
-      '@remix-run/static-middleware': 1.0.2
+      '@remix-run/spa': 1.0.3(@emnapi/core@2.0.0-alpha.3)(@emnapi/runtime@2.0.0-alpha.3)
+      '@remix-run/static-middleware': 1.0.3
       '@remix-run/tar-parser': 1.0.1
       '@remix-run/terminal': 1.0.0
-      '@remix-run/test': 1.1.0(@emnapi/core@2.0.0-alpha.3)(@emnapi/runtime@2.0.0-alpha.3)(playwright@1.64.1)
+      '@remix-run/test': 1.2.0(@emnapi/core@2.0.0-alpha.3)(@emnapi/runtime@2.0.0-alpha.3)(playwright@1.64.1)
     optionalDependencies:
       playwright: 1.64.1
     transitivePeerDependencies:

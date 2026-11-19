@@ -64,8 +64,10 @@ describe("shared renderer runtime dispatch", () => {
     router.get("/redirect", () =>
       Response.redirect("https://store.test/fragment", 302),
     );
+    // A fallback streams the nested frame after the shell. Frames without one
+    // render as part of the shell, which the renderer awaits before returning.
     router.get("/fragment", (context) =>
-      context.render(<Frame src="/nested" />),
+      context.render(<Frame src="/nested" fallback={<p>Loading</p>} />),
     );
     router.get("/nested", async (context) => {
       await releaseFrame.promise;
