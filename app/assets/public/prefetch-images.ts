@@ -1,8 +1,8 @@
 /**
- * Fetches the images a prefetched page marks with `data-prefetch`, so they
- * are in the HTTP cache when the page renders. Remix's prefetching discovers
- * scripts, stylesheets, and nonresponsive image preloads, but not `srcset`
- * images. Each image loads the candidate the browser would choose for the
+ * Fetches the images a prefetched page marks with `data-prefetch-with-page`,
+ * so they are in the HTTP cache when the page renders. Remix's prefetching
+ * discovers scripts, stylesheets, and nonresponsive image preloads, but not
+ * `srcset` images. Each image loads the candidate the browser would choose for the
  * current viewport, following `<picture>` sources whose media matches.
  *
  * Attribute URLs resolve against the current document. Prefetched pages are
@@ -12,8 +12,9 @@ export async function prefetchImages(
   fragment: DocumentFragment,
   signal: AbortSignal,
 ): Promise<void> {
-  let images =
-    fragment.querySelectorAll<HTMLImageElement>("img[data-prefetch]");
+  let images = fragment.querySelectorAll<HTMLImageElement>(
+    "img[data-prefetch-with-page]",
+  );
   await Promise.all(
     Array.from(images, (image) => prefetchImage(image, signal)),
   );

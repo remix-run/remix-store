@@ -205,7 +205,7 @@ function ProductImageFrame(
             sizes={LAYOUTS[layout].sizes}
             loading={blurUp ? "eager" : "lazy"}
             fetchPriority={blurUp ? "high" : undefined}
-            prefetch={blurUp}
+            prefetchWithPage={blurUp}
           />
         </picture>
       </div>

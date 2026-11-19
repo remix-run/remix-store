@@ -53,13 +53,13 @@ function inertFragment(html: string): DocumentFragment {
 const GALLERY = `
   <picture>
     <source media="(width < 810px)" srcset="data:image/gif;base64,R0lGOD" />
-    <img data-prefetch="true" src="https://cdn.shopify.com/a.jpg?width=2000"
+    <img data-prefetch-with-page="true" src="https://cdn.shopify.com/a.jpg?width=2000"
       srcset="https://cdn.shopify.com/a.jpg?width=800 800w, https://cdn.shopify.com/a.jpg?width=2000 2000w"
       sizes="60vw" />
   </picture>
   <picture>
     <source media="(width >= 810px)" srcset="data:image/gif;base64,R0lGOD" />
-    <img data-prefetch="true" src="https://cdn.shopify.com/a.jpg?width=2000"
+    <img data-prefetch-with-page="true" src="https://cdn.shopify.com/a.jpg?width=2000"
       srcset="https://cdn.shopify.com/a.jpg?width=800 800w" sizes="100vw" />
   </picture>
   <img src="https://cdn.shopify.com/b.jpg" loading="lazy" />
@@ -84,7 +84,7 @@ describe("prefetchImages", () => {
     let fragment = inertFragment(`
       <picture>
         <source media="(width < 810px)" srcset="/narrow.jpg 400w" sizes="100vw" />
-        <img data-prefetch="true" src="/wide.jpg" crossorigin="anonymous" />
+        <img data-prefetch-with-page="true" src="/wide.jpg" crossorigin="anonymous" />
       </picture>
     `);
 
@@ -100,9 +100,9 @@ describe("prefetchImages", () => {
   it("settles when images load or fail, and cancels pending images", async (t) => {
     let images = mockImages(t);
     let fragment = inertFragment(`
-      <img data-prefetch="true" src="/one.jpg" />
-      <img data-prefetch="true" src="/two.jpg" />
-      <img data-prefetch="true" src="/three.jpg" />
+      <img data-prefetch-with-page="true" src="/one.jpg" />
+      <img data-prefetch-with-page="true" src="/two.jpg" />
+      <img data-prefetch-with-page="true" src="/three.jpg" />
     `);
     let controller = new AbortController();
     let settled = false;
