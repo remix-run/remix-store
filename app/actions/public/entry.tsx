@@ -7,7 +7,11 @@ import {
   importModule,
   preloadShim,
 } from "remix/multiple-import-maps-polyfill";
-import { navigate as remixNavigate, run } from "remix/component";
+import {
+  defaultPrefetch,
+  navigate as remixNavigate,
+  run,
+} from "remix/component";
 
 import {
   createPageViewPublisher,
@@ -15,6 +19,7 @@ import {
 } from "../../assets/public/analytics.tsx";
 import { getBrowserCartStore } from "../../assets/public/cart-store.ts";
 import { configureOpenCartAction } from "../../assets/public/cart.tsx";
+import { prefetchImages } from "../../assets/public/prefetch-images.ts";
 import type { MarketPathPrefix } from "../../lib/public/market.ts";
 import { routeTemplates } from "../../lib/public/route-templates.ts";
 
@@ -32,6 +37,16 @@ let app = run({
 
     preloadShim(preloads);
     return [];
+  },
+  prefetch(src, options) {
+    return defaultPrefetch(src, options, {
+      async processFrame(prefetchReferences, { fragment, signal }) {
+        await Promise.all([
+          prefetchReferences(),
+          prefetchImages(fragment, signal),
+        ]);
+      },
+    });
   },
 });
 
