@@ -65,7 +65,7 @@ if (import.meta.hot) {
 }
 
 app.addEventListener("error", (event) => {
-  console.error("Hydration error:", event.error);
+  console.error("Remix component error:", event.error);
 });
 
 let publishPageViewed = createPageViewPublisher();

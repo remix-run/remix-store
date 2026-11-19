@@ -397,7 +397,6 @@ function matchSeoRoute(url: URL): SeoRoute | null {
 
 const productGridFragmentMatcher = createMultiMatcher<true>();
 productGridFragmentMatcher.add(routes.collections.products.pattern, true);
-productGridFragmentMatcher.add(routes.collections.loadMore.pattern, true);
 
 function isProductGridFragment(url: URL): boolean {
   return productGridFragmentMatcher.match(url) != null;
