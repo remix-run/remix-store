@@ -24,6 +24,7 @@
   },
   "dependencies": {
     "@pitlane/assets": "0.2.1",
+    "@remix-run/ui": "0.14.0",
     "@shopify/hydrogen": "2026.10.3",
     "remix": "3.3.0"
   },

@@ -211,8 +211,10 @@ app without starting an HTTP listener. Runtime adapters call the app's
   module-global request state.
 - Prefer Web APIs, native links, buttons, and forms over custom abstractions.
   The runtime lives in `remix/component`; headless primitives and animations
-  require the separate, unstable `@remix-run/ui` package, which this app does
-  not currently use.
+  live in the separate, experimental `@remix-run/ui` package. The app uses
+  only `@remix-run/ui/form`, for the signup form: its schema in
+  `app/lib/public/subscription.ts` parses submissions on the server and
+  binds the form's controls in the browser.
 - HTML responses enforce a nonce-based CSP. Authored `<script>` and
   `<link rel="modulepreload">` tags need the `nonce` from
   `DocumentAssetsProvider`; inline event-handler attributes never run. New

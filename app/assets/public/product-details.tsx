@@ -12,6 +12,7 @@ import {
 import {
   clientEntry,
   css,
+  Frame,
   navigate,
   on,
   updateUrl,
@@ -25,14 +26,18 @@ import {
   US_MARKET,
   type ActiveMarket,
 } from "../../lib/public/market.ts";
-import { productSubscriptionsEnabled } from "../../lib/public/subscription.ts";
+import {
+  isSubscribed,
+  productSubscriptionsEnabled,
+  SUBSCRIBE_FRAME,
+  subscribeFormSrc,
+} from "../../lib/public/subscription.ts";
 import { dismissibleDetails } from "../../ui/public/dismissible-details.tsx";
 import { Icon } from "../../ui/public/icon.tsx";
 import { RichText } from "../../ui/public/rich-text.tsx";
 import { getBrowserCartStore } from "./cart-store.ts";
 import { ProductGallery } from "./product-gallery.tsx";
 import { ExpressShopPayButton } from "./shop-pay-button.tsx";
-import { SubscribeForm } from "./subscribe-form.tsx";
 
 type ProductDetailsProps = {
   market?: ActiveMarket;
@@ -251,11 +256,16 @@ export const ProductDetails = clientEntry(
               {selectedVariant &&
               !selectedVariant.availableForSale &&
               productSubscriptionsEnabled(product) ? (
-                <SubscribeForm
-                  action={marketPath("/subscribe", market.pathPrefix)}
-                  mode="back-in-stock"
-                  productHandle={product.handle}
-                  variantId={selectedVariant.id}
+                // Each variant has its own form, so changing variants loads
+                // its frame instead of reloading this one.
+                <Frame
+                  key={selectedVariant.id}
+                  name={SUBSCRIBE_FRAME}
+                  src={subscribeFormSrc(
+                    market.pathPrefix,
+                    { handle: product.handle, variantId: selectedVariant.id },
+                    { subscribed: isSubscribed(search, selectedVariant.id) },
+                  )}
                 />
               ) : null}
             </div>

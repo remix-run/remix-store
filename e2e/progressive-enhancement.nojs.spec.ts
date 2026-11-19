@@ -109,3 +109,19 @@ test("product photos are sharp and fully visible without JavaScript", async ({
     await expect(frame.getByRole("img")).toHaveCSS("filter", "none");
   }
 });
+
+test("the signup form posts the page and shows the outcome without JavaScript", async ({
+  page,
+}) => {
+  await page.goto("/subscribe");
+  await page.getByLabel("Email address").fill("member@example.com");
+  await page.getByRole("button", { name: "Subscribe" }).click();
+
+  // The fixture has no Admin API; the page shows that, keeping the email.
+  await expect(page).toHaveURL(/\/subscribe$/);
+  await expect(page.getByRole("alert")).toHaveText(/Something went wrong/);
+  await expect(page.getByLabel("Email address")).toHaveValue(
+    "member@example.com",
+  );
+  await expect(page.getByRole("navigation").first()).toBeVisible();
+});
