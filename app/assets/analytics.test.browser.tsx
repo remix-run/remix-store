@@ -15,6 +15,7 @@ import {
   ProductViewed,
   createPageViewPublisher,
   publishCartViewed,
+  publishPageViewsOnNavigation,
   publishCartViewedWhenSettled,
 } from "./public/analytics.tsx";
 import { createCart } from "../../test/cart-fixtures.ts";
@@ -47,6 +48,34 @@ describe("storefront analytics", () => {
       {
         event: AnalyticsEvent.PAGE_VIEWED,
         payload: { url },
+      },
+    ]);
+  });
+
+  it("publishes page views only for navigations that render their destination", async (t) => {
+    let events = installAnalytics(t);
+    let url = "https://storefront.example/";
+    let controller = new AbortController();
+    t.after(() => controller.abort());
+    publishPageViewsOnNavigation(
+      createPageViewPublisher(() => url),
+      controller.signal,
+    );
+
+    url = "https://storefront.example/collections/all";
+    navigation(Promise.resolve(new AbortController().signal));
+    await nextTask();
+    url = "https://storefront.example/products/failed";
+    navigation(Promise.reject(new Error("Server error")));
+    await nextTask();
+    url = "https://storefront.example/products/cancelled";
+    navigation(Promise.resolve(AbortSignal.abort()));
+    await nextTask();
+
+    assert.deepEqual(events, [
+      {
+        event: AnalyticsEvent.PAGE_VIEWED,
+        payload: { url: "https://storefront.example/collections/all" },
       },
     ]);
   });
@@ -251,6 +280,17 @@ function testCartStore(
     reset() {},
     handleFormSubmit: () => Promise.resolve(),
   };
+}
+
+/** Dispatches a frame navigation that ends with `finished`. */
+function navigation(finished: Promise<AbortSignal>) {
+  window.dispatchEvent(
+    Object.assign(new Event("rmx:navigation"), { finished }),
+  );
+}
+
+function nextTask() {
+  return new Promise((resolve) => setTimeout(resolve));
 }
 
 function installAnalytics(t: TestContext): PublishedEvent[] {

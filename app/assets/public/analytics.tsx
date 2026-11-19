@@ -10,6 +10,7 @@ import {
 import {
   clientEntry,
   type Handle,
+  type NavigationEvent,
   type SerializableObject,
 } from "remix/component";
 
@@ -24,9 +25,9 @@ export function getAnalytics(): StorefrontAnalytics | null {
 }
 
 /**
- * Creates the page-lifetime publisher used by the Remix top-frame lifecycle.
- * Identical URLs are ignored so initial hydration and development reloads do
- * not double count a page view.
+ * Creates the page-lifetime page view publisher. Identical URLs are ignored
+ * so the initial publish and repeated navigation events for the same
+ * destination do not double count a page view.
  */
 export function createPageViewPublisher(
   getUrl: () => string = () => window.location.href,
@@ -42,6 +43,28 @@ export function createPageViewPublisher(
     bus.publish(AnalyticsEvent.PAGE_VIEWED, { url });
     lastPublishedUrl = url;
   };
+}
+
+/**
+ * Publishes a page view after each frame navigation that renders its
+ * destination, including after redirects. Failed and cancelled navigations,
+ * frame reloads, and URL-only updates don't count.
+ */
+export function publishPageViewsOnNavigation(
+  publishPageViewed: () => void,
+  signal?: AbortSignal,
+): void {
+  window.addEventListener(
+    "rmx:navigation",
+    async (event: NavigationEvent) => {
+      let completed = await event.finished.then(
+        (navigationSignal) => !navigationSignal.aborted,
+        () => false,
+      );
+      if (completed) publishPageViewed();
+    },
+    { capture: true, signal },
+  );
 }
 
 let cancelDeferredCartView: (() => void) | undefined;

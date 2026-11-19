@@ -9,7 +9,10 @@ import {
 } from "remix/multiple-import-maps-polyfill";
 import { navigate as remixNavigate, run } from "remix/component";
 
-import { createPageViewPublisher } from "../../assets/public/analytics.tsx";
+import {
+  createPageViewPublisher,
+  publishPageViewsOnNavigation,
+} from "../../assets/public/analytics.tsx";
 import { getBrowserCartStore } from "../../assets/public/cart-store.ts";
 import { configureOpenCartAction } from "../../assets/public/cart.tsx";
 import type { MarketPathPrefix } from "../../lib/public/market.ts";
@@ -51,7 +54,7 @@ app.addEventListener("error", (event) => {
 });
 
 let publishPageViewed = createPageViewPublisher();
-app.frames.top.addEventListener("reloadComplete", publishPageViewed);
+publishPageViewsOnNavigation(publishPageViewed);
 
 await Promise.all([
   app.ready(),
