@@ -1,5 +1,6 @@
 import { css, Frame, type Handle } from "remix/component";
 
+import { LoadMoreProducts } from "../assets/public/load-more-products.tsx";
 import { ProductCard } from "../assets/public/product-card.tsx";
 import type {
   ProductCardData,
@@ -28,7 +29,11 @@ export function CollectionProducts(handle: Handle<ProductPageProps>) {
   );
 }
 
-/** Grid items for one page, ending in a frame for the next page's control. */
+/**
+ * Grid items for one page, ending in a lazy frame for the next page. The
+ * frame loads as it approaches the viewport; until then, and without
+ * JavaScript, its fallback is the "Load more" control.
+ */
 export function ProductPage(handle: Handle<ProductPageProps>) {
   return () => {
     let {
@@ -55,7 +60,12 @@ export function ProductPage(handle: Handle<ProductPageProps>) {
         {pageInfo.hasNextPage && pageInfo.endCursor ? (
           <Frame
             src={collectionPageHref(
-              "loadMore",
+              collectionHandle,
+              pageInfo.endCursor,
+              pathPrefix,
+            )}
+            loading="lazy"
+            fallback={loadMoreControl(
               collectionHandle,
               pageInfo.endCursor,
               pathPrefix,
@@ -67,14 +77,37 @@ export function ProductPage(handle: Handle<ProductPageProps>) {
   };
 }
 
+/** The grid fragment for the page of products after `cursor`. */
 export function collectionPageHref(
-  route: "products" | "loadMore",
   collectionHandle: string,
   cursor: string,
   pathPrefix: MarketPathPrefix,
 ): string {
-  let href = routes.collections[route].href({ handle: collectionHandle });
+  let href = routes.collections.products.href({ handle: collectionHandle });
   return `${marketPath(href, pathPrefix)}?${new URLSearchParams({ cursor })}`;
+}
+
+/**
+ * The "Load more" control for the page after `cursor`: a GET form for the
+ * collection document without JavaScript, and a frame reload with it.
+ */
+export function loadMoreControl(
+  collectionHandle: string,
+  cursor: string,
+  pathPrefix: MarketPathPrefix,
+  failed = false,
+) {
+  return (
+    <LoadMoreProducts
+      action={marketPath(
+        routes.collections.show.href({ handle: collectionHandle }),
+        pathPrefix,
+      )}
+      cursor={cursor}
+      failed={failed}
+      src={collectionPageHref(collectionHandle, cursor, pathPrefix)}
+    />
+  );
 }
 
 const productGridStyle = css({

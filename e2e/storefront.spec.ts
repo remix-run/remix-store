@@ -257,37 +257,44 @@ test("updates the product grid when navigating between collections", async ({
   ).toBe(true);
 });
 
-test("loads the next page of products in place and retries failures", async ({
+test("loads the next page of products in place as the grid's end nears", async ({
   page,
 }) => {
   await page.goto("/collections/all");
-  await page.waitForFunction(() => !document.getElementById("rmx-data"));
   let historyLength = await page.evaluate(() => history.length);
+  let grid = page.getByRole("region", { name: "Collection products" });
 
+  // The first fixture page is short, so its end is already near.
+  await expect(
+    grid.locator('a[href="/products/second-page-product"]'),
+  ).toBeVisible();
+  await expect(grid.locator('a[href="/products/test-product"]')).toBeVisible();
+  // The last page ends the grid.
+  await expect(grid.getByRole("button", { name: "Load more" })).toHaveCount(0);
+  await expect(page).toHaveURL(/\/collections\/all$/);
+  expect(await page.evaluate(() => history.length)).toBe(historyLength);
+});
+
+test("retries a page that failed to load from the Load more control", async ({
+  page,
+}) => {
   let failedOnce = false;
   await page.route("**/collections/all/products?*", (route) => {
     if (failedOnce) return route.continue();
     failedOnce = true;
     return route.abort();
   });
+  await page.goto("/collections/all");
+  await expect.poll(() => failedOnce).toBe(true);
 
   let grid = page.getByRole("region", { name: "Collection products" });
   let loadMore = grid.getByRole("button", { name: "Load more" });
   await loadMore.click();
-  await expect(grid.getByRole("alert")).toHaveText(
-    "Products could not be loaded. Please try again.",
-  );
-
-  await loadMore.click();
   let nextProduct = grid.locator('a[href="/products/second-page-product"]');
   await expect(nextProduct).toBeVisible();
   await expect(nextProduct).toBeFocused();
-  await expect(grid.locator('a[href="/products/test-product"]')).toBeVisible();
-  await expect(grid.getByRole("alert")).toHaveCount(0);
-  // The last page ends the grid.
   await expect(loadMore).toHaveCount(0);
   await expect(page).toHaveURL(/\/collections\/all$/);
-  expect(await page.evaluate(() => history.length)).toBe(historyLength);
 });
 
 test.describe("mobile menu", () => {

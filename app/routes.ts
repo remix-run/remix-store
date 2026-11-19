@@ -8,10 +8,8 @@ export const routes = route({
   collections: {
     index: get("/collections"),
     show: get("/collections/:handle"),
-    // Frame content for the product grid: the next page of cards, and the
-    // "Load more" control that requests it.
+    // Frame content for the product grid: the next page of cards.
     products: get("/collections/:handle/products"),
-    loadMore: get("/collections/:handle/load-more"),
   },
   products: {
     show: get("/products/:handle"),

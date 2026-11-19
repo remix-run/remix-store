@@ -5,10 +5,12 @@ import { ProductCardSkeleton } from "./product-card.tsx";
 const LOADING_PRODUCT_COUNT = 8;
 
 /**
- * The last item of a product grid page. Without JavaScript it is a GET form
- * for the collection document at the next cursor. Enhanced, it reloads its
- * own frame with the next page of server-rendered cards, which ends in the
- * next control.
+ * The last item of a product grid page, as the fallback of the lazy frame
+ * for the next page, or as that frame's content when the page failed to
+ * load. Without JavaScript it is a GET form for the collection document at
+ * the next cursor. Enhanced, the frame usually loads the next page before
+ * the control is reached; submitting it loads the page right away, or
+ * retries after a failure.
  */
 export const LoadMoreProducts = clientEntry(
   import.meta.url,
@@ -47,8 +49,8 @@ export const LoadMoreProducts = clientEntry(
               method="get"
               mix={on("submit", async (event, signal) => {
                 event.preventDefault();
-                let lastProduct =
-                  event.currentTarget.closest("li")?.previousElementSibling;
+                let form = event.currentTarget;
+                let lastProduct = form.closest("li")?.previousElementSibling;
                 pending = true;
                 failed = false;
                 await handle.update();
@@ -63,10 +65,12 @@ export const LoadMoreProducts = clientEntry(
                   );
                   failed = true;
                 }
-
-                if (handle.signal.aborted) {
-                  // The next page replaced this control. Continue from its
-                  // first product without moving the viewport.
+                // The next page replaced this control. As a lazy frame's
+                // fallback, the control leaves the page before its handle
+                // aborts, so check both.
+                if (handle.signal.aborted || !form.isConnected) {
+                  // Continue from the first new product without moving the
+                  // viewport.
                   lastProduct?.nextElementSibling
                     ?.querySelector("a")
                     ?.focus({ preventScroll: true });

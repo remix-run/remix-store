@@ -39,8 +39,11 @@ describe("collection routes", () => {
     assert.match(html, /\$20\.00/);
     assert.match(html, /<form action="\/collections\/racing" method="get"/);
     assert.match(html, /name="cursor" value="next-page"/);
-    // The control is frame content that loads the next page in place.
-    assert.match(html, /\/collections\/racing\/products\?cursor=next-page/);
+    // The control is the fallback of a lazy frame for the next page.
+    assert.equal(
+      frameLoading(html, "/collections/racing/products?cursor=next-page"),
+      "lazy",
+    );
   });
 
   it("prioritizes the first row of product images on the first page only", async () => {
@@ -116,7 +119,10 @@ describe("collection routes", () => {
       /<form action="\/en-ca\/collections\/racing" method="get"/,
     );
     assert.match(html, /name="cursor" value="page-3"/);
-    assert.match(html, /\/en-ca\/collections\/racing\/products\?cursor=page-3/);
+    assert.equal(
+      frameLoading(html, "/en-ca/collections/racing/products?cursor=page-3"),
+      "lazy",
+    );
   });
 
   it("ends the grid when the collection has no further page", async () => {
@@ -169,31 +175,13 @@ describe("collection routes", () => {
     assert.doesNotMatch(html, /Page not found|Something went wrong/);
   });
 
-  it("renders the load more control without querying Shopify", async () => {
+  it("requires a cursor for the grid fragment", async () => {
     let app = createTestApp(createStorefrontFetch({}));
 
     let response = await app.fetch(
-      new Request("https://example.com/collections/racing/load-more?cursor=c"),
+      new Request("https://example.com/collections/racing/products"),
     );
-    let html = await response.text();
-
-    assert.equal(response.status, 200);
-    assert.equal(response.headers.get("X-Robots-Tag"), "noindex");
-    assert.match(html, /<form action="\/collections\/racing" method="get"/);
-    assert.match(html, /name="cursor" value="c"/);
-    assert.match(html, />Load more</);
-  });
-
-  it("requires a cursor for grid fragments", async () => {
-    let app = createTestApp(createStorefrontFetch({}));
-
-    for (let path of [
-      "/collections/racing/products",
-      "/collections/racing/load-more",
-    ]) {
-      let response = await app.fetch(new Request(`https://example.com${path}`));
-      assert.equal(response.status, 400, path);
-    }
+    assert.equal(response.status, 400);
   });
 
   it("renders collection metadata", async () => {
@@ -279,6 +267,17 @@ function storefrontFetch(
     RemixCollection: collection,
     RemixNavigation: navigationData,
   });
+}
+
+/** The loading mode of the frame for `src` in the page's hydration data. */
+function frameLoading(html: string, src: string): string | undefined {
+  let data = html.match(
+    /<script type="application\/json" id="rmx-data">(.*?)<\/script>/,
+  )?.[1];
+  let frames: Record<string, { src: string; status: string }> = data
+    ? JSON.parse(data).f
+    : {};
+  return Object.values(frames).find((frame) => frame.src === src)?.status;
 }
 
 function collectionData(pageInfo: {
