@@ -16,13 +16,6 @@ class PendingImage extends EventTarget {
   }
 }
 
-async function until(condition: () => boolean) {
-  for (let attempt = 0; attempt < 100 && !condition(); attempt++) {
-    await new Promise((resolve) => setTimeout(resolve, 20));
-  }
-  assert.ok(condition(), "condition never became true");
-}
-
 /** Tracks frame preloads and holds idle callbacks until `settle` runs them. */
 function mockBrowser(t: TestContext) {
   let preloads: PendingImage[] = [];
@@ -117,11 +110,11 @@ describe("home hero frames", () => {
   it("preloads later frames at low priority, at the first frame's crop, once the page settles", async (t) => {
     let { preloads, settle } = mockBrowser(t);
     let { cleanup, firstFrame, frames } = renderHero(t, 4);
-    await until(() => firstFrame.currentSrc !== "");
+    await t.waitFor(() => assert.notEqual(firstFrame.currentSrc, ""));
     assert.equal(preloads.length, 0);
 
     settle();
-    await until(() => preloads.length === 3);
+    await t.waitFor(() => assert.equal(preloads.length, 3));
     let firstCrop = crop(firstFrame.currentSrc);
     assert.deepEqual(
       preloads.map((image) => [
@@ -138,7 +131,7 @@ describe("home hero frames", () => {
     await new Promise((resolve) => setTimeout(resolve, 50));
     assert.equal(frames().length, 1);
     preloads[0]!.dispatchEvent(new Event("load"));
-    await until(() => frames().length === 3);
+    await t.waitFor(() => assert.equal(frames().length, 3));
     assert.deepEqual(
       [...frames()].slice(1).map((frame) => frame.getAttribute("src")),
       [preloads[0]!.src, preloads[1]!.src],
@@ -151,11 +144,11 @@ describe("home hero frames", () => {
   it("starts the later frames over when the first frame changes crop", async (t) => {
     let { preloads, settle } = mockBrowser(t);
     let { cleanup, firstFrame, frames } = renderHero(t, 3);
-    await until(() => firstFrame.currentSrc !== "");
+    await t.waitFor(() => assert.notEqual(firstFrame.currentSrc, ""));
     settle();
-    await until(() => preloads.length === 2);
+    await t.waitFor(() => assert.equal(preloads.length, 2));
     preloads[0]!.dispatchEvent(new Event("load"));
-    await until(() => frames().length === 2);
+    await t.waitFor(() => assert.equal(frames().length, 2));
 
     // As after a rotation: the browser picks another crop for the first frame.
     let rotated = new URL(firstFrame.currentSrc);
@@ -164,11 +157,11 @@ describe("home hero frames", () => {
     Object.defineProperty(firstFrame, "currentSrc", { value: rotated.href });
     firstFrame.dispatchEvent(new Event("load"));
 
-    await until(() => frames().length === 1);
+    await t.waitFor(() => assert.equal(frames().length, 1));
     assert.equal(preloads[1]!.src, "");
     assert.equal(frames()[0]!.style.visibility, "visible");
     settle();
-    await until(() => preloads.length === 4);
+    await t.waitFor(() => assert.equal(preloads.length, 4));
     assert.deepEqual(
       preloads.slice(2).map((image) => crop(image.src)),
       ["609x1083", "609x1083"],
@@ -179,11 +172,11 @@ describe("home hero frames", () => {
   it("stops preloading when a navigation leaves the page, and resumes if it fails", async (t) => {
     let { preloads, settle } = mockBrowser(t);
     let { cleanup, firstFrame, frames } = renderHero(t, 4);
-    await until(() => firstFrame.currentSrc !== "");
+    await t.waitFor(() => assert.notEqual(firstFrame.currentSrc, ""));
     settle();
-    await until(() => preloads.length === 3);
+    await t.waitFor(() => assert.equal(preloads.length, 3));
     preloads[0]!.dispatchEvent(new Event("load"));
-    await until(() => frames().length === 2);
+    await t.waitFor(() => assert.equal(frames().length, 2));
 
     // The next page shouldn't share the connection with frames this one won't show.
     let navigation = startNavigation("/collections/all");
@@ -195,7 +188,7 @@ describe("home hero frames", () => {
     // Still here: the loaded frame stays, and only the missing ones load again.
     await navigation.fail();
     settle();
-    await until(() => preloads.length === 5);
+    await t.waitFor(() => assert.equal(preloads.length, 5));
     assert.deepEqual(
       preloads.slice(3).map((image) => new URL(image.src).pathname),
       ["/hero/frame-2.jpg", "/hero/frame-3.jpg"],
@@ -207,9 +200,9 @@ describe("home hero frames", () => {
   it("stays stopped when the visitor clicks the same link again while it loads", async (t) => {
     let { preloads, settle } = mockBrowser(t);
     let { firstFrame } = renderHero(t, 3);
-    await until(() => firstFrame.currentSrc !== "");
+    await t.waitFor(() => assert.notEqual(firstFrame.currentSrc, ""));
     settle();
-    await until(() => preloads.length === 2);
+    await t.waitFor(() => assert.equal(preloads.length, 2));
 
     let original = location.href;
     t.after(() => history.replaceState(history.state, "", original));
@@ -230,9 +223,9 @@ describe("home hero frames", () => {
   it("keeps preloading through navigations that stay on the page", async (t) => {
     let { preloads, settle } = mockBrowser(t);
     let { cleanup, firstFrame } = renderHero(t, 3);
-    await until(() => firstFrame.currentSrc !== "");
+    await t.waitFor(() => assert.notEqual(firstFrame.currentSrc, ""));
     settle();
-    await until(() => preloads.length === 2);
+    await t.waitFor(() => assert.equal(preloads.length, 2));
 
     startNavigation("#details");
     assert.ok(preloads.every((image) => image.src !== ""));
@@ -242,9 +235,9 @@ describe("home hero frames", () => {
   it("resumes once, from the final URL, when a redirected navigation keeps the hero", async (t) => {
     let { preloads, settle } = mockBrowser(t);
     let { cleanup, firstFrame } = renderHero(t, 3);
-    await until(() => firstFrame.currentSrc !== "");
+    await t.waitFor(() => assert.notEqual(firstFrame.currentSrc, ""));
     settle();
-    await until(() => preloads.length === 2);
+    await t.waitFor(() => assert.equal(preloads.length, 2));
 
     let original = location.href;
     t.after(() => history.replaceState(history.state, "", original));
@@ -253,7 +246,7 @@ describe("home hero frames", () => {
     history.replaceState(history.state, "", `${location.pathname}?page=3`);
     await navigation.succeed();
     settle();
-    await until(() => preloads.length === 4);
+    await t.waitFor(() => assert.equal(preloads.length, 4));
 
     // The hero's page is now the redirected URL, so going there again stays.
     startNavigation(location.href);

@@ -23,6 +23,7 @@ import {
   configureOpenCartAction,
 } from "./public/cart.tsx";
 import { ProductAddToCart } from "./public/product-add-to-cart.tsx";
+import { waitFor } from "../../test/wait-for.ts";
 
 const CartUpdatePayloadSchema = s.object({
   discountCodes: s.optional(s.array(s.string())),
@@ -214,7 +215,7 @@ describe("cart interactions", () => {
     let increase = $('button[aria-label="Increase quantity"]');
     assert.ok(increase instanceof HTMLButtonElement);
     await act(() => increase.click());
-    await waitFor(() => api.requests.length === 1, act);
+    await waitFor(t, act, () => assert.equal(api.requests.length, 1));
 
     // Reopening while the mutation is in flight waits for the confirmed
     // cart instead of publishing `cart: null`.
@@ -225,7 +226,7 @@ describe("cart interactions", () => {
     let settledCart = createCart(2);
     settledCart.updatedAt = "2026-01-01T00:00:01.000Z";
     mutation.resolve({ cart: settledCart, userErrors: [], warnings: [] });
-    await waitFor(() => cartViews().length === 2, act);
+    await waitFor(t, act, () => assert.equal(cartViews().length, 2));
 
     assert.equal(
       cartViews()[1]?.payload.cart?.updatedAt,
@@ -334,7 +335,9 @@ describe("cart interactions", () => {
 
     drawer.requestClose();
     assert.equal(drawer.open, false);
-    await waitFor(() => trigger.getAttribute("aria-expanded") === "false", act);
+    await waitFor(t, act, () =>
+      assert.equal(trigger.getAttribute("aria-expanded"), "false"),
+    );
 
     assert.equal(configureOpenCartAction(), true);
     await window.Shopify!.actions.openCart();
@@ -404,21 +407,21 @@ describe("cart interactions", () => {
       let increase = $$('button[aria-label="Increase quantity"]')[1];
       assert.ok(increase instanceof HTMLButtonElement);
       await act(() => increase.click());
-      await waitFor(() => api.requests.length === quantity, act);
+      await waitFor(t, act, () => assert.equal(api.requests.length, quantity));
 
       let settledCart = createCart(++quantity);
       settledCart.cost.subtotalAmount.amount = amount;
       settledCart.cost.totalAmount.amount = amount;
       mutation.resolve({ cart: settledCart, userErrors: [], warnings: [] });
-      await waitFor(
-        () =>
-          increase.closest("li")?.hasAttribute("aria-busy") === false &&
-          $$('[role="progressbar"]').length === 2 &&
-          Array.from($$('[role="progressbar"]')).every(
-            (progress) => progress.getAttribute("aria-valuenow") === percentage,
+      await waitFor(t, act, () => {
+        assert.equal(increase.closest("li")?.hasAttribute("aria-busy"), false);
+        assert.deepEqual(
+          Array.from($$('[role="progressbar"]'), (progress) =>
+            progress.getAttribute("aria-valuenow"),
           ),
-        act,
-      );
+          [percentage, percentage],
+        );
+      });
 
       assert.doesNotMatch(
         container.textContent,
@@ -476,13 +479,15 @@ describe("cart interactions", () => {
     let increase = $$('button[aria-label="Increase quantity"]')[1];
     assert.ok(increase instanceof HTMLButtonElement);
     await act(() => increase.click());
-    await waitFor(() => api.requests.length === 1, act);
+    await waitFor(t, act, () => assert.equal(api.requests.length, 1));
 
     let settledCart = createCart(2);
     settledCart.cost.subtotalAmount = { amount: "106", currencyCode: "CAD" };
     settledCart.cost.totalAmount = { amount: "106", currencyCode: "CAD" };
     mutation.resolve({ cart: settledCart, userErrors: [], warnings: [] });
-    await waitFor(() => $$('[role="progressbar"]').length === 0, act);
+    await waitFor(t, act, () =>
+      assert.equal($$('[role="progressbar"]').length, 0),
+    );
 
     assert.equal(
       (
@@ -521,7 +526,7 @@ describe("cart interactions", () => {
     let remove = drawer.querySelector('button[aria-label="Remove item"]');
     assert.ok(remove instanceof HTMLButtonElement);
     await act(() => remove.click());
-    await waitFor(() => api.requests.length === 1, act);
+    await waitFor(t, act, () => assert.equal(api.requests.length, 1));
 
     assert.equal(drawer.open, false);
     assert.doesNotMatch(drawer.textContent ?? "", /empty/i);
@@ -666,13 +671,13 @@ describe("cart interactions", () => {
 
     let mutation = api.enqueue();
     await act(() => add.click());
-    await waitFor(() => api.requests.length === 1, act);
+    await waitFor(t, act, () => assert.equal(api.requests.length, 1));
     assert.equal(drawer.open, false);
     assert.equal(add.textContent, "Adding…");
     assert.equal(api.requests[0]?.body.lines?.[0]?.merchandiseId, VARIANT_ID);
 
     mutation.resolve({ cart: createCart(), userErrors: [], warnings: [] });
-    await waitFor(() => add.textContent === "Add to cart", act);
+    await waitFor(t, act, () => assert.equal(add.textContent, "Add to cart"));
     assert.equal(drawer.open, false);
     assert.equal(add.textContent, "Add to cart");
     assert.match(
@@ -709,8 +714,9 @@ describe("cart interactions", () => {
     let messages = errors.mock.calls.map((call) => call.arguments.join(" "));
     assert.deepEqual(messages, [], messages.join("\n"));
     await waitFor(
-      () => /1 item\(s\) in cart/.test(container.textContent),
+      t,
       async () => root.flush(),
+      () => assert.match(container.textContent, /1 item\(s\) in cart/),
     );
     assert.ok(container.querySelector('button[aria-controls="cart-drawer"]'));
   });
@@ -740,13 +746,13 @@ describe("cart interactions", () => {
 
     let mutation = api.enqueue();
     await act(() => add.click());
-    await waitFor(() => api.requests.length === 1, act);
+    await waitFor(t, act, () => assert.equal(api.requests.length, 1));
     mutation.resolve({
       cart: null,
       userErrors: [{ message: "This variant is sold out." }],
       warnings: [],
     });
-    await waitFor(() => add.textContent === "Add to cart", act);
+    await waitFor(t, act, () => assert.equal(add.textContent, "Add to cart"));
 
     assert.equal(drawer.open, false);
     assert.match(
@@ -774,7 +780,7 @@ describe("cart interactions", () => {
     assert.ok(quantity instanceof HTMLInputElement);
 
     await act(() => increase.click());
-    await waitFor(() => api.requests.length === 1, act);
+    await waitFor(t, act, () => assert.equal(api.requests.length, 1));
     assert.equal(quantity.value, "2");
     assert.equal(getComputedStyle(quantity).transitionDuration, "0s");
     assert.equal(
@@ -791,7 +797,7 @@ describe("cart interactions", () => {
     assert.equal(checkout.querySelector("svg"), null);
 
     await act(() => increase.click());
-    await waitFor(() => api.requests.length === 2, act);
+    await waitFor(t, act, () => assert.equal(api.requests.length, 2));
     assert.equal(quantity.value, "3");
     assert.equal(firstMutation.aborted, true);
 
@@ -800,9 +806,8 @@ describe("cart interactions", () => {
     settledCart.cost.subtotalAmount.amount = "25";
     settledCart.cost.totalAmount.amount = "25";
     secondMutation.resolve({ cart: settledCart, userErrors: [], warnings: [] });
-    await waitFor(
-      () => increase.closest("li")?.hasAttribute("aria-busy") === false,
-      act,
+    await waitFor(t, act, () =>
+      assert.equal(increase.closest("li")?.hasAttribute("aria-busy"), false),
     );
 
     assert.equal(quantity.value, "3");
@@ -833,7 +838,7 @@ describe("cart interactions", () => {
     assert.ok(quantity instanceof HTMLInputElement);
 
     await act(() => increase.click());
-    await waitFor(() => api.requests.length === 1, act);
+    await waitFor(t, act, () => assert.equal(api.requests.length, 1));
     assert.equal(quantity.value, "2");
 
     mutation.resolve({
@@ -847,7 +852,7 @@ describe("cart interactions", () => {
       ],
       warnings: [],
     });
-    await waitFor(() => quantity.value === "1", act);
+    await waitFor(t, act, () => assert.equal(quantity.value, "1"));
 
     assert.equal(quantity.getAttribute("aria-invalid"), "true");
     let errorId = quantity.getAttribute("aria-describedby");
@@ -949,9 +954,7 @@ type DeferredMutation = {
 function createCartApiMock(t: TestContext) {
   let requests: Array<{ body: CartUpdatePayload; signal?: AbortSignal }> = [];
   let queued: Array<
-    ReturnType<typeof createDeferred<CartEndpointResult>> & {
-      signal?: AbortSignal;
-    }
+    PromiseWithResolvers<CartEndpointResult> & { signal?: AbortSignal }
   > = [];
 
   t.mock.method(
@@ -980,9 +983,9 @@ function createCartApiMock(t: TestContext) {
   return {
     requests,
     enqueue(): DeferredMutation {
-      let deferred: ReturnType<typeof createDeferred<CartEndpointResult>> & {
+      let deferred: PromiseWithResolvers<CartEndpointResult> & {
         signal?: AbortSignal;
-      } = createDeferred<CartEndpointResult>();
+      } = Promise.withResolvers<CartEndpointResult>();
       queued.push(deferred);
       return {
         get aborted() {
@@ -992,14 +995,6 @@ function createCartApiMock(t: TestContext) {
       };
     },
   };
-}
-
-function createDeferred<T>() {
-  let resolve!: (value: T) => void;
-  let promise = new Promise<T>((resolvePromise) => {
-    resolve = resolvePromise;
-  });
-  return { promise, resolve };
 }
 
 function toStandardCart(cart: SerializedCartData) {
@@ -1030,17 +1025,6 @@ function withAbort<T>(promise: Promise<T>, signal?: AbortSignal): Promise<T> {
 async function flushAsync(act: Act) {
   for (let index = 0; index < 5; index++) {
     await Promise.resolve();
-    await act(() => {});
-  }
-}
-
-async function waitFor(predicate: () => boolean, act: Act) {
-  let deadline = Date.now() + 2_000;
-  while (!predicate()) {
-    if (Date.now() > deadline) {
-      throw new Error("Timed out waiting for cart interaction");
-    }
-    await new Promise((resolve) => setTimeout(resolve, 0));
     await act(() => {});
   }
 }

@@ -173,24 +173,19 @@ function installCanvasHarness(
     contextRequests++;
     return options.missingContext ? null : context;
   });
-  mockGetter(t, HTMLElement.prototype, "clientWidth", () => width);
-  mockGetter(t, HTMLElement.prototype, "clientHeight", () => height);
-  mockGetter(t, window, "devicePixelRatio", () => dpr);
-  replaceProperty(
-    t,
-    window,
-    "requestAnimationFrame",
-    (callback: FrameCallback) => {
-      let id = nextFrame++;
-      frames.set(id, callback);
-      return id;
-    },
-  );
-  replaceProperty(t, window, "cancelAnimationFrame", (id: number) => {
+  t.mock.getter(HTMLElement.prototype, "clientWidth", () => width);
+  t.mock.getter(HTMLElement.prototype, "clientHeight", () => height);
+  t.mock.getter(window, "devicePixelRatio", () => dpr);
+  t.mock.method(window, "requestAnimationFrame", (callback: FrameCallback) => {
+    let id = nextFrame++;
+    frames.set(id, callback);
+    return id;
+  });
+  t.mock.method(window, "cancelAnimationFrame", (id: number) => {
     cancelledFrames.push(id);
     frames.delete(id);
   });
-  replaceProperty(t, window, "matchMedia", () => {
+  t.mock.method(window, "matchMedia", () => {
     let mediaQueryListDouble = {
       get matches() {
         return reducedMotion;
@@ -230,7 +225,7 @@ function installCanvasHarness(
       observerDisconnected = true;
     }
   }
-  replaceProperty(t, globalThis, "ResizeObserver", CanvasResizeObserver);
+  t.mock.property(globalThis, "ResizeObserver", CanvasResizeObserver);
 
   return {
     get arcs() {
@@ -288,34 +283,4 @@ function takeFrame(harness: CanvasHarness): FrameCallback {
   let [id, callback] = entry;
   harness.frames.delete(id);
   return callback;
-}
-
-type GetterOwner = HTMLElement | Window;
-
-function mockGetter<Owner extends GetterOwner, Key extends keyof Owner>(
-  t: TestContext,
-  target: Owner,
-  property: Key,
-  getter: () => Owner[Key],
-) {
-  let descriptor = Object.getOwnPropertyDescriptor(target, property);
-  Object.defineProperty(target, property, { configurable: true, get: getter });
-  t.after(() => {
-    if (descriptor) Object.defineProperty(target, property, descriptor);
-    else Reflect.deleteProperty(target, property);
-  });
-}
-
-type BrowserPropertyOwner = Window | typeof globalThis;
-
-function replaceProperty<
-  Owner extends BrowserPropertyOwner,
-  Key extends keyof Owner,
->(t: TestContext, target: Owner, property: Key, value: Owner[Key]) {
-  let descriptor = Object.getOwnPropertyDescriptor(target, property);
-  Object.defineProperty(target, property, { configurable: true, value });
-  t.after(() => {
-    if (descriptor) Object.defineProperty(target, property, descriptor);
-    else Reflect.deleteProperty(target, property);
-  });
 }

@@ -4,7 +4,11 @@ import { SuperHeaders } from "remix/headers";
 import { CacheControl } from "remix/headers/cache-control";
 import { compression } from "remix/middleware/compression";
 import { staticFiles } from "remix/middleware/static";
-import type { Middleware } from "remix/router";
+import {
+  createMiddleware,
+  type NextFunction,
+  type RequestContext,
+} from "remix/router";
 
 import { getDocumentAssets } from "./assets.ts";
 import { assets } from "./assets.node.ts";
@@ -32,49 +36,48 @@ export function closeNodeApp() {
   return assets.close();
 }
 
-function nodePlatform(): Middleware {
-  // Node's default Brotli quality (11) spends ~150ms of CPU on each page and
-  // module. Quality 5 is within ~12% of its size for ~1% of the CPU. Fastly
-  // passes these bytes through: it only compresses uncompressed responses,
-  // and uncacheable HTML only at level 1.
-  let compress = compression({
-    brotli: { params: { [zlib.BROTLI_PARAM_QUALITY]: 5 } },
+function nodePlatform() {
+  return createMiddleware(
+    healthCheck,
+    // Node's default Brotli quality (11) spends ~150ms of CPU on each page and
+    // module. Quality 5 is within ~12% of its size for ~1% of the CPU. Fastly
+    // passes these bytes through: it only compresses uncompressed responses,
+    // and uncacheable HTML only at level 1.
+    compression({ brotli: { params: { [zlib.BROTLI_PARAM_QUALITY]: 5 } } }),
+    // Root public files keep stable, unfingerprinted URLs, so cache them briefly.
+    // Fingerprinted `/assets/*` responses set their own immutable headers.
+    staticFiles("./public", {
+      cacheControl: new CacheControl(cacheControl.publicDay).toString(),
+      index: false,
+    }),
+    serveAssets,
+  );
+}
+
+function healthCheck(context: RequestContext, next: NextFunction) {
+  if (context.url.pathname !== "/health") return next();
+  return new Response("OK", {
+    headers: new SuperHeaders({
+      cacheControl: cacheControl.noStore,
+      contentType: "text/plain; charset=utf-8",
+    }),
   });
-  // Root public files keep stable, unfingerprinted URLs, so cache them briefly.
-  // Fingerprinted `/assets/*` responses set their own immutable headers.
-  let servePublicFiles = staticFiles("./public", {
-    cacheControl: new CacheControl(cacheControl.publicDay).toString(),
-    index: false,
+}
+
+async function serveAssets(context: RequestContext, next: NextFunction) {
+  let { pathname } = context.url;
+  if (pathname !== "/assets" && !pathname.startsWith("/assets/")) {
+    return next();
+  }
+
+  let response = await assets.fetch(context.request);
+  if (response && response.status < 400) return response;
+
+  // A stale fingerprint during a deploy must not be cached by a CDN.
+  let headers = new SuperHeaders(response?.headers);
+  headers.cacheControl = cacheControl.noStore;
+  return new Response(response ? response.body : "Not Found", {
+    headers,
+    status: response?.status ?? 404,
   });
-
-  return (context, next) => {
-    if (context.url.pathname === "/health") {
-      return new Response("OK", {
-        headers: new SuperHeaders({
-          cacheControl: cacheControl.noStore,
-          contentType: "text/plain; charset=utf-8",
-        }),
-      });
-    }
-
-    return compress(context, async () =>
-      servePublicFiles(context, async () => {
-        let { pathname } = context.url;
-        if (pathname !== "/assets" && !pathname.startsWith("/assets/")) {
-          return next();
-        }
-
-        let response = await assets.fetch(context.request);
-        if (response && response.status < 400) return response;
-
-        // A stale fingerprint during a deploy must not be cached by a CDN.
-        let headers = new SuperHeaders(response?.headers);
-        headers.cacheControl = cacheControl.noStore;
-        return new Response(response ? response.body : "Not Found", {
-          headers,
-          status: response?.status ?? 404,
-        });
-      }),
-    );
-  };
 }

@@ -3,6 +3,7 @@ import { describe, it } from "remix/test";
 import { render } from "remix/component/test";
 
 import { SubscribeForm } from "./public/subscribe-form.tsx";
+import { waitFor } from "../../test/wait-for.ts";
 
 describe("subscribe form", () => {
   it("renders progressive fields and verified product identifiers", async (t) => {
@@ -33,7 +34,7 @@ describe("subscribe form", () => {
   });
 
   it("posts the hydrated form and renders pending then success", async (t) => {
-    let deferred = createDeferred<Response>();
+    let deferred = Promise.withResolvers<Response>();
     let requests: Array<{ body: URLSearchParams; input: string }> = [];
     t.mock.method(
       globalThis,
@@ -65,7 +66,7 @@ describe("subscribe form", () => {
     deferred.resolve(
       Response.json({ message: "Thanks for subscribing!", success: true }),
     );
-    await waitFor(() => view.$('[role="status"]') !== null, view.act);
+    await waitFor(t, view.act, () => assert.ok(view.$('[role="status"]')));
 
     button = view.$("button");
     assert.ok(button instanceof HTMLButtonElement);
@@ -100,7 +101,7 @@ describe("subscribe form", () => {
   });
 
   it("guards duplicate submissions while pending and after success", async (t) => {
-    let deferred = createDeferred<Response>();
+    let deferred = Promise.withResolvers<Response>();
     let fetch = t.mock.method(globalThis, "fetch", () => deferred.promise);
     let view = render(<SubscribeForm action="/subscribe" mode="newsletter" />);
     t.after(view.cleanup);
@@ -114,7 +115,7 @@ describe("subscribe form", () => {
     assert.equal(fetch.mock.callCount(), 1);
 
     deferred.resolve(Response.json({ message: "Subscribed", success: true }));
-    await waitFor(() => view.$('[role="status"]') !== null, view.act);
+    await waitFor(t, view.act, () => assert.ok(view.$('[role="status"]')));
     await view.act(() => submit(view.$));
     assert.equal(fetch.mock.callCount(), 1);
 
@@ -149,21 +150,19 @@ describe("subscribe form", () => {
     fillForm(view.$);
 
     await view.act(() => submit(view.$));
-    await waitFor(
-      () => view.$('[role="alert"]')?.textContent === "Please try later.",
-      view.act,
+    await waitFor(t, view.act, () =>
+      assert.equal(view.$('[role="alert"]')?.textContent, "Please try later."),
     );
     let button = view.$("button");
     assert.ok(button instanceof HTMLButtonElement);
     assert.equal(button.disabled, false);
 
     await view.act(() => submit(view.$));
-    await waitFor(
-      () =>
-        view
-          .$('[role="alert"]')
-          ?.textContent?.includes("Something went wrong") === true,
-      view.act,
+    await waitFor(t, view.act, () =>
+      assert.match(
+        view.$('[role="alert"]')?.textContent ?? "",
+        /Something went wrong/,
+      ),
     );
     assert.doesNotMatch(
       view.$('[role="alert"]')?.textContent ?? "",
@@ -199,27 +198,9 @@ function submit($: Query) {
   );
 }
 
-function createDeferred<T>() {
-  let resolve!: (value: T) => void;
-  let promise = new Promise<T>((resolvePromise) => {
-    resolve = resolvePromise;
-  });
-  return { promise, resolve };
-}
-
 async function flushAsync(act: Act) {
   await act(async () => {
     await Promise.resolve();
     await Promise.resolve();
   });
-}
-
-async function waitFor(predicate: () => boolean, act: Act) {
-  let deadline = Date.now() + 2_000;
-  while (!predicate()) {
-    if (Date.now() > deadline)
-      throw new Error("Timed out waiting for subscribe form");
-    await new Promise((resolve) => setTimeout(resolve, 0));
-    await act(() => {});
-  }
 }

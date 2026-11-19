@@ -8,6 +8,7 @@ import {
   type StorefrontAnalytics,
 } from "@shopify/hydrogen";
 import * as assert from "remix/assert";
+import { render } from "remix/component/test";
 import { describe, it, type TestContext } from "remix/test";
 
 import {
@@ -19,10 +20,6 @@ import {
   publishCartViewedWhenSettled,
 } from "./public/analytics.tsx";
 import { createCart } from "../../test/cart-fixtures.ts";
-import {
-  createTestComponent,
-  renderTestComponent,
-} from "../../test/component-fixtures.ts";
 
 interface PublishedEvent {
   event: AnalyticsEventName;
@@ -83,16 +80,17 @@ describe("storefront analytics", () => {
   it("publishes product views once per product id", (t) => {
     let events = installAnalytics(t);
     let product = analyticsProduct("1", "1");
-    let component = createTestComponent(ProductViewed);
+    let { root, cleanup } = render(<ProductViewed product={product} />);
+    t.after(cleanup);
 
-    renderTestComponent(component, { product });
-    renderTestComponent(component, {
-      product: { ...product, title: "Renamed" },
-    });
+    root.render(<ProductViewed product={{ ...product, title: "Renamed" }} />);
+    root.flush();
     let nextVariant = analyticsProduct("1", "2");
-    renderTestComponent(component, { product: nextVariant });
+    root.render(<ProductViewed product={nextVariant} />);
+    root.flush();
     let nextProduct = analyticsProduct("2", "3");
-    renderTestComponent(component, { product: nextProduct });
+    root.render(<ProductViewed product={nextProduct} />);
+    root.flush();
 
     assert.deepEqual(events, [
       {
@@ -109,14 +107,18 @@ describe("storefront analytics", () => {
   it("publishes collection views once per collection identity", (t) => {
     let events = installAnalytics(t);
     let collection = analyticsCollection("1", "all");
-    let component = createTestComponent(CollectionViewed);
+    let { root, cleanup } = render(
+      <CollectionViewed collection={collection} />,
+    );
+    t.after(cleanup);
 
-    renderTestComponent(component, { collection });
-    renderTestComponent(component, {
-      collection: { ...collection, handle: "featured" },
-    });
+    root.render(
+      <CollectionViewed collection={{ ...collection, handle: "featured" }} />,
+    );
+    root.flush();
     let nextCollection = analyticsCollection("2", "featured");
-    renderTestComponent(component, { collection: nextCollection });
+    root.render(<CollectionViewed collection={nextCollection} />);
+    root.flush();
 
     assert.deepEqual(events, [
       {

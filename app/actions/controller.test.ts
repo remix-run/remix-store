@@ -267,6 +267,48 @@ describe("platform skeleton", () => {
     assert.doesNotMatch(html, /Upstream failure/);
   });
 
+  it("renders a branded 500 when a page component throws while rendering", async (t) => {
+    let errors: unknown[][] = [];
+    t.mock.method(console, "error", (...args: unknown[]) => errors.push(args));
+    // An unknown currency code makes Intl.NumberFormat throw in the page body.
+    let home = homeData();
+    let entry = home.lookbook.entries.references.nodes[0]!;
+    let brokenProduct = {
+      key: "product",
+      reference: {
+        __typename: "Product",
+        id: "lookbook-product",
+        handle: "broken-price",
+        title: "Broken price",
+        priceRange: {
+          minVariantPrice: { amount: "10.0", currencyCode: "NOT-A-CURRENCY" },
+        },
+      },
+    };
+    let brokenEntry = { ...entry, fields: [...entry.fields, brokenProduct] };
+    let brokenHome = {
+      ...home,
+      lookbook: { entries: { references: { nodes: [brokenEntry] } } },
+    };
+    let app = createTestApp(
+      createStorefrontFetch({
+        RemixAnalyticsShop: analyticsShopData,
+        RemixHomeEditorial: () => brokenHome,
+        RemixNavigation: navigationData,
+      }),
+    );
+
+    let response = await app.fetch(
+      new Request("https://example.com" + routes.home.href()),
+    );
+    let html = await response.text();
+
+    assert.equal(response.status, 500);
+    assert.match(response.headers.get("Content-Type") ?? "", /text\/html/);
+    assert.match(html, /<title>Something went wrong<\/title>/);
+    assert.ok(errors.some(([error]) => error instanceof RangeError));
+  });
+
   it("returns a server-rendered 404 for unknown routes", async () => {
     let app = createTestApp(shellMenuFetch);
 
