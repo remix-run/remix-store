@@ -602,3 +602,84 @@ test("adds a product to the cart from the product page", async ({ page }) => {
     page.getByRole("heading", { name: "1 item(s) in cart" }),
   ).toBeVisible();
 });
+
+test("submits the signup form in place, showing it's pending", async ({
+  page,
+}) => {
+  await page.goto("/subscribe");
+  await page.waitForFunction(() => !document.getElementById("rmx-data"));
+  let email = page.getByLabel("Email address");
+  await email.fill("member@example.com");
+  let documentLoads = 0;
+  page.on("load", () => (documentLoads += 1));
+  let release = Promise.withResolvers<void>();
+  await page.route("**/subscribe", async (route) => {
+    if (route.request().method() !== "POST") return route.continue();
+    await release.promise;
+    await route.continue();
+  });
+
+  await page.getByRole("button", { name: "Subscribe" }).click();
+  await expect(
+    page.getByRole("button", { name: "Subscribing…" }),
+  ).toBeVisible();
+  await expect(email).toHaveAttribute("readonly");
+  release.resolve();
+
+  // The fixture has no Admin API, so the frame gets the form back showing
+  // the failure, with the email still filled in.
+  await expect(page.getByRole("alert")).toHaveText(/Something went wrong/);
+  await expect(email).toHaveValue("member@example.com");
+  await expect(email).not.toHaveAttribute("readonly");
+  await expect(page).toHaveURL(/\/subscribe$/);
+  expect(documentLoads).toBe(0);
+});
+
+test("checks the email in the browser once the field is left", async ({
+  page,
+}) => {
+  await page.goto("/subscribe");
+  await page.waitForFunction(() => !document.getElementById("rmx-data"));
+  let posts = 0;
+  page.on("request", (request) => {
+    if (request.method() === "POST") posts += 1;
+  });
+  let email = page.getByLabel("Email address");
+
+  await email.fill("not-an-email");
+  await expect(page.getByRole("alert")).toHaveCount(0);
+  await email.press("Tab");
+  await expect(page.getByRole("alert")).toHaveText(
+    "Please enter a valid email address.",
+  );
+  await expect(email).toHaveAttribute("aria-invalid", "true");
+
+  await page.getByRole("button", { name: "Subscribe" }).click();
+  expect(posts).toBe(0);
+});
+
+test("submits a back-in-stock signup through its frame", async ({ page }) => {
+  await page.goto("/products/sold-out-product");
+  await page.waitForFunction(() => !document.getElementById("rmx-data"));
+  let signup = page.getByRole("form", { name: "Notify me when it’s back" });
+  await signup
+    .getByLabel("Email address for stock notifications")
+    .fill("member@example.com");
+  let documentLoads = 0;
+  page.on("load", () => (documentLoads += 1));
+  let response = page.waitForResponse(
+    (response) =>
+      response.request().method() === "POST" &&
+      response.url().includes("/subscribe?product-handle=sold-out-product"),
+  );
+
+  await signup.getByRole("button", { name: "Notify me" }).click();
+
+  expect((await response).status()).toBe(502);
+  await expect(signup.getByRole("alert")).toHaveText(/Something went wrong/);
+  await expect(page.getByRole("heading", { name: "Test product" })).toHaveCount(
+    1,
+  );
+  await expect(page).toHaveURL(/\/products\/sold-out-product$/);
+  expect(documentLoads).toBe(0);
+});

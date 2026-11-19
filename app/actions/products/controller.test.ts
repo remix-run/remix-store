@@ -120,7 +120,10 @@ describe("product routes", () => {
       /rel="canonical" href="https:\/\/example\.com\/en-ca\/products\/test-product"/,
     );
     assert.match(html, /action="\/en-ca\/api\/cart" method="post"/);
-    assert.match(html, /action="\/en-ca\/subscribe" method="post"/);
+    assert.match(
+      html,
+      /action="\/en-ca\/subscribe\?product-handle=test-product&amp;/,
+    );
     assert.match(html, /href="\/en-ca\/products\/test-product\?/);
     assert.match(html, /currencyCode.{0,20}CAD/);
   });
@@ -148,13 +151,42 @@ describe("product routes", () => {
       html,
       /This size is currently out of stock\. Sign up to be notified by\s+email when restock this size\./,
     );
-    assert.match(html, /action="\/subscribe" method="post"/);
-    assert.match(html, /name="product-handle" value="test-product"/);
     assert.match(
       html,
-      /name="variant-id" value="gid:\/\/shopify\/ProductVariant\/222"/,
+      /<form action="\/subscribe\?product-handle=test-product&amp;variant-id=gid%3A%2F%2Fshopify%2FProductVariant%2F222" method="post"/,
+    );
+    assert.match(
+      html,
+      /<input type="hidden" value="test-product"[^>]* name="product-handle"/,
+    );
+    assert.match(
+      html,
+      /<input type="hidden" value="gid:\/\/shopify\/ProductVariant\/222"[^>]* name="variant-id"/,
     );
     assert.doesNotMatch(html, /name="variant-title"|name="tags"/);
+  });
+
+  it("confirms a back-in-stock signup made without JavaScript", async () => {
+    let data = productData();
+    data.selectedOrFirstAvailableVariant = data.adjacentVariants[0]!;
+    let app = createTestApp(
+      createStorefrontFetch({
+        RemixAnalyticsShop: analyticsShopData,
+        RemixNavigation: navigationData,
+        RemixProductNavigation: () => ({ menu: null, shop: null }),
+        RemixProduct: () => ({ product: data }),
+      }),
+    );
+
+    let response = await app.fetch(
+      new Request(
+        "https://example.com/products/test-product?Color=Blue&subscribed=gid%3A%2F%2Fshopify%2FProductVariant%2F222",
+      ),
+    );
+    let html = await response.text();
+
+    assert.equal(response.status, 200);
+    assert.match(html, /role="status"[^>]*>Thanks! We’ll let you know/);
   });
 
   it("renders the branded 404 when a product is missing", async () => {

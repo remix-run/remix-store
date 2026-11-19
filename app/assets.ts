@@ -26,7 +26,7 @@ export const documentAssetSources = {
  */
 export const browserBoundary = {
   allowFiles: ["app/**/public/**"],
-  allowPackages: ["remix", "@shopify/hydrogen"],
+  allowPackages: ["remix", "@remix-run/ui", "@shopify/hydrogen"],
   denyFiles: ["app/**/*.test.*", "app/**/*.spec.*"],
 };
 

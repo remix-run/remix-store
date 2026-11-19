@@ -513,6 +513,10 @@ const PRODUCT_SUBSCRIPTION_QUERY = gql(`
         id
         title
         availableForSale
+        selectedOptions {
+          name
+          value
+        }
         product {
           handle
           subscribeIfBackInStock: metafield(
@@ -807,7 +811,11 @@ export async function verifyBackInStockSubscription(
   storefront: AppStorefrontClient,
   productHandle: string,
   variantId: string,
-): Promise<{ productHandle: string; variantTitle: string } | null> {
+): Promise<{
+  productHandle: string;
+  selectedOptions: Array<{ name: string; value: string }>;
+  variantTitle: string;
+} | null> {
   try {
     let result = await storefront.graphql(PRODUCT_SUBSCRIPTION_QUERY, {
       variables: { variantId },
@@ -828,6 +836,7 @@ export async function verifyBackInStockSubscription(
     }
     return {
       productHandle: variant.product.handle,
+      selectedOptions: variant.selectedOptions,
       variantTitle: variant.title,
     };
   } catch (error) {

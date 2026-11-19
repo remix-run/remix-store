@@ -1,22 +1,27 @@
 import * as assert from "remix/assert";
-import { describe, it } from "remix/test";
+import type {
+  FrameHandle,
+  FrameReloadOptions,
+  Handle,
+  RemixNode,
+} from "remix/component";
 import { render } from "remix/component/test";
+import { describe, it, type TestContext } from "remix/test";
 
 import { SubscribeForm } from "./public/subscribe-form.tsx";
-import { waitFor } from "../../test/wait-for.ts";
+
+const VARIANT_ID = "gid://shopify/ProductVariant/222";
 
 describe("subscribe form", () => {
   it("renders progressive fields and verified product identifiers", async (t) => {
-    let { $, act, cleanup } = render(
+    let { $, act } = renderForm(
+      t,
       <SubscribeForm
         action="/subscribe"
-        mode="back-in-stock"
-        productHandle="test-product"
-        variantId="gid://shopify/ProductVariant/222"
+        product={{ handle: "test-product", variantId: VARIANT_ID }}
       />,
     );
-    t.after(cleanup);
-    await flushAsync(act);
+    await act(() => {});
 
     assert.equal($("form")?.getAttribute("method"), "post");
     assert.equal($("form")?.getAttribute("action"), "/subscribe");
@@ -26,181 +31,190 @@ describe("subscribe form", () => {
     );
     assert.equal(
       $('input[name="variant-id"]')?.getAttribute("value"),
-      "gid://shopify/ProductVariant/222",
+      VARIANT_ID,
     );
-    assert.equal($('input[name="variant-title"]'), null);
     assert.equal($('input[name="consent"]')?.getAttribute("type"), "hidden");
     assert.equal($('input[name="consent"]')?.getAttribute("value"), "yes");
+    assert.equal(emailInput($).required, true);
   });
 
-  it("posts the hydrated form and renders pending then success", async (t) => {
-    let deferred = Promise.withResolvers<Response>();
-    let requests: Array<{ body: URLSearchParams; input: string }> = [];
-    t.mock.method(
-      globalThis,
-      "fetch",
-      async (input: RequestInfo | URL, init?: RequestInit) => {
-        requests.push({
-          body: parseUrlEncodedBody(init?.body),
-          input: String(input),
-        });
-        return deferred.promise;
-      },
+  it("posts through its frame and shows pending until the frame renders", async (t) => {
+    let server = pendingServer(t);
+    let { $, act } = renderForm(
+      t,
+      <SubscribeForm action="/subscribe?product-handle=a" />,
+      server,
     );
-    let view = render(<SubscribeForm action="/subscribe" mode="newsletter" />);
-    t.after(view.cleanup);
-    await flushAsync(view.act);
-    fillForm(view.$);
+    await act(() => {});
+    let email = emailInput($);
+    await act(() => type(email, "member@example.com"));
 
-    await view.act(() => submit(view.$));
-    let button = view.$("button");
-    assert.ok(button instanceof HTMLButtonElement);
-    assert.equal(requests.length, 1);
-    assert.equal(new URL(requests[0]!.input).pathname, "/subscribe");
-    assert.equal(requests[0]?.body.get("email"), "member@example.com");
-    assert.equal(requests[0]?.body.get("consent"), "yes");
-    assert.equal(button.textContent, "Subscribing…");
-    assert.equal(button.disabled, true);
-    assert.equal(view.$("form")?.getAttribute("aria-busy"), "true");
+    await act(() => form($).requestSubmit());
+    assert.equal(server.requests.length, 1);
+    let [request] = server.requests;
+    assert.equal(request?.src, "/subscribe?product-handle=a");
+    assert.equal(request?.method, "post");
+    assert.equal(request?.body?.get("email"), "member@example.com");
+    assert.equal(request?.body?.get("consent"), "yes");
+    assert.equal(form($).getAttribute("aria-busy"), "true");
+    assert.equal(email.readOnly, true);
+    assert.equal(button($).textContent, "Subscribing…");
 
-    deferred.resolve(
-      Response.json({ message: "Thanks for subscribing!", success: true }),
+    // A second submit while saving sends nothing.
+    await act(() => form($).requestSubmit());
+    assert.equal(server.requests.length, 1);
+
+    // Once the frame renders the server's answer, the form is idle again.
+    await act(() => server.respond());
+    assert.equal(form($).hasAttribute("aria-busy"), false);
+    assert.equal(email.readOnly, false);
+  });
+
+  it("restores the controls with an error when the request fails", async (t) => {
+    let server = pendingServer(t);
+    let { $, act } = renderForm(
+      t,
+      <SubscribeForm action="/subscribe" />,
+      server,
     );
-    await waitFor(t, view.act, () => assert.ok(view.$('[role="status"]')));
+    await act(() => {});
+    await act(() => type(emailInput($), "member@example.com"));
 
-    button = view.$("button");
-    assert.ok(button instanceof HTMLButtonElement);
+    await act(() => form($).requestSubmit());
+    await act(() => server.fail(new TypeError("Failed to fetch")));
+
     assert.equal(
-      view.$('[role="status"]')?.textContent,
-      "Thanks for subscribing!",
+      $('[role="alert"]')?.textContent,
+      "Something went wrong. Please try again.",
     );
-    assert.equal(button.querySelector("svg") instanceof SVGElement, true);
-    assert.equal(button.disabled, true);
+    assert.equal(button($).textContent, "Subscribe");
+    assert.equal(emailInput($).readOnly, false);
+    assert.equal(emailInput($).value, "member@example.com");
   });
 
-  it("hydrates a server-rendered success as completed and disabled", async (t) => {
-    let fetch = t.mock.method(globalThis, "fetch", async () => {
-      throw new Error("must not fetch a completed subscription");
-    });
-    let view = render(
+  it("restores the email and shows the server's error", async (t) => {
+    let { $, act } = renderForm(
+      t,
       <SubscribeForm
         action="/subscribe"
-        initialResult={{ message: "Already subscribed", success: true }}
-        mode="newsletter"
+        submission={{
+          errors: { fields: {}, form: ["Please try later."] },
+          values: { email: "member@example.com" },
+        }}
       />,
     );
-    t.after(view.cleanup);
-    await flushAsync(view.act);
+    await act(() => {});
 
-    assert.equal(view.$('[role="status"]')?.textContent, "Already subscribed");
-    let button = view.$("button");
-    assert.ok(button instanceof HTMLButtonElement);
-    assert.equal(button.disabled, true);
-    await view.act(() => submit(view.$));
-    assert.equal(fetch.mock.callCount(), 0);
+    assert.equal(emailInput($).value, "member@example.com");
+    assert.equal($('[role="alert"]')?.textContent, "Please try later.");
+    assert.equal(button($).disabled, false);
   });
 
-  it("guards duplicate submissions while pending and after success", async (t) => {
-    let deferred = Promise.withResolvers<Response>();
-    let fetch = t.mock.method(globalThis, "fetch", () => deferred.promise);
-    let view = render(<SubscribeForm action="/subscribe" mode="newsletter" />);
-    t.after(view.cleanup);
-    await flushAsync(view.act);
-    fillForm(view.$);
+  it("shows email errors once the field is left, and links them to it", async (t) => {
+    let { $, act } = renderForm(t, <SubscribeForm action="/subscribe" />);
+    await act(() => {});
+    let email = emailInput($);
 
-    await view.act(() => {
-      submit(view.$);
-      submit(view.$);
+    await act(() => {
+      email.focus();
+      type(email, "not-an-email");
     });
-    assert.equal(fetch.mock.callCount(), 1);
+    assert.equal($('[role="alert"]'), null);
 
-    deferred.resolve(Response.json({ message: "Subscribed", success: true }));
-    await waitFor(t, view.act, () => assert.ok(view.$('[role="status"]')));
-    await view.act(() => submit(view.$));
-    assert.equal(fetch.mock.callCount(), 1);
-
-    let email = view.$('input[name="email"]');
-    assert.ok(email instanceof HTMLInputElement);
-    await view.act(() => {
-      email.value = "other@example.com";
-      email.dispatchEvent(new Event("input", { bubbles: true }));
-    });
-    let button = view.$("button");
-    assert.ok(button instanceof HTMLButtonElement);
-    assert.equal(button.disabled, false);
+    await act(() => email.blur());
+    let alert = $('[role="alert"]');
+    assert.match(alert?.textContent ?? "", /valid email address/);
+    assert.equal(email.getAttribute("aria-invalid"), "true");
+    assert.equal(email.getAttribute("aria-describedby"), alert?.id);
   });
 
-  it("renders server and network failures and restores controls", async (t) => {
-    let responses: Array<Response | Error> = [
-      Response.json(
-        { error: "Please try later.", success: false },
-        { status: 429 },
-      ),
-      new Error("network detail must not render"),
-    ];
-    t.mock.method(globalThis, "fetch", async () => {
-      let response = responses.shift();
-      if (response instanceof Error) throw response;
-      if (!response) throw new Error("Unexpected request");
-      return response;
-    });
-    let view = render(<SubscribeForm action="/subscribe" mode="newsletter" />);
-    t.after(view.cleanup);
-    await flushAsync(view.act);
-    fillForm(view.$);
+  it("confirms a signup, and editing the email starts a new one", async (t) => {
+    let { $, act } = renderForm(
+      t,
+      <SubscribeForm
+        action="/subscribe"
+        message="Thanks for subscribing!"
+        submission={{
+          errors: { fields: {} },
+          values: { email: "member@example.com" },
+        }}
+      />,
+    );
+    await act(() => {});
 
-    await view.act(() => submit(view.$));
-    await waitFor(t, view.act, () =>
-      assert.equal(view.$('[role="alert"]')?.textContent, "Please try later."),
-    );
-    let button = view.$("button");
-    assert.ok(button instanceof HTMLButtonElement);
-    assert.equal(button.disabled, false);
+    assert.equal($('[role="status"]')?.textContent, "Thanks for subscribing!");
+    assert.equal(button($).disabled, true);
+    assert.ok(button($).querySelector("svg"));
+    assert.equal(emailInput($).value, "member@example.com");
 
-    await view.act(() => submit(view.$));
-    await waitFor(t, view.act, () =>
-      assert.match(
-        view.$('[role="alert"]')?.textContent ?? "",
-        /Something went wrong/,
-      ),
-    );
-    assert.doesNotMatch(
-      view.$('[role="alert"]')?.textContent ?? "",
-      /network detail/,
-    );
-    button = view.$("button");
-    assert.ok(button instanceof HTMLButtonElement);
-    assert.equal(button.disabled, false);
+    await act(() => type(emailInput($), "other@example.com"));
+    assert.equal($('[role="status"]'), null);
+    assert.equal(button($).disabled, false);
+    assert.equal(button($).textContent, "Subscribe");
   });
 });
 
-type Query = ReturnType<typeof render>["$"];
-type Act = ReturnType<typeof render>["act"];
-
-function parseUrlEncodedBody(
-  body: BodyInit | null | undefined,
-): URLSearchParams {
-  if (body instanceof URLSearchParams) return body;
-  throw new Error("Expected a URL-encoded subscription request body");
-}
-
-function fillForm($: Query) {
-  let email = $('input[name="email"]');
-  assert.ok(email instanceof HTMLInputElement);
-  email.value = "member@example.com";
-}
-
-function submit($: Query) {
-  let form = $("form");
-  assert.ok(form instanceof HTMLFormElement);
-  form.dispatchEvent(
-    new SubmitEvent("submit", { bubbles: true, cancelable: true }),
+/**
+ * Renders the form in a test root. With `server`, the frame the form is in
+ * hands its reloads to the test instead of the network.
+ */
+function renderForm(
+  t: TestContext,
+  node: JSX.Element,
+  server?: ReturnType<typeof pendingServer>,
+) {
+  let view = render(
+    server ? <FrameSpy onFrame={server.attach}>{node}</FrameSpy> : node,
   );
+  t.after(view.cleanup);
+  return view;
 }
 
-async function flushAsync(act: Act) {
-  await act(async () => {
-    await Promise.resolve();
-    await Promise.resolve();
-  });
+function FrameSpy(
+  handle: Handle<{ children: RemixNode; onFrame(frame: FrameHandle): void }>,
+) {
+  handle.props.onFrame(handle.frame);
+  return () => handle.props.children;
+}
+
+type Query = ReturnType<typeof render>["$"];
+
+function type(input: HTMLInputElement, value: string) {
+  input.value = value;
+  input.dispatchEvent(new Event("input", { bubbles: true }));
+}
+
+function form($: Query): HTMLFormElement {
+  let element = $("form");
+  assert.ok(element instanceof HTMLFormElement);
+  return element;
+}
+
+function emailInput($: Query): HTMLInputElement {
+  let element = $('input[name="email"]');
+  assert.ok(element instanceof HTMLInputElement);
+  return element;
+}
+
+function button($: Query): HTMLButtonElement {
+  let element = $('button[type="submit"]');
+  assert.ok(element instanceof HTMLButtonElement);
+  return element;
+}
+
+/** Frame reloads that wait for the test to answer them. */
+function pendingServer(t: TestContext) {
+  let requests: FrameReloadOptions[] = [];
+  let answer = Promise.withResolvers<AbortSignal>();
+  return {
+    requests,
+    attach(frame: FrameHandle) {
+      t.mock.method(frame, "reload", (options: FrameReloadOptions = {}) => {
+        requests.push(options);
+        return answer.promise;
+      });
+    },
+    respond: () => answer.resolve(new AbortController().signal),
+    fail: (error: Error) => answer.reject(error),
+  };
 }

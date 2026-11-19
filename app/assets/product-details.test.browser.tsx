@@ -78,6 +78,8 @@ describe("product form", () => {
         search="?ref=campaign&Color=Red"
         shopPayStoreUrl={shopPayStoreUrl}
       />,
+      // Sold-out variants load their signup form in a frame.
+      { frameInit: { resolveFrame: () => "" } },
     );
     t.after(cleanup);
     await flushAsync(act);
@@ -233,72 +235,75 @@ describe("product form", () => {
     assert.equal(getComputedStyle(shopPayLink).height, "64px");
   });
 
-  it("hydrates and submits only verified identifiers for the selected sold-out variant", async (t) => {
-    let product = createProduct();
-    let requestBody: URLSearchParams | undefined;
+  it("loads the selected sold-out variant's signup form in its frame", async (t) => {
+    let frames: Array<{ src: string; target?: string }> = [];
     t.after(resetBrowserCartStore);
     t.mock.method(window.navigation, "navigate", () => ({
       committed: Promise.resolve(),
       finished: Promise.resolve(),
     }));
-    t.mock.method(
-      globalThis,
-      "fetch",
-      async (_input: RequestInfo | URL, init?: RequestInit) => {
-        requestBody = parseUrlEncodedBody(init?.body);
-        return Response.json({ message: "Notification saved", success: true });
-      },
-    );
 
     let { $, act, cleanup } = render(
       <ProductDetails
-        product={product}
+        product={createProduct()}
         search="?Color=Red"
         shopPayStoreUrl={shopPayStoreUrl}
       />,
+      {
+        frameInit: {
+          resolveFrame(src, options) {
+            frames.push({ src, target: options?.target });
+            return '<p id="signup">Signup form</p>';
+          },
+        },
+      },
     );
     t.after(cleanup);
     await flushAsync(act);
-    assert.equal($("#back-in-stock-email"), null);
+    assert.deepEqual(frames, []);
 
     let blue = $('a[href*="Color=Blue"]');
     assert.ok(blue instanceof HTMLAnchorElement);
     await act(() => blue.click());
-    assert.equal(
-      $('input[name="product-handle"]')?.getAttribute("value"),
-      "test-product",
-    );
-    assert.equal(
-      $('input[name="variant-id"]')?.getAttribute("value"),
-      "gid://shopify/ProductVariant/222",
-    );
-    assert.equal($('input[name="variant-title"]'), null);
+    await waitFor(t, act, () => assert.ok($("#signup")));
 
-    let email = $("#back-in-stock-email");
-    let form = email?.closest("form");
-    assert.ok(email instanceof HTMLInputElement);
-    assert.ok(form instanceof HTMLFormElement);
-    email.value = "member@example.com";
-    await act(() =>
-      form.dispatchEvent(
-        new SubmitEvent("submit", { bubbles: true, cancelable: true }),
-      ),
-    );
-    await waitFor(t, act, () => assert.ok($('[role="status"]')));
-
-    assert.ok(requestBody);
-    assert.deepEqual([...requestBody.keys()].sort(), [
-      "consent",
-      "email",
-      "product-handle",
-      "variant-id",
+    assert.deepEqual(frames, [
+      {
+        src: "/subscribe?product-handle=test-product&variant-id=gid%3A%2F%2Fshopify%2FProductVariant%2F222",
+        target: "subscribe",
+      },
     ]);
-    assert.equal(requestBody?.get("product-handle"), "test-product");
-    assert.equal(
-      requestBody?.get("variant-id"),
-      "gid://shopify/ProductVariant/222",
+  });
+
+  it("asks its frame to confirm a signup the URL says just happened", async (t) => {
+    let frames: string[] = [];
+    let product = createProduct();
+    // The sold-out blue variant, as the server resolves it from the URL.
+    product.selectedOrFirstAvailableVariant = product.adjacentVariants[1]!;
+    t.after(resetBrowserCartStore);
+
+    let { act, cleanup } = render(
+      <ProductDetails
+        product={product}
+        search={`?Color=Blue&subscribed=${encodeURIComponent(BLUE_VARIANT_ID)}`}
+        shopPayStoreUrl={shopPayStoreUrl}
+      />,
+      {
+        frameInit: {
+          resolveFrame(src) {
+            frames.push(src);
+            return "";
+          },
+        },
+      },
     );
-    assert.equal($('[role="status"]')?.textContent, "Notification saved");
+    t.after(cleanup);
+    await flushAsync(act);
+    await waitFor(t, act, () => assert.equal(frames.length, 1));
+
+    let params = new URL(frames[0]!, location.origin).searchParams;
+    assert.equal(params.get("variant-id"), BLUE_VARIANT_ID);
+    assert.equal(params.get("subscribed"), BLUE_VARIANT_ID);
   });
 
   it("hides Shopify’s default-only variant selector", async (t) => {
@@ -419,13 +424,6 @@ describe("product form", () => {
     );
   });
 });
-
-function parseUrlEncodedBody(
-  body: BodyInit | null | undefined,
-): URLSearchParams {
-  if (body instanceof URLSearchParams) return body;
-  throw new Error("Expected a URL-encoded subscription request body");
-}
 
 function getShopPayLink(
   query: (selector: string) => Element | null,
